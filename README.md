@@ -1,4 +1,0 @@
-solum
-=====
-
-Project Solum
