@@ -1,6 +1,7 @@
-========================================
-Solum - Application lifecycle Management
-========================================
+=====
+Solum
+=====
+Application Lifecycle Management
 
 An OpenStack related project designed to make cloud services easier to 
 consume and integrate into your application development process.
