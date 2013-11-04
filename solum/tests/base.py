@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-# vim: tabstop=4 shiftwidth=4 softtabstop=4
-
+#
+# Copyright 2013 - Noorul Islam K M
+#
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
 # a copy of the License at
@@ -13,21 +14,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-"""
-test_solum
-----------------------------------
+import fixtures
 
-Tests for `solum` module.
-"""
-
-from solum.openstack.common import log as logging
-from solum.tests import base
-
-LOG = logging.getLogger(__name__)
+from solum.openstack.common import test
 
 
-class TestSolum(base.BaseTestCase):
+class BaseTestCase(test.BaseTestCase):
+    """Test base class."""
 
-    def test_can_use_oslo_logging(self):
-        # Just showing that we can import and use logging
-        LOG.info('Nothing to see here.')
+    def setUp(self):
+        super(BaseTestCase, self).setUp()
+        self.log_fixture = self.useFixture(fixtures.FakeLogger())
