@@ -15,14 +15,11 @@
 """Solum specific config handling."""
 
 from oslo.config import cfg
-import pbr.version
-
-
-_version_info = pbr.version.VersionInfo('solum')
+from solum import version
 
 
 def parse_args(argv, default_config_files=None):
     cfg.CONF(argv[1:],
              project='solum',
-             version=_version_info.version_string(),
+             version=version.version_string(),
              default_config_files=default_config_files)
