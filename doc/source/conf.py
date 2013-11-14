@@ -23,8 +23,13 @@ sys.path.insert(0, os.path.abspath('../..'))
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.intersphinx',
-    'oslo.sphinx'
+    'sphinxcontrib.autohttp.flask',
+    'sphinxcontrib.pecanwsme.rest',
+    'oslo.sphinx',
+    'wsmeext.sphinxext',
 ]
+
+wsme_protocols = ['restjson', 'restxml']
 
 # autodoc generation is a bit aggressive and a nuisance when doing heavy
 # text edit cycles.

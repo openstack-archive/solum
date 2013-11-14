@@ -6,6 +6,8 @@ fixtures>=0.3.14
 python-subunit
 sphinx>=1.1.2
 oslo.sphinx
+sphinxcontrib-pecanwsme>=0.5
+docutils==0.9.1
 testrepository>=0.0.17
 testscenarios>=0.4,<0.5
 testtools>=0.9.32
