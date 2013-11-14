@@ -14,8 +14,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import pecan
+
 from oslo.config import cfg
-from pecan import make_app
 
 # Register options for the service
 API_SERVICE_OPTS = [
@@ -43,7 +44,7 @@ def setup_app(config):
 
     app_conf = dict(config.app)
 
-    return make_app(
+    return pecan.make_app(
         app_conf.pop('root'),
         logging=getattr(config, 'logging', {}),
         **app_conf
