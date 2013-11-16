@@ -51,7 +51,7 @@ from solum.openstack.common import local
 
 _DEFAULT_LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
-_SANITIZE_KEYS = ['adminPass', 'admin_pass', 'password']
+_SANITIZE_KEYS = ['adminPass', 'admin_pass', 'password', 'admin_password']
 
 # NOTE(ldbragst): Let's build a list of regex objects using the list of
 # _SANITIZE_KEYS we already have. This way, we only have to add the new key
@@ -389,10 +389,10 @@ class JSONFormatter(logging.Formatter):
 
 
 def _create_logging_excepthook(product_name):
-    def logging_excepthook(type, value, tb):
+    def logging_excepthook(exc_type, value, tb):
         extra = {}
         if CONF.verbose:
-            extra['exc_info'] = (type, value, tb)
+            extra['exc_info'] = (exc_type, value, tb)
         getLogger(product_name).critical(str(value), **extra)
     return logging_excepthook
 
