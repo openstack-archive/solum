@@ -18,6 +18,8 @@ import pecan
 
 from oslo.config import cfg
 
+from solum.api import config as api_config
+
 # Register options for the service
 API_SERVICE_OPTS = [
     cfg.IntOpt('port',
@@ -35,12 +37,15 @@ CONF.register_group(opt_group)
 CONF.register_opts(API_SERVICE_OPTS, opt_group)
 
 
-def setup_app(config):
+def get_pecan_config():
+    # Set up the pecan configuration
+    filename = api_config.__file__.replace('.pyc', '.py')
+    return pecan.configuration.conf_from_file(filename)
 
-    config['server'] = {
-        'port': cfg.CONF.api.port,
-        'host': cfg.CONF.api.host
-    }
+
+def setup_app(config=None):
+    if not config:
+        config = get_pecan_config()
 
     app_conf = dict(config.app)
 

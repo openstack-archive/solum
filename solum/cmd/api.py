@@ -14,14 +14,36 @@
 
 """Starter script for the Solum API service."""
 
+import os
 import sys
+from wsgiref import simple_server
 
+from oslo.config import cfg
+
+from solum.api import app as api_app
 from solum import config
 from solum.openstack.common import log as logging
+
+
+LOG = logging.getLogger(__name__)
 
 
 def main():
     config.parse_args(sys.argv)
     logging.setup('solum')
 
-    raise NotImplemented('Solum API not yet implemented.')
+    app = api_app.setup_app()
+
+    # Create the WSGI server and start it
+    host, port = cfg.CONF.api.host, cfg.CONF.api.port
+    srv = simple_server.make_server(host, port, app)
+
+    LOG.info('Starting server in PID %s' % os.getpid())
+
+    if host == '0.0.0.0':
+        LOG.info('serving on 0.0.0.0:%s, view at http://127.0.0.1:%s' %
+                 (port, port))
+    else:
+        LOG.info("serving on http://%s:%s" % (host, port))
+
+    srv.serve_forever()
