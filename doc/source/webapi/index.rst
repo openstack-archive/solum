@@ -9,10 +9,6 @@ Version discovery
    :members:
 
 
-.. autotype:: solum.api.controllers.root.Link
-   :members:
-
-
 .. toctree::
    :maxdepth: 2
 
