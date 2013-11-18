@@ -5,3 +5,8 @@
 .. autotype:: solum.api.controllers.common_types.Link
    :members:
 
+Platform
+========
+
+.. autotype:: solum.api.controllers.v1.Platform
+   :members:
