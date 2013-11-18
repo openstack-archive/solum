@@ -16,7 +16,6 @@
 
 from solum.openstack.common import jsonutils
 from solum.tests.api import base
-from solum import version
 
 
 class TestRootController(base.FunctionalTest):
@@ -25,4 +24,7 @@ class TestRootController(base.FunctionalTest):
         response = self.app.get('/', headers={'Accept': 'application/json'})
         self.assertEqual(response.status_int, 200)
         data = jsonutils.loads(response.body)
-        self.assertEqual(data['version'], version.version_string())
+        self.assertEqual(data[0]['id'], 'v1.0')
+        self.assertEqual(data[0]['status'], 'CURRENT')
+        self.assertEqual(data[0]['link'], {'href': 'http://localhost/v1',
+                                           'targetName': 'v1'})
