@@ -14,20 +14,56 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import pecan
 from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
 
-from solum import version
+
+STATUS_KIND = wtypes.Enum(str, 'SUPPORTED', 'CURRENT', 'DEPRECATED')
+
+
+class Link(wtypes.Base):
+    """A link representation."""
+
+    href = wtypes.text
+    "The link url"
+
+    targetName = wtypes.text
+    "Textual name of the target link"
+
+    @classmethod
+    def sample(cls):
+        return cls(href=('http://localhost:9777/v1'),
+                   targetName='v1')
 
 
 class Version(wtypes.Base):
     """Version representation."""
 
-    version = wtypes.text
+    id = wtypes.text
+    "The version identifier"
+
+    status = STATUS_KIND
+    "The status of the API (SUPPORTED, CURRENT or DEPRECATED)"
+
+    link = Link
+    "The link to the versioned API"
+
+    @classmethod
+    def sample(cls):
+        return cls(id='v1.0',
+                   status='CURRENT',
+                   link=Link(targetName='v1',
+                             href='http://localhost:9777/v1'))
 
 
 class RootController(object):
 
-    @wsme_pecan.wsexpose(Version)
+    @wsme_pecan.wsexpose([Version])
     def index(self):
-        return Version(version=version.version_string())
+        host_url = '%s/%s' % (pecan.request.host_url, 'v1')
+        v1 = Version(id='v1.0',
+                     status='CURRENT',
+                     link=Link(targetName='v1',
+                               href=host_url))
+        return [v1]
