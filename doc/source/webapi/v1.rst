@@ -10,3 +10,13 @@ Platform
 
 .. autotype:: solum.api.controllers.v1.Platform
    :members:
+
+
+Assemblies
+==========
+
+.. rest-controller:: solum.api.controllers.v1:AssembliesController
+   :webprefix: /v1/assemblies
+
+.. autotype:: solum.api.controllers.v1.Assembly
+   :members:
