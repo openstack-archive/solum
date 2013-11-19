@@ -14,6 +14,7 @@ Contents:
    readme
    installation
    usage
+   webapi/index
    contributing
 
 Indices and tables
