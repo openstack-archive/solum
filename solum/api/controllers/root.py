@@ -18,25 +18,11 @@ import pecan
 from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
 
+from solum.api.controllers import common_types
 from solum.api.controllers import v1
 
 
 STATUS_KIND = wtypes.Enum(str, 'SUPPORTED', 'CURRENT', 'DEPRECATED')
-
-
-class Link(wtypes.Base):
-    """A link representation."""
-
-    href = wtypes.text
-    "The link url"
-
-    targetName = wtypes.text
-    "Textual name of the target link"
-
-    @classmethod
-    def sample(cls):
-        return cls(href=('http://localhost:9777/v1'),
-                   targetName='v1')
 
 
 class Version(wtypes.Base):
@@ -48,15 +34,15 @@ class Version(wtypes.Base):
     status = STATUS_KIND
     "The status of the API (SUPPORTED, CURRENT or DEPRECATED)"
 
-    link = Link
+    link = common_types.Link
     "The link to the versioned API"
 
     @classmethod
     def sample(cls):
         return cls(id='v1.0',
                    status='CURRENT',
-                   link=Link(targetName='v1',
-                             href='http://localhost:9777/v1'))
+                   link=common_types.Link(targetName='v1',
+                                          href='http://localhost:9777/v1'))
 
 
 class RootController(object):
@@ -68,6 +54,6 @@ class RootController(object):
         host_url = '%s/%s' % (pecan.request.host_url, 'v1')
         v1 = Version(id='v1.0',
                      status='CURRENT',
-                     link=Link(targetName='v1',
-                               href=host_url))
+                     link=common_types.Link(targetName='v1',
+                                            href=host_url))
         return [v1]

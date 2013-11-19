@@ -2,3 +2,6 @@
  V1 Web API
 ============
 
+.. autotype:: solum.api.controllers.common_types.Link
+   :members:
+
