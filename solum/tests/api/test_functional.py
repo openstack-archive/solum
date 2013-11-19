@@ -64,3 +64,13 @@ class TestRootController(base.FunctionalTest):
         self.assertEqual(response.status_int, 200)
         data = jsonutils.loads(response.body)
         self.assertEqual(data, [])
+
+    def test_extensions_get_all(self):
+        response = self.app.get('/v1/extensions',
+                                headers={'Accept': 'application/json'})
+        self.assertEqual(response.status_int, 200)
+        data = jsonutils.loads(response.body)
+        self.assertEqual(data['uri'], 'http://localhost/v1/extensions')
+        self.assertEqual(data['type'], 'extensions')
+        self.assertEqual(data['description'], 'Collection of extensions')
+        self.assertEqual(data['extensionLinks'], [])
