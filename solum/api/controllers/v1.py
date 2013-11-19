@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import datetime
 import pecan
 from pecan import rest
 import wsme
@@ -374,6 +375,9 @@ class Platform(wtypes.Base):
     operations = [common_types.Link]
     "List of links to operations"
 
+    sensors = [common_types.Link]
+    "List of links to sensors"
+
     @classmethod
     def sample(cls):
         return cls(uri='http://localhost/v1',
@@ -394,7 +398,10 @@ class Platform(wtypes.Base):
                        targetName='z4')],
                    operations=[common_types.Link(
                        href='http://localhost:9777/v1/operations/o4',
-                       targetName='o4')])
+                       targetName='o4')],
+                   sensors=[common_types.Link(
+                       href='http://localhost:9777/v1/sensors/s3',
+                       targetName='s3')])
 
 
 class Extension(wtypes.Base):
@@ -620,6 +627,140 @@ class OperationsController(rest.RestController):
                           operationLinks=[])
 
 
+class Sensor(wtypes.Base):
+    """A Sensor resource represents exactly one supported sensor on one or
+    more resources. Sensor resources represent dynamic data about resources,
+    such as metrics or state. Sensor resources are useful for exposing data
+    that changes rapidly, or that may need to be fetched from a secondary
+    system.
+    """
+
+    uri = common_types.Uri
+    "Uri to the sensor"
+
+    name = wtypes.text
+    "Name of the sensor"
+
+    type = wtypes.text
+    "Sensor type"
+
+    description = wtypes.text
+    "Description of the sensor"
+
+    documentation = common_types.Uri
+    "Documentation uri for the sensor"
+
+    targetResource = common_types.Uri
+    "Target resource uri to the sensor"
+
+    sensorType = wtypes.text
+    "Sensor type"
+
+    value = sensorType
+    "Value of sensor"
+
+    timestamp = datetime.datetime
+    "Timestamp for Sensor"
+
+    operationsUri = common_types.Uri
+    "Operations uri for the sensor"
+
+    @classmethod
+    def sample(cls):
+        return cls(uri='http://localhost/v1/sensors/hb',
+                   name='hb',
+                   description='A heartbeat sensor',
+                   sensorLinks=[common_types.Link(
+                               href='http://localhost:9777/v1/sensors/s2',
+                               targetName='s2')])
+
+
+class SensorController(rest.RestController):
+    """Manages operations on a single sensor.
+    """
+
+    def __init__(self, sensor_id):
+        pecan.request.context['sensor_id'] = sensor_id
+        self._id = sensor_id
+
+    @wsme_pecan.wsexpose(Sensor, wtypes.text)
+    def get(self):
+        """Return this sensor."""
+        error = _("Not implemented")
+        pecan.response.translatable_error = error
+        raise wsme.exc.ClientSideError(unicode(error))
+
+    @wsme_pecan.wsexpose(Sensor, wtypes.text, body=Sensor)
+    def put(self, data):
+        """Modify this sensor."""
+        error = _("Not implemented")
+        pecan.response.translatable_error = error
+        raise wsme.exc.ClientSideError(unicode(error))
+
+    @wsme_pecan.wsexpose(None, wtypes.text, status_code=204)
+    def delete(self):
+        """Delete this sensor."""
+        error = _("Not implemented")
+        pecan.response.translatable_error = error
+        raise wsme.exc.ClientSideError(unicode(error))
+
+
+class Sensors(wtypes.Base):
+    """A collection of sensors returned on listing.
+    """
+
+    uri = common_types.Uri
+    "Uri to the Sensors"
+
+    name = wtypes.text
+    "Name of the sensor"
+
+    type = wtypes.text
+    "Sensor type"
+
+    description = wtypes.text
+    "Description of the sensor"
+
+    targetResource = common_types.Uri
+    "Target resource uri to the sensor"
+
+    sensorLinks = [common_types.Link]
+    "List of links to the available sensors"
+
+    @classmethod
+    def sample(cls):
+        return cls(uri='http://localhost/v1/sensors',
+                   sensorLinks=[common_types.Link(
+                       href='http://localhost:9777/v1/sensors/y4',
+                       targetName='y4')])
+
+
+class SensorsController(rest.RestController):
+    """Manages operations on the sensors collection."""
+
+    @pecan.expose()
+    def _lookup(self, sensor_id, *remainder):
+        if remainder and not remainder[-1]:
+            remainder = remainder[:-1]
+        return SensorController(sensor_id), remainder
+
+    @wsme_pecan.wsexpose(Sensor, body=Sensor, status_code=201)
+    def post(self, data):
+        """Create a new sensor."""
+        error = _("Not implemented")
+        pecan.response.translatable_error = error
+        raise wsme.exc.ClientSideError(unicode(error))
+
+    @wsme_pecan.wsexpose(Sensors)
+    def get_all(self):
+        """Return all sensors, based on the query provided."""
+        host_url = '/'.join([pecan.request.host_url, 'v1', 'sensors'])
+        return Sensors(uri=host_url,
+                       type='sensors',
+                       description='Collection of sensors',
+                       sensorLinks=[])
+
+
 class Controller(object):
     """Version 1 API controller root."""
 
@@ -628,6 +769,7 @@ class Controller(object):
     components = ComponentsController()
     extensions = ExtensionsController()
     operations = OperationsController()
+    sensors = SensorsController()
 
     @wsme_pecan.wsexpose(Platform)
     def index(self):

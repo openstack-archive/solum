@@ -84,3 +84,13 @@ class TestRootController(base.FunctionalTest):
         self.assertEqual(data['type'], 'operations')
         self.assertEqual(data['description'], 'Collection of operations')
         self.assertEqual(data['operationLinks'], [])
+
+    def test_sensors_get_all(self):
+        response = self.app.get('/v1/sensors',
+                                headers={'Accept': 'application/json'})
+        self.assertEqual(response.status_int, 200)
+        data = jsonutils.loads(response.body)
+        self.assertEqual(data['uri'], 'http://localhost/v1/sensors')
+        self.assertEqual(data['type'], 'sensors')
+        self.assertEqual(data['description'], 'Collection of sensors')
+        self.assertEqual(data['sensorLinks'], [])
