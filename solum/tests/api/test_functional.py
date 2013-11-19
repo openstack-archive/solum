@@ -57,3 +57,10 @@ class TestRootController(base.FunctionalTest):
         self.assertEqual(data['description'],
                          'The collection of available services')
         self.assertEqual(data['serviceLinks'], [])
+
+    def test_components_get_all(self):
+        response = self.app.get('/v1/components',
+                                headers={'Accept': 'application/json'})
+        self.assertEqual(response.status_int, 200)
+        data = jsonutils.loads(response.body)
+        self.assertEqual(data, [])
