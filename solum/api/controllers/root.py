@@ -18,6 +18,8 @@ import pecan
 from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
 
+from solum.api.controllers import v1
+
 
 STATUS_KIND = wtypes.Enum(str, 'SUPPORTED', 'CURRENT', 'DEPRECATED')
 
@@ -58,6 +60,8 @@ class Version(wtypes.Base):
 
 
 class RootController(object):
+
+    v1 = v1.Controller()
 
     @wsme_pecan.wsexpose([Version])
     def index(self):
