@@ -39,3 +39,10 @@ class TestRootController(base.FunctionalTest):
         self.assertEqual(data['description'], 'solum native implementation')
         self.assertEqual(data['implementationVersion'],
                          version.version_string())
+
+    def test_assemblies_get_all(self):
+        response = self.app.get('/v1/assemblies',
+                                headers={'Accept': 'application/json'})
+        self.assertEqual(response.status_int, 200)
+        data = jsonutils.loads(response.body)
+        self.assertEqual(data, [])
