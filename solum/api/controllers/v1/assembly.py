@@ -99,5 +99,5 @@ class AssembliesController(rest.RestController):
 
     @wsme_pecan.wsexpose([Assembly])
     def get_all(self):
-        """Return all assemblys, based on the query provided."""
+        """Return all assemblies, based on the query provided."""
         return []
