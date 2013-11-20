@@ -24,7 +24,7 @@ class TestRootController(base.FunctionalTest):
     def test_index(self):
         response = self.app.get('/', headers={'Accept': 'application/json'})
         self.assertEqual(response.status_int, 200)
-        data = jsonutils.loads(response.body)
+        data = jsonutils.loads(response.body.decode())
         self.assertEqual(data[0]['id'], 'v1.0')
         self.assertEqual(data[0]['status'], 'CURRENT')
         self.assertEqual(data[0]['link'], {'href': 'http://localhost/v1',
@@ -33,7 +33,7 @@ class TestRootController(base.FunctionalTest):
     def test_platform(self):
         response = self.app.get('/v1/', headers={'Accept': 'application/json'})
         self.assertEqual(response.status_int, 200)
-        data = jsonutils.loads(response.body)
+        data = jsonutils.loads(response.body.decode())
         self.assertEqual(data['uri'], 'http://localhost/v1')
         self.assertEqual(data['name'], 'solum')
         self.assertEqual(data['description'], 'solum native implementation')
@@ -44,14 +44,14 @@ class TestRootController(base.FunctionalTest):
         response = self.app.get('/v1/assemblies',
                                 headers={'Accept': 'application/json'})
         self.assertEqual(response.status_int, 200)
-        data = jsonutils.loads(response.body)
+        data = jsonutils.loads(response.body.decode())
         self.assertEqual(data, [])
 
     def test_services_get_all(self):
         response = self.app.get('/v1/services',
                                 headers={'Accept': 'application/json'})
         self.assertEqual(response.status_int, 200)
-        data = jsonutils.loads(response.body)
+        data = jsonutils.loads(response.body.decode())
         self.assertEqual(data['uri'], 'http://localhost/v1/services')
         self.assertEqual(data['type'], 'services')
         self.assertEqual(data['description'],
@@ -62,14 +62,14 @@ class TestRootController(base.FunctionalTest):
         response = self.app.get('/v1/components',
                                 headers={'Accept': 'application/json'})
         self.assertEqual(response.status_int, 200)
-        data = jsonutils.loads(response.body)
+        data = jsonutils.loads(response.body.decode())
         self.assertEqual(data, [])
 
     def test_extensions_get_all(self):
         response = self.app.get('/v1/extensions',
                                 headers={'Accept': 'application/json'})
         self.assertEqual(response.status_int, 200)
-        data = jsonutils.loads(response.body)
+        data = jsonutils.loads(response.body.decode())
         self.assertEqual(data['uri'], 'http://localhost/v1/extensions')
         self.assertEqual(data['type'], 'extensions')
         self.assertEqual(data['description'], 'Collection of extensions')
@@ -79,7 +79,7 @@ class TestRootController(base.FunctionalTest):
         response = self.app.get('/v1/operations',
                                 headers={'Accept': 'application/json'})
         self.assertEqual(response.status_int, 200)
-        data = jsonutils.loads(response.body)
+        data = jsonutils.loads(response.body.decode())
         self.assertEqual(data['uri'], 'http://localhost/v1/operations')
         self.assertEqual(data['type'], 'operations')
         self.assertEqual(data['description'], 'Collection of operations')
@@ -89,7 +89,7 @@ class TestRootController(base.FunctionalTest):
         response = self.app.get('/v1/sensors',
                                 headers={'Accept': 'application/json'})
         self.assertEqual(response.status_int, 200)
-        data = jsonutils.loads(response.body)
+        data = jsonutils.loads(response.body.decode())
         self.assertEqual(data['uri'], 'http://localhost/v1/sensors')
         self.assertEqual(data['type'], 'sensors')
         self.assertEqual(data['description'], 'Collection of sensors')
