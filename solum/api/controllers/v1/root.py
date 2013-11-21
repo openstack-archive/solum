@@ -55,7 +55,7 @@ class Platform(wtypes.Base):
                    description='solum native implementation',
                    implementationVersion='2014.1.1',
                    assemblies=[common_types.Link(
-                       href='http://localhost:8777/v1/assemblies/x2',
+                       href='http://localhost:9777/v1/assemblies/x2',
                        targetName='x2')])
 
 
