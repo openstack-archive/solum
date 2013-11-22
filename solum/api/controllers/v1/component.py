@@ -64,9 +64,9 @@ class Component(wtypes.Base):
 
     @classmethod
     def sample(cls):
-        return cls(uri='http://localhost/v1/components/php',
-                   name='php',
-                   description='A php component',
+        return cls(uri='http://localhost/v1/components/php-web-app',
+                   name='php-web-app',
+                   description='A php web application component',
                    tags='group=xyz',
                    assemblyLink=common_types.Link(
                        href='http://localhost:9777/v1/assembly/a2',
