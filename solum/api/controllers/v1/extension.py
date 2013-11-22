@@ -57,8 +57,7 @@ class Extension(wtypes.Base):
 
 
 class ExtensionController(rest.RestController):
-    """Manages operations on a single extension.
-    """
+    """Manages operations on a single extension."""
 
     def __init__(self, extension_id):
         pecan.request.context['extension_id'] = extension_id

@@ -60,8 +60,7 @@ class Service(wtypes.Base):
 
 
 class ServiceController(rest.RestController):
-    """Manages operations on a single service.
-    """
+    """Manages operations on a single service."""
 
     def __init__(self, service_id):
         pecan.request.context['service_id'] = service_id
@@ -90,8 +89,7 @@ class ServiceController(rest.RestController):
 
 
 class Services(wtypes.Base):
-    """A summary of services returned on listing.
-    """
+    """A summary of services returned on listing."""
 
     uri = common_types.Uri
     "Uri to the Services"

@@ -52,8 +52,7 @@ class Assembly(wtypes.Base):
 
 
 class AssemblyController(rest.RestController):
-    """Manages operations on a single assembly.
-    """
+    """Manages operations on a single assembly."""
 
     def __init__(self, assembly_id):
         pecan.request.context['assembly_id'] = assembly_id

@@ -70,8 +70,7 @@ class Sensor(wtypes.Base):
 
 
 class SensorController(rest.RestController):
-    """Manages operations on a single sensor.
-    """
+    """Manages operations on a single sensor."""
 
     def __init__(self, sensor_id):
         pecan.request.context['sensor_id'] = sensor_id
@@ -100,8 +99,7 @@ class SensorController(rest.RestController):
 
 
 class Sensors(wtypes.Base):
-    """A collection of sensors returned on listing.
-    """
+    """A collection of sensors returned on listing."""
 
     uri = common_types.Uri
     "Uri to the Sensors"
