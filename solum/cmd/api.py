@@ -21,7 +21,7 @@ from wsgiref import simple_server
 from oslo.config import cfg
 
 from solum.api import app as api_app
-from solum import config
+from solum.common import service
 from solum.openstack.common import log as logging
 
 
@@ -29,8 +29,7 @@ LOG = logging.getLogger(__name__)
 
 
 def main():
-    config.parse_args(sys.argv)
-    logging.setup('solum')
+    service.prepare_service(sys.argv)
 
     app = api_app.setup_app()
 
