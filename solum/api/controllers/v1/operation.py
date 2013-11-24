@@ -58,8 +58,7 @@ class Operation(wtypes.Base):
 
 
 class OperationController(rest.RestController):
-    """Manages operations on a single operation.
-    """
+    """Manages operations on a single operation."""
 
     def __init__(self, operation_id):
         pecan.request.context['operation_id'] = operation_id
@@ -88,8 +87,7 @@ class OperationController(rest.RestController):
 
 
 class Operations(wtypes.Base):
-    """A collection of operations returned on listing.
-    """
+    """A collection of operations returned on listing."""
 
     uri = common_types.Uri
     "Uri to the Operations"

@@ -82,8 +82,7 @@ class Component(wtypes.Base):
 
 
 class ComponentController(rest.RestController):
-    """Manages operations on a single component.
-    """
+    """Manages operations on a single component."""
 
     def __init__(self, component_id):
         pecan.request.context['component_id'] = component_id
