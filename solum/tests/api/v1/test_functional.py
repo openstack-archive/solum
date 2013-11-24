@@ -40,12 +40,18 @@ class TestRootController(base.FunctionalTest):
         self.assertEqual(data['implementationVersion'],
                          version.version_string())
 
+
+class TestAssemblyController(base.FunctionalTest):
+
     def test_assemblies_get_all(self):
         response = self.app.get('/v1/assemblies',
                                 headers={'Accept': 'application/json'})
         self.assertEqual(response.status_int, 200)
         data = jsonutils.loads(response.body.decode())
         self.assertEqual(data, [])
+
+
+class TestServiceController(base.FunctionalTest):
 
     def test_services_get_all(self):
         response = self.app.get('/v1/services',
@@ -58,12 +64,18 @@ class TestRootController(base.FunctionalTest):
                          'The collection of available services')
         self.assertEqual(data['serviceLinks'], [])
 
+
+class TestComponentController(base.FunctionalTest):
+
     def test_components_get_all(self):
         response = self.app.get('/v1/components',
                                 headers={'Accept': 'application/json'})
         self.assertEqual(response.status_int, 200)
         data = jsonutils.loads(response.body.decode())
         self.assertEqual(data, [])
+
+
+class TestExtensionController(base.FunctionalTest):
 
     def test_extensions_get_all(self):
         response = self.app.get('/v1/extensions',
@@ -75,6 +87,9 @@ class TestRootController(base.FunctionalTest):
         self.assertEqual(data['description'], 'Collection of extensions')
         self.assertEqual(data['extensionLinks'], [])
 
+
+class TestOperationController(base.FunctionalTest):
+
     def test_operations_get_all(self):
         response = self.app.get('/v1/operations',
                                 headers={'Accept': 'application/json'})
@@ -84,6 +99,9 @@ class TestRootController(base.FunctionalTest):
         self.assertEqual(data['type'], 'operations')
         self.assertEqual(data['description'], 'Collection of operations')
         self.assertEqual(data['operationLinks'], [])
+
+
+class TestSensorController(base.FunctionalTest):
 
     def test_sensors_get_all(self):
         response = self.app.get('/v1/sensors',
