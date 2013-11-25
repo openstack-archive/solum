@@ -40,6 +40,14 @@ class TestRootController(base.FunctionalTest):
         self.assertEqual(data['description'], 'solum native implementation')
         self.assertEqual(data['implementation_version'],
                          version.version_string())
+        self.assertEqual(data['assemblies_uri'],
+                         'http://localhost/v1/assemblies')
+        self.assertEqual(data['services_uri'],
+                         'http://localhost/v1/services')
+        self.assertEqual(data['components_uri'],
+                         'http://localhost/v1/components')
+        self.assertEqual(data['extensions_uri'],
+                         'http://localhost/v1/extensions')
 
 
 class TestAssemblyController(base.FunctionalTest):

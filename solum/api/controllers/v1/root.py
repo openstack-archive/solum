@@ -35,10 +35,19 @@ class Platform(api_types.Base):
     """
 
     implementation_version = wtypes.text
-    "Version of the platform"
+    "Version of the platform."
 
-    assemblies = [common_types.Link]
-    "List of links to assemblies"
+    assemblies_uri = common_types.Uri
+    "URI to assemblies."
+
+    services_uri = common_types.Uri
+    "URI to services."
+
+    components_uri = common_types.Uri
+    "URI to components."
+
+    extensions_uri = common_types.Uri
+    "URI to extensions."
 
     @classmethod
     def sample(cls):
@@ -48,9 +57,10 @@ class Platform(api_types.Base):
                    tags=['solid'],
                    description='solum native implementation',
                    implementation_version='2014.1.1',
-                   assemblies=[common_types.Link(
-                       href='http://example.com:9777/v1/assemblies/x2',
-                       target_name='x2')])
+                   assemblies_uri='http://example.com:9777/v1/assemblies',
+                   services_uri='http://example.com:9777/v1/services',
+                   components_uri='http://example.com:9777/v1/components',
+                   extenstions_uri='http://example.com:9777/v1/extenstions')
 
 
 class Controller(object):
@@ -70,4 +80,8 @@ class Controller(object):
                         name='solum',
                         type='platform',
                         description='solum native implementation',
-                        implementation_version=version.version_string())
+                        implementation_version=version.version_string(),
+                        assemblies_uri='%s/assemblies' % host_url,
+                        services_uri='%s/services' % host_url,
+                        components_uri='%s/components' % host_url,
+                        extensions_uri='%s/extensions' % host_url)
