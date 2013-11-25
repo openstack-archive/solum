@@ -49,11 +49,11 @@ class Operation(wtypes.Base):
 
     @classmethod
     def sample(cls):
-        return cls(uri='http://localhost/v1/operations/resume',
+        return cls(uri='http://example.com/v1/operations/resume',
                    name='resume',
                    description='A resume operation',
                    operationLinks=[common_types.Link(
-                               href='http://localhost:9777/v1/operations/x2',
+                               href='http://example.com:9777/v1/operations/x2',
                                targetName='x2')])
 
 
@@ -109,9 +109,9 @@ class Operations(wtypes.Base):
 
     @classmethod
     def sample(cls):
-        return cls(uri='http://localhost/v1/operations',
+        return cls(uri='http://example.com/v1/operations',
                    operationLinks=[common_types.Link(
-                       href='http://localhost:9777/v1/operations/y4',
+                       href='http://example.com:9777/v1/operations/y4',
                        targetName='y4')])
 
 

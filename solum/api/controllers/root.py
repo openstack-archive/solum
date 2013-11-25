@@ -42,7 +42,7 @@ class Version(wtypes.Base):
         return cls(id='v1.0',
                    status='CURRENT',
                    link=common_types.Link(targetName='v1',
-                                          href='http://localhost:9777/v1'))
+                                          href='http://example.com:9777/v1'))
 
 
 class RootController(object):

@@ -61,11 +61,11 @@ class Sensor(wtypes.Base):
 
     @classmethod
     def sample(cls):
-        return cls(uri='http://localhost/v1/sensors/hb',
+        return cls(uri='http://example.com/v1/sensors/hb',
                    name='hb',
                    description='A heartbeat sensor',
                    sensorLinks=[common_types.Link(
-                               href='http://localhost:9777/v1/sensors/s2',
+                               href='http://example.com:9777/v1/sensors/s2',
                                targetName='s2')])
 
 
@@ -121,9 +121,9 @@ class Sensors(wtypes.Base):
 
     @classmethod
     def sample(cls):
-        return cls(uri='http://localhost/v1/sensors',
+        return cls(uri='http://example.com/v1/sensors',
                    sensorLinks=[common_types.Link(
-                       href='http://localhost:9777/v1/sensors/y4',
+                       href='http://example.com:9777/v1/sensors/y4',
                        targetName='y4')])
 
 

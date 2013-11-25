@@ -48,11 +48,11 @@ class Extension(wtypes.Base):
 
     @classmethod
     def sample(cls):
-        return cls(uri='http://localhost/v1/extensions/mysql',
+        return cls(uri='http://example.com/v1/extensions/mysql',
                    name='mysql',
                    description='A mysql extension',
                    extensionLinks=[common_types.Link(
-                               href='http://localhost:9777/v1/extensions/x2',
+                               href='http://example.com:9777/v1/extensions/x2',
                                targetName='x2')])
 
 
@@ -92,9 +92,9 @@ class Extensions(wtypes.Base):
 
     @classmethod
     def sample(cls):
-        return cls(uri='http://localhost/v1/extensions',
+        return cls(uri='http://example.com/v1/extensions',
                    extensionLinks=[common_types.Link(
-                       href='http://localhost:9777/v1/extensions/y4',
+                       href='http://example.com:9777/v1/extensions/y4',
                        targetName='y4')])
 
 

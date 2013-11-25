@@ -46,7 +46,7 @@ class Assembly(wtypes.Base):
 
     @classmethod
     def sample(cls):
-        return cls(uri='http://localhost/v1/assemblies/x4',
+        return cls(uri='http://example.com/v1/assemblies/x4',
                    name='database',
                    description='A mysql database')
 

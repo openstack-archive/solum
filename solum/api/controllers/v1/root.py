@@ -50,12 +50,12 @@ class Platform(wtypes.Base):
 
     @classmethod
     def sample(cls):
-        return cls(uri='http://localhost/v1',
+        return cls(uri='http://example.com/v1',
                    name='solum',
                    description='solum native implementation',
                    implementationVersion='2014.1.1',
                    assemblies=[common_types.Link(
-                       href='http://localhost:9777/v1/assemblies/x2',
+                       href='http://example.com:9777/v1/assemblies/x2',
                        targetName='x2')])
 
 

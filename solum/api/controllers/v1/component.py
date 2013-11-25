@@ -64,21 +64,21 @@ class Component(wtypes.Base):
 
     @classmethod
     def sample(cls):
-        return cls(uri='http://localhost/v1/components/php-web-app',
+        return cls(uri='http://example.com/v1/components/php-web-app',
                    name='php-web-app',
                    description='A php web application component',
                    tags='group=xyz',
                    assemblyLink=common_types.Link(
-                       href='http://localhost:9777/v1/assembly/a2',
+                       href='http://example.com:9777/v1/assembly/a2',
                        targetName='a2'),
                    componentLinks=common_types.Link(
-                       href='http://localhost:9777/v1/components/x2',
+                       href='http://example.com:9777/v1/components/x2',
                        targetName='x2'),
                    serviceLinks=common_types.Link(
-                       href='http://localhost:9777/v1/services/s2',
+                       href='http://example.com:9777/v1/services/s2',
                        targetName='s2'),
-                   operationsUri='http://localhost:9777/v1/operations/o1',
-                   sensorsUri='http://localhost:9777/v1/sensors/s1')
+                   operationsUri='http://example.com:9777/v1/operations/o1',
+                   sensorsUri='http://example.com:9777/v1/sensors/s1')
 
 
 class ComponentController(rest.RestController):

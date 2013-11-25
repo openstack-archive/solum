@@ -52,7 +52,7 @@ class Service(wtypes.Base):
 
     @classmethod
     def sample(cls):
-        return cls(uri='http://localhost/v1/services/mysql',
+        return cls(uri='http://example.com/v1/services/mysql',
                    name='mysql',
                    description='A mysql service',
                    tags='group=xyz',
@@ -105,11 +105,11 @@ class Services(wtypes.Base):
 
     @classmethod
     def sample(cls):
-        return cls(uri='http://localhost/v1/services',
+        return cls(uri='http://example.com/v1/services',
                    type='services',
                    description='Collection of services',
                    serviceLinks=[common_types.Link(
-                       href='http://localhost:9777/v1/services/y4',
+                       href='http://example.com:9777/v1/services/y4',
                        targetName='y4')])
 
 

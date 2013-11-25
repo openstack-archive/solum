@@ -29,5 +29,5 @@ class Link(wtypes.Base):
 
     @classmethod
     def sample(cls):
-        return cls(href=('http://localhost:9777/v1'),
+        return cls(href=('http://example.com:9777/v1'),
                    targetName='v1')
