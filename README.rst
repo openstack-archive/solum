@@ -19,6 +19,21 @@ in any language of your choice.
 * Free software: Apache 2.0 License. See LICENSE file.
 * Documentation: http://wiki.openstack.org/wiki/Solum
 
+
+=======================
+Local development setup
+=======================
+
+Install Solum::
+    $ pip install -e .
+
+Run Solum API server::
+    $ solum-api
+
+Hit the API server::
+    $ curl localhost:9777
+
+
 Project Info
 -------------
 
