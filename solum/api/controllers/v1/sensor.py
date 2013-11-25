@@ -19,27 +19,16 @@ from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
 
 from solum.api.controllers import common_types
+from solum.api.controllers.v1 import types as api_types
 
 
-class Sensor(wtypes.Base):
+class Sensor(api_types.Base):
     """A Sensor resource represents exactly one supported sensor on one or
     more resources. Sensor resources represent dynamic data about resources,
     such as metrics or state. Sensor resources are useful for exposing data
     that changes rapidly, or that may need to be fetched from a secondary
     system.
     """
-
-    uri = common_types.Uri
-    "Uri to the sensor"
-
-    name = wtypes.text
-    "Name of the sensor"
-
-    type = wtypes.text
-    "Sensor type"
-
-    description = wtypes.text
-    "Description of the sensor"
 
     documentation = common_types.Uri
     "Documentation uri for the sensor"
@@ -102,20 +91,8 @@ class SensorController(rest.RestController):
         raise wsme.exc.ClientSideError(unicode(error))
 
 
-class Sensors(wtypes.Base):
+class Sensors(api_types.Base):
     """A collection of sensors returned on listing."""
-
-    uri = common_types.Uri
-    "Uri to the Sensors"
-
-    name = wtypes.text
-    "Name of the sensor"
-
-    type = wtypes.text
-    "Sensor type"
-
-    description = wtypes.text
-    "Description of the sensor"
 
     target_resource = common_types.Uri
     "Target resource uri to the sensor"
@@ -126,6 +103,10 @@ class Sensors(wtypes.Base):
     @classmethod
     def sample(cls):
         return cls(uri='http://example.com/v1/sensors',
+                   name='sensors',
+                   type='sensors',
+                   description='sensors collection',
+                   target_resource='http://example.com/nova/instances/uuid/',
                    sensor_links=[common_types.Link(
                        href='http://example.com:9777/v1/sensors/y4',
                        target_name='y4')])
@@ -152,6 +133,7 @@ class SensorsController(rest.RestController):
         """Return all sensors, based on the query provided."""
         host_url = '/'.join([pecan.request.host_url, 'v1', 'sensors'])
         return Sensors(uri=host_url,
+                       name='sensors',
                        type='sensors',
                        description='Collection of sensors',
                        sensor_links=[])

@@ -17,9 +17,10 @@ from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
 
 from solum.api.controllers import common_types
+from solum.api.controllers.v1 import types as api_types
 
 
-class Operation(wtypes.Base):
+class Operation(api_types.Base):
     """An Operation resource represents an operation or action available on a
     target resource. This is for defining actions that may change the state of
     the resource they are related to. For example, the API already provides
@@ -28,18 +29,6 @@ class Operation(wtypes.Base):
     way to extend the system to add your own actions such as "pause" and
     "resume", or "scale_up" and "scale_down".
     """
-
-    uri = common_types.Uri
-    "Uri to the operation"
-
-    name = wtypes.text
-    "Name of the operation"
-
-    type = wtypes.text
-    "Operation type"
-
-    description = wtypes.text
-    "Description of the operation"
 
     documentation = common_types.Uri
     "Documentation uri for the operation"
@@ -52,6 +41,7 @@ class Operation(wtypes.Base):
         return cls(uri='http://example.com/v1/operations/resume',
                    name='resume',
                    type='operation',
+                   tags=['small'],
                    description='A resume operation',
                    documentation='http://example.com/docs/resume_op',
                    target_resource='http://example.com/instances/uuid')
@@ -86,20 +76,8 @@ class OperationController(rest.RestController):
         raise wsme.exc.ClientSideError(unicode(error))
 
 
-class Operations(wtypes.Base):
+class Operations(api_types.Base):
     """A collection of operations returned on listing."""
-
-    uri = common_types.Uri
-    "Uri to the Operations"
-
-    name = wtypes.text
-    "Name of the operation"
-
-    type = wtypes.text
-    "Operation type"
-
-    description = wtypes.text
-    "Description of the operation"
 
     target_resource = common_types.Uri
     "Target resource uri to the operation"
@@ -110,6 +88,9 @@ class Operations(wtypes.Base):
     @classmethod
     def sample(cls):
         return cls(uri='http://example.com/v1/operations',
+                   name='operations collection',
+                   type='operations',
+                   description='collection of all operations',
                    target_resource='http://example.com:9777/v1/components/c4',
                    operation_links=[common_types.Link(
                        href='http://example.com:9777/v1/operations/y4',
@@ -137,6 +118,8 @@ class OperationsController(rest.RestController):
         """Return all operations, based on the query provided."""
         host_url = '/'.join([pecan.request.host_url, 'v1', 'operations'])
         return Operations(uri=host_url,
+                          name='operations',
                           type='operations',
                           description='Collection of operations',
+                          target_resource='',
                           operation_links=[])

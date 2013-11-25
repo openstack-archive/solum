@@ -23,24 +23,16 @@ from solum.api.controllers.v1 import extension
 from solum.api.controllers.v1 import operation
 from solum.api.controllers.v1 import sensor
 from solum.api.controllers.v1 import service
+from solum.api.controllers.v1 import types as api_types
 from solum import version
 
 
-class Platform(wtypes.Base):
+class Platform(api_types.Base):
     """Representation of a Platform.
 
     The Platform resource is the root level resource that refers
     to all the other resources owned by this tenant.
     """
-
-    uri = common_types.Uri
-    "Uri to the platform"
-
-    name = wtypes.text
-    "The name of the platform"
-
-    description = wtypes.text
-    "Description of the platform"
 
     implementation_version = wtypes.text
     "Version of the platform"
@@ -52,6 +44,8 @@ class Platform(wtypes.Base):
     def sample(cls):
         return cls(uri='http://example.com/v1',
                    name='solum',
+                   type='platform',
+                   tags=['solid'],
                    description='solum native implementation',
                    implementation_version='2014.1.1',
                    assemblies=[common_types.Link(
@@ -74,5 +68,6 @@ class Controller(object):
         host_url = '%s/%s' % (pecan.request.host_url, 'v1')
         return Platform(uri=host_url,
                         name='solum',
+                        type='platform',
                         description='solum native implementation',
                         implementation_version=version.version_string())

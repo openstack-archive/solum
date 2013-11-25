@@ -18,10 +18,10 @@ import wsme
 from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
 
-from solum.api.controllers import common_types
+from solum.api.controllers.v1 import types as api_types
 
 
-class Assembly(wtypes.Base):
+class Assembly(api_types.Base):
     """Representation of an Assembly.
 
     The Assembly resource represents a group of components that make
@@ -35,19 +35,12 @@ class Assembly(wtypes.Base):
     associated with it.
     """
 
-    uri = common_types.Uri
-    "Uri to the Assembly"
-
-    name = wtypes.text
-    "Name of the Assembly"
-
-    description = wtypes.text
-    "Description of the Assembly"
-
     @classmethod
     def sample(cls):
         return cls(uri='http://example.com/v1/assemblies/x4',
                    name='database',
+                   type='assembly',
+                   tags=['small'],
                    description='A mysql database')
 
 
