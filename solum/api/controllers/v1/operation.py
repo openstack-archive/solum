@@ -44,7 +44,7 @@ class Operation(wtypes.Base):
     documentation = common_types.Uri
     "Documentation uri for the operation"
 
-    targetResource = common_types.Uri
+    target_resource = common_types.Uri
     "Target resource uri to the operation"
 
     @classmethod
@@ -54,7 +54,7 @@ class Operation(wtypes.Base):
                    type='operation',
                    description='A resume operation',
                    documentation='http://example.com/docs/resume_op',
-                   targetResource='http://example.com/instances/uuid')
+                   target_resource='http://example.com/instances/uuid')
 
 
 class OperationController(rest.RestController):
@@ -101,18 +101,19 @@ class Operations(wtypes.Base):
     description = wtypes.text
     "Description of the operation"
 
-    targetResource = common_types.Uri
+    target_resource = common_types.Uri
     "Target resource uri to the operation"
 
-    operationLinks = [common_types.Link]
+    operation_links = [common_types.Link]
     "List of links to the available operations"
 
     @classmethod
     def sample(cls):
         return cls(uri='http://example.com/v1/operations',
-                   operationLinks=[common_types.Link(
+                   target_resource='http://example.com:9777/v1/components/c4',
+                   operation_links=[common_types.Link(
                        href='http://example.com:9777/v1/operations/y4',
-                       targetName='y4')])
+                       target_name='y4')])
 
 
 class OperationsController(rest.RestController):
@@ -138,4 +139,4 @@ class OperationsController(rest.RestController):
         return Operations(uri=host_url,
                           type='operations',
                           description='Collection of operations',
-                          operationLinks=[])
+                          operation_links=[])

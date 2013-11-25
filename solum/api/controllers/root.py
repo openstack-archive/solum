@@ -41,7 +41,7 @@ class Version(wtypes.Base):
     def sample(cls):
         return cls(id='v1.0',
                    status='CURRENT',
-                   link=common_types.Link(targetName='v1',
+                   link=common_types.Link(target_name='v1',
                                           href='http://example.com:9777/v1'))
 
 
@@ -54,6 +54,6 @@ class RootController(object):
         host_url = '%s/%s' % (pecan.request.host_url, 'v1')
         v1 = Version(id='v1.0',
                      status='CURRENT',
-                     link=common_types.Link(targetName='v1',
+                     link=common_types.Link(target_name='v1',
                                             href=host_url))
         return [v1]

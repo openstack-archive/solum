@@ -28,7 +28,7 @@ class TestRootController(base.FunctionalTest):
         self.assertEqual(data[0]['id'], 'v1.0')
         self.assertEqual(data[0]['status'], 'CURRENT')
         self.assertEqual(data[0]['link'], {'href': 'http://localhost/v1',
-                                           'targetName': 'v1'})
+                                           'target_name': 'v1'})
 
     def test_platform(self):
         response = self.app.get('/v1/', headers={'Accept': 'application/json'})
@@ -37,7 +37,7 @@ class TestRootController(base.FunctionalTest):
         self.assertEqual(data['uri'], 'http://localhost/v1')
         self.assertEqual(data['name'], 'solum')
         self.assertEqual(data['description'], 'solum native implementation')
-        self.assertEqual(data['implementationVersion'],
+        self.assertEqual(data['implementation_version'],
                          version.version_string())
 
 
@@ -62,7 +62,7 @@ class TestServiceController(base.FunctionalTest):
         self.assertEqual(data['type'], 'services')
         self.assertEqual(data['description'],
                          'The collection of available services')
-        self.assertEqual(data['serviceLinks'], [])
+        self.assertEqual(data['service_links'], [])
 
 
 class TestComponentController(base.FunctionalTest):
@@ -85,7 +85,7 @@ class TestExtensionController(base.FunctionalTest):
         self.assertEqual(data['uri'], 'http://localhost/v1/extensions')
         self.assertEqual(data['type'], 'extensions')
         self.assertEqual(data['description'], 'Collection of extensions')
-        self.assertEqual(data['extensionLinks'], [])
+        self.assertEqual(data['extension_links'], [])
 
 
 class TestOperationController(base.FunctionalTest):
@@ -98,7 +98,7 @@ class TestOperationController(base.FunctionalTest):
         self.assertEqual(data['uri'], 'http://localhost/v1/operations')
         self.assertEqual(data['type'], 'operations')
         self.assertEqual(data['description'], 'Collection of operations')
-        self.assertEqual(data['operationLinks'], [])
+        self.assertEqual(data['operation_links'], [])
 
 
 class TestSensorController(base.FunctionalTest):
@@ -111,4 +111,4 @@ class TestSensorController(base.FunctionalTest):
         self.assertEqual(data['uri'], 'http://localhost/v1/sensors')
         self.assertEqual(data['type'], 'sensors')
         self.assertEqual(data['description'], 'Collection of sensors')
-        self.assertEqual(data['sensorLinks'], [])
+        self.assertEqual(data['sensor_links'], [])

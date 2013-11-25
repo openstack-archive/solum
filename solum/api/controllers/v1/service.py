@@ -47,7 +47,7 @@ class Service(wtypes.Base):
     tags = wtypes.text
     "Tags for the service"
 
-    readOnly = bool
+    read_only = bool
     "The service is read only"
 
     @classmethod
@@ -57,7 +57,7 @@ class Service(wtypes.Base):
                    type='service',
                    description='A mysql service',
                    tags='group=xyz',
-                   readOnly=False)
+                   read_only=False)
 
 
 class ServiceController(rest.RestController):
@@ -101,7 +101,7 @@ class Services(wtypes.Base):
     description = wtypes.text
     "Description of the Services"
 
-    serviceLinks = [common_types.Link]
+    service_links = [common_types.Link]
     "list of links to the available services"
 
     @classmethod
@@ -109,9 +109,9 @@ class Services(wtypes.Base):
         return cls(uri='http://example.com/v1/services',
                    type='services',
                    description='Collection of services',
-                   serviceLinks=[common_types.Link(
+                   service_links=[common_types.Link(
                        href='http://example.com:9777/v1/services/y4',
-                       targetName='y4')])
+                       target_name='y4')])
 
 
 class ServicesController(rest.RestController):
@@ -137,4 +137,4 @@ class ServicesController(rest.RestController):
         return Services(uri=host_url,
                         type='services',
                         description='The collection of available services',
-                        serviceLinks=[])
+                        service_links=[])

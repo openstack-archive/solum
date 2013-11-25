@@ -44,19 +44,19 @@ class Sensor(wtypes.Base):
     documentation = common_types.Uri
     "Documentation uri for the sensor"
 
-    targetResource = common_types.Uri
+    target_resource = common_types.Uri
     "Target resource uri to the sensor"
 
-    sensorType = wtypes.text
+    sensor_type = wtypes.text
     "Sensor type"
 
-    value = sensorType
+    value = sensor_type
     "Value of sensor"
 
     timestamp = datetime.datetime
     "Timestamp for Sensor"
 
-    operationsUri = common_types.Uri
+    operations_uri = common_types.Uri
     "Operations uri for the sensor"
 
     @classmethod
@@ -66,11 +66,11 @@ class Sensor(wtypes.Base):
                    type='sensor',
                    description='A heartbeat sensor',
                    documentation='http://example.com/docs/heartbeat/',
-                   targetResource='http://example.com/instances/uuid',
-                   sensorType='int',
+                   target_resource='http://example.com/instances/uuid',
+                   sensor_type='int',
                    value='30',
                    timestamp=datetime.datetime.utcnow(),
-                   operationsUri='http://example.com:9777/v1/operations/stop')
+                   operations_uri='http://example.com:9777/operations/stop')
 
 
 class SensorController(rest.RestController):
@@ -117,18 +117,18 @@ class Sensors(wtypes.Base):
     description = wtypes.text
     "Description of the sensor"
 
-    targetResource = common_types.Uri
+    target_resource = common_types.Uri
     "Target resource uri to the sensor"
 
-    sensorLinks = [common_types.Link]
+    sensor_links = [common_types.Link]
     "List of links to the available sensors"
 
     @classmethod
     def sample(cls):
         return cls(uri='http://example.com/v1/sensors',
-                   sensorLinks=[common_types.Link(
+                   sensor_links=[common_types.Link(
                        href='http://example.com:9777/v1/sensors/y4',
-                       targetName='y4')])
+                       target_name='y4')])
 
 
 class SensorsController(rest.RestController):
@@ -154,4 +154,4 @@ class SensorsController(rest.RestController):
         return Sensors(uri=host_url,
                        type='sensors',
                        description='Collection of sensors',
-                       sensorLinks=[])
+                       sensor_links=[])

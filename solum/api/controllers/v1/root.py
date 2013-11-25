@@ -42,7 +42,7 @@ class Platform(wtypes.Base):
     description = wtypes.text
     "Description of the platform"
 
-    implementationVersion = wtypes.text
+    implementation_version = wtypes.text
     "Version of the platform"
 
     assemblies = [common_types.Link]
@@ -53,10 +53,10 @@ class Platform(wtypes.Base):
         return cls(uri='http://example.com/v1',
                    name='solum',
                    description='solum native implementation',
-                   implementationVersion='2014.1.1',
+                   implementation_version='2014.1.1',
                    assemblies=[common_types.Link(
                        href='http://example.com:9777/v1/assemblies/x2',
-                       targetName='x2')])
+                       target_name='x2')])
 
 
 class Controller(object):
@@ -75,4 +75,4 @@ class Controller(object):
         return Platform(uri=host_url,
                         name='solum',
                         description='solum native implementation',
-                        implementationVersion=version.version_string())
+                        implementation_version=version.version_string())
