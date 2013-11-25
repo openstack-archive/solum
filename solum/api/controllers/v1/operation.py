@@ -51,10 +51,10 @@ class Operation(wtypes.Base):
     def sample(cls):
         return cls(uri='http://example.com/v1/operations/resume',
                    name='resume',
+                   type='operation',
                    description='A resume operation',
-                   operationLinks=[common_types.Link(
-                               href='http://example.com:9777/v1/operations/x2',
-                               targetName='x2')])
+                   documentation='http://example.com/docs/resume_op',
+                   targetResource='http://example.com/instances/uuid')
 
 
 class OperationController(rest.RestController):

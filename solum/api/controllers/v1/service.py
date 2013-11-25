@@ -54,6 +54,7 @@ class Service(wtypes.Base):
     def sample(cls):
         return cls(uri='http://example.com/v1/services/mysql',
                    name='mysql',
+                   type='service',
                    description='A mysql service',
                    tags='group=xyz',
                    readOnly=False)

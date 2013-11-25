@@ -50,10 +50,10 @@ class Extension(wtypes.Base):
     def sample(cls):
         return cls(uri='http://example.com/v1/extensions/mysql',
                    name='mysql',
+                   type='extension',
                    description='A mysql extension',
-                   extensionLinks=[common_types.Link(
-                               href='http://example.com:9777/v1/extensions/x2',
-                               targetName='x2')])
+                   version='2.13',
+                   documentation='http://example.com/docs/ext/mysql')
 
 
 class ExtensionController(rest.RestController):

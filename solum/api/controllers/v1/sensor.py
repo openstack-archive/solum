@@ -63,10 +63,14 @@ class Sensor(wtypes.Base):
     def sample(cls):
         return cls(uri='http://example.com/v1/sensors/hb',
                    name='hb',
+                   type='sensor',
                    description='A heartbeat sensor',
-                   sensorLinks=[common_types.Link(
-                               href='http://example.com:9777/v1/sensors/s2',
-                               targetName='s2')])
+                   documentation='http://example.com/docs/heartbeat/',
+                   targetResource='http://example.com/instances/uuid',
+                   sensorType='int',
+                   value='30',
+                   timestamp=datetime.datetime.utcnow(),
+                   operationsUri='http://example.com:9777/v1/operations/stop')
 
 
 class SensorController(rest.RestController):
