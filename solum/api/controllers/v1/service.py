@@ -16,7 +16,6 @@ import wsme
 from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
 
-from solum.api.controllers import common_types
 from solum.api.controllers.v1 import types as api_types
 
 
@@ -75,23 +74,6 @@ class ServiceController(rest.RestController):
         raise wsme.exc.ClientSideError(unicode(error))
 
 
-class Services(api_types.Base):
-    """A summary of services returned on listing."""
-
-    service_links = [common_types.Link]
-    "list of links to the available services"
-
-    @classmethod
-    def sample(cls):
-        return cls(uri='http://example.com/v1/services',
-                   name='services collection',
-                   type='services',
-                   description='Collection of services',
-                   service_links=[common_types.Link(
-                       href='http://example.com:9777/v1/services/y4',
-                       target_name='y4')])
-
-
 class ServicesController(rest.RestController):
     """Manages operations on the services collection."""
 
@@ -108,12 +90,7 @@ class ServicesController(rest.RestController):
         pecan.response.translatable_error = error
         raise wsme.exc.ClientSideError(unicode(error))
 
-    @wsme_pecan.wsexpose(Services)
+    @wsme_pecan.wsexpose([Service])
     def get_all(self):
         """Return the collection of services."""
-        host_url = '/'.join([pecan.request.host_url, 'v1', 'services'])
-        return Services(uri=host_url,
-                        name='services collection',
-                        type='services',
-                        description='The collection of available services',
-                        service_links=[])
+        return []

@@ -59,11 +59,7 @@ class TestServiceController(base.FunctionalTest):
                                 headers={'Accept': 'application/json'})
         self.assertEqual(response.status_int, 200)
         data = jsonutils.loads(response.body.decode())
-        self.assertEqual(data['uri'], 'http://localhost/v1/services')
-        self.assertEqual(data['type'], 'services')
-        self.assertEqual(data['description'],
-                         'The collection of available services')
-        self.assertEqual(data['service_links'], [])
+        self.assertEqual(data, [])
 
 
 class TestComponentController(base.FunctionalTest):
@@ -83,10 +79,7 @@ class TestExtensionController(base.FunctionalTest):
                                 headers={'Accept': 'application/json'})
         self.assertEqual(response.status_int, 200)
         data = jsonutils.loads(response.body.decode())
-        self.assertEqual(data['uri'], 'http://localhost/v1/extensions')
-        self.assertEqual(data['type'], 'extensions')
-        self.assertEqual(data['description'], 'Collection of extensions')
-        self.assertEqual(data['extension_links'], [])
+        self.assertEqual(data, [])
 
 
 class TestOperationController(base.FunctionalTest):
@@ -96,10 +89,7 @@ class TestOperationController(base.FunctionalTest):
                                 headers={'Accept': 'application/json'})
         self.assertEqual(response.status_int, 200)
         data = jsonutils.loads(response.body.decode())
-        self.assertEqual(data['uri'], 'http://localhost/v1/operations')
-        self.assertEqual(data['type'], 'operations')
-        self.assertEqual(data['description'], 'Collection of operations')
-        self.assertEqual(data['operation_links'], [])
+        self.assertEqual(data, [])
 
 
 class TestSensorController(base.FunctionalTest):
@@ -109,7 +99,4 @@ class TestSensorController(base.FunctionalTest):
                                 headers={'Accept': 'application/json'})
         self.assertEqual(response.status_int, 200)
         data = jsonutils.loads(response.body.decode())
-        self.assertEqual(data['uri'], 'http://localhost/v1/sensors')
-        self.assertEqual(data['type'], 'sensors')
-        self.assertEqual(data['description'], 'Collection of sensors')
-        self.assertEqual(data['sensor_links'], [])
+        self.assertEqual(data, [])

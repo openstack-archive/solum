@@ -91,27 +91,6 @@ class SensorController(rest.RestController):
         raise wsme.exc.ClientSideError(unicode(error))
 
 
-class Sensors(api_types.Base):
-    """A collection of sensors returned on listing."""
-
-    target_resource = common_types.Uri
-    "Target resource uri to the sensor"
-
-    sensor_links = [common_types.Link]
-    "List of links to the available sensors"
-
-    @classmethod
-    def sample(cls):
-        return cls(uri='http://example.com/v1/sensors',
-                   name='sensors',
-                   type='sensors',
-                   description='sensors collection',
-                   target_resource='http://example.com/nova/instances/uuid/',
-                   sensor_links=[common_types.Link(
-                       href='http://example.com:9777/v1/sensors/y4',
-                       target_name='y4')])
-
-
 class SensorsController(rest.RestController):
     """Manages operations on the sensors collection."""
 
@@ -128,12 +107,7 @@ class SensorsController(rest.RestController):
         pecan.response.translatable_error = error
         raise wsme.exc.ClientSideError(unicode(error))
 
-    @wsme_pecan.wsexpose(Sensors)
+    @wsme_pecan.wsexpose([Sensor])
     def get_all(self):
         """Return all sensors, based on the query provided."""
-        host_url = '/'.join([pecan.request.host_url, 'v1', 'sensors'])
-        return Sensors(uri=host_url,
-                       name='sensors',
-                       type='sensors',
-                       description='Collection of sensors',
-                       sensor_links=[])
+        return []

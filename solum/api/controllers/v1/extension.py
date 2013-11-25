@@ -61,24 +61,6 @@ class ExtensionController(rest.RestController):
         raise wsme.exc.ClientSideError(unicode(error))
 
 
-class Extensions(api_types.Base):
-    """A collection of extensions returned on listing.
-    """
-
-    extension_links = [common_types.Link]
-    "List of links to the available extensions"
-
-    @classmethod
-    def sample(cls):
-        return cls(uri='http://example.com/v1/extensions',
-                   name='extensions',
-                   type='extensions',
-                   description='extensions',
-                   extension_links=[common_types.Link(
-                       href='http://example.com:9777/v1/extensions/y4',
-                       target_name='y4')])
-
-
 class ExtensionsController(rest.RestController):
     """Manages operations on the extensions collection."""
 
@@ -88,11 +70,7 @@ class ExtensionsController(rest.RestController):
             remainder = remainder[:-1]
         return ExtensionController(extension_id), remainder
 
-    @wsme_pecan.wsexpose(Extensions)
+    @wsme_pecan.wsexpose([Extension])
     def get_all(self):
         """Return all extensions, based on the query provided."""
-        host_url = '/'.join([pecan.request.host_url, 'v1', 'extensions'])
-        return Extensions(uri=host_url,
-                          type='extensions',
-                          description='Collection of extensions',
-                          extension_links=[])
+        return []

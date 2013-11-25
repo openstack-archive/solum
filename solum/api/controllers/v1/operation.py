@@ -76,27 +76,6 @@ class OperationController(rest.RestController):
         raise wsme.exc.ClientSideError(unicode(error))
 
 
-class Operations(api_types.Base):
-    """A collection of operations returned on listing."""
-
-    target_resource = common_types.Uri
-    "Target resource uri to the operation"
-
-    operation_links = [common_types.Link]
-    "List of links to the available operations"
-
-    @classmethod
-    def sample(cls):
-        return cls(uri='http://example.com/v1/operations',
-                   name='operations collection',
-                   type='operations',
-                   description='collection of all operations',
-                   target_resource='http://example.com:9777/v1/components/c4',
-                   operation_links=[common_types.Link(
-                       href='http://example.com:9777/v1/operations/y4',
-                       target_name='y4')])
-
-
 class OperationsController(rest.RestController):
     """Manages operations on the operations collection."""
 
@@ -113,13 +92,7 @@ class OperationsController(rest.RestController):
         pecan.response.translatable_error = error
         raise wsme.exc.ClientSideError(unicode(error))
 
-    @wsme_pecan.wsexpose(Operations)
+    @wsme_pecan.wsexpose([Operation])
     def get_all(self):
         """Return all operations, based on the query provided."""
-        host_url = '/'.join([pecan.request.host_url, 'v1', 'operations'])
-        return Operations(uri=host_url,
-                          name='operations',
-                          type='operations',
-                          description='Collection of operations',
-                          target_resource='',
-                          operation_links=[])
+        return []
