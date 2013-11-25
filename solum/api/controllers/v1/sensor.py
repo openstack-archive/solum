@@ -18,8 +18,13 @@ import wsme
 from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
 
+from solum.openstack.common.gettextutils import _  # noqa
+
 from solum.api.controllers import common_types
 from solum.api.controllers.v1 import types as api_types
+
+
+SENSOR_TYPE = wtypes.Enum(str, 'str', 'float', 'int')
 
 
 class Sensor(api_types.Base):
@@ -36,17 +41,38 @@ class Sensor(api_types.Base):
     target_resource = common_types.Uri
     "Target resource uri to the sensor"
 
-    sensor_type = wtypes.text
-    "Sensor type"
+    sensor_type = SENSOR_TYPE
+    "Sensor data type"
 
-    value = sensor_type
-    "Value of sensor"
+    def get_value(self):
+        if self.sensor_type == 'int':
+            if int(self._value) != float(self._value):
+                raise ValueError(_('Value "%s" is not an integer.') %
+                                 str(self._value))
+            return int(self._value)
+        elif self.sensor_type == 'float':
+            return float(self._value)
+        else:
+            return str(self._value)
+
+    def set_value(self, value):
+        # Store the value as-is, because we don't know the order that the
+        # value and sensor_type are written, so convert to the desired type
+        # in get_value().
+        self._value = value
+
+    value = wtypes.wsproperty(str, get_value, set_value, mandatory=False)
+    "Value of the sensor"
 
     timestamp = datetime.datetime
     "Timestamp for Sensor"
 
     operations_uri = common_types.Uri
     "Operations uri for the sensor"
+
+    def __init__(self, **kwds):
+        self._value = '0'
+        super(Sensor, self).__init__(**kwds)
 
     @classmethod
     def sample(cls):
@@ -56,7 +82,7 @@ class Sensor(api_types.Base):
                    description='A heartbeat sensor',
                    documentation='http://example.com/docs/heartbeat/',
                    target_resource='http://example.com/instances/uuid',
-                   sensor_type='int',
+                   sensor_type='str',
                    value='30',
                    timestamp=datetime.datetime.utcnow(),
                    operations_uri='http://example.com:9777/operations/stop')
