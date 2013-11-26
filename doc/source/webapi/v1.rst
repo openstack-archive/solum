@@ -8,15 +8,15 @@
 Platform
 ========
 
-.. autotype:: solum.api.controllers.v1.Platform
+.. autotype:: solum.api.controllers.v1.root.Platform
    :members:
 
 
 Assemblies
 ==========
 
-.. rest-controller:: solum.api.controllers.v1:AssembliesController
+.. rest-controller:: solum.api.controllers.v1.assembly:AssembliesController
    :webprefix: /v1/assemblies
 
-.. autotype:: solum.api.controllers.v1.Assembly
+.. autotype:: solum.api.controllers.v1.assembly.Assembly
    :members:
