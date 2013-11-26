@@ -1,0 +1,67 @@
+V1 API
+======
+
+.. autotype:: solum.api.controllers.common_types.Link
+   :members:
+
+Platform
+--------
+
+.. autotype:: solum.api.controllers.v1.root.Platform
+   :members:
+
+
+Assemblies
+----------
+
+.. rest-controller:: solum.api.controllers.v1.assembly:AssembliesController
+   :webprefix: /v1/assemblies
+
+.. autotype:: solum.api.controllers.v1.assembly.Assembly
+   :members:
+
+Services
+--------
+
+.. rest-controller:: solum.api.controllers.v1.service:ServicesController
+   :webprefix: /v1/services
+
+.. autotype:: solum.api.controllers.v1.service.Service
+   :members:
+
+Operations
+----------
+
+.. rest-controller:: solum.api.controllers.v1.operation:OperationsController
+   :webprefix: /v1/operations
+
+.. autotype:: solum.api.controllers.v1.operation.Operation
+   :members:
+
+Sensors
+-------
+
+.. rest-controller:: solum.api.controllers.v1.sensor:SensorsController
+   :webprefix: /v1/sensors
+
+.. autotype:: solum.api.controllers.v1.sensor.Sensor
+   :members:
+
+Components
+----------
+
+.. rest-controller:: solum.api.controllers.v1.component:ComponentsController
+   :webprefix: /v1/components
+
+.. autotype:: solum.api.controllers.v1.component.Component
+   :members:
+
+
+Extensions
+----------
+
+.. rest-controller:: solum.api.controllers.v1.extension:ExtensionsController
+   :webprefix: /v1/extensions
+
+.. autotype:: solum.api.controllers.v1.extension.Extension
+   :members:

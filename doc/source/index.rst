@@ -1,10 +1,6 @@
-.. solum documentation master file, created by
-   sphinx-quickstart on Tue Jul  9 22:26:36 2013.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
 
-Welcome to solum's documentation!
-========================================================
+Welcome to Solum's documentation!
+=================================
 
 Contents:
 
@@ -12,10 +8,11 @@ Contents:
    :maxdepth: 2
 
    readme
-   installation
-   usage
-   webapi/index
-   contributing
+   getting_started/index
+   install/index
+   configure_and_run/index
+   develop_applications/index
+   contribute/index
 
 Indices and tables
 ==================
