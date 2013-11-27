@@ -80,6 +80,8 @@ class Sensor(api_types.Base):
         return cls(uri='http://example.com/v1/sensors/hb',
                    name='hb',
                    type='sensor',
+                   project_id='1dae5a09ef2b4d8cbf3594b0eb4f6b94',
+                   user_id='55f41cf46df74320b9486a35f5d28a11',
                    description='A heartbeat sensor',
                    documentation='http://example.com/docs/heartbeat/',
                    target_resource='http://example.com/instances/uuid',

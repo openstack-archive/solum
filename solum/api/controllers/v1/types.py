@@ -34,3 +34,9 @@ class Base(wtypes.Base):
 
     tags = [wtypes.text]
     "Tags for the resource."
+
+    project_id = wtypes.text
+    "The project that this resource belongs in."
+
+    user_id = wtypes.text
+    "The user that owns this resource."

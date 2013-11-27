@@ -55,6 +55,8 @@ class Platform(api_types.Base):
                    name='solum',
                    type='platform',
                    tags=['solid'],
+                   project_id='1dae5a09ef2b4d8cbf3594b0eb4f6b94',
+                   user_id='55f41cf46df74320b9486a35f5d28a11',
                    description='solum native implementation',
                    implementation_version='2014.1.1',
                    assemblies_uri='http://example.com:9777/v1/assemblies',

@@ -44,6 +44,8 @@ class Operation(api_types.Base):
                    name='resume',
                    type='operation',
                    tags=['small'],
+                   project_id='1dae5a09ef2b4d8cbf3594b0eb4f6b94',
+                   user_id='55f41cf46df74320b9486a35f5d28a11',
                    description='A resume operation',
                    documentation='http://example.com/docs/resume_op',
                    target_resource='http://example.com/instances/uuid')
