@@ -40,6 +40,9 @@ class TestRootController(base.FunctionalTest):
         self.assertEqual(data['implementationVersion'],
                          version.version_string())
 
+    def test_platform_incorrect_url(self):
+        self.assertNotFound('/v2/')
+
 
 class TestAssemblyController(base.FunctionalTest):
 
