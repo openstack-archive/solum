@@ -87,15 +87,15 @@ class Extensions(wtypes.Base):
     description = wtypes.text
     "Description of the extension"
 
-    extensionLinks = [common_types.Link]
+    extension_links = [common_types.Link]
     "List of links to the available extensions"
 
     @classmethod
     def sample(cls):
         return cls(uri='http://example.com/v1/extensions',
-                   extensionLinks=[common_types.Link(
+                   extension_links=[common_types.Link(
                        href='http://example.com:9777/v1/extensions/y4',
-                       targetName='y4')])
+                       target_name='y4')])
 
 
 class ExtensionsController(rest.RestController):
@@ -114,4 +114,4 @@ class ExtensionsController(rest.RestController):
         return Extensions(uri=host_url,
                           type='extensions',
                           description='Collection of extensions',
-                          extensionLinks=[])
+                          extension_links=[])

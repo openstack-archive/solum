@@ -47,19 +47,19 @@ class Component(wtypes.Base):
     tags = [wtypes.text]
     "Tags for the component"
 
-    assemblyLink = common_types.Link
+    assembly_link = common_types.Link
     "Link to the assembly"
 
-    componentLinks = [common_types.Link]
+    component_links = [common_types.Link]
     "List of links to the available components"
 
-    serviceLinks = [common_types.Link]
+    service_links = [common_types.Link]
     "List of links to the available services"
 
-    operationsUri = common_types.Uri
+    operations_uri = common_types.Uri
     "Uri to the operations"
 
-    sensorsUri = common_types.Uri
+    sensors_uri = common_types.Uri
     "Uri to the sensors"
 
     @classmethod
@@ -68,17 +68,17 @@ class Component(wtypes.Base):
                    name='php-web-app',
                    description='A php web application component',
                    tags='group=xyz',
-                   assemblyLink=common_types.Link(
+                   assembly_link=common_types.Link(
                        href='http://example.com:9777/v1/assembly/a2',
-                       targetName='a2'),
-                   componentLinks=common_types.Link(
+                       target_name='a2'),
+                   component_links=common_types.Link(
                        href='http://example.com:9777/v1/components/x2',
-                       targetName='x2'),
-                   serviceLinks=common_types.Link(
+                       target_name='x2'),
+                   service_links=common_types.Link(
                        href='http://example.com:9777/v1/services/s2',
-                       targetName='s2'),
-                   operationsUri='http://example.com:9777/v1/operations/o1',
-                   sensorsUri='http://example.com:9777/v1/sensors/s1')
+                       target_name='s2'),
+                   operations_uri='http://example.com:9777/v1/operations/o1',
+                   sensors_uri='http://example.com:9777/v1/sensors/s1')
 
 
 class ComponentController(rest.RestController):

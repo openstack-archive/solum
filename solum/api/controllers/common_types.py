@@ -24,10 +24,10 @@ class Link(wtypes.Base):
     href = Uri
     "The link url"
 
-    targetName = wtypes.text
+    target_name = wtypes.text
     "Textual name of the target link"
 
     @classmethod
     def sample(cls):
         return cls(href=('http://example.com:9777/v1'),
-                   targetName='v1')
+                   target_name='v1')
