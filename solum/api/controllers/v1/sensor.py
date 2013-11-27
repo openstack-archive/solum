@@ -36,13 +36,13 @@ class Sensor(api_types.Base):
     """
 
     documentation = common_types.Uri
-    "Documentation uri for the sensor"
+    "Documentation URI for the sensor."
 
     target_resource = common_types.Uri
-    "Target resource uri to the sensor"
+    "Target resource URI to the sensor."
 
     sensor_type = SENSOR_TYPE
-    "Sensor data type"
+    "Sensor data type."
 
     def get_value(self):
         if self.sensor_type == 'int':
@@ -62,13 +62,13 @@ class Sensor(api_types.Base):
         self._value = value
 
     value = wtypes.wsproperty(str, get_value, set_value, mandatory=False)
-    "Value of the sensor"
+    "Value of the sensor."
 
     timestamp = datetime.datetime
-    "Timestamp for Sensor"
+    "Timestamp for Sensor."
 
     operations_uri = common_types.Uri
-    "Operations uri for the sensor"
+    "Operations URI for the sensor."
 
     def __init__(self, **kwds):
         self._value = '0'

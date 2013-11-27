@@ -30,10 +30,10 @@ class Extension(api_types.Base):
     """
 
     version = wtypes.text
-    "Version of the extension"
+    "Version of the extension."
 
     documentation = common_types.Uri
-    "Documentation uri to the extension"
+    "Documentation URI to the extension."
 
     @classmethod
     def sample(cls):

@@ -29,13 +29,13 @@ class Version(wtypes.Base):
     """Version representation."""
 
     id = wtypes.text
-    "The version identifier"
+    "The version identifier."
 
     status = STATUS_KIND
-    "The status of the API (SUPPORTED, CURRENT or DEPRECATED)"
+    "The status of the API (SUPPORTED, CURRENT or DEPRECATED)."
 
     link = common_types.Link
-    "The link to the versioned API"
+    "The link to the versioned API."
 
     @classmethod
     def sample(cls):

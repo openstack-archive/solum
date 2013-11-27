@@ -22,10 +22,10 @@ class Link(wtypes.Base):
     """A link representation."""
 
     href = Uri
-    "The link url"
+    "The link URI."
 
     target_name = wtypes.text
-    "Textual name of the target link"
+    "Textual name of the target link."
 
     @classmethod
     def sample(cls):

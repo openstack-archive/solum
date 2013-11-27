@@ -33,7 +33,7 @@ class Service(api_types.Base):
     """
 
     read_only = bool
-    "The service is read only"
+    "The service is read only."
 
     @classmethod
     def sample(cls):

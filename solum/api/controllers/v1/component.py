@@ -34,19 +34,19 @@ class Component(api_types.Base):
     """
 
     assembly_link = common_types.Link
-    "Link to the assembly"
+    "Link to the assembly."
 
     component_links = [common_types.Link]
-    "List of links to the available components"
+    "List of links to the available components."
 
     service_links = [common_types.Link]
-    "List of links to the available services"
+    "List of links to the available services."
 
     operations_uri = common_types.Uri
-    "Uri to the operations"
+    "URI to the operations."
 
     sensors_uri = common_types.Uri
-    "Uri to the sensors"
+    "URI to the sensors."
 
     @classmethod
     def sample(cls):

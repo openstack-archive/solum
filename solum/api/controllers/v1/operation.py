@@ -31,10 +31,10 @@ class Operation(api_types.Base):
     """
 
     documentation = common_types.Uri
-    "Documentation uri for the operation"
+    "Documentation URI for the operation."
 
     target_resource = common_types.Uri
-    "Target resource uri to the operation"
+    "Target resource URI to the operation."
 
     @classmethod
     def sample(cls):
