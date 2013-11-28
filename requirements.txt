@@ -4,3 +4,4 @@ oslo.config>=1.2.0
 iso8601
 pecan>=0.2.0
 WSME>=0.5b6
+SQLAlchemy>=0.7.8,<=0.7.99
