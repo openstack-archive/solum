@@ -17,9 +17,10 @@ from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
 
 from solum.api.controllers import common_types
+from solum.api.controllers.v1 import types as api_types
 
 
-class Component(wtypes.Base):
+class Component(api_types.Base):
     """The Component resource represents one part of an Assembly needed by your
     application.For example, an instance of a database service may be a
     Component. A Component resource may also represent a static artifact, such
@@ -31,21 +32,6 @@ class Component(wtypes.Base):
     one component. For examaple your component may be named "PHP" and refers to
     the PHP Service offered by the platform for running a PHP application.
     """
-
-    uri = common_types.Uri
-    "Uri to the component"
-
-    name = wtypes.text
-    "Name of the component"
-
-    type = wtypes.text
-    "Component type"
-
-    description = wtypes.text
-    "Description of the component"
-
-    tags = [wtypes.text]
-    "Tags for the component"
 
     assembly_link = common_types.Link
     "Link to the assembly"
@@ -66,17 +52,18 @@ class Component(wtypes.Base):
     def sample(cls):
         return cls(uri='http://example.com/v1/components/php-web-app',
                    name='php-web-app',
+                   type='component',
                    description='A php web application component',
-                   tags='group=xyz',
+                   tags=['group_xyz'],
                    assembly_link=common_types.Link(
                        href='http://example.com:9777/v1/assembly/a2',
                        target_name='a2'),
-                   component_links=common_types.Link(
+                   component_links=[common_types.Link(
                        href='http://example.com:9777/v1/components/x2',
-                       target_name='x2'),
-                   service_links=common_types.Link(
+                       target_name='x2')],
+                   service_links=[common_types.Link(
                        href='http://example.com:9777/v1/services/s2',
-                       target_name='s2'),
+                       target_name='s2')],
                    operations_uri='http://example.com:9777/v1/operations/o1',
                    sensors_uri='http://example.com:9777/v1/sensors/s1')
 

@@ -17,9 +17,10 @@ from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
 
 from solum.api.controllers import common_types
+from solum.api.controllers.v1 import types as api_types
 
 
-class Service(wtypes.Base):
+class Service(api_types.Base):
     """The Service resource represents a networked service.
 
     You may create Component resources that refer to
@@ -32,21 +33,6 @@ class Service(wtypes.Base):
     by the Platform for a given Assembly.
     """
 
-    uri = common_types.Uri
-    "Uri to the Service"
-
-    name = wtypes.text
-    "Name of the Service"
-
-    type = wtypes.text
-    "Service type"
-
-    description = wtypes.text
-    "Description of the Service"
-
-    tags = wtypes.text
-    "Tags for the service"
-
     read_only = bool
     "The service is read only"
 
@@ -56,7 +42,7 @@ class Service(wtypes.Base):
                    name='mysql',
                    type='service',
                    description='A mysql service',
-                   tags='group=xyz',
+                   tags=['group_xyz'],
                    read_only=False)
 
 
@@ -89,17 +75,8 @@ class ServiceController(rest.RestController):
         raise wsme.exc.ClientSideError(unicode(error))
 
 
-class Services(wtypes.Base):
+class Services(api_types.Base):
     """A summary of services returned on listing."""
-
-    uri = common_types.Uri
-    "Uri to the Services"
-
-    type = wtypes.text
-    "Services type"
-
-    description = wtypes.text
-    "Description of the Services"
 
     service_links = [common_types.Link]
     "list of links to the available services"
@@ -107,6 +84,7 @@ class Services(wtypes.Base):
     @classmethod
     def sample(cls):
         return cls(uri='http://example.com/v1/services',
+                   name='services collection',
                    type='services',
                    description='Collection of services',
                    service_links=[common_types.Link(
@@ -135,6 +113,7 @@ class ServicesController(rest.RestController):
         """Return the collection of services."""
         host_url = '/'.join([pecan.request.host_url, 'v1', 'services'])
         return Services(uri=host_url,
+                        name='services collection',
                         type='services',
                         description='The collection of available services',
                         service_links=[])

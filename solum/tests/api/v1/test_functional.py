@@ -35,6 +35,7 @@ class TestRootController(base.FunctionalTest):
         self.assertEqual(response.status_int, 200)
         data = jsonutils.loads(response.body.decode())
         self.assertEqual(data['uri'], 'http://localhost/v1')
+        self.assertEqual(data['type'], 'platform')
         self.assertEqual(data['name'], 'solum')
         self.assertEqual(data['description'], 'solum native implementation')
         self.assertEqual(data['implementation_version'],

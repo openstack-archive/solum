@@ -17,9 +17,10 @@ from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
 
 from solum.api.controllers import common_types
+from solum.api.controllers.v1 import types as api_types
 
 
-class Extension(wtypes.Base):
+class Extension(api_types.Base):
     """The Extension resource represents changes that the Provider has added
     onto a Platform in addition to the ones supplied by Solum by default.
     This may include additional protocol semantics, resource types,
@@ -27,18 +28,6 @@ class Extension(wtypes.Base):
     added, as long as it does not contradict the base functionality offered
     by Solum.
     """
-
-    uri = common_types.Uri
-    "Uri to the extension"
-
-    name = wtypes.text
-    "Name of the extension"
-
-    type = wtypes.text
-    "Extension type"
-
-    description = wtypes.text
-    "Description of the extension"
 
     version = wtypes.text
     "Version of the extension"
@@ -51,6 +40,7 @@ class Extension(wtypes.Base):
         return cls(uri='http://example.com/v1/extensions/mysql',
                    name='mysql',
                    type='extension',
+                   tags=['large'],
                    description='A mysql extension',
                    version='2.13',
                    documentation='http://example.com/docs/ext/mysql')
@@ -71,21 +61,9 @@ class ExtensionController(rest.RestController):
         raise wsme.exc.ClientSideError(unicode(error))
 
 
-class Extensions(wtypes.Base):
+class Extensions(api_types.Base):
     """A collection of extensions returned on listing.
     """
-
-    uri = common_types.Uri
-    "Uri to the Extensions"
-
-    name = wtypes.text
-    "Name of the extension"
-
-    type = wtypes.text
-    "Extension type"
-
-    description = wtypes.text
-    "Description of the extension"
 
     extension_links = [common_types.Link]
     "List of links to the available extensions"
@@ -93,6 +71,9 @@ class Extensions(wtypes.Base):
     @classmethod
     def sample(cls):
         return cls(uri='http://example.com/v1/extensions',
+                   name='extensions',
+                   type='extensions',
+                   description='extensions',
                    extension_links=[common_types.Link(
                        href='http://example.com:9777/v1/extensions/y4',
                        target_name='y4')])
