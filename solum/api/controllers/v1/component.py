@@ -29,7 +29,7 @@ class Component(api_types.Base):
     processes that run. For example, you may have one Component that represents
     an API service process, and another that represents a web UI process that
     consumes that API service. This simplest case is when an Assembly has only
-    one component. For examaple your component may be named "PHP" and refers to
+    one component. For example your component may be named "PHP" and refers to
     the PHP Service offered by the platform for running a PHP application.
     """
 
