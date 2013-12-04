@@ -12,6 +12,7 @@
 
 import pecan
 from pecan import rest
+import six
 import wsme
 from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
@@ -58,7 +59,7 @@ class ExtensionController(rest.RestController):
         """Return this extension."""
         error = _("Not implemented")
         pecan.response.translatable_error = error
-        raise wsme.exc.ClientSideError(unicode(error))
+        raise wsme.exc.ClientSideError(six.text_type(error))
 
 
 class ExtensionsController(rest.RestController):

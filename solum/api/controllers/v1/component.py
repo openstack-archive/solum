@@ -12,6 +12,7 @@
 
 import pecan
 from pecan import rest
+import six
 import wsme
 from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
@@ -80,21 +81,21 @@ class ComponentController(rest.RestController):
         """Return this component."""
         error = _("Not implemented")
         pecan.response.translatable_error = error
-        raise wsme.exc.ClientSideError(unicode(error))
+        raise wsme.exc.ClientSideError(six.text_type(error))
 
     @wsme_pecan.wsexpose(Component, wtypes.text, body=Component)
     def put(self, data):
         """Modify this component."""
         error = _("Not implemented")
         pecan.response.translatable_error = error
-        raise wsme.exc.ClientSideError(unicode(error))
+        raise wsme.exc.ClientSideError(six.text_type(error))
 
     @wsme_pecan.wsexpose(None, wtypes.text, status_code=204)
     def delete(self):
         """Delete this component."""
         error = _("Not implemented")
         pecan.response.translatable_error = error
-        raise wsme.exc.ClientSideError(unicode(error))
+        raise wsme.exc.ClientSideError(six.text_type(error))
 
 
 class ComponentsController(rest.RestController):
@@ -111,7 +112,7 @@ class ComponentsController(rest.RestController):
         """Create a new component."""
         error = _("Not implemented")
         pecan.response.translatable_error = error
-        raise wsme.exc.ClientSideError(unicode(error))
+        raise wsme.exc.ClientSideError(six.text_type(error))
 
     @wsme_pecan.wsexpose([Component])
     def get_all(self):
