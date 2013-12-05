@@ -49,6 +49,9 @@ class TestRootController(base.FunctionalTest):
         self.assertEqual(data['extensions_uri'],
                          'http://localhost/v1/extensions')
 
+    def test_platform_incorrect_url(self):
+        self.assertNotFound('/v2/')
+
 
 class TestAssemblyController(base.FunctionalTest):
 
