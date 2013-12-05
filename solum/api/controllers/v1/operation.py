@@ -19,6 +19,7 @@ import wsmeext.pecan as wsme_pecan
 
 from solum.api.controllers import common_types
 from solum.api.controllers.v1 import types as api_types
+from solum.openstack.common.gettextutils import _
 
 
 class Operation(api_types.Base):
