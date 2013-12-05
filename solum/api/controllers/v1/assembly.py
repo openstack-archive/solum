@@ -14,6 +14,7 @@
 
 import pecan
 from pecan import rest
+import six
 import wsme
 from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
@@ -56,21 +57,21 @@ class AssemblyController(rest.RestController):
         """Return this assembly."""
         error = _("Not implemented")
         pecan.response.translatable_error = error
-        raise wsme.exc.ClientSideError(unicode(error))
+        raise wsme.exc.ClientSideError(six.text_type(error))
 
     @wsme_pecan.wsexpose(Assembly, wtypes.text, body=Assembly)
     def put(self, data):
         """Modify this assembly."""
         error = _("Not implemented")
         pecan.response.translatable_error = error
-        raise wsme.exc.ClientSideError(unicode(error))
+        raise wsme.exc.ClientSideError(six.text_type(error))
 
     @wsme_pecan.wsexpose(None, wtypes.text, status_code=204)
     def delete(self):
         """Delete this assembly."""
         error = _("Not implemented")
         pecan.response.translatable_error = error
-        raise wsme.exc.ClientSideError(unicode(error))
+        raise wsme.exc.ClientSideError(six.text_type(error))
 
 
 class AssembliesController(rest.RestController):
@@ -87,7 +88,7 @@ class AssembliesController(rest.RestController):
         """Create a new assembly."""
         error = _("Not implemented")
         pecan.response.translatable_error = error
-        raise wsme.exc.ClientSideError(unicode(error))
+        raise wsme.exc.ClientSideError(six.text_type(error))
 
     @wsme_pecan.wsexpose([Assembly])
     def get_all(self):

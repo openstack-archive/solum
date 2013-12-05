@@ -14,6 +14,7 @@ import datetime
 
 import pecan
 from pecan import rest
+import six
 import wsme
 from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
@@ -100,21 +101,21 @@ class SensorController(rest.RestController):
         """Return this sensor."""
         error = _("Not implemented")
         pecan.response.translatable_error = error
-        raise wsme.exc.ClientSideError(unicode(error))
+        raise wsme.exc.ClientSideError(six.text_type(error))
 
     @wsme_pecan.wsexpose(Sensor, wtypes.text, body=Sensor)
     def put(self, data):
         """Modify this sensor."""
         error = _("Not implemented")
         pecan.response.translatable_error = error
-        raise wsme.exc.ClientSideError(unicode(error))
+        raise wsme.exc.ClientSideError(six.text_type(error))
 
     @wsme_pecan.wsexpose(None, wtypes.text, status_code=204)
     def delete(self):
         """Delete this sensor."""
         error = _("Not implemented")
         pecan.response.translatable_error = error
-        raise wsme.exc.ClientSideError(unicode(error))
+        raise wsme.exc.ClientSideError(six.text_type(error))
 
 
 class SensorsController(rest.RestController):
@@ -131,7 +132,7 @@ class SensorsController(rest.RestController):
         """Create a new sensor."""
         error = _("Not implemented")
         pecan.response.translatable_error = error
-        raise wsme.exc.ClientSideError(unicode(error))
+        raise wsme.exc.ClientSideError(six.text_type(error))
 
     @wsme_pecan.wsexpose([Sensor])
     def get_all(self):

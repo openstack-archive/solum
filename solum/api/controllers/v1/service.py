@@ -12,6 +12,7 @@
 
 import pecan
 from pecan import rest
+import six
 import wsme
 from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
@@ -57,21 +58,21 @@ class ServiceController(rest.RestController):
         """Return this service."""
         error = _("Not implemented")
         pecan.response.translatable_error = error
-        raise wsme.exc.ClientSideError(unicode(error))
+        raise wsme.exc.ClientSideError(six.text_type(error))
 
     @wsme_pecan.wsexpose(Service, wtypes.text, body=Service)
     def put(self, data):
         """Modify this service."""
         error = _("Not implemented")
         pecan.response.translatable_error = error
-        raise wsme.exc.ClientSideError(unicode(error))
+        raise wsme.exc.ClientSideError(six.text_type(error))
 
     @wsme_pecan.wsexpose(None, wtypes.text, status_code=204)
     def delete(self):
         """Delete this service."""
         error = _("Not implemented")
         pecan.response.translatable_error = error
-        raise wsme.exc.ClientSideError(unicode(error))
+        raise wsme.exc.ClientSideError(six.text_type(error))
 
 
 class ServicesController(rest.RestController):
@@ -88,7 +89,7 @@ class ServicesController(rest.RestController):
         """Create a new service."""
         error = _("Not implemented")
         pecan.response.translatable_error = error
-        raise wsme.exc.ClientSideError(unicode(error))
+        raise wsme.exc.ClientSideError(six.text_type(error))
 
     @wsme_pecan.wsexpose([Service])
     def get_all(self):
