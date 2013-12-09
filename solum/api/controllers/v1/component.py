@@ -23,15 +23,16 @@ from solum.openstack.common.gettextutils import _
 
 
 class Component(api_types.Base):
-    """The Component resource represents one part of an Assembly needed by your
-    application.For example, an instance of a database service may be a
+    """The Component resource represents one part of an Assembly.
+
+    For example, an instance of a database service may be a
     Component. A Component resource may also represent a static artifact, such
     as an archive file that contains data for initializing your application.
     An Assembly may have different components that represent different
     processes that run. For example, you may have one Component that represents
     an API service process, and another that represents a web UI process that
-    consumes that API service. This simplest case is when an Assembly has only
-    one component. For example your component may be named "PHP" and refers to
+    consumes that API service. The simplest case is when an Assembly has only
+    one component. For example, your component may be named "PHP" and refers to
     the PHP Service offered by the platform for running a PHP application.
     """
 

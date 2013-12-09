@@ -25,8 +25,8 @@ class Service(api_types.Base):
     """The Service resource represents a networked service.
 
     You may create Component resources that refer to
-    Service resources. The Component represents an instance of the Service.
-    Your application connects to the Component that using a network protocol.
+    Service resources. A Component represents an instance of a Service.
+    Your application connects to such a Component using a network protocol.
     For example, the Platform may offer a default Service named "mysql".
     You may create multiple Component resources that reference different
     instances of the "mysql" service. Each Component may be a multi-tenant
