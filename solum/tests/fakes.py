@@ -31,3 +31,15 @@ class FakePecanResponse(mock.Mock):
     def __init__(self, **kwargs):
         super(FakePecanResponse, self).__init__(**kwargs)
         self.status = None
+
+
+class FakeApp:
+    pass
+
+
+class FakeAuthProtocol(mock.Mock):
+
+    def __init__(self, **kwargs):
+        super(FakeAuthProtocol, self).__init__(**kwargs)
+        self.app = FakeApp()
+        self.config = ''

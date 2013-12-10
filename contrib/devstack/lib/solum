@@ -56,6 +56,10 @@ function configure_solum() {
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE DEFAULT debug $SOLUM_DEBUG
 
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE DEFAULT use_syslog $SYSLOG
+
+    # Disable keystone auth for now, until we work out
+    # keystone support in our functional tests
+    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE DEFAULT enable_authentication False
 }
 
 # install_solum() - Collect source and prepare
