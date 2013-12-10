@@ -4,13 +4,13 @@ coverage>=3.6
 discover
 fixtures>=0.3.14
 python-subunit
-sphinx>=1.1.2
+sphinx>=1.1.2,<1.2
 oslo.sphinx
 sphinxcontrib-pecanwsme>=0.5
 sphinxcontrib-httpdomain
 docutils==0.9.1
 testrepository>=0.0.17
-testscenarios>=0.4,<0.5
+testscenarios>=0.4
 testtools>=0.9.32
 mock>=1.0
 requests>=1.1
