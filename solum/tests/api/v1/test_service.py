@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# Copyright 2013 - Red Hat, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -14,35 +14,36 @@
 
 import mock
 
-from solum.api.controllers.v1 import assembly
+from solum.api.controllers.v1 import service
 from solum.tests import base
 from solum.tests import fakes
 
 
-class TestAssemblyController(base.BaseTestCase):
-    def test_assembly_get(self):
+class TestServiceController(base.BaseTestCase):
+    def test_service_get(self):
         with mock.patch('pecan.request',
                         new_callable=fakes.FakePecanRequest):
             with mock.patch('pecan.response',
                             new_callable=fakes.FakePecanResponse) as resp_mock:
-                assembly_obj = assembly.AssemblyController('test_id')
-                assembly_obj.get()
+
+                obj = service.ServiceController('test_id')
+                obj.get()
                 self.assertEqual(400, resp_mock.status)
 
-    def test_assembly_put(self):
+    def test_service_put(self):
         with mock.patch('pecan.request',
                         new_callable=fakes.FakePecanRequest):
             with mock.patch('pecan.response',
                             new_callable=fakes.FakePecanResponse) as resp_mock:
-                obj = assembly.AssemblyController('test_id')
+                obj = service.ServiceController('test_id')
                 obj.put(None)
                 self.assertEqual(400, resp_mock.status)
 
-    def test_assembly_delete(self):
+    def test_service_delete(self):
         with mock.patch('pecan.request',
                         new_callable=fakes.FakePecanRequest):
             with mock.patch('pecan.response',
                             new_callable=fakes.FakePecanResponse) as resp_mock:
-                obj = assembly.AssemblyController('test_id')
+                obj = service.ServiceController('test_id')
                 obj.delete()
                 self.assertEqual(400, resp_mock.status)
