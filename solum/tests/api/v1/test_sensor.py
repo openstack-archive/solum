@@ -12,10 +12,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import mock
 import testscenarios
 
 from solum.api.controllers.v1 import sensor
 from solum.tests import base
+from solum.tests import fakes
 
 
 load_tests = testscenarios.load_tests_apply_scenarios
@@ -61,3 +63,33 @@ class TestSensorValueTypeBad(base.BaseTestCase):
     def test_values(self):
         s = sensor.Sensor(sensor_type=self.in_type, value=self.in_value)
         self.assertRaises(ValueError, getattr, s, 'value')
+
+
+class TestSensorController(base.BaseTestCase):
+    def test_sensor_get(self):
+        with mock.patch('pecan.request',
+                        new_callable=fakes.FakePecanRequest):
+            with mock.patch('pecan.response',
+                            new_callable=fakes.FakePecanResponse) as resp_mock:
+
+                obj = sensor.SensorController('test_id')
+                obj.get()
+                self.assertEqual(400, resp_mock.status)
+
+    def test_sensor_put(self):
+        with mock.patch('pecan.request',
+                        new_callable=fakes.FakePecanRequest):
+            with mock.patch('pecan.response',
+                            new_callable=fakes.FakePecanResponse) as resp_mock:
+                obj = sensor.SensorController('test_id')
+                obj.put(None)
+                self.assertEqual(400, resp_mock.status)
+
+    def test_sensor_delete(self):
+        with mock.patch('pecan.request',
+                        new_callable=fakes.FakePecanRequest):
+            with mock.patch('pecan.response',
+                            new_callable=fakes.FakePecanResponse) as resp_mock:
+                obj = sensor.SensorController('test_id')
+                obj.delete()
+                self.assertEqual(400, resp_mock.status)
