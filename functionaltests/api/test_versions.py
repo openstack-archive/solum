@@ -22,7 +22,7 @@ class VersionDiscoveryTestCase(testtools.TestCase):
     def test_get_root_discovers_v1(self):
         r = requests.get('http://127.0.0.1:9777')
         self.assertEqual(r.status_code, 200)
-        body = r.json
+        body = r.json()
         self.assertEqual(len(body), 1)
         v1 = body[0]
         self.assertEqual(v1['id'], 'v1.0')
