@@ -19,9 +19,8 @@ Includes decorator for re-raising Solum-type exceptions.
 """
 
 import functools
-import six
-
 from oslo.config import cfg
+import six
 
 from solum.common import safe_utils
 from solum.openstack.common import excutils
@@ -94,6 +93,9 @@ class SolumException(Exception):
     def __init__(self, **kwargs):
         self.kwargs = kwargs
 
+        if CONF.fatal_exception_format_errors:
+            assert isinstance(self.msg_fmt, six.text_type)
+
         try:
             self.message = self.msg_fmt % kwargs
         except KeyError:
@@ -112,10 +114,12 @@ class SolumException(Exception):
                 raise
 
     def __str__(self):
-        return six.binary_type(self.message)
+        if six.PY3:
+            return self.message
+        return self.message.encode('utf-8')
 
     def __unicode__(self):
-        return six.text_type(self.message)
+        return self.message
 
 
 class NotFound(SolumException):
