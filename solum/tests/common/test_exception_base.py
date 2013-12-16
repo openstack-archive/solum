@@ -50,3 +50,14 @@ class ExceptionTestCase(base.BaseTestCase):
         exc = exception.ApplicationNotFound(a_field='green')
         self.assertIn('An unknown exception occurred', six.text_type(exc))
         self.assertEqual(exc.code, 404)
+
+    def test_resource_exists(self):
+        exc = exception.ResourceExists()
+        self.assertIn("The requested resource already exists.",
+                      six.text_type(exc))
+        self.assertEqual(exc.code, 409)
+
+    def test_application_exists(self):
+        exc = exception.ApplicationExists()
+        self.assertIn("This application already exists.", six.text_type(exc))
+        self.assertEqual(exc.code, 409)
