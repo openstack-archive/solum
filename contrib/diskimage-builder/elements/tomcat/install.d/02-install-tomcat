@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# Install tomcat
+
+install-packages tomcat maven
