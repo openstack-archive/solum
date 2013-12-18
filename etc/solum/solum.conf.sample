@@ -1,6 +1,15 @@
 [DEFAULT]
 
 #
+# Options defined in solum.api.auth
+#
+
+# This option enables or disables user authentication via
+# keystone. Default value is True. (string value)
+#enable_authentication=True
+
+
+#
 # Options defined in solum.common.exception
 #
 

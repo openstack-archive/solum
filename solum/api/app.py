@@ -17,7 +17,7 @@
 import pecan
 
 from oslo.config import cfg
-
+from solum.api import auth
 from solum.api import config as api_config
 
 # Register options for the service
@@ -49,8 +49,9 @@ def setup_app(config=None):
 
     app_conf = dict(config.app)
 
-    return pecan.make_app(
+    app = pecan.make_app(
         app_conf.pop('root'),
         logging=getattr(config, 'logging', {}),
         **app_conf
     )
+    return auth.install(app, CONF)
