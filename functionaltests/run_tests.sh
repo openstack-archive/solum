@@ -12,4 +12,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+# How many seconds to wait for the API to be responding before giving up
+API_RESPONDING_TIMEOUT=20
+
+if ! timeout ${API_RESPONDING_TIMEOUT} sh -c "while ! curl -s -o /dev/null http://127.0.0.1:9777 ; do sleep 1; done"; then
+    echo "API failed to respond within ${API_RESPONDING_TIMEOUT} seconds"
+    exit 1
+fi
+
 nosetests -v .
