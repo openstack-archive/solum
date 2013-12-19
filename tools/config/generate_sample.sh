@@ -1,16 +1,4 @@
 #!/usr/bin/env bash
-#
-# Licensed under the Apache License, Version 2.0 (the "License"); you may
-# not use this file except in compliance with the License. You may obtain
-# a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-# License for the specific language governing permissions and limitations
-# under the License.
 
 print_hint() {
     echo "Try \`${0##*/} --help' for more information." >&2
@@ -105,6 +93,7 @@ OUTPUTFILE=$OUTPUTDIR/$PACKAGENAME.conf.sample
 python -m $MODULEPATH $FILES > $OUTPUTFILE
 
 # Hook to allow projects to append custom config file snippets
-for CONCAT_FILE in $BASEDIR/tools/config/*.conf.sample; do
+CONCAT_FILES=$(ls $BASEDIR/tools/config/*.conf.sample 2>/dev/null)
+for CONCAT_FILE in $CONCAT_FILES; do
     cat $CONCAT_FILE >> $OUTPUTFILE
 done
