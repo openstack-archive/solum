@@ -15,13 +15,13 @@
 from oslo.config import cfg
 
 from solum import objects
-from solum.openstack.common import log
+from solum.openstack.common import log as logging
 
 
 def prepare_service(argv=[]):
-    cfg.set_defaults(log.log_opts,
+    cfg.set_defaults(logging.log_opts,
                      default_log_levels=['sqlalchemy=WARN',
                                          ])
     cfg.CONF(argv[1:], project='solum')
-    log.setup('solum')
+    logging.setup('solum')
     objects.load()
