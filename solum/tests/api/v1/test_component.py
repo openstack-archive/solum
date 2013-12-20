@@ -28,7 +28,7 @@ class TestComponentController(base.BaseTestCase):
 
                 obj = component.ComponentController('test_id')
                 obj.get()
-                self.assertEqual(400, resp_mock.status)
+                self.assertEqual(200, resp_mock.status)
 
     def test_component_put(self):
         with mock.patch('pecan.request',
@@ -37,7 +37,7 @@ class TestComponentController(base.BaseTestCase):
                             new_callable=fakes.FakePecanResponse) as resp_mock:
                 obj = component.ComponentController('test_id')
                 obj.put(None)
-                self.assertEqual(400, resp_mock.status)
+                self.assertEqual(501, resp_mock.status)
 
     def test_component_delete(self):
         with mock.patch('pecan.request',
@@ -46,4 +46,4 @@ class TestComponentController(base.BaseTestCase):
                             new_callable=fakes.FakePecanResponse) as resp_mock:
                 obj = component.ComponentController('test_id')
                 obj.delete()
-                self.assertEqual(400, resp_mock.status)
+                self.assertEqual(501, resp_mock.status)

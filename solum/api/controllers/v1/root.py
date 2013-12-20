@@ -19,11 +19,11 @@ import wsmeext.pecan as wsme_pecan
 from solum.api.controllers import common_types
 from solum.api.controllers.v1 import assembly
 from solum.api.controllers.v1 import component
+from solum.api.controllers.v1.datamodel import types as api_types
 from solum.api.controllers.v1 import extension
 from solum.api.controllers.v1 import operation
 from solum.api.controllers.v1 import sensor
 from solum.api.controllers.v1 import service
-from solum.api.controllers.v1 import types as api_types
 from solum import version
 
 

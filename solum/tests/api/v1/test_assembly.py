@@ -27,7 +27,7 @@ class TestAssemblyController(base.BaseTestCase):
                             new_callable=fakes.FakePecanResponse) as resp_mock:
                 assembly_obj = assembly.AssemblyController('test_id')
                 assembly_obj.get()
-                self.assertEqual(400, resp_mock.status)
+                self.assertEqual(200, resp_mock.status)
 
     def test_assembly_put(self):
         with mock.patch('pecan.request',
@@ -36,7 +36,7 @@ class TestAssemblyController(base.BaseTestCase):
                             new_callable=fakes.FakePecanResponse) as resp_mock:
                 obj = assembly.AssemblyController('test_id')
                 obj.put(None)
-                self.assertEqual(400, resp_mock.status)
+                self.assertEqual(501, resp_mock.status)
 
     def test_assembly_delete(self):
         with mock.patch('pecan.request',
@@ -45,4 +45,4 @@ class TestAssemblyController(base.BaseTestCase):
                             new_callable=fakes.FakePecanResponse) as resp_mock:
                 obj = assembly.AssemblyController('test_id')
                 obj.delete()
-                self.assertEqual(400, resp_mock.status)
+                self.assertEqual(501, resp_mock.status)

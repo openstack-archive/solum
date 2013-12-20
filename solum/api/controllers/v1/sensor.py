@@ -22,7 +22,7 @@ import wsmeext.pecan as wsme_pecan
 from solum.openstack.common.gettextutils import _
 
 from solum.api.controllers import common_types
-from solum.api.controllers.v1 import types as api_types
+from solum.api.controllers.v1.datamodel import types as api_types
 
 
 SENSOR_TYPE = wtypes.Enum(str, 'str', 'float', 'int')

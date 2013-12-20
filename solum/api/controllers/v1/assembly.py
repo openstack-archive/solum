@@ -19,33 +19,9 @@ import wsme
 from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
 
-from solum.api.controllers.v1 import types as api_types
-from solum.openstack.common.gettextutils import _
-
-
-class Assembly(api_types.Base):
-    """Representation of an Assembly.
-
-    The Assembly resource represents a group of components that make
-    up a running instance of an application. You may casually refer
-    to this as "the application" but we refer to it as an Assembly because
-    most cloud applications are actually a system of multiple service
-    instances that make up a system. For example, a three-tier web application
-    may have a load balancer component, a group of application servers, and a
-    database server all represented as Component resources that make up an
-    Assembly resource. An Assembly resource has at least one Component resource
-    associated with it.
-    """
-
-    @classmethod
-    def sample(cls):
-        return cls(uri='http://example.com/v1/assemblies/x4',
-                   name='database',
-                   type='assembly',
-                   tags=['small'],
-                   project_id='1dae5a09ef2b4d8cbf3594b0eb4f6b94',
-                   user_id='55f41cf46df74320b9486a35f5d28a11',
-                   description='A mysql database')
+from solum.api.controllers.v1.datamodel import assembly
+from solum.api.handlers import assembly_handler as assemblyhandler
+from solum.common import exception as solum_exception
 
 
 class AssemblyController(rest.RestController):
@@ -55,26 +31,36 @@ class AssemblyController(rest.RestController):
         pecan.request.context['assembly_id'] = assembly_id
         self._id = assembly_id
 
-    @wsme_pecan.wsexpose(Assembly, wtypes.text)
+    @wsme_pecan.wsexpose(assembly.Assembly, wtypes.text)
     def get(self):
         """Return this assembly."""
-        error = _("Not implemented")
-        pecan.response.translatable_error = error
-        raise wsme.exc.ClientSideError(six.text_type(error))
+        try:
+            handler = assemblyhandler.AssemblyHandler()
+            return handler.get(self._id)
+        except solum_exception.SolumException as excp:
+            pecan.response.translatable_error = excp
+            raise wsme.exc.ClientSideError(six.text_type(excp), excp.code)
 
-    @wsme_pecan.wsexpose(Assembly, wtypes.text, body=Assembly)
+    @wsme_pecan.wsexpose(assembly.Assembly, wtypes.text,
+                         body=assembly.Assembly)
     def put(self, data):
         """Modify this assembly."""
-        error = _("Not implemented")
-        pecan.response.translatable_error = error
-        raise wsme.exc.ClientSideError(six.text_type(error))
+        try:
+            handler = assemblyhandler.AssemblyHandler()
+            return handler.update(data)
+        except solum_exception.SolumException as excp:
+            pecan.response.translatable_error = excp
+            raise wsme.exc.ClientSideError(six.text_type(excp), excp.code)
 
     @wsme_pecan.wsexpose(None, wtypes.text, status_code=204)
     def delete(self):
         """Delete this assembly."""
-        error = _("Not implemented")
-        pecan.response.translatable_error = error
-        raise wsme.exc.ClientSideError(six.text_type(error))
+        try:
+            handler = assemblyhandler.AssemblyHandler()
+            return handler.delete(self._id)
+        except solum_exception.SolumException as excp:
+            pecan.response.translatable_error = excp
+            raise wsme.exc.ClientSideError(six.text_type(excp), excp.code)
 
 
 class AssembliesController(rest.RestController):
@@ -86,14 +72,23 @@ class AssembliesController(rest.RestController):
             remainder = remainder[:-1]
         return AssemblyController(assembly_id), remainder
 
-    @wsme_pecan.wsexpose(Assembly, body=Assembly, status_code=201)
+    @wsme_pecan.wsexpose(assembly.Assembly, body=assembly.Assembly,
+                         status_code=201)
     def post(self, data):
         """Create a new assembly."""
-        error = _("Not implemented")
-        pecan.response.translatable_error = error
-        raise wsme.exc.ClientSideError(six.text_type(error))
+        try:
+            handler = assemblyhandler.AssemblyHandler()
+            return handler.create(data)
+        except solum_exception.SolumException as excp:
+            pecan.response.translatable_error = excp
+            raise wsme.exc.ClientSideError(six.text_type(excp), excp.code)
 
-    @wsme_pecan.wsexpose([Assembly])
+    @wsme_pecan.wsexpose([assembly.Assembly])
     def get_all(self):
         """Return all assemblies, based on the query provided."""
-        return []
+        try:
+            handler = assemblyhandler.AssemblyHandler()
+            return handler.get_all()
+        except solum_exception.SolumException as excp:
+            pecan.response.translatable_error = excp
+            raise wsme.exc.ClientSideError(six.text_type(excp), excp.code)
