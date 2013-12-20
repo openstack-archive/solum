@@ -15,7 +15,10 @@
 TEMPDIR=`mktemp -d`
 CFGFILE=solum.conf.sample
 tools/config/generate_sample.sh -b ./ -p solum -o $TEMPDIR
-if ! diff $TEMPDIR/$CFGFILE etc/solum/$CFGFILE
+diff $TEMPDIR/$CFGFILE etc/solum/$CFGFILE
+same=$?
+rm -rf $TEMPDIR
+if [ $same -ne 0 ]
 then
     echo "E: solum.conf.sample is not up to date, please run tools/config/generate_sample.sh"
     exit 42
