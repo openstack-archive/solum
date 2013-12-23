@@ -2,4 +2,4 @@
 
 # Install tomcat
 
-install-packages tomcat maven
+install-packages tomcat7 maven
