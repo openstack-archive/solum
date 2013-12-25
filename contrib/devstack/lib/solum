@@ -32,6 +32,10 @@ ADMIN_NAME=${ADMIN_NAME:-admin}
 ADMIN_PASSWORD=${ADMIN_PASSWORD:-nova}
 SOLUM_DEBUG=${SOLUM_DEBUG:-True}
 
+SOLUM_SERVICE_HOST=${SOLUM_SERVICE_HOST:-$SERVICE_HOST}
+SOLUM_SERVICE_PORT=${SOLUM_SERVICE_PORT:-9777}
+SOLUM_SERVICE_PROTOCOL=${SOLUM_SERVICE_PROTOCOL:-$SERVICE_PROTOCOL}
+
 # Support entry points installation of console scripts
 if [[ -d $SOLUM_DIR/bin ]]; then
     SOLUM_BIN_DIR=$SOLUM_DIR/bin
@@ -41,6 +45,24 @@ fi
 
 # Functions
 # ---------
+
+# create_solum_service_and_endpoint() - Set up required solum service and endpoint
+function create_solum_service_and_endpoint() {
+
+    if [[ "$KEYSTONE_CATALOG_BACKEND" = 'sql' ]]; then
+        SOLUM_SERVICE=$(keystone service-create \
+            --name=solum \
+            --type=application_deployment \
+            --description="Solum" \
+            | grep " id " | get_field 2)
+        keystone endpoint-create \
+            --region RegionOne \
+            --service_id $SOLUM_SERVICE \
+            --publicurl "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_SERVICE_PORT" \
+            --adminurl "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_SERVICE_PORT" \
+            --internalurl "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_SERVICE_PORT"
+    fi
+}
 
 # configure_solum() - Set config files, create data dirs, etc
 function configure_solum() {

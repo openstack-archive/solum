@@ -7,6 +7,10 @@ if is_service_enabled solum; then
     elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
         echo_summary "Configuring Solum"
         configure_solum
+
+        if is_service_enabled key; then
+           create_solum_service_and_endpoint
+        fi
     elif [[ "$1" == "stack" && "$2" == "extra" ]]; then
         echo_summary "Initializing Solum"
         start_solum
