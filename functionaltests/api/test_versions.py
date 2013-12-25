@@ -14,18 +14,19 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import requests
-import testtools
+import json
+
+from functionaltests.api import base
 
 
-class VersionDiscoveryTestCase(testtools.TestCase):
+class VersionDiscoveryTestCase(base.TestCase):
     def test_get_root_discovers_v1(self):
-        r = requests.get('http://127.0.0.1:9777')
-        self.assertEqual(r.status_code, 200)
-        body = r.json()
+        resp, body = self.client.get('/')
+        body = json.loads(body)
+        self.assertEqual(resp.status, 200)
         self.assertEqual(len(body), 1)
         v1 = body[0]
         self.assertEqual(v1['id'], 'v1.0')
         self.assertEqual(v1['status'], 'CURRENT')
         self.assertEqual(v1['link']['target_name'], 'v1')
-        self.assertEqual(v1['link']['href'], 'http://127.0.0.1:9777/v1')
+        self.assertEqual(v1['link']['href'], '%s/v1' % self.client.base_url)

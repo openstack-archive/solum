@@ -79,9 +79,16 @@ function configure_solum() {
 
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE DEFAULT use_syslog $SYSLOG
 
-    # Disable keystone auth for now, until we work out
-    # keystone support in our functional tests
-    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE DEFAULT enable_authentication False
+    # Setup keystone_authtoken section
+    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken auth_host $KEYSTONE_AUTH_HOST
+    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken auth_port $KEYSTONE_AUTH_PORT
+    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken auth_protocol $KEYSTONE_AUTH_PROTOCOL
+    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken cafile $KEYSTONE_SSL_CA
+    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken auth_uri $KEYSTONE_SERVICE_PROTOCOL://$KEYSTONE_SERVICE_HOST:$KEYSTONE_SERVICE_PORT/
+    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken admin_tenant_name $ADMIN_TENANT_NAME
+    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken admin_user $ADMIN_NAME
+    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken admin_password $ADMIN_PASSWORD
+    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken signing_dir /tmp
 }
 
 # install_solum() - Collect source and prepare
