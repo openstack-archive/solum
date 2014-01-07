@@ -7,5 +7,4 @@ pecan>=0.2.0
 python-keystoneclient>=0.4.1
 six>=1.4.1
 SQLAlchemy>=0.7.8,<=0.7.99
-testtools>=0.9.32
 WSME>=0.5b6
