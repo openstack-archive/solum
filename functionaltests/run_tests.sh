@@ -20,4 +20,10 @@ if ! timeout ${API_RESPONDING_TIMEOUT} sh -c "while ! curl -s -o /dev/null http:
     exit 1
 fi
 
+# Where tempest code lives
+TEMPEST_DIR=${TEMPEST_DIR:-/opt/stack/new/tempest}
+
+# Add tempest source tree to PYTHONPATH
+export PYTHONPATH=$PYTHONPATH:$TEMPEST_DIR
+
 nosetests -v .
