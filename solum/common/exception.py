@@ -138,3 +138,8 @@ class ResourceExists(SolumException):
 
 class ApplicationExists(ResourceExists):
     msg_fmt = _("This application already exists.")
+
+
+class NotImplemented(SolumException):
+    msg_fmt = _("The requested operation is not implemented.")
+    code = 501

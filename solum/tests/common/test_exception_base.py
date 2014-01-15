@@ -61,3 +61,9 @@ class ExceptionTestCase(base.BaseTestCase):
         exc = exception.ApplicationExists()
         self.assertIn("This application already exists.", six.text_type(exc))
         self.assertEqual(exc.code, 409)
+
+    def test_not_implemented(self):
+        exc = exception.NotImplemented()
+        self.assertIn("The requested operation is not implemented.",
+                      six.text_type(exc))
+        self.assertEqual(exc.code, 501)
