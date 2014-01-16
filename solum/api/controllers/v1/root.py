@@ -21,6 +21,7 @@ from solum.api.controllers.v1 import assembly
 from solum.api.controllers.v1 import component
 from solum.api.controllers.v1.datamodel import types as api_types
 from solum.api.controllers.v1 import extension
+from solum.api.controllers.v1 import language_pack
 from solum.api.controllers.v1 import operation
 from solum.api.controllers.v1 import sensor
 from solum.api.controllers.v1 import service
@@ -49,6 +50,9 @@ class Platform(api_types.Base):
     extensions_uri = common_types.Uri
     "URI to extensions."
 
+    language_packs_uri = common_types.Uri
+    "URI to language packs."
+
     @classmethod
     def sample(cls):
         return cls(uri='http://example.com/v1',
@@ -62,7 +66,9 @@ class Platform(api_types.Base):
                    assemblies_uri='http://example.com:9777/v1/assemblies',
                    services_uri='http://example.com:9777/v1/services',
                    components_uri='http://example.com:9777/v1/components',
-                   extensions_uri='http://example.com:9777/v1/extensions')
+                   extensions_uri='http://example.com:9777/v1/extensions',
+                   language_packs_uri=(
+                       'http://example.com:9777/v1/language_packs'))
 
 
 class Controller(object):
@@ -74,6 +80,7 @@ class Controller(object):
     extensions = extension.ExtensionsController()
     operations = operation.OperationsController()
     sensors = sensor.SensorsController()
+    language_packs = language_pack.LanguagePacksController()
 
     @wsme_pecan.wsexpose(Platform)
     def index(self):
@@ -86,4 +93,5 @@ class Controller(object):
                         assemblies_uri='%s/assemblies' % host_url,
                         services_uri='%s/services' % host_url,
                         components_uri='%s/components' % host_url,
-                        extensions_uri='%s/extensions' % host_url)
+                        extensions_uri='%s/extensions' % host_url,
+                        language_packs_uri='%s/language_packs' % host_url)
