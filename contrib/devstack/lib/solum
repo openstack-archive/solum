@@ -31,6 +31,8 @@ ADMIN_TENANT_NAME=${ADMIN_TENANT_NAME:-admin}
 ADMIN_NAME=${ADMIN_NAME:-admin}
 ADMIN_PASSWORD=${ADMIN_PASSWORD:-nova}
 SOLUM_DEBUG=${SOLUM_DEBUG:-True}
+SOLUM_USER=solum
+SOLUM_AUTH_CACHE_DIR=${SOLUM_AUTH_CACHE_DIR:-/var/cache/solum}
 
 SOLUM_SERVICE_HOST=${SOLUM_SERVICE_HOST:-$SERVICE_HOST}
 SOLUM_SERVICE_PORT=${SOLUM_SERVICE_PORT:-9777}
@@ -85,10 +87,33 @@ function configure_solum() {
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken auth_protocol $KEYSTONE_AUTH_PROTOCOL
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken cafile $KEYSTONE_SSL_CA
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken auth_uri $KEYSTONE_SERVICE_PROTOCOL://$KEYSTONE_SERVICE_HOST:$KEYSTONE_SERVICE_PORT/
-    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken admin_tenant_name $ADMIN_TENANT_NAME
-    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken admin_user $ADMIN_NAME
+    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken admin_tenant_name service
+    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken admin_user $SOLUM_USER
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken admin_password $ADMIN_PASSWORD
-    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken signing_dir /tmp
+    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken signing_dir $SOLUM_AUTH_CACHE_DIR
+}
+
+#register solum user in Keystone
+function add_solum_user() {
+    # Register new service user as other services do
+    SOLUM_USER_ID=$(keystone user-create --name=$SOLUM_USER \
+       --pass=$ADMIN_PASSWORD \
+       --tenant_id $SERVICE_TENANT \
+       --email=$SOLUM_USER@example.com \
+       | grep " id " | get_field 2)
+
+     keystone user-role-add \
+       --user-id $SOLUM_USER_ID \
+       --role-id $ADMIN_ROLE \
+       --tenant-id $SERVICE_TENANT
+}
+
+#create_solum_cache_dir() - Setup keystone signing folder
+function create_solum_cache_dir() {
+    sudo mkdir -p $SOLUM_AUTH_CACHE_DIR
+    sudo chown $STACK_USER $SOLUM_AUTH_CACHE_DIR
+    sudo chmod 700 $SOLUM_AUTH_CACHE_DIR
+    rm -f $SOLUM_AUTH_CACHE_DIR/*
 }
 
 # install_solum() - Collect source and prepare
@@ -99,6 +124,7 @@ function install_solum() {
 
 # start_solum() - Start running processes, including screen
 function start_solum() {
+    create_solum_cache_dir
     screen_it solum "cd $SOLUM_DIR && $SOLUM_BIN_DIR/solum-api --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE"
 }
 
@@ -107,7 +133,6 @@ function stop_solum() {
     # Kill the solum screen windows
     screen -S $SCREEN_NAME -p solum -X kill
 }
-
 
 # Restore xtrace
 $XTRACE
