@@ -19,3 +19,8 @@ Pull requests submitted through GitHub will be ignored.
 Bugs should be filed on Launchpad, not GitHub:
 
    https://bugs.launchpad.net/solum
+
+
+Some packages may also need to be installed:
+* libxml2-dev
+* libxslt-dev
