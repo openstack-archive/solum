@@ -19,30 +19,20 @@ from solum.tests import base
 from solum.tests import fakes
 
 
+@mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
+@mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
 class TestAssemblyController(base.BaseTestCase):
-    def test_assembly_get(self):
-        with mock.patch('pecan.request',
-                        new_callable=fakes.FakePecanRequest):
-            with mock.patch('pecan.response',
-                            new_callable=fakes.FakePecanResponse) as resp_mock:
-                assembly_obj = assembly.AssemblyController('test_id')
-                assembly_obj.get()
-                self.assertEqual(200, resp_mock.status)
+    def test_assembly_get(self, resp_mock, request_mock):
+        assembly_obj = assembly.AssemblyController('test_id')
+        assembly_obj.get()
+        self.assertEqual(200, resp_mock.status)
 
-    def test_assembly_put(self):
-        with mock.patch('pecan.request',
-                        new_callable=fakes.FakePecanRequest):
-            with mock.patch('pecan.response',
-                            new_callable=fakes.FakePecanResponse) as resp_mock:
-                obj = assembly.AssemblyController('test_id')
-                obj.put(None)
-                self.assertEqual(501, resp_mock.status)
+    def test_assembly_put(self, resp_mock, request_mock):
+        obj = assembly.AssemblyController('test_id')
+        obj.put(None)
+        self.assertEqual(501, resp_mock.status)
 
-    def test_assembly_delete(self):
-        with mock.patch('pecan.request',
-                        new_callable=fakes.FakePecanRequest):
-            with mock.patch('pecan.response',
-                            new_callable=fakes.FakePecanResponse) as resp_mock:
-                obj = assembly.AssemblyController('test_id')
-                obj.delete()
-                self.assertEqual(501, resp_mock.status)
+    def test_assembly_delete(self, resp_mock, request_mock):
+        obj = assembly.AssemblyController('test_id')
+        obj.delete()
+        self.assertEqual(501, resp_mock.status)

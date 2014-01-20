@@ -19,31 +19,20 @@ from solum.tests import base
 from solum.tests import fakes
 
 
+@mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
+@mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
 class TestOperationController(base.BaseTestCase):
-    def test_operation_get(self):
-        with mock.patch('pecan.request',
-                        new_callable=fakes.FakePecanRequest):
-            with mock.patch('pecan.response',
-                            new_callable=fakes.FakePecanResponse) as resp_mock:
+    def test_operation_get(self, resp_mock, request_mock):
+        obj = operation.OperationController('test_id')
+        obj.get()
+        self.assertEqual(400, resp_mock.status)
 
-                obj = operation.OperationController('test_id')
-                obj.get()
-                self.assertEqual(400, resp_mock.status)
+    def test_operation_put(self, resp_mock, request_mock):
+        obj = operation.OperationController('test_id')
+        obj.put(None)
+        self.assertEqual(400, resp_mock.status)
 
-    def test_operation_put(self):
-        with mock.patch('pecan.request',
-                        new_callable=fakes.FakePecanRequest):
-            with mock.patch('pecan.response',
-                            new_callable=fakes.FakePecanResponse) as resp_mock:
-                obj = operation.OperationController('test_id')
-                obj.put(None)
-                self.assertEqual(400, resp_mock.status)
-
-    def test_operation_delete(self):
-        with mock.patch('pecan.request',
-                        new_callable=fakes.FakePecanRequest):
-            with mock.patch('pecan.response',
-                            new_callable=fakes.FakePecanResponse) as resp_mock:
-                obj = operation.OperationController('test_id')
-                obj.delete()
-                self.assertEqual(400, resp_mock.status)
+    def test_operation_delete(self, resp_mock, request_mock):
+        obj = operation.OperationController('test_id')
+        obj.delete()
+        self.assertEqual(400, resp_mock.status)

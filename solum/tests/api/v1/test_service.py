@@ -19,31 +19,20 @@ from solum.tests import base
 from solum.tests import fakes
 
 
+@mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
+@mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
 class TestServiceController(base.BaseTestCase):
-    def test_service_get(self):
-        with mock.patch('pecan.request',
-                        new_callable=fakes.FakePecanRequest):
-            with mock.patch('pecan.response',
-                            new_callable=fakes.FakePecanResponse) as resp_mock:
+    def test_service_get(self, resp_mock, request_mock):
+        obj = service.ServiceController('test_id')
+        obj.get()
+        self.assertEqual(400, resp_mock.status)
 
-                obj = service.ServiceController('test_id')
-                obj.get()
-                self.assertEqual(400, resp_mock.status)
+    def test_service_put(self, resp_mock, request_mock):
+        obj = service.ServiceController('test_id')
+        obj.put(None)
+        self.assertEqual(400, resp_mock.status)
 
-    def test_service_put(self):
-        with mock.patch('pecan.request',
-                        new_callable=fakes.FakePecanRequest):
-            with mock.patch('pecan.response',
-                            new_callable=fakes.FakePecanResponse) as resp_mock:
-                obj = service.ServiceController('test_id')
-                obj.put(None)
-                self.assertEqual(400, resp_mock.status)
-
-    def test_service_delete(self):
-        with mock.patch('pecan.request',
-                        new_callable=fakes.FakePecanRequest):
-            with mock.patch('pecan.response',
-                            new_callable=fakes.FakePecanResponse) as resp_mock:
-                obj = service.ServiceController('test_id')
-                obj.delete()
-                self.assertEqual(400, resp_mock.status)
+    def test_service_delete(self, resp_mock, request_mock):
+        obj = service.ServiceController('test_id')
+        obj.delete()
+        self.assertEqual(400, resp_mock.status)

@@ -19,13 +19,10 @@ from solum.tests import base
 from solum.tests import fakes
 
 
+@mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
+@mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
 class TestExtensionController(base.BaseTestCase):
-    def test_extension_get(self):
-        with mock.patch('pecan.request',
-                        new_callable=fakes.FakePecanRequest):
-            with mock.patch('pecan.response',
-                            new_callable=fakes.FakePecanResponse) as resp_mock:
-
-                obj = extension.ExtensionController('test_id')
-                obj.get()
-                self.assertEqual(400, resp_mock.status)
+    def test_extension_get(self, resp_mock, request_mock):
+        obj = extension.ExtensionController('test_id')
+        obj.get()
+        self.assertEqual(400, resp_mock.status)

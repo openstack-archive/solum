@@ -65,31 +65,20 @@ class TestSensorValueTypeBad(base.BaseTestCase):
         self.assertRaises(ValueError, getattr, s, 'value')
 
 
+@mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
+@mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
 class TestSensorController(base.BaseTestCase):
-    def test_sensor_get(self):
-        with mock.patch('pecan.request',
-                        new_callable=fakes.FakePecanRequest):
-            with mock.patch('pecan.response',
-                            new_callable=fakes.FakePecanResponse) as resp_mock:
+    def test_sensor_get(self, resp_mock, request_mock):
+        obj = sensor.SensorController('test_id')
+        obj.get()
+        self.assertEqual(400, resp_mock.status)
 
-                obj = sensor.SensorController('test_id')
-                obj.get()
-                self.assertEqual(400, resp_mock.status)
+    def test_sensor_put(self, resp_mock, request_mock):
+        obj = sensor.SensorController('test_id')
+        obj.put(None)
+        self.assertEqual(400, resp_mock.status)
 
-    def test_sensor_put(self):
-        with mock.patch('pecan.request',
-                        new_callable=fakes.FakePecanRequest):
-            with mock.patch('pecan.response',
-                            new_callable=fakes.FakePecanResponse) as resp_mock:
-                obj = sensor.SensorController('test_id')
-                obj.put(None)
-                self.assertEqual(400, resp_mock.status)
-
-    def test_sensor_delete(self):
-        with mock.patch('pecan.request',
-                        new_callable=fakes.FakePecanRequest):
-            with mock.patch('pecan.response',
-                            new_callable=fakes.FakePecanResponse) as resp_mock:
-                obj = sensor.SensorController('test_id')
-                obj.delete()
-                self.assertEqual(400, resp_mock.status)
+    def test_sensor_delete(self, resp_mock, request_mock):
+        obj = sensor.SensorController('test_id')
+        obj.delete()
+        self.assertEqual(400, resp_mock.status)
