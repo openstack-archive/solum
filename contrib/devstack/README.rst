@@ -1,7 +1,3 @@
-===============================
-Installing Solum using devstack
-===============================
-
 The contrib/devstack/ directory contains the files necessary to integrate Solum with devstack.
 
 To install:
