@@ -15,6 +15,7 @@
 
 from keystoneclient.middleware import auth_token
 from oslo.config import cfg
+
 from solum.openstack.common.gettextutils import _
 from solum.openstack.common import log
 

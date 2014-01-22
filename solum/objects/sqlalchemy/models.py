@@ -17,7 +17,6 @@ SQLAlchemy models for application data.
 """
 
 from oslo.config import cfg
-
 from sqlalchemy.ext import declarative
 
 from solum import objects
