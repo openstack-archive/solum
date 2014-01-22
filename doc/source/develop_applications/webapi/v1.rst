@@ -17,7 +17,7 @@ Assemblies
 .. rest-controller:: solum.api.controllers.v1.assembly:AssembliesController
    :webprefix: /v1/assemblies
 
-.. autotype:: solum.api.controllers.v1.assembly.Assembly
+.. autotype:: solum.api.controllers.v1.datamodel.assembly.Assembly
    :members:
 
 Services
@@ -53,7 +53,7 @@ Components
 .. rest-controller:: solum.api.controllers.v1.component:ComponentsController
    :webprefix: /v1/components
 
-.. autotype:: solum.api.controllers.v1.component.Component
+.. autotype:: solum.api.controllers.v1.datamodel.component.Component
    :members:
 
 
