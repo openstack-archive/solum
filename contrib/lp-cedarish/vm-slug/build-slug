@@ -1,0 +1,65 @@
+#!/bin/bash
+
+sudo docker ps 2> /dev/null > /dev/null
+[[ $? != 0 ]] && echo "cannot talk to docker." && exit 1
+
+if [[ -z $1 ]] || [[ -z $2 ]]; then
+  echo "Usage:  build git_url appname"
+  exit 1
+fi
+
+GIT=$1
+APP=$2
+
+mkdir -p /opt/solum/apps/$APP
+
+[[ -d /opt/solum/apps/$APP/build ]] && rm -rf /opt/solum/apps/$APP/build
+git clone $GIT /opt/solum/apps/$APP/build
+
+cd /opt/solum/apps/$APP/build
+
+# Build the application slug
+BUILD_ID=$(git archive master | sudo docker run -i -a stdin \
+           -v /opt/solum/cache:/tmp/cache:rw  \
+           -v /opt/solum/buildpacks:/tmp/buildpacks:rw  \
+           solum/slugbuilder)
+
+sudo docker attach $BUILD_ID
+
+cd /opt/solum/apps/$APP
+sudo docker cp $BUILD_ID:/tmp/slug.tgz /opt/solum/apps/$APP/
+sudo docker rm $BUILD_ID
+rm -rf /opt/solum/apps/$APP/build
+
+cat << EOF > /opt/solum/apps/$APP/user-data.txt
+#!/bin/bash
+#export PORT=5000
+
+export APP=web
+
+HOST=\$(route  | grep default | awk '{print \$2}')
+
+mkdir -p /app
+useradd app
+chown app:app /app
+cd /app
+curl http://\${HOST}:8080/${APP}/slug.tgz | tar xzvf -
+sudo foreman export upstart /etc/init
+initctl start app
+EOF
+
+### how do we run this ???
+echo I will try and create you security groups
+
+nova secgroup-create $APP "allow ssh/web to instance"
+nova secgroup-add-rule $APP tcp 22 22 0.0.0.0/0
+nova secgroup-add-rule $APP tcp 5000 5000 0.0.0.0/0
+
+
+[[ -f /opt/solum/apps/$APP/key.priv ]] || nova keypair-add ${APP}_key > /opt/solum/apps/$APP/key.priv
+chmod 0600 /opt/solum/apps/$APP/key.priv
+
+echo modify ${DIR}/user-data.txt to set any needed ENV variables
+echo boot your app like this
+echo nova boot --flavor=2 --image=cedarish --security-groups=${APP} \
+               --key-name=${APP}_key --user-data=/opt/solum/apps/$APP/user-data.txt ${APP}01

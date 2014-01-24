@@ -1,0 +1,17 @@
+#!/bin/bash
+
+echo $0
+
+echo "Install some prereqs"
+
+sudo apt-get -yqq update
+sudo apt-get -yqq install qemu-utils git curl wget
+
+echo "install disk image builder"
+
+[[ -d /opt/disk-image-builder ]] || \
+  sudo git clone https://github.com/openstack/diskimage-builder.git /opt/disk-image-builder
+
+sudo mkdir -p /opt/solum/apps
+
+sudo chown -R ${USER}:${USER} /opt/solum

@@ -1,0 +1,8 @@
+#!/bin/bash
+
+#export PORT=4001
+
+export APP=web
+
+cd /app
+foreman start $APP

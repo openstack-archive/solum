@@ -1,0 +1,54 @@
+#!/bin/bash
+
+DIR=`dirname $0`
+
+
+[[ -f ./openrc ]] && . ./openrc
+[[ -f ~/devstack/openrc ]] && . ~/devstack/openrc
+
+glance image-list 2> /dev/null > /dev/null
+if [ $? != 0 ]; then
+  echo 'cannot talk to glance. check your openstack credentials'
+  exit 1
+fi
+
+BUILD_DIR=/opt/solum/cedarish/build
+IMAGE_DIR=/opt/solum/cedarish/image
+
+mkdir -p $BUILD_DIR
+mkdir -p $IMAGE_DIR
+
+[[ -d $BUILD_DIR ]] && rm -rf $BUILD_DIR
+
+mkdir -p $BUILD_DIR/elements
+
+cp -R $DIR/../vm/elements/* $BUILD_DIR/elements/
+
+echo "create image"
+
+export PATH=$PATH:/opt/disk-image-builder/bin
+
+$(sudo \
+  PATH=$PATH:/opt/disk-image-builder/bin \
+  ELEMENTS_PATH=/$BUILD_DIR/elements \
+  disk-image-create --no-tmpfs -a amd64 \
+  vm ubuntu -o $IMAGE_DIR/cedarish.qcow2 cedarish)
+
+if [[ ! -f $IMAGE_DIR/cedarish.qcow2 ]]; then
+  echo something went wrong building image
+  exit 1
+fi
+
+echo image: $IMAGE_DIR/cedarish.qcow2
+
+glance image-list 2> /dev/null > /dev/null
+if [[ $? == 0 ]]; then
+  echo it would appear I know how to talk to glance
+  echo therefore I will attempt to upload your image
+  glance image-delete cedarish
+  glance image-create --name cedarish --disk-format qcow2 --container-format bare --file $IMAGE_DIR/cedarish.qcow2
+else
+  echo I cannot talk to glance your image is here: $IMAGE_DIR/$ID.qcow2
+  echo Try this: glance image-create --name cedarish --disk-format qcow2 --container-format bare --file $IMAGE_DIR/cedarish.qcow2
+  exit 1
+fi
