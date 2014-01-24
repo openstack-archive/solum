@@ -8,7 +8,7 @@ lxml>=2.3
 python-subunit
 sphinx>=1.1.2,<1.2
 oslo.sphinx
-sphinxcontrib-pecanwsme>=0.5
+sphinxcontrib-pecanwsme>=0.6
 sphinxcontrib-httpdomain
 docutils==0.9.1
 testrepository>=0.0.17
