@@ -17,36 +17,10 @@ import wsme
 from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
 
-from solum.api.controllers.v1.datamodel import types as api_types
+from solum.api.controllers.v1.datamodel import service
+from solum.api.handlers import service_handler
+from solum.common import exception
 from solum.openstack.common.gettextutils import _
-
-
-class Service(api_types.Base):
-    """The Service resource represents a networked service.
-
-    You may create Component resources that refer to
-    Service resources. A Component represents an instance of a Service.
-    Your application connects to such a Component using a network protocol.
-    For example, the Platform may offer a default Service named "mysql".
-    You may create multiple Component resources that reference different
-    instances of the "mysql" service. Each Component may be a multi-tenant
-    instance of a MySQL database (perhaps a logical database) service offered
-    by the Platform for a given Assembly.
-    """
-
-    read_only = bool
-    "The service is read only."
-
-    @classmethod
-    def sample(cls):
-        return cls(uri='http://example.com/v1/services/mysql',
-                   name='mysql',
-                   type='service',
-                   description='A mysql service',
-                   project_id='1dae5a09ef2b4d8cbf3594b0eb4f6b94',
-                   user_id='55f41cf46df74320b9486a35f5d28a11',
-                   tags=['group_xyz'],
-                   read_only=False)
 
 
 class ServiceController(rest.RestController):
@@ -56,14 +30,17 @@ class ServiceController(rest.RestController):
         pecan.request.context['service_id'] = service_id
         self._id = service_id
 
-    @wsme_pecan.wsexpose(Service, wtypes.text)
+    @wsme_pecan.wsexpose(service.Service, wtypes.text)
     def get(self):
         """Return this service."""
-        error = _("Not implemented")
-        pecan.response.translatable_error = error
-        raise wsme.exc.ClientSideError(six.text_type(error))
+        try:
+            handler = service_handler.ServiceHandler()
+            return handler.get(self._id)
+        except exception.SolumException as excp:
+            pecan.response.translatable_error = excp
+            raise wsme.exc.ClientSideError(six.text_type(excp), excp.code)
 
-    @wsme_pecan.wsexpose(Service, wtypes.text, body=Service)
+    @wsme_pecan.wsexpose(service.Service, wtypes.text, body=service.Service)
     def put(self, data):
         """Modify this service."""
         error = _("Not implemented")
@@ -87,14 +64,15 @@ class ServicesController(rest.RestController):
             remainder = remainder[:-1]
         return ServiceController(service_id), remainder
 
-    @wsme_pecan.wsexpose(Service, body=Service, status_code=201)
+    @wsme_pecan.wsexpose(service.Service, body=service.Service,
+                         status_code=201)
     def post(self, data):
         """Create a new service."""
         error = _("Not implemented")
         pecan.response.translatable_error = error
         raise wsme.exc.ClientSideError(six.text_type(error))
 
-    @wsme_pecan.wsexpose([Service])
+    @wsme_pecan.wsexpose([service.Service])
     def get_all(self):
         """Return the collection of services."""
         return []

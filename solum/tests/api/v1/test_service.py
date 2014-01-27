@@ -25,7 +25,7 @@ class TestServiceController(base.BaseTestCase):
     def test_service_get(self, resp_mock, request_mock):
         obj = service.ServiceController('test_id')
         obj.get()
-        self.assertEqual(400, resp_mock.status)
+        self.assertEqual(200, resp_mock.status)
 
     def test_service_put(self, resp_mock, request_mock):
         obj = service.ServiceController('test_id')
