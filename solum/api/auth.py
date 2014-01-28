@@ -16,10 +16,10 @@
 from keystoneclient.middleware import auth_token
 from oslo.config import cfg
 from solum.openstack.common.gettextutils import _
-from solum.openstack.common import log
+from solum.openstack.common import log as logging
 
 
-LOG = log.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 OPT_GROUP_NAME = 'keystone_authtoken'
 
