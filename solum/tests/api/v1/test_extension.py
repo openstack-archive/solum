@@ -24,5 +24,6 @@ from solum.tests import fakes
 class TestExtensionController(base.BaseTestCase):
     def test_extension_get(self, resp_mock, request_mock):
         obj = extension.ExtensionController('test_id')
-        obj.get()
-        self.assertEqual(400, resp_mock.status)
+        extension_model = obj.get()
+        self.assertEqual(200, resp_mock.status)
+        self.assertIsNotNone(extension_model)
