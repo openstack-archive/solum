@@ -62,7 +62,7 @@ class Platform(api_types.Base):
                    assemblies_uri='http://example.com:9777/v1/assemblies',
                    services_uri='http://example.com:9777/v1/services',
                    components_uri='http://example.com:9777/v1/components',
-                   extenstions_uri='http://example.com:9777/v1/extenstions')
+                   extensions_uri='http://example.com:9777/v1/extensions')
 
 
 class Controller(object):
