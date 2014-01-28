@@ -11,6 +11,7 @@ oslo.sphinx
 sphinxcontrib-pecanwsme>=0.6
 sphinxcontrib-httpdomain
 docutils==0.9.1
+stevedore>=0.12
 testrepository>=0.0.17
 testscenarios>=0.4
 testtools>=0.9.32

@@ -14,7 +14,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import fixtures
 from oslo.config import cfg
 
 from solum.openstack.common import test
@@ -25,5 +24,4 @@ class BaseTestCase(test.BaseTestCase):
 
     def setUp(self):
         super(BaseTestCase, self).setUp()
-        self.log_fixture = self.useFixture(fixtures.FakeLogger())
         self.addCleanup(cfg.CONF.reset)
