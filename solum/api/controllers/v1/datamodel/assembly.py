@@ -12,8 +12,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from solum.api.controllers import common_types
-from solum.api.controllers.v1.datamodel import component as component
+from solum.api.controllers.v1.datamodel import component
+from solum.api.controllers.v1.datamodel import operation
+from solum.api.controllers.v1.datamodel import sensor
 from solum.api.controllers.v1.datamodel import types as api_types
 
 
@@ -32,13 +33,13 @@ class Assembly(api_types.Base):
     """
 
     components = [component.Component]
-    """components that belong to the assembly."""
+    """Components that belong to the assembly."""
 
-    operations_uri = common_types.Uri
-    """URI for the operations."""
+    operations = [operation.Operation]
+    """Operations that belong to the assembly."""
 
-    sensors_uri = common_types.Uri
-    """URI for the sensors."""
+    sensors = [sensor.Sensor]
+    """Sensors that belong to the assembly."""
 
     @classmethod
     def sample(cls):
@@ -49,4 +50,6 @@ class Assembly(api_types.Base):
                    project_id='1dae5a09ef2b4d8cbf3594b0eb4f6b94',
                    user_id='55f41cf46df74320b9486a35f5d28a11',
                    description='A mysql database',
-                   components=[])
+                   components=[],
+                   operations=[],
+                   sensors=[])

@@ -15,6 +15,7 @@ import datetime
 from wsme import types as wtypes
 
 from solum.api.controllers import common_types
+from solum.api.controllers.v1.datamodel import operation
 from solum.api.controllers.v1.datamodel import types as api_types
 from solum.openstack.common.gettextutils import _
 
@@ -42,8 +43,8 @@ class Sensor(api_types.Base):
     timestamp = datetime.datetime
     "Timestamp for Sensor."
 
-    operations_uri = common_types.Uri
-    "Operations URI for the sensor."
+    operations = [operation.Operation]
+    "Operations that belong to the sensor."
 
     def get_value(self):
         if self.sensor_type == 'int':
@@ -82,4 +83,4 @@ class Sensor(api_types.Base):
                    sensor_type='str',
                    value='30',
                    timestamp=datetime.datetime.utcnow(),
-                   operations_uri='http://example.com:9777/operations/stop')
+                   operations=[])
