@@ -17,38 +17,10 @@ import wsme
 from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
 
-from solum.api.controllers import common_types
-from solum.api.controllers.v1.datamodel import types as api_types
+from solum.api.controllers.v1.datamodel import operation
+from solum.api.handlers import operation_handler
+from solum.common import exception
 from solum.openstack.common.gettextutils import _
-
-
-class Operation(api_types.Base):
-    """An Operation resource represents an operation or action available on a
-    target resource. This is for defining actions that may change the state of
-    the resource they are related to. For example, the API already provides
-    ways to register, start, and stop your application (POST an Assembly to
-    register+start, and DELETE an Assembly to stop) but Operations provide a
-    way to extend the system to add your own actions such as "pause" and
-    "resume", or "scale_up" and "scale_down".
-    """
-
-    documentation = common_types.Uri
-    "Documentation URI for the operation."
-
-    target_resource = common_types.Uri
-    "Target resource URI to the operation."
-
-    @classmethod
-    def sample(cls):
-        return cls(uri='http://example.com/v1/operations/resume',
-                   name='resume',
-                   type='operation',
-                   tags=['small'],
-                   project_id='1dae5a09ef2b4d8cbf3594b0eb4f6b94',
-                   user_id='55f41cf46df74320b9486a35f5d28a11',
-                   description='A resume operation',
-                   documentation='http://example.com/docs/resume_op',
-                   target_resource='http://example.com/instances/uuid')
 
 
 class OperationController(rest.RestController):
@@ -58,14 +30,18 @@ class OperationController(rest.RestController):
         pecan.request.context['operation_id'] = operation_id
         self._id = operation_id
 
-    @wsme_pecan.wsexpose(Operation, wtypes.text)
+    @wsme_pecan.wsexpose(operation.Operation, wtypes.text)
     def get(self):
         """Return this operation."""
-        error = _("Not implemented")
-        pecan.response.translatable_error = error
-        raise wsme.exc.ClientSideError(six.text_type(error))
+        try:
+            handler = operation_handler.OperationHandler()
+            return handler.get(self._id)
+        except exception.SolumException as excp:
+            pecan.response.translatable_error = excp
+            raise wsme.exc.ClientSideError(six.text_type(excp), excp.code)
 
-    @wsme_pecan.wsexpose(Operation, wtypes.text, body=Operation)
+    @wsme_pecan.wsexpose(operation.Operation, wtypes.text,
+                         body=operation.Operation)
     def put(self, data):
         """Modify this operation."""
         error = _("Not implemented")
@@ -89,14 +65,20 @@ class OperationsController(rest.RestController):
             remainder = remainder[:-1]
         return OperationController(operation_id), remainder
 
-    @wsme_pecan.wsexpose(Operation, body=Operation, status_code=201)
+    @wsme_pecan.wsexpose(operation.Operation, body=operation.Operation,
+                         status_code=201)
     def post(self, data):
         """Create a new operation."""
         error = _("Not implemented")
         pecan.response.translatable_error = error
         raise wsme.exc.ClientSideError(six.text_type(error))
 
-    @wsme_pecan.wsexpose([Operation])
+    @wsme_pecan.wsexpose([operation.Operation])
     def get_all(self):
         """Return all operations, based on the query provided."""
-        return []
+        try:
+            handler = operation_handler.OperationHandler()
+            return handler.get_all()
+        except exception.SolumException as excp:
+            pecan.response.translatable_error = excp
+            raise wsme.exc.ClientSideError(six.text_type(excp), excp.code)

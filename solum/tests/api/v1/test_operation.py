@@ -24,8 +24,9 @@ from solum.tests import fakes
 class TestOperationController(base.BaseTestCase):
     def test_operation_get(self, resp_mock, request_mock):
         obj = operation.OperationController('test_id')
-        obj.get()
-        self.assertEqual(400, resp_mock.status)
+        result = obj.get()
+        self.assertEqual(200, resp_mock.status)
+        self.assertIsNotNone(result)
 
     def test_operation_put(self, resp_mock, request_mock):
         obj = operation.OperationController('test_id')
