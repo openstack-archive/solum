@@ -19,6 +19,7 @@ Includes decorator for re-raising Solum-type exceptions.
 """
 
 import functools
+
 from oslo.config import cfg
 import six
 
