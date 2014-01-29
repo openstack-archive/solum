@@ -156,6 +156,10 @@ class ServiceNotFound(NotFound):
     msg_fmt = _("The service %(service_id)s could not be found.")
 
 
+class OperationNotFound(NotFound):
+    msg_fmt = _("The operation %(operation_id)s could not be found.")
+
+
 class ResourceExists(SolumException):
     msg_fmt = _("The requested resource already exists.")
     code = 409
@@ -171,6 +175,10 @@ class PlanExists(ResourceExists):
 
 class ServiceExists(ResourceExists):
     msg_fmt = _("This service already exists.")
+
+
+class OperationExists(ResourceExists):
+    msg_fmt = _("This operation already exists.")
 
 
 class NotImplemented(SolumException):

@@ -13,8 +13,10 @@
 # limitations under the License.
 
 from solum import objects
+from solum.objects import operation as abstract_operation
 from solum.objects import plan as abstract_plan
 from solum.objects import service as abstract_srvc
+from solum.objects.sqlalchemy import operation
 from solum.objects.sqlalchemy import plan
 from solum.objects.sqlalchemy import service
 
@@ -25,3 +27,6 @@ def load():
     objects.registry.add(abstract_plan.PlanList, plan.PlanList)
     objects.registry.add(abstract_srvc.Service, service.Service)
     objects.registry.add(abstract_srvc.ServiceList, service.ServiceList)
+    objects.registry.add(abstract_operation.Operation, operation.Operation)
+    objects.registry.add(abstract_operation.OperationList,
+                         operation.OperationList)
