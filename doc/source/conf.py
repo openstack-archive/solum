@@ -66,15 +66,18 @@ pygments_style = 'sphinx'
 # Output file base name for HTML help builder.
 htmlhelp_basename = '%sdoc' % project
 
-# Grouping the document tree into LaTeX files. List of tuples
-# (source start file, target name, title, author, documentclass
-# [howto/manual]).
-latex_documents = [
-    ('index',
-     '%s.tex' % project,
-     u'%s Documentation' % project,
-     u'OpenStack Foundation', 'manual'),
+# -- Options for manual page output -------------------------------------------
+
+# One entry per manual page. List of tuples
+# (source start file, name, description, authors, manual section).
+man_pages = [
+    ('man/solum-db-manage', 'solum-db-manage',
+     u'Script which helps manage specific database operations',
+     [u'Solum Developers'], 1),
 ]
+
+# If true, show URL addresses after external links.
+man_show_urls = True
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'http://docs.python.org/': None}
