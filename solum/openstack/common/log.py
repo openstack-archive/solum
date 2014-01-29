@@ -1,5 +1,3 @@
-# vim: tabstop=4 shiftwidth=4 softtabstop=4
-
 # Copyright 2011 OpenStack Foundation.
 # Copyright 2010 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
@@ -43,7 +41,7 @@ from oslo.config import cfg
 import six
 from six import moves
 
-from solum.openstack.common.gettextutils import _  # noqa
+from solum.openstack.common.gettextutils import _
 from solum.openstack.common import importutils
 from solum.openstack.common import jsonutils
 from solum.openstack.common import local
@@ -117,10 +115,21 @@ logging_cli_opts = [
                     '--log-file paths'),
     cfg.BoolOpt('use-syslog',
                 default=False,
-                help='Use syslog for logging.'),
+                help='Use syslog for logging. '
+                     'Existing syslog format is DEPRECATED during I, '
+                     'and then will be changed in J to honor RFC5424'),
+    cfg.BoolOpt('use-syslog-rfc-format',
+                # TODO(bogdando) remove or use True after existing
+                #    syslog format deprecation in J
+                default=False,
+                help='(Optional) Use syslog rfc5424 format for logging. '
+                     'If enabled, will add APP-NAME (RFC5424) before the '
+                     'MSG part of the syslog message.  The old format '
+                     'without APP-NAME is deprecated in I, '
+                     'and will be removed in J.'),
     cfg.StrOpt('syslog-log-facility',
                default='LOG_USER',
-               help='syslog facility to receive log lines')
+               help='Syslog facility to receive log lines')
 ]
 
 generic_log_opts = [
@@ -132,38 +141,38 @@ generic_log_opts = [
 log_opts = [
     cfg.StrOpt('logging_context_format_string',
                default='%(asctime)s.%(msecs)03d %(process)d %(levelname)s '
-                       '%(name)s [%(request_id)s %(user)s %(tenant)s] '
+                       '%(name)s [%(request_id)s %(user_identity)s] '
                        '%(instance)s%(message)s',
-               help='format string to use for log messages with context'),
+               help='Format string to use for log messages with context'),
     cfg.StrOpt('logging_default_format_string',
                default='%(asctime)s.%(msecs)03d %(process)d %(levelname)s '
                        '%(name)s [-] %(instance)s%(message)s',
-               help='format string to use for log messages without context'),
+               help='Format string to use for log messages without context'),
     cfg.StrOpt('logging_debug_format_suffix',
                default='%(funcName)s %(pathname)s:%(lineno)d',
-               help='data to append to log format when level is DEBUG'),
+               help='Data to append to log format when level is DEBUG'),
     cfg.StrOpt('logging_exception_prefix',
                default='%(asctime)s.%(msecs)03d %(process)d TRACE %(name)s '
                '%(instance)s',
-               help='prefix each line of exception output with this format'),
+               help='Prefix each line of exception output with this format'),
     cfg.ListOpt('default_log_levels',
                 default=[
                     'amqp=WARN',
                     'amqplib=WARN',
                     'boto=WARN',
-                    'keystone=INFO',
                     'qpid=WARN',
                     'sqlalchemy=WARN',
                     'suds=INFO',
                     'iso8601=WARN',
+                    'requests.packages.urllib3.connectionpool=WARN'
                 ],
-                help='list of logger=LEVEL pairs'),
+                help='List of logger=LEVEL pairs'),
     cfg.BoolOpt('publish_errors',
                 default=False,
-                help='publish error events'),
+                help='Publish error events'),
     cfg.BoolOpt('fatal_deprecations',
                 default=False,
-                help='make deprecations fatal'),
+                help='Make deprecations fatal'),
 
     # NOTE(mikal): there are two options here because sometimes we are handed
     # a full instance (and could include more information), and other times we
@@ -238,10 +247,11 @@ def mask_password(message, secret="***"):
     """Replace password with 'secret' in message.
 
     :param message: The string which includes security information.
-    :param secret: value with which to replace passwords, defaults to "***".
+    :param secret: value with which to replace passwords.
     :returns: The unicode value of message with the password fields masked.
 
     For example:
+
     >>> mask_password("'adminPass' : 'aaaaa'")
     "'adminPass' : '***'"
     >>> mask_password("'admin_pass' : 'aaaaa'")
@@ -334,10 +344,12 @@ class ContextAdapter(BaseLoggerAdapter):
         elif instance_uuid:
             instance_extra = (CONF.instance_uuid_format
                               % {'uuid': instance_uuid})
-        extra.update({'instance': instance_extra})
+        extra['instance'] = instance_extra
 
-        extra.update({"project": self.project})
-        extra.update({"version": self.version})
+        extra.setdefault('user_identity', kwargs.pop('user_identity', None))
+
+        extra['project'] = self.project
+        extra['version'] = self.version
         extra['extra'] = extra.copy()
         return msg, kwargs
 
@@ -351,7 +363,7 @@ class JSONFormatter(logging.Formatter):
     def formatException(self, ei, strip_newlines=True):
         lines = traceback.format_exception(*ei)
         if strip_newlines:
-            lines = [itertools.ifilter(
+            lines = [moves.filter(
                 lambda x: x,
                 line.rstrip().splitlines()) for line in lines]
             lines = list(itertools.chain(*lines))
@@ -391,9 +403,11 @@ class JSONFormatter(logging.Formatter):
 def _create_logging_excepthook(product_name):
     def logging_excepthook(exc_type, value, tb):
         extra = {}
-        if CONF.verbose:
+        if CONF.verbose or CONF.debug:
             extra['exc_info'] = (exc_type, value, tb)
-        getLogger(product_name).critical(str(value), **extra)
+        getLogger(product_name).critical(
+            "".join(traceback.format_exception_only(exc_type, value)),
+            **extra)
     return logging_excepthook
 
 
@@ -457,6 +471,17 @@ def _find_facility_from_conf():
     return facility
 
 
+class RFCSysLogHandler(logging.handlers.SysLogHandler):
+    def __init__(self, *args, **kwargs):
+        self.binary_name = _get_binary_name()
+        super(RFCSysLogHandler, self).__init__(*args, **kwargs)
+
+    def format(self, record):
+        msg = super(RFCSysLogHandler, self).format(record)
+        msg = self.binary_name + ' ' + msg
+        return msg
+
+
 def _setup_logging_from_conf():
     log_root = getLogger(None).logger
     for handler in log_root.handlers:
@@ -464,8 +489,14 @@ def _setup_logging_from_conf():
 
     if CONF.use_syslog:
         facility = _find_facility_from_conf()
-        syslog = logging.handlers.SysLogHandler(address='/dev/log',
-                                                facility=facility)
+        # TODO(bogdando) use the format provided by RFCSysLogHandler
+        #   after existing syslog format deprecation in J
+        if CONF.use_syslog_rfc_format:
+            syslog = RFCSysLogHandler(address='/dev/log',
+                                      facility=facility)
+        else:
+            syslog = logging.handlers.SysLogHandler(address='/dev/log',
+                                                    facility=facility)
         log_root.addHandler(syslog)
 
     logpath = _get_log_file_path()
@@ -477,7 +508,7 @@ def _setup_logging_from_conf():
         streamlog = ColorHandler()
         log_root.addHandler(streamlog)
 
-    elif not CONF.log_file:
+    elif not logpath:
         # pass sys.stdout as a positional argument
         # python2.6 calls the argument strm, in 2.7 it's stream
         streamlog = logging.StreamHandler(sys.stdout)
@@ -543,7 +574,7 @@ class WritableLogger(object):
         self.level = level
 
     def write(self, msg):
-        self.logger.log(self.level, msg)
+        self.logger.log(self.level, msg.rstrip())
 
 
 class ContextFormatter(logging.Formatter):
@@ -561,7 +592,7 @@ class ContextFormatter(logging.Formatter):
 
     def format(self, record):
         """Uses contextstring if request_id is set, otherwise default."""
-        # NOTE(sdague): default the fancier formating params
+        # NOTE(sdague): default the fancier formatting params
         # to an empty string so we don't throw an exception if
         # they get used
         for key in ('instance', 'color'):
@@ -577,7 +608,7 @@ class ContextFormatter(logging.Formatter):
                 CONF.logging_debug_format_suffix):
             self._fmt += " " + CONF.logging_debug_format_suffix
 
-        # Cache this on the record, Logger will respect our formated copy
+        # Cache this on the record, Logger will respect our formatted copy
         if record.exc_info:
             record.exc_text = self.formatException(record.exc_info, record)
         return logging.Formatter.format(self, record)
