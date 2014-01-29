@@ -28,12 +28,11 @@ in application code.
 from oslo.config import cfg
 
 from solum.objects import registry
+from solum.openstack.common.db import api  # noqa
 from solum.openstack.common import importutils
 
+
 db_opts = [
-    cfg.StrOpt('backend',
-               default='sqlalchemy',
-               help='The backend to use for persistence'),
     cfg.StrOpt('schema_mode',
                default='new',
                help="The version of the schema that should be "
