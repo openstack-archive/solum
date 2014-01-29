@@ -34,9 +34,8 @@ from solum.tests import utils
 class TestObjectsSqlalchemy(tests.BaseTestCase):
     def setUp(self):
         super(tests.BaseTestCase, self).setUp()
-        utils.setup_dummy_db()
-        utils.reset_dummy_db()
         self.ctx = utils.dummy_context()
+        self.useFixture(utils.Database())
 
     def test_objects_registered(self):
         self.assertIsNotNone(objects.registry.Application)

@@ -12,11 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import mock
+import os.path
+import tempfile
+
+import fixtures
 from oslo.config import cfg
-import sqlalchemy
 
 from solum import objects
+from solum.openstack.common.db.sqlalchemy.migration_cli \
+    import manager as migration_manager
 from solum.openstack.common.db.sqlalchemy import session
 
 CONF = cfg.CONF
@@ -26,39 +30,48 @@ def dummy_context(user='test_username', tenant_id='test_tenant_id'):
     return {}
 
 
-def patch_connection_url(url):
-    return mock.patch.object(
-        CONF.database,
-        'connection',
-        new_callable=mock.PropertyMock(return_value=url))
+class Database(fixtures.Fixture):
 
+    def __init__(self):
+        super(Database, self).__init__()
+        self.db_file = None
+        with tempfile.NamedTemporaryFile(suffix='.sqlite',
+                                         delete=False) as test_file:
+            # note the temp file gets deleted by the NestedTempfile fixture.
+            self.db_file = test_file.name
+        self.engine = session.get_engine()
+        # make sure the current connection is cleaned up.
+        self.engine.dispose()
+        session.cleanup()
 
-def with_sqlalchemy():
-    with mock.patch.object(
-            CONF.database,
-            'backend',
-            new_callable=mock.PropertyMock(return_value='sqlalchemy')):
+    def setUp(self):
+        super(Database, self).setUp()
+        self.configure()
+        self.upgrade()
+        self.addCleanup(self.engine.dispose)
+        self.engine = session.get_engine()
+        self.engine.connect()
         objects.load()
 
+    def upgrade(self):
+        alembic_path = os.path.join(os.path.dirname(__file__),
+                                    '..', 'objects', 'sqlalchemy',
+                                    'migration', 'alembic.ini')
+        migrate_path = os.path.join(os.path.dirname(__file__),
+                                    '..', 'objects', 'sqlalchemy',
+                                    'migration', 'alembic_migrations')
+        migration_config = {'alembic_ini_path': alembic_path,
+                            'migration_repo_path': migrate_path,
+                            'alembic_repo_path': migrate_path}
 
-def setup_dummy_db():
-    with patch_connection_url('sqlite://'):
-        engine = session.get_engine()
-        engine.connect()
-        with_sqlalchemy()
-        objects.registry.Application.metadata.create_all(engine)
+        manager = migration_manager.MigrationManager(migration_config)
+        manager.upgrade('head')
+
+    def configure(self):
+        session.set_defaults(sql_connection="sqlite:///%s" % self.db_file,
+                             sqlite_db=self.db_file)
+        cfg.CONF.set_default('sqlite_synchronous', False)
 
 
 def get_dummy_session():
     return session.get_session()
-
-
-def reset_dummy_db():
-    engine = session.get_engine()
-    meta = sqlalchemy.MetaData()
-    meta.reflect(bind=engine)
-
-    for table in reversed(meta.sorted_tables):
-        if table.name == 'migrate_version':
-            continue
-        engine.execute(table.delete())
