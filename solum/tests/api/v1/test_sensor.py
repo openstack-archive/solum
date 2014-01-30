@@ -15,7 +15,8 @@
 import mock
 import testscenarios
 
-from solum.api.controllers.v1 import sensor
+from solum.api.controllers.v1.datamodel import sensor as model
+from solum.api.controllers.v1 import sensor as controller
 from solum.tests import base
 from solum.tests import fakes
 
@@ -41,7 +42,7 @@ class TestSensorValueTypeGood(base.BaseTestCase):
     ]
 
     def test_values(self):
-        s = sensor.Sensor(sensor_type=self.in_type, value=self.in_value)
+        s = model.Sensor(sensor_type=self.in_type, value=self.in_value)
         self.assertEqual(self.out_value, s.value)
 
 
@@ -61,7 +62,7 @@ class TestSensorValueTypeBad(base.BaseTestCase):
     ]
 
     def test_values(self):
-        s = sensor.Sensor(sensor_type=self.in_type, value=self.in_value)
+        s = model.Sensor(sensor_type=self.in_type, value=self.in_value)
         self.assertRaises(ValueError, getattr, s, 'value')
 
 
@@ -69,16 +70,17 @@ class TestSensorValueTypeBad(base.BaseTestCase):
 @mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
 class TestSensorController(base.BaseTestCase):
     def test_sensor_get(self, resp_mock, request_mock):
-        obj = sensor.SensorController('test_id')
-        obj.get()
-        self.assertEqual(400, resp_mock.status)
+        obj = controller.SensorController('test_id')
+        sensor_model = obj.get()
+        self.assertEqual(200, resp_mock.status)
+        self.assertIsNotNone(sensor_model)
 
     def test_sensor_put(self, resp_mock, request_mock):
-        obj = sensor.SensorController('test_id')
+        obj = controller.SensorController('test_id')
         obj.put(None)
         self.assertEqual(400, resp_mock.status)
 
     def test_sensor_delete(self, resp_mock, request_mock):
-        obj = sensor.SensorController('test_id')
+        obj = controller.SensorController('test_id')
         obj.delete()
         self.assertEqual(400, resp_mock.status)
