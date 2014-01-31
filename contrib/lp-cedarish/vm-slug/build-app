@@ -67,7 +67,7 @@ nova secgroup-add-rule $APP tcp 22 22 0.0.0.0/0
 nova secgroup-add-rule $APP tcp 5000 5000 0.0.0.0/0
 
 
-[[ `nova keypair-list | grep helloworld | wc -l` == 0 ]] && nova keypair-add ${APP}_key > /opt/solum/apps/$APP/key.priv
+[[ `nova keypair-list | grep $APP | wc -l` == 0 ]] && nova keypair-add ${APP}_key > /opt/solum/apps/$APP/key.priv
 chmod 0600 /opt/solum/apps/$APP/key.priv
 
 echo modify ${DIR}/user-data.txt to set any needed ENV variables
