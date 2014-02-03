@@ -26,7 +26,7 @@ class Handler(object):
         excp = solum_exception.NotImplemented()
         raise excp
 
-    def update(self, data):
+    def update(self, id, data):
         """Modify a resource."""
         excp = solum_exception.NotImplemented()
         raise excp
