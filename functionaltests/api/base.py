@@ -23,9 +23,9 @@ CONF = config.CONF
 
 class SolumClient(rest_client.RestClient):
 
-    def __init__(self, config, username, password, auth_url, tenant_name=None):
-        super(SolumClient, self).__init__(config, username, password,
-                                          auth_url, tenant_name)
+    def __init__(self, username, password, auth_url, tenant_name=None):
+        super(SolumClient, self).__init__(username, password, auth_url,
+                                          tenant_name)
         self.service = 'application_deployment'
 
 
@@ -36,6 +36,5 @@ class TestCase(testtools.TestCase):
         password = CONF.identity.password
         tenant_name = CONF.identity.tenant_name
         auth_url = CONF.identity.uri
-        client_args = (CONF, username, password,
-                       auth_url, tenant_name)
+        client_args = (username, password, auth_url, tenant_name)
         self.client = SolumClient(*client_args)
