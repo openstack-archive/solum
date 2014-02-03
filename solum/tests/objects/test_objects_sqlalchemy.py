@@ -20,6 +20,7 @@ Tests for the sqlalchemy solum 'objects' implementation
 """
 
 import datetime
+import uuid
 
 import testtools
 from testtools import matchers
@@ -75,12 +76,18 @@ class TestObjectsSqlalchemy(tests.BaseTestCase):
     def test_object_persist_and_retrieve(self):
         app = objects.registry.Application()
         self.assertIsNotNone(app)
+        app.uuid = str(uuid.uuid4())
+        app.name = 'abc'
+        app.glance_id = '1-2-3-4'
         app.create(self.ctx)
         self.assertIsNotNone(app.id)
 
         app2 = objects.registry.Application.get_by_id(None, app.id)
         self.assertIsNotNone(app2)
         self.assertEqual(app.id, app2.id)
+        self.assertEqual(app.uuid, app2.uuid)
+        self.assertEqual(app.name, app2.name)
+        self.assertEqual(app.glance_id, app2.glance_id)
 
         # visible via direct query
         query = utils.get_dummy_session().query(app.__class__)\
@@ -99,6 +106,7 @@ class TestObjectsSqlalchemy(tests.BaseTestCase):
 
         app = objects.registry.Application()
         self.assertIsNotNone(app)
+        app.uuid = str(uuid.uuid4())
         app.create(self.ctx)
 
         self.assertIsNotNone(app.id)
