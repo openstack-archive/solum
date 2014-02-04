@@ -6,6 +6,7 @@ if is_service_enabled solum; then
         install_solum
     elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
         echo_summary "Configuring Solum"
+        add_solum_user
         configure_solum
 
         if is_service_enabled key; then
