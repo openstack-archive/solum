@@ -91,6 +91,9 @@ function configure_solum() {
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken admin_user $SOLUM_USER
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken admin_password $ADMIN_PASSWORD
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken signing_dir $SOLUM_AUTH_CACHE_DIR
+
+    # configure the database.
+    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE database connection `database_connection_url solum`
 }
 
 #register solum user in Keystone
@@ -116,6 +119,14 @@ function create_solum_cache_dir() {
     rm -f $SOLUM_AUTH_CACHE_DIR/*
 }
 
+# init_solum() - Initialize databases, etc.
+function init_solum() {
+    recreate_database solum utf8
+    # Run Solum db migrations
+    solum-db-manage --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE upgrade head
+    create_solum_cache_dir
+}
+
 # install_solum() - Collect source and prepare
 function install_solum() {
     git_clone $SOLUM_REPO $SOLUM_DIR $SOLUM_BRANCH
@@ -124,7 +135,6 @@ function install_solum() {
 
 # start_solum() - Start running processes, including screen
 function start_solum() {
-    create_solum_cache_dir
     screen_it solum "cd $SOLUM_DIR && $SOLUM_BIN_DIR/solum-api --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE"
 }
 

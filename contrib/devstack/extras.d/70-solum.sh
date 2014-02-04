@@ -14,6 +14,7 @@ if is_service_enabled solum; then
         fi
     elif [[ "$1" == "stack" && "$2" == "extra" ]]; then
         echo_summary "Initializing Solum"
+        init_solum
         start_solum
     fi
 
