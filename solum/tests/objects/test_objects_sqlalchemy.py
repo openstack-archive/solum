@@ -38,11 +38,11 @@ class TestObjectsSqlalchemy(tests.BaseTestCase):
         self.ctx = utils.dummy_context()
 
     def test_objects_registered(self):
-        self.assertTrue(objects.registry.Application)
-        self.assertTrue(objects.registry.ApplicationList)
+        self.assertIsNotNone(objects.registry.Application)
+        self.assertIsNotNone(objects.registry.ApplicationList)
 
     def test_objects_reloadable(self):
-        self.assertTrue(objects.registry.Application)
+        self.assertIsNotNone(objects.registry.Application)
 
         objects.registry.clear()
 
@@ -51,11 +51,11 @@ class TestObjectsSqlalchemy(tests.BaseTestCase):
 
         objects.load()
 
-        self.assertTrue(objects.registry.Application)
+        self.assertIsNotNone(objects.registry.Application)
 
     def test_object_creatable(self):
         app = objects.registry.Application()
-        self.assertTrue(app)
+        self.assertIsNotNone(app)
         self.assertIsNone(app.id)
 
     # (claytonc) Depends on https://bugs.launchpad.net/oslo/+bug/1256954
@@ -74,39 +74,39 @@ class TestObjectsSqlalchemy(tests.BaseTestCase):
 
     def test_object_persist_and_retrieve(self):
         app = objects.registry.Application()
-        self.assertTrue(app)
+        self.assertIsNotNone(app)
         app.create(self.ctx)
         self.assertIsNotNone(app.id)
 
         app2 = objects.registry.Application.get_by_id(None, app.id)
-        self.assertTrue(app2)
+        self.assertIsNotNone(app2)
         self.assertEqual(app.id, app2.id)
 
         # visible via direct query
         query = utils.get_dummy_session().query(app.__class__)\
             .filter_by(id=app.id)
         app3 = query.first()
-        self.assertTrue(app3)
+        self.assertIsNotNone(app3)
         self.assertEqual(app3.id, app.id)
 
         # visible via get_all
         apps = objects.registry.ApplicationList.get_all(None)
         exists = [item for item in apps if item.id == app.id]
-        self.assertTrue(exists)
+        self.assertTrue(len(exists) > 0)
 
     def test_object_mutate(self):
         begin = datetime.datetime.utcnow()
 
         app = objects.registry.Application()
-        self.assertTrue(app)
+        self.assertIsNotNone(app)
         app.create(self.ctx)
 
         self.assertIsNotNone(app.id)
         self.assertThat(app.created_at, matchers.GreaterThan(begin))
         self.assertIsNone(app.updated_at)
 
-        next = datetime.datetime.utcnow()
+        next_time = datetime.datetime.utcnow()
 
         app.save(self.ctx)
 
-        self.assertThat(next, matchers.GreaterThan(app.created_at))
+        self.assertThat(next_time, matchers.GreaterThan(app.created_at))
