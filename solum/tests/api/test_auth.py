@@ -20,6 +20,8 @@ from solum.tests import base
 from solum.tests import fakes
 
 
+@mock.patch('solum.api.auth.AuthProtocolWrapper',
+            new_callable=fakes.FakeAuthProtocol)
 class TestAuth(base.BaseTestCase):
 
     def setUp(self):
@@ -27,25 +29,21 @@ class TestAuth(base.BaseTestCase):
         self.CONF = self.useFixture(config.Config())
         self.app = fakes.FakeApp()
 
-    def test_check_auth_option_enabled(self):
+    def test_check_auth_option_enabled(self, mock_auth):
 
         self.CONF.config(auth_protocol="footp",
                          auth_version="v2.0",
                          auth_uri=None,
                          group=auth.OPT_GROUP_NAME)
-        with mock.patch('keystoneclient.middleware.auth_token.AuthProtocol',
-                        new_callable=fakes.FakeAuthProtocol):
-            self.CONF.config(enable_authentication='True')
-            result = auth.install(self.app, self.CONF.conf)
-            self.assertIsInstance(result, fakes.FakeAuthProtocol)
+        self.CONF.config(enable_authentication='True')
+        result = auth.install(self.app, self.CONF.conf)
+        self.assertIsInstance(result, fakes.FakeAuthProtocol)
 
-    def test_check_auth_option_disabled(self):
+    def test_check_auth_option_disabled(self, mock_auth):
         self.CONF.config(auth_protocol="footp",
                          auth_version="v2.0",
                          auth_uri=None,
                          group=auth.OPT_GROUP_NAME)
-        with mock.patch('keystoneclient.middleware.auth_token.AuthProtocol',
-                        new_callable=fakes.FakeAuthProtocol):
-            self.CONF.config(enable_authentication='False')
-            result = auth.install(self.app, self.CONF.conf)
-            self.assertIsInstance(result, fakes.FakeApp)
+        self.CONF.config(enable_authentication='False')
+        result = auth.install(self.app, self.CONF.conf)
+        self.assertIsInstance(result, fakes.FakeApp)

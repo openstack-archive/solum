@@ -24,6 +24,7 @@ from solum.api.controllers.v1 import extension
 from solum.api.controllers.v1 import language_pack
 from solum.api.controllers.v1 import operation
 from solum.api.controllers.v1 import plan
+from solum.api.controllers.v1 import public
 from solum.api.controllers.v1 import sensor
 from solum.api.controllers.v1 import service
 from solum import version
@@ -87,6 +88,7 @@ class Controller(object):
     operations = operation.OperationsController()
     sensors = sensor.SensorsController()
     language_packs = language_pack.LanguagePacksController()
+    public = public.PublicController()
 
     @wsme_pecan.wsexpose(Platform)
     def index(self):

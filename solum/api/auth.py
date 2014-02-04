@@ -13,6 +13,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import re
+
 from keystoneclient.middleware import auth_token
 from oslo.config import cfg
 
@@ -38,8 +40,7 @@ CONF.register_opts(auth_token.opts, group=OPT_GROUP_NAME)
 
 def install(app, conf):
     if conf.get('enable_authentication').lower() == 'true':
-        return auth_token.AuthProtocol(app,
-                                       conf=dict(conf.get(OPT_GROUP_NAME)))
+        return AuthProtocolWrapper(app, conf=dict(conf.get(OPT_GROUP_NAME)))
     else:
         LOG.warning(_('Keystone authentication is disabled by Solum '
                       'configuration parameter enable_authentication. '
@@ -48,3 +49,20 @@ def install(app, conf):
                       'enable_authentication option to True.'))
 
     return app
+
+
+class AuthProtocolWrapper(auth_token.AuthProtocol):
+    """A wrapper on Keystone auth_token AuthProtocol.
+
+    Does not perform verification of authentication tokens for pub routes in
+    the API. Public routes are those which Uri starts with
+    '/{version_number}/pub/'
+
+    """
+
+    def __call__(self, env, start_response):
+        path = env.get('PATH_INFO')
+        regexp = re.compile('^/v[0-9]+/public/')
+        if regexp.match(path):
+            return self.app(env, start_response)
+        return super(AuthProtocolWrapper, self).__call__(env, start_response)
