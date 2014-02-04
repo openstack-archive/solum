@@ -16,9 +16,12 @@
 SQLAlchemy models for application data.
 """
 
+import json
+
 from oslo.config import cfg
 from sqlalchemy.ext import declarative
 from sqlalchemy.orm import exc
+from sqlalchemy import types
 
 from solum import objects
 from solum.openstack.common.db import exception as db_exc
@@ -105,3 +108,19 @@ class SolumBase(models.TimestampMixin, models.ModelBase):
 
 
 Base = declarative.declarative_base(cls=SolumBase)
+
+
+class JSONEncodedDict(types.TypeDecorator):
+    """Represents an immutable structure as a json-encoded string."""
+
+    impl = types.VARCHAR
+
+    def process_bind_param(self, value, dialect):
+        if value is not None:
+            value = json.dumps(value)
+        return value
+
+    def process_result_value(self, value, dialect):
+        if value is not None:
+            value = json.loads(value)
+        return value
