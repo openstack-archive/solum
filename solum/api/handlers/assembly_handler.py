@@ -49,6 +49,7 @@ class AssemblyHandler(handler.Handler):
         db_obj = objects.registry.Assembly()
         self._update_db_object(db_obj, data)
         db_obj.uuid = str(uuid.uuid4())
+        db_obj.trigger_id = str(uuid.uuid4())
         db_obj.create(None)
         return db_obj
 
