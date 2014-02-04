@@ -37,3 +37,18 @@ class TestOperationController(base.BaseTestCase):
         obj = operation.OperationController('test_id')
         obj.delete()
         self.assertEqual(400, resp_mock.status)
+
+
+@mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
+@mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
+class TestOperationsController(base.BaseTestCase):
+    def test_operations_get_all(self, resp_mock, request_mock):
+        operation_obj = operation.OperationsController()
+        resp = operation_obj.get_all()
+        self.assertIsNotNone(resp)
+        self.assertEqual(200, resp_mock.status)
+
+    def test_operations_post(self, resp_mock, request_mock):
+        obj = operation.OperationsController()
+        obj.post(None)
+        self.assertEqual(400, resp_mock.status)

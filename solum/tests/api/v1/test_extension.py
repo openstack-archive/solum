@@ -27,3 +27,13 @@ class TestExtensionController(base.BaseTestCase):
         extension_model = obj.get()
         self.assertEqual(200, resp_mock.status)
         self.assertIsNotNone(extension_model)
+
+
+@mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
+@mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
+class TestExtensionsController(base.BaseTestCase):
+    def test_extensions_get_all(self, resp_mock, request_mock):
+        extension_obj = extension.ExtensionsController()
+        resp = extension_obj.get_all()
+        self.assertIsNotNone(resp)
+        self.assertEqual(200, resp_mock.status)
