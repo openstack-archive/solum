@@ -25,6 +25,11 @@ class AssemblyHandler(handler.Handler):
         """Return an assembly."""
         return objects.registry.Assembly.get_by_uuid(None, id)
 
+    def trigger_workflow(self, trigger_id):
+        """Get trigger by trigger id and start git worflow associated."""
+        pass
+        # Here, call a service which will trigger git workflow
+
     def _update_db_object(self, db_obj, data):
         for dk, dv in iter(data.items()):
             if dk == 'type':

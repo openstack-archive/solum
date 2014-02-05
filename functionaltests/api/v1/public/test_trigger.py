@@ -21,4 +21,4 @@ class TestTriggerController(base.TestCase):
         #Using requests instead of self.client to test unauthenticated request
         resp = requests.post('http://127.0.0.1:9777/v1/public/triggers/'
                              '7ad6f35961150bf83d0afdd913f8779417e538ea')
-        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(resp.status_code, 200)
