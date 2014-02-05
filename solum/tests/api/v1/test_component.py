@@ -36,3 +36,18 @@ class TestComponentController(base.BaseTestCase):
         obj = component.ComponentController('test_id')
         obj.delete()
         self.assertEqual(501, resp_mock.status)
+
+
+@mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
+@mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
+class TestComponentsController(base.BaseTestCase):
+    def test_components_get_all(self, resp_mock, request_mock):
+        component_obj = component.ComponentsController()
+        resp = component_obj.get_all()
+        self.assertIsNotNone(resp)
+        self.assertEqual(200, resp_mock.status)
+
+    def test_components_post(self, resp_mock, request_mock):
+        obj = component.ComponentsController()
+        obj.post(None)
+        self.assertEqual(501, resp_mock.status)

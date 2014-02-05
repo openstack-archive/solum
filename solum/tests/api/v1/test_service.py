@@ -36,3 +36,18 @@ class TestServiceController(base.BaseTestCase):
         obj = service.ServiceController('test_id')
         obj.delete()
         self.assertEqual(400, resp_mock.status)
+
+
+@mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
+@mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
+class TestServicesController(base.BaseTestCase):
+    def test_services_get_all(self, resp_mock, request_mock):
+        service_obj = service.ServicesController()
+        resp = service_obj.get_all()
+        self.assertIsNotNone(resp)
+        self.assertEqual(200, resp_mock.status)
+
+    def test_services_post(self, resp_mock, request_mock):
+        obj = service.ServicesController()
+        obj.post(None)
+        self.assertEqual(400, resp_mock.status)
