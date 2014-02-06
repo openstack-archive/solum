@@ -7,6 +7,12 @@ Configuration Reference
 Administrator Guide
 -------------------
 
+.. toctree::
+   :maxdepth: 2
+
+   ../man/index
+
+
 High Availability Guide
 -----------------------
 
