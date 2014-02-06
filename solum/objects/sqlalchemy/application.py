@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from sqlalchemy import Column, Integer
+import sqlalchemy
 
 from solum.common import exception
 from solum.objects import application as abstract
@@ -25,7 +25,11 @@ class Application(sql.Base, abstract.Application):
     __tablename__ = 'application'
     __table_args__ = sql.table_args()
 
-    id = Column(Integer, primary_key=True)
+    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True,
+                           autoincrement=True)
+    uuid = sqlalchemy.Column(sqlalchemy.String(36))
+    name = sqlalchemy.Column(sqlalchemy.String(255))
+    glance_id = sqlalchemy.Column(sqlalchemy.String(36))
 
     @classmethod
     def _raise_duplicate_object(cls, e, self):
