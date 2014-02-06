@@ -1,0 +1,39 @@
+#!/bin/bash
+
+DIR=`dirname $0`
+GIT_DIR=/opt/git
+
+# check if git user already exists
+id git
+if [ $? != 0 ]; then
+  sudo useradd git -d /opt/git -m
+fi
+
+echo Prepare VM-Slug
+/solum/contrib/lp-cedarish/vm-slug/prepare
+echo Download Cedarish Image
+/solum/contrib/lp-cedarish/vm-slug/download-cedarish
+
+sudo mkdir -p $GIT_DIR
+sudo mkdir -p $GIT_DIR/admin_keys
+sudo chown -R git:git $GIT_DIR
+
+[[ -f ~/.ssh/id_rsa ]] || ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa
+sudo cp ~/.ssh/id_rsa.pub $GIT_DIR/admin_keys/admin.pub
+
+sudo su git -c "$DIR/install"
+
+cd ~
+
+# we do this to accept the ssh-key for git@localhost
+# to avoid 'Yes' prompt from subsquent git commands.
+ssh -o StrictHostKeyChecking=no git@127.0.0.1
+
+git clone git@127.0.0.1:gitolite-admin ~/gitolite-admin
+
+git config --global user.name "admin"
+git config --global user.email you@example.com
+
+sudo chmod 777 /var/run/docker.sock
+sudo usermod -a -G docker,$USER git
+sudo chmod 2775 /opt/solum/apps

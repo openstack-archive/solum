@@ -1,0 +1,38 @@
+#!/bin/bash
+
+DIR=`dirname $0`
+CODE_DIR=`pwd`
+
+if [[ ! -f $CODE_DIR/.git/config ]]; then
+  echo 'you must run this from inside a git repo'
+  echo $CODE_DIR/.git/config
+  exit 1
+fi
+
+APP=`basename $CODE_DIR`
+
+cd ~/gitolite-admin
+
+# add repo to solum git server
+cat << EOF >> ~/gitolite-admin/conf/gitolite.conf
+
+repo $APP
+    RW+     =   admin
+    option hook.post-receive  =  build
+EOF
+
+git commit -am "adding repo and key for $APP"
+git push origin master
+
+cd $CODE_DIR
+
+# add upstream
+grep '\[remote "solum"\]' $CODE_DIR/.git/config > /dev/null
+if [ $? != 0 ]; then
+  cat << EOF >> $CODE_DIR/.git/config
+[remote "solum"]
+  url = git@127.0.0.1:$APP
+EOF
+else
+  echo 'already has solum remote'
+fi

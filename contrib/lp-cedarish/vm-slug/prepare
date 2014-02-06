@@ -11,6 +11,7 @@ DIR=$(dirname $0)
 # install docker
 echo Install docker:
 [[ -f /usr/bin/docker ]] || $DIR/get_docker_io.sh
+sudo usermod -a -G docker $USER
 
 # We'll be doing VM builds
 echo Prepare image-builder:
@@ -23,6 +24,7 @@ echo prepare slug building environment:
 # we need a docker container to host slugs
 # this should end up being swift or glance or something
 mkdir -p /opt/solum/apps
+chmod g+s /opt/solum/apps
 sudo docker pull kstaken/apache2
 sudo docker run -d -v /opt/solum/apps:/var/www:ro -p 0.0.0.0:8080:80 -name slugweb kstaken/apache2
 

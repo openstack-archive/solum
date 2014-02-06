@@ -15,6 +15,9 @@ fi
 BUILD_DIR=/opt/solum/cedarish/build
 IMAGE_DIR=/opt/solum/cedarish/image
 
+mkdir -p /opt/solum
+chmod g+s /opt/solum
+
 mkdir -p $BUILD_DIR
 mkdir -p $IMAGE_DIR
 

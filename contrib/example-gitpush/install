@@ -1,0 +1,22 @@
+#!/bin/bash
+
+DIR=`dirname $0`
+
+GIT_DIR=/opt/git
+
+mkdir -p $GIT_DIR/admin_keys
+mkdir -p $GIT_DIR/bin
+
+git clone git://github.com/sitaramc/gitolite $GIT_DIR/source
+cd /opt/git
+source/install -to $GIT_DIR/bin
+bin/gitolite setup -pk $GIT_DIR/admin_keys/admin.pub
+
+# link hooks dir
+ln -s ${DIR}/site-local ${GIT_DIR}/local
+
+# enable hooks
+sed -i "s/# 'repo-specific-hooks',/'repo-specific-hooks',/" $GIT_DIR/.gitolite.rc
+sed -i 's/^.*\$ENV{HOME}\/local.*$/\tLOCAL_CODE\t\t => "\$ENV{HOME}\/local",/' $GIT_DIR/.gitolite.rc
+
+$GIT_DIR/bin/gitolite setup --hooks-only
