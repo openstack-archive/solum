@@ -11,8 +11,11 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from wsme import types as wtypes
 
-from solum.api.controllers import common_types
+from solum.api.controllers.v1.datamodel import operation
+from solum.api.controllers.v1.datamodel import sensor
+from solum.api.controllers.v1.datamodel import service
 from solum.api.controllers.v1.datamodel import types as api_types
 
 
@@ -30,20 +33,24 @@ class Component(api_types.Base):
     the PHP Service offered by the platform for running a PHP application.
     """
 
-    assembly_link = common_types.Link
-    """Link to the assembly."""
+    assembly_id = wtypes.text
+    """"The id of the assembly that this component belongs in."""
 
-    component_links = [common_types.Link]
-    """List of links to the available components."""
+    services = [service.Service]
+    """Services that belong to the component."""
 
-    service_links = [common_types.Link]
-    """List of links to the available services."""
+    operations = [operation.Operation]
+    """Operations that belong to the component."""
 
-    operations_uri = common_types.Uri
-    """URI for the operations."""
+    sensors = [sensor.Sensor]
+    """Sensors that belong to the component."""
 
-    sensors_uri = common_types.Uri
-    """URI for the sensors."""
+    abbreviated = bool
+    """Boolean value indicating if this components has nested components at
+    more than one level of depth."""
+
+    components_ids = [wtypes.text]
+    """IDs of nested component of the component."""
 
     @classmethod
     def sample(cls):
@@ -54,14 +61,9 @@ class Component(api_types.Base):
                    tags=['group_xyz'],
                    project_id='1dae5a09ef2b4d8cbf3594b0eb4f6b94',
                    user_id='55f41cf46df74320b9486a35f5d28a11',
-                   assembly_link=common_types.Link(
-                       href='http://example.com:9777/v1/assembly/a2',
-                       target_name='a2'),
-                   component_links=[common_types.Link(
-                       href='http://example.com:9777/v1/components/x2',
-                       target_name='x2')],
-                   service_links=[common_types.Link(
-                       href='http://example.com:9777/v1/services/s2',
-                       target_name='s2')],
-                   operations_uri='http://example.com:9777/v1/operations/o1',
-                   sensors_uri='http://example.com:9777/v1/sensors/s1')
+                   assembly_id='b3e0d79c698ea7b1561075bcfbbd2206a23d19b9',
+                   abbreviated=True,
+                   components_ids=[],
+                   services=[],
+                   operations=[],
+                   sensors=[])
