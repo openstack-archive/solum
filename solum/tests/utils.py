@@ -75,3 +75,12 @@ class Database(fixtures.Fixture):
 
 def get_dummy_session():
     return session.get_session()
+
+
+def create_models_from_data(model_cls, data, ctx):
+    for d in data:
+        mdl = model_cls()
+        for key, value in d.items():
+            setattr(mdl, key, value)
+        mdl.create(ctx)
+        d['id'] = mdl.id

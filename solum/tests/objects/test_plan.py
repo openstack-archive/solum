@@ -28,12 +28,8 @@ class TestPlan(base.BaseTestCase):
                       'project_id': 'bla',
                       'user_id': 'fred',
                       'raw_content': 'lots of stuff here'}]
-        for pd in self.data:
-            pl = plan.Plan()
-            for key, value in pd.items():
-                setattr(pl, key, value)
-            pl.create(self.ctx)
-            pd['id'] = pl.id
+        utils.create_models_from_data(plan.Plan,
+                                      self.data, self.ctx)
 
     def test_objects_registered(self):
         self.assertTrue(registry.Plan)
