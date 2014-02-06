@@ -10,6 +10,14 @@ Platform
 .. autotype:: solum.api.controllers.v1.root.Platform
    :members:
 
+Plans
+-----
+
+.. rest-controller:: solum.api.controllers.v1.plan:PlansController
+   :webprefix: /v1/plans
+
+.. autotype:: solum.api.controllers.v1.datamodel.plan.Plan
+   :members:
 
 Assemblies
 ----------

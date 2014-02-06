@@ -22,6 +22,7 @@ from solum.api.controllers.v1 import component
 from solum.api.controllers.v1.datamodel import types as api_types
 from solum.api.controllers.v1 import extension
 from solum.api.controllers.v1 import operation
+from solum.api.controllers.v1 import plan
 from solum.api.controllers.v1 import sensor
 from solum.api.controllers.v1 import service
 from solum import version
@@ -36,6 +37,9 @@ class Platform(api_types.Base):
 
     implementation_version = wtypes.text
     "Version of the platform."
+
+    plans_uri = common_types.Uri
+    "URI to plans."
 
     assemblies_uri = common_types.Uri
     "URI to assemblies."
@@ -59,6 +63,7 @@ class Platform(api_types.Base):
                    user_id='55f41cf46df74320b9486a35f5d28a11',
                    description='solum native implementation',
                    implementation_version='2014.1.1',
+                   plans_uri='http://example.com:9777/v1/plans',
                    assemblies_uri='http://example.com:9777/v1/assemblies',
                    services_uri='http://example.com:9777/v1/services',
                    components_uri='http://example.com:9777/v1/components',
@@ -68,6 +73,7 @@ class Platform(api_types.Base):
 class Controller(object):
     """Version 1 API controller root."""
 
+    plans = plan.PlansController()
     assemblies = assembly.AssembliesController()
     services = service.ServicesController()
     components = component.ComponentsController()
@@ -83,6 +89,7 @@ class Controller(object):
                         type='platform',
                         description='solum native implementation',
                         implementation_version=version.version_string(),
+                        plans_uri='%s/plans' % host_url,
                         assemblies_uri='%s/assemblies' % host_url,
                         services_uri='%s/services' % host_url,
                         components_uri='%s/components' % host_url,
