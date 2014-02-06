@@ -30,15 +30,12 @@ class OperationController(rest.RestController):
         pecan.request.context['operation_id'] = operation_id
         self._id = operation_id
 
+    @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(operation.Operation, wtypes.text)
     def get(self):
         """Return this operation."""
-        try:
-            handler = operation_handler.OperationHandler()
-            return handler.get(self._id)
-        except exception.SolumException as excp:
-            pecan.response.translatable_error = excp
-            raise wsme.exc.ClientSideError(six.text_type(excp), excp.code)
+        handler = operation_handler.OperationHandler()
+        return handler.get(self._id)
 
     @wsme_pecan.wsexpose(operation.Operation, wtypes.text,
                          body=operation.Operation)
@@ -73,12 +70,9 @@ class OperationsController(rest.RestController):
         pecan.response.translatable_error = error
         raise wsme.exc.ClientSideError(six.text_type(error))
 
+    @exception.wrap_controller_exception
     @wsme_pecan.wsexpose([operation.Operation])
     def get_all(self):
         """Return all operations, based on the query provided."""
-        try:
-            handler = operation_handler.OperationHandler()
-            return handler.get_all()
-        except exception.SolumException as excp:
-            pecan.response.translatable_error = excp
-            raise wsme.exc.ClientSideError(six.text_type(excp), excp.code)
+        handler = operation_handler.OperationHandler()
+        return handler.get_all()

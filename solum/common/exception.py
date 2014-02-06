@@ -19,6 +19,8 @@ Includes decorator for re-raising Solum-type exceptions.
 """
 
 import functools
+import pecan
+import wsme
 
 from oslo.config import cfg
 import six
@@ -78,6 +80,20 @@ def wrap_exception(notifier=None, publisher_id=None, event_type=None,
 
         return functools.wraps(f)(wrapped)
     return inner
+
+
+def wrap_controller_exception(func):
+    """This decorator wraps controllers method to manage wsme exceptions:
+    a wsme ClientSideError is raised if a SolumException is thrown.
+    """
+    @functools.wraps(func)
+    def wrapped(*args, **kw):
+        try:
+            return func(*args, **kw)
+        except SolumException as excp:
+            pecan.response.translatable_error = excp
+            raise wsme.exc.ClientSideError(six.text_type(excp), excp.code)
+    return wrapped
 
 
 class SolumException(Exception):

@@ -14,14 +14,12 @@
 
 import pecan
 from pecan import rest
-import six
-import wsme
 from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
 
 from solum.api.controllers.v1.datamodel import assembly
 from solum.api.handlers import assembly_handler as assemblyhandler
-from solum.common import exception as solum_exception
+from solum.common import exception
 
 
 class AssemblyController(rest.RestController):
@@ -31,36 +29,27 @@ class AssemblyController(rest.RestController):
         pecan.request.context['assembly_id'] = assembly_id
         self._id = assembly_id
 
+    @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(assembly.Assembly, wtypes.text)
     def get(self):
         """Return this assembly."""
-        try:
-            handler = assemblyhandler.AssemblyHandler()
-            return handler.get(self._id)
-        except solum_exception.SolumException as excp:
-            pecan.response.translatable_error = excp
-            raise wsme.exc.ClientSideError(six.text_type(excp), excp.code)
+        handler = assemblyhandler.AssemblyHandler()
+        return handler.get(self._id)
 
+    @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(assembly.Assembly, wtypes.text,
                          body=assembly.Assembly)
     def put(self, data):
         """Modify this assembly."""
-        try:
-            handler = assemblyhandler.AssemblyHandler()
-            return handler.update(self._id, data)
-        except solum_exception.SolumException as excp:
-            pecan.response.translatable_error = excp
-            raise wsme.exc.ClientSideError(six.text_type(excp), excp.code)
+        handler = assemblyhandler.AssemblyHandler()
+        return handler.update(self._id, data)
 
+    @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(None, wtypes.text, status_code=204)
     def delete(self):
         """Delete this assembly."""
-        try:
-            handler = assemblyhandler.AssemblyHandler()
-            return handler.delete(self._id)
-        except solum_exception.SolumException as excp:
-            pecan.response.translatable_error = excp
-            raise wsme.exc.ClientSideError(six.text_type(excp), excp.code)
+        handler = assemblyhandler.AssemblyHandler()
+        return handler.delete(self._id)
 
 
 class AssembliesController(rest.RestController):
@@ -72,23 +61,17 @@ class AssembliesController(rest.RestController):
             remainder = remainder[:-1]
         return AssemblyController(assembly_id), remainder
 
+    @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(assembly.Assembly, body=assembly.Assembly,
                          status_code=201)
     def post(self, data):
         """Create a new assembly."""
-        try:
-            handler = assemblyhandler.AssemblyHandler()
-            return handler.create(data)
-        except solum_exception.SolumException as excp:
-            pecan.response.translatable_error = excp
-            raise wsme.exc.ClientSideError(six.text_type(excp), excp.code)
+        handler = assemblyhandler.AssemblyHandler()
+        return handler.create(data)
 
+    @exception.wrap_controller_exception
     @wsme_pecan.wsexpose([assembly.Assembly])
     def get_all(self):
         """Return all assemblies, based on the query provided."""
-        try:
-            handler = assemblyhandler.AssemblyHandler()
-            return handler.get_all()
-        except solum_exception.SolumException as excp:
-            pecan.response.translatable_error = excp
-            raise wsme.exc.ClientSideError(six.text_type(excp), excp.code)
+        handler = assemblyhandler.AssemblyHandler()
+        return handler.get_all()

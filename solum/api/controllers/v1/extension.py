@@ -12,8 +12,6 @@
 
 import pecan
 from pecan import rest
-import six
-import wsme
 from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
 
@@ -29,15 +27,12 @@ class ExtensionController(rest.RestController):
         pecan.request.context['extension_id'] = extension_id
         self._id = extension_id
 
+    @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(extension.Extension, wtypes.text)
     def get(self):
         """Return this extension."""
-        try:
-            handler = extension_handler.ExtensionHandler()
-            return handler.get(self._id)
-        except exception.SolumException as excp:
-            pecan.response.translatable_error = excp
-            raise wsme.exc.ClientSideError(six.text_type(excp), excp.code)
+        handler = extension_handler.ExtensionHandler()
+        return handler.get(self._id)
 
 
 class ExtensionsController(rest.RestController):

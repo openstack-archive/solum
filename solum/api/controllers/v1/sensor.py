@@ -30,15 +30,12 @@ class SensorController(rest.RestController):
         pecan.request.context['sensor_id'] = sensor_id
         self._id = sensor_id
 
+    @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(sensor.Sensor, wtypes.text)
     def get(self):
         """Return this sensor."""
-        try:
-            handler = sensor_handler.SensorHandler()
-            return handler.get(self._id)
-        except exception.SolumException as excp:
-            pecan.response.translatable_error = excp
-            raise wsme.exc.ClientSideError(six.text_type(excp), excp.code)
+        handler = sensor_handler.SensorHandler()
+        return handler.get(self._id)
 
     @wsme_pecan.wsexpose(sensor.Sensor, wtypes.text, body=sensor.Sensor)
     def put(self, data):

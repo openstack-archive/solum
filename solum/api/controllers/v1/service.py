@@ -30,15 +30,12 @@ class ServiceController(rest.RestController):
         pecan.request.context['service_id'] = service_id
         self._id = service_id
 
+    @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(service.Service, wtypes.text)
     def get(self):
         """Return this service."""
-        try:
-            handler = service_handler.ServiceHandler()
-            return handler.get(self._id)
-        except exception.SolumException as excp:
-            pecan.response.translatable_error = excp
-            raise wsme.exc.ClientSideError(six.text_type(excp), excp.code)
+        handler = service_handler.ServiceHandler()
+        return handler.get(self._id)
 
     @wsme_pecan.wsexpose(service.Service, wtypes.text, body=service.Service)
     def put(self, data):

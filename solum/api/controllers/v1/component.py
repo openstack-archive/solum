@@ -12,14 +12,12 @@
 
 import pecan
 from pecan import rest
-import six
-import wsme
 from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
 
 from solum.api.controllers.v1.datamodel import component
 from solum.api.handlers import component_handler as componenthandler
-from solum.common import exception as solum_exception
+from solum.common import exception
 
 
 class ComponentController(rest.RestController):
@@ -29,36 +27,27 @@ class ComponentController(rest.RestController):
         pecan.request.context['component_id'] = component_id
         self._id = component_id
 
+    @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(component.Component, wtypes.text)
     def get(self):
         """Return this component."""
-        try:
-            handler = componenthandler.ComponentHandler()
-            return handler.get(self._id)
-        except solum_exception.SolumException as excp:
-            pecan.response.translatable_error = excp
-            raise wsme.exc.ClientSideError(six.text_type(excp), excp.code)
+        handler = componenthandler.ComponentHandler()
+        return handler.get(self._id)
 
+    @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(component.Component, wtypes.text,
                          body=component.Component)
     def put(self, data):
         """Modify this component."""
-        try:
-            handler = componenthandler.ComponentHandler()
-            return handler.update(self._id, data)
-        except solum_exception.SolumException as excp:
-            pecan.response.translatable_error = excp
-            raise wsme.exc.ClientSideError(six.text_type(excp), excp.code)
+        handler = componenthandler.ComponentHandler()
+        return handler.update(self._id, data)
 
+    @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(None, wtypes.text, status_code=204)
     def delete(self):
         """Delete this component."""
-        try:
-            handler = componenthandler.ComponentHandler()
-            return handler.delete(self._id)
-        except solum_exception.SolumException as excp:
-            pecan.response.translatable_error = excp
-            raise wsme.exc.ClientSideError(six.text_type(excp), excp.code)
+        handler = componenthandler.ComponentHandler()
+        return handler.delete(self._id)
 
 
 class ComponentsController(rest.RestController):
@@ -70,23 +59,17 @@ class ComponentsController(rest.RestController):
             remainder = remainder[:-1]
         return ComponentController(component_id), remainder
 
+    @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(component.Component, body=component.Component,
                          status_code=201)
     def post(self, data):
         """Create a new component."""
-        try:
-            handler = componenthandler.ComponentHandler()
-            return handler.create(data)
-        except solum_exception.SolumException as excp:
-            pecan.response.translatable_error = excp
-            raise wsme.exc.ClientSideError(six.text_type(excp), excp.code)
+        handler = componenthandler.ComponentHandler()
+        return handler.create(data)
 
+    @exception.wrap_controller_exception
     @wsme_pecan.wsexpose([component.Component])
     def get_all(self):
         """Return all components, based on the query provided."""
-        try:
-            handler = componenthandler.ComponentHandler()
-            return handler.get_all()
-        except solum_exception.SolumException as excp:
-            pecan.response.translatable_error = excp
-            raise wsme.exc.ClientSideError(six.text_type(excp), excp.code)
+        handler = componenthandler.ComponentHandler()
+        return handler.get_all()
