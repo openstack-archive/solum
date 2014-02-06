@@ -25,6 +25,9 @@ class FakePecanRequest(mock.Mock):
         self.content_type = 'text/unicode'
         self.params = {}
 
+    def __setitem__(self, index, value):
+        setattr(self, index, value)
+
 
 class FakePecanResponse(mock.Mock):
 
