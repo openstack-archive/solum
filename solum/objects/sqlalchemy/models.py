@@ -41,7 +41,9 @@ def model_query(context, model, *args, **kwargs):
     :param session: if present, the session to use
     """
 
-    session = kwargs.get('session') or db_session.get_session()
+    session = kwargs.get('session') or db_session.get_session(
+        mysql_traditional_mode=True)
+
     query = session.query(model, *args)
     return query
 
@@ -62,7 +64,8 @@ class SolumBase(models.TimestampMixin, models.ModelBase):
 
     @classmethod
     def get_by_id(cls, context, item_id):
-        query = db_session.get_session().query(cls).filter_by(id=item_id)
+        query = db_session.get_session(
+            mysql_traditional_mode=True).query(cls).filter_by(id=item_id)
         result = query.first()
         if not result:
             cls._raise_not_found(item_id)
@@ -72,12 +75,12 @@ class SolumBase(models.TimestampMixin, models.ModelBase):
         if objects.transition_schema():
             self.add_forward_schema_changes()
 
-        session = db_session.get_session()
+        session = db_session.get_session(mysql_traditional_mode=True)
         with session.begin():
             session.merge(self)
 
     def create(self, context):
-        session = db_session.get_session()
+        session = db_session.get_session(mysql_traditional_mode=True)
         try:
             with session.begin():
                 session.add(self)
@@ -85,7 +88,7 @@ class SolumBase(models.TimestampMixin, models.ModelBase):
             self.__class__._raise_duplicate_object(e, self)
 
     def destroy(self, context):
-        session = db_session.get_session()
+        session = db_session.get_session(mysql_traditional_mode=True)
         with session.begin():
             session.query(self.__class__).\
                 filter_by(id=self.id).\
