@@ -1,0 +1,22 @@
+#!/bin/bash
+
+sudo docker ps 2> /dev/null > /dev/null
+[[ $? != 0 ]] && echo "cannot talk to docker." && exit 1
+
+[[ -f ./openrc ]] && . ./openrc
+[[ -f ~/devstack/openrc ]] && . ~/devstack/openrc
+
+nova list 2> /dev/null > /dev/null
+if [ $? != 0 ]; then
+  echo 'cannot talk to nova. check your openstack credentials'
+  exit 1
+fi
+
+echo 'Fixing bug where first nova boot of docker container'
+echo 'Starts with "sh" rather than embedded "CMD"'
+echo 'boot dummy instance'
+nova boot --flavor 1 --image docker-busybox:latest dummy
+echo 'sleep 60 sec'
+sleep 60
+echo 'delete dummy instance'
+nova delete dummy

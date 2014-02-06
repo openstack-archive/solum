@@ -1,0 +1,54 @@
+#!/bin/bash
+
+docker ps 2> /dev/null > /dev/null
+[[ $? != 0 ]] && echo "cannot talk to docker." && exit 1
+
+if [[ -z $1 ]] || [[ -z $2 ]]; then
+  echo "Usage:  build git_url appname"
+  exit 1
+fi
+
+GIT=$1
+APP=$2
+
+mkdir -p /opt/solum/apps/$APP
+
+[[ -d /opt/solum/apps/$APP/build ]] && rm -rf /opt/solum/apps/$APP/build
+git clone $GIT /opt/solum/apps/$APP/build
+
+cd /opt/solum/apps/$APP/build
+
+# Build the application slug
+BUILD_ID=$(git archive master | sudo docker run -i -a stdin \
+           -v /opt/solum/cache:/tmp/cache:rw  \
+           -v /opt/solum/buildpacks:/tmp/buildpacks:rw  \
+           solum/slugbuilder)
+
+sudo docker attach $BUILD_ID
+
+cd /opt/solum/apps/$APP
+sudo docker cp $BUILD_ID:/tmp/slug.tgz /opt/solum/apps/$APP/
+sudo docker rm $BUILD_ID
+rm -rf /opt/solum/apps/$APP/build
+
+# Build the application image by injecting slug into runner
+# and push to docker-registry ( which is tied to glance )
+
+cat << EOF > /opt/solum/apps/$APP/Dockerfile
+# SOLUM APP BUILDER
+FROM solum/slugrunner
+ADD slug.tgz /tmp/slug.tgz
+EXPOSE 5000
+ENV port 5000
+ENTRYPOINT ["/runner/init"]
+CMD ["start","web"]
+EOF
+
+cd /opt/solum/apps/$APP
+sudo docker build -t 127.0.0.1:5042/$APP .
+
+sudo docker push 127.0.0.1:5042/$APP
+
+
+
+

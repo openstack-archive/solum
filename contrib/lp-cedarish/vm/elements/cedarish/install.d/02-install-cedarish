@@ -1,0 +1,47 @@
+#!/bin/bash
+
+install-packages build-essential
+install-packages autoconf
+install-packages bind9-host
+install-packages bison
+install-packages curl
+install-packages daemontools
+install-packages dnsutils
+install-packages ed
+install-packages git
+install-packages imagemagick
+install-packages iputils-tracepath
+install-packages libcurl4-openssl-dev
+install-packages libevent-dev
+install-packages libglib2.0-dev
+install-packages libjpeg-dev
+install-packages libjpeg62
+install-packages libpng12-0
+install-packages libpng12-dev
+install-packages libmagickcore-dev
+install-packages libmagickwand-dev
+install-packages libmysqlclient-dev
+install-packages libpq-dev
+install-packages libsqlite3-dev
+install-packages libssl-dev
+install-packages libssl0.9.8
+install-packages libxml2-dev
+install-packages libxslt-dev
+install-packages mercurial
+install-packages netcat-openbsd
+install-packages socat
+install-packages syslinux
+install-packages sqlite3
+install-packages zlib1g-dev
+install-packages openssh-client
+install-packages openssh-server
+
+# runtime reqs
+install-packages ruby
+install-packages ruby-dev
+gem install foreman
+install-packages openjdk-7-jdk
+install-packages openjdk-7-jre-headless
+install-packages python-dev
+install-packages nodejs
+ln -s /usr/bin/nodejs /usr/bin/node
