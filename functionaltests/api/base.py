@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from tempest import clients
 from tempest.common import rest_client
 from tempest import config
 import testtools
@@ -23,9 +24,8 @@ CONF = config.CONF
 
 class SolumClient(rest_client.RestClient):
 
-    def __init__(self, username, password, auth_url, tenant_name=None):
-        super(SolumClient, self).__init__(username, password, auth_url,
-                                          tenant_name)
+    def __init__(self, auth_provider):
+        super(SolumClient, self).__init__(auth_provider)
         self.service = 'application_deployment'
 
 
@@ -35,6 +35,6 @@ class TestCase(testtools.TestCase):
         username = CONF.identity.username
         password = CONF.identity.password
         tenant_name = CONF.identity.tenant_name
-        auth_url = CONF.identity.uri
-        client_args = (username, password, auth_url, tenant_name)
-        self.client = SolumClient(*client_args)
+        mgr = clients.Manager(username, password, tenant_name)
+        auth_provider = mgr.get_auth_provider()
+        self.client = SolumClient(auth_provider)
