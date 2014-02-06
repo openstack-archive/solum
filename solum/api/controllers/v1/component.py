@@ -45,7 +45,7 @@ class ComponentController(rest.RestController):
         """Modify this component."""
         try:
             handler = componenthandler.ComponentHandler()
-            return handler.update(data)
+            return handler.update(self._id, data)
         except solum_exception.SolumException as excp:
             pecan.response.translatable_error = excp
             raise wsme.exc.ClientSideError(six.text_type(excp), excp.code)
