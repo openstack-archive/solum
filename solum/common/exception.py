@@ -132,6 +132,10 @@ class ApplicationNotFound(NotFound):
     msg_fmt = _("The application %(application_id)s could not be found.")
 
 
+class PlanNotFound(NotFound):
+    msg_fmt = _("The plan %(plan_id)s could not be found.")
+
+
 class ResourceExists(SolumException):
     msg_fmt = _("The requested resource already exists.")
     code = 409
@@ -139,6 +143,10 @@ class ResourceExists(SolumException):
 
 class ApplicationExists(ResourceExists):
     msg_fmt = _("This application already exists.")
+
+
+class PlanExists(ResourceExists):
+    msg_fmt = _("This plan already exists.")
 
 
 class NotImplemented(SolumException):
