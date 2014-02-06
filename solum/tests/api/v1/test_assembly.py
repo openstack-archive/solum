@@ -36,3 +36,18 @@ class TestAssemblyController(base.BaseTestCase):
         obj = assembly.AssemblyController('test_id')
         obj.delete()
         self.assertEqual(501, resp_mock.status)
+
+
+@mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
+@mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
+class TestAssembliesController(base.BaseTestCase):
+    def test_assemblies_get_all(self, resp_mock, request_mock):
+        assembly_obj = assembly.AssembliesController()
+        resp = assembly_obj.get_all()
+        self.assertIsNotNone(resp)
+        self.assertEqual(200, resp_mock.status)
+
+    def test_assemblies_post(self, resp_mock, request_mock):
+        obj = assembly.AssembliesController()
+        obj.post(None)
+        self.assertEqual(501, resp_mock.status)
