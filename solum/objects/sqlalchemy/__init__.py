@@ -13,20 +13,14 @@
 # limitations under the License.
 
 from solum import objects
-from solum.objects import application as abstract_application
 from solum.objects import plan as abstract_plan
 from solum.objects import service as abstract_srvc
-from solum.objects.sqlalchemy import application
 from solum.objects.sqlalchemy import plan
 from solum.objects.sqlalchemy import service
 
 
 def load():
     """Activate the sqlalchemy backend."""
-    objects.registry.add(abstract_application.Application,
-                         application.Application)
-    objects.registry.add(abstract_application.ApplicationList,
-                         application.ApplicationList)
     objects.registry.add(abstract_plan.Plan, plan.Plan)
     objects.registry.add(abstract_plan.PlanList, plan.PlanList)
     objects.registry.add(abstract_srvc.Service, service.Service)
