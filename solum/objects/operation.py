@@ -23,4 +23,4 @@ class Operation(base.CrudMixin):
 
 
 class OperationList(list, base.CrudListMixin):
-    """List of Operation."""
+    """List of operation."""
