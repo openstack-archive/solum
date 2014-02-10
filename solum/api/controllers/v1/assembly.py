@@ -18,7 +18,7 @@ from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
 
 from solum.api.controllers.v1.datamodel import assembly
-from solum.api.handlers import assembly_handler as assemblyhandler
+from solum.api.handlers import assembly_handler
 from solum.common import exception
 
 
@@ -33,7 +33,7 @@ class AssemblyController(rest.RestController):
     @wsme_pecan.wsexpose(assembly.Assembly, wtypes.text)
     def get(self):
         """Return this assembly."""
-        handler = assemblyhandler.AssemblyHandler()
+        handler = assembly_handler.AssemblyHandler()
         return handler.get(self._id)
 
     @exception.wrap_controller_exception
@@ -41,14 +41,14 @@ class AssemblyController(rest.RestController):
                          body=assembly.Assembly)
     def put(self, data):
         """Modify this assembly."""
-        handler = assemblyhandler.AssemblyHandler()
+        handler = assembly_handler.AssemblyHandler()
         return handler.update(self._id, data)
 
     @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(None, wtypes.text, status_code=204)
     def delete(self):
         """Delete this assembly."""
-        handler = assemblyhandler.AssemblyHandler()
+        handler = assembly_handler.AssemblyHandler()
         return handler.delete(self._id)
 
 
@@ -66,12 +66,12 @@ class AssembliesController(rest.RestController):
                          status_code=201)
     def post(self, data):
         """Create a new assembly."""
-        handler = assemblyhandler.AssemblyHandler()
+        handler = assembly_handler.AssemblyHandler()
         return handler.create(data)
 
     @exception.wrap_controller_exception
     @wsme_pecan.wsexpose([assembly.Assembly])
     def get_all(self):
         """Return all assemblies, based on the query provided."""
-        handler = assemblyhandler.AssemblyHandler()
+        handler = assembly_handler.AssemblyHandler()
         return handler.get_all()

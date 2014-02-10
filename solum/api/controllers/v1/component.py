@@ -16,7 +16,7 @@ from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
 
 from solum.api.controllers.v1.datamodel import component
-from solum.api.handlers import component_handler as componenthandler
+from solum.api.handlers import component_handler
 from solum.common import exception
 
 
@@ -31,7 +31,7 @@ class ComponentController(rest.RestController):
     @wsme_pecan.wsexpose(component.Component, wtypes.text)
     def get(self):
         """Return this component."""
-        handler = componenthandler.ComponentHandler()
+        handler = component_handler.ComponentHandler()
         return handler.get(self._id)
 
     @exception.wrap_controller_exception
@@ -39,14 +39,14 @@ class ComponentController(rest.RestController):
                          body=component.Component)
     def put(self, data):
         """Modify this component."""
-        handler = componenthandler.ComponentHandler()
+        handler = component_handler.ComponentHandler()
         return handler.update(self._id, data)
 
     @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(None, wtypes.text, status_code=204)
     def delete(self):
         """Delete this component."""
-        handler = componenthandler.ComponentHandler()
+        handler = component_handler.ComponentHandler()
         return handler.delete(self._id)
 
 
@@ -64,12 +64,12 @@ class ComponentsController(rest.RestController):
                          status_code=201)
     def post(self, data):
         """Create a new component."""
-        handler = componenthandler.ComponentHandler()
+        handler = component_handler.ComponentHandler()
         return handler.create(data)
 
     @exception.wrap_controller_exception
     @wsme_pecan.wsexpose([component.Component])
     def get_all(self):
         """Return all components, based on the query provided."""
-        handler = componenthandler.ComponentHandler()
+        handler = component_handler.ComponentHandler()
         return handler.get_all()
