@@ -24,7 +24,6 @@ class ExtensionController(rest.RestController):
     """Manages operations on a single extension."""
 
     def __init__(self, extension_id):
-        pecan.request.context['extension_id'] = extension_id
         self._id = extension_id
 
     @exception.wrap_controller_exception

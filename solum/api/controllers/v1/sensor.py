@@ -27,7 +27,6 @@ class SensorController(rest.RestController):
     """Manages operations on a single sensor."""
 
     def __init__(self, sensor_id):
-        pecan.request.context['sensor_id'] = sensor_id
         self._id = sensor_id
 
     @exception.wrap_controller_exception

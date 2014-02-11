@@ -26,7 +26,6 @@ class AssemblyController(rest.RestController):
     """Manages operations on a single assembly."""
 
     def __init__(self, assembly_id):
-        pecan.request.context['assembly_id'] = assembly_id
         self._id = assembly_id
 
     @exception.wrap_controller_exception

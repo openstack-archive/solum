@@ -25,7 +25,6 @@ class PlanController(rest.RestController):
     """Manages operations on a single plan."""
 
     def __init__(self, plan_id):
-        pecan.request.context['plan_id'] = plan_id
         self._id = plan_id
 
     @exception.wrap_controller_exception

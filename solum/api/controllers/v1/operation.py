@@ -27,7 +27,6 @@ class OperationController(rest.RestController):
     """Manages operations on a single operation."""
 
     def __init__(self, operation_id):
-        pecan.request.context['operation_id'] = operation_id
         self._id = operation_id
 
     @exception.wrap_controller_exception
