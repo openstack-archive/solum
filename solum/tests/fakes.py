@@ -46,3 +46,32 @@ class FakeAuthProtocol(mock.Mock):
         super(FakeAuthProtocol, self).__init__(**kwargs)
         self.app = FakeApp()
         self.config = ''
+
+
+class FakeSensor(mock.Mock):
+    def __init__(self, **kwargs):
+        super(FakeSensor, self).__init__(**kwargs)
+        self.__tablename__ = 'sensor'
+        self.__resource__ = 'sensors'
+        self.user_id = 'test_user_id'
+        self.project_id = 'test_project_id'
+        self.uuid = '54d54'
+        self.id = 'test_id'
+        self.name = 'test_name'
+        self.value = '42'
+        self.sensor_type = 'int'
+        self.documentation = 'http://test_documentation.com/'
+        self.description = 'test_description'
+        self.target_resource = 'http://test_target_resource.com/'
+
+    def as_dict(self):
+        return dict(name=self.name,
+                    user_id=self.user_id,
+                    project_id=self.project_id,
+                    uuid=self.uuid,
+                    id=self.id,
+                    value=self.value,
+                    sensor_type=self.sensor_type,
+                    documentation=self.documentation,
+                    description=self.description,
+                    target_resource=self.target_resource)

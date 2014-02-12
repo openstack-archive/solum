@@ -10,14 +10,49 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from solum.api.controllers.v1.datamodel import sensor
+import uuid
+
+import six
+
 from solum.api.handlers import handler
+from solum import objects
 
 
 class SensorHandler(handler.Handler):
     """Fulfills a request on the sensor resource."""
 
+    def __init__(self):
+        super(SensorHandler, self).__init__()
+
     def get(self, id):
         """Return a sensor."""
-        response = sensor.Sensor.sample()
-        return response
+        return objects.registry.Sensor.get_by_uuid(None, id)
+
+    def _update_db_object(self, db_obj, data):
+        filtered_keys = set(('id', 'uuid', 'uri', 'type'))
+        for field in set(six.iterkeys(data)) - filtered_keys:
+            setattr(db_obj, field, data[field])
+
+    def update(self, id, data):
+        """Modify the sensor."""
+        db_obj = objects.registry.Sensor.get_by_uuid(None, id)
+        self._update_db_object(db_obj, data)
+        db_obj.save(None)
+        return db_obj
+
+    def delete(self, id):
+        """Delete the sensor."""
+        db_obj = objects.registry.Sensor.get_by_uuid(None, id)
+        db_obj.delete()
+
+    def create(self, data):
+        """Create a new sensor."""
+        db_obj = objects.registry.Sensor()
+        db_obj.uuid = str(uuid.uuid4())
+        self._update_db_object(db_obj, data)
+        db_obj.create()
+        return db_obj
+
+    def get_all(self):
+        """Return all sensors."""
+        return objects.registry.SensorList.get_all(None)

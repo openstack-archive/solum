@@ -12,13 +12,17 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import json
 import mock
 import testscenarios
 
 from solum.api.controllers.v1.datamodel import sensor as model
 from solum.api.controllers.v1 import sensor as controller
+from solum.common import exception
 from solum.tests import base
 from solum.tests import fakes
+
+from solum import objects
 
 
 load_tests = testscenarios.load_tests_apply_scenarios
@@ -68,34 +72,123 @@ class TestSensorValueTypeBad(base.BaseTestCase):
 
 @mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
 @mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
+@mock.patch('solum.api.controllers.v1.sensor.sensor_handler.SensorHandler')
 class TestSensorController(base.BaseTestCase):
-    def test_sensor_get(self, resp_mock, request_mock):
+    def test_sensor_get(self, handler_mock, resp_mock, request_mock):
+        handler_get = handler_mock.return_value.get
+        handler_get.return_value = fakes.FakeSensor()
         obj = controller.SensorController('test_id')
-        sensor_model = obj.get()
+        result = obj.get()
         self.assertEqual(200, resp_mock.status)
-        self.assertIsNotNone(sensor_model)
+        self.assertIsNotNone(result)
+        handler_get.assert_called_once_with('test_id')
 
-    def test_sensor_put(self, resp_mock, request_mock):
+    def test_sensor_get_not_found(self, handler_mock, resp_mock, request_mock):
+        handler_get = handler_mock.return_value.get
+        handler_get.side_effect = exception.NotFound(name='sensor',
+                                                     sensor_id='test_id')
         obj = controller.SensorController('test_id')
-        obj.put(None)
+        obj.get()
+        self.assertEqual(404, resp_mock.status)
+        handler_get.assert_called_once_with('test_id')
+
+    def test_sensor_put(self, handler_mock, resp_mock, request_mock):
+        json_update = {'description': 'foo',
+                       'value': '1234',
+                       'name': 'test_name_changed'}
+        request_mock.body = json.dumps(json_update)
+        request_mock.content_type = 'application/json'
+        handler_update = handler_mock.return_value.update
+        handler_update.return_value = fakes.FakeSensor()
+        obj = controller.SensorController('test_id')
+        obj.put(fakes.FakeSensor())
+        self.assertEqual(200, resp_mock.status)
+        handler_update.assert_called_once_with('test_id', json_update)
+
+    def test_sensor_put_none(self, handler_mock, resp_mock, request_mock):
+        request_mock.body = None
+        request_mock.content_type = 'application/json'
+        handler_put = handler_mock.return_value.put
+        handler_put.return_value = fakes.FakeSensor()
+        controller.SensorController('test_id').put()
         self.assertEqual(400, resp_mock.status)
 
-    def test_sensor_delete(self, resp_mock, request_mock):
+    def test_sensor_put_not_found(self, handler_mock, resp_mock, request_mock):
+        json_update = {'name': 'hb42', 'value': '0'}
+        request_mock.body = json.dumps(json_update)
+        request_mock.content_type = 'application/json'
+        handler_update = handler_mock.return_value.update
+        handler_update.side_effect = exception.NotFound(name='sensor',
+                                                        sensor_id='test_id')
+        controller.SensorController('test_id').put()
+        handler_update.assert_called_with('test_id', json_update)
+        self.assertEqual(404, resp_mock.status)
+
+    def test_sensor_delete(self, mock_handler, resp_mock, request_mock):
+        handler_delete = mock_handler.return_value.delete
+        handler_delete.return_value = None
         obj = controller.SensorController('test_id')
         obj.delete()
-        self.assertEqual(400, resp_mock.status)
+        handler_delete.assert_called_with('test_id')
+        self.assertEqual(204, resp_mock.status)
+
+    def test_sensor_delete_not_found(self, mock_handler,
+                                     resp_mock, request_mock):
+        handler_delete = mock_handler.return_value.delete
+        handler_delete.side_effect = exception.NotFound(name='sensor',
+                                                        sensor_id='test_id')
+        obj = controller.SensorController('test_id')
+        obj.delete()
+        handler_delete.assert_called_with('test_id')
+        self.assertEqual(404, resp_mock.status)
 
 
 @mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
 @mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
+@mock.patch('solum.api.controllers.v1.sensor.sensor_handler.SensorHandler')
 class TestSensorsController(base.BaseTestCase):
-    def test_sensors_get_all(self, resp_mock, request_mock):
-        sensor_obj = controller.SensorsController()
-        resp = sensor_obj.get_all()
+    def test_sensors_get_all(self, handler_mock, resp_mock, request_mock):
+        obj = controller.SensorsController()
+        resp = obj.get_all()
         self.assertIsNotNone(resp)
         self.assertEqual(200, resp_mock.status)
 
-    def test_sensors_post(self, resp_mock, request_mock):
+    def test_sensors_post(self, handler_mock, resp_mock, request_mock):
+        json_update = {'value': '1234',
+                       'name': 'test_name_changed',
+                       'user_id': 'user_id',
+                       'project_id': 'test_id',
+                       'description': 'desc test',
+                       'sensor_type': 'str',
+                       'documentation': 'http://example.com/docs/blabla/',
+                       'target_resource': 'http://example.com/target/'}
+        request_mock.body = json.dumps(json_update)
+        request_mock.content_type = 'application/json'
+        handler_create = handler_mock.return_value.create
+        handler_create.return_value = fakes.FakeSensor()
         obj = controller.SensorsController()
-        obj.post(None)
-        self.assertEqual(400, resp_mock.status)
+        obj.post(fakes.FakeSensor())
+        self.assertEqual(201, resp_mock.status)
+        handler_create.assert_called_once_with(json_update)
+
+
+class TestSensorAsDict(base.BaseTestCase):
+
+    scenarios = [
+        ('one', dict(data={'name': 'foo', 'value': '0'})),
+        ('full', dict(data={'value': '1234',
+                            'name': 'test_name_changed',
+                            'user_id': 'user_id',
+                            'project_id': 'test_id',
+                            'description': 'desc test',
+                            'sensor_type': 'str',
+                            'documentation': 'http://example.com/docs/blabla/',
+                            'target_resource': 'http://example.com/target/'}))
+    ]
+
+    def test_as_dict(self):
+        objects.load()
+        s = model.Sensor(**self.data)
+        self.data.pop('uri', None)
+        self.data.pop('type', None)
+        self.assertEqual(self.data, s.as_dict(objects.registry.Sensor))

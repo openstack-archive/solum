@@ -12,15 +12,13 @@
 
 import pecan
 from pecan import rest
-import six
-import wsme
 from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
 
 from solum.api.controllers.v1.datamodel import sensor
 from solum.api.handlers import sensor_handler
 from solum.common import exception
-from solum.openstack.common.gettextutils import _
+from solum import objects
 
 
 class SensorController(rest.RestController):
@@ -28,31 +26,38 @@ class SensorController(rest.RestController):
 
     def __init__(self, sensor_id):
         self._id = sensor_id
+        self._handler = sensor_handler.SensorHandler()
+        objects.load()
 
     @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(sensor.Sensor, wtypes.text)
     def get(self):
         """Return this sensor."""
-        handler = sensor_handler.SensorHandler()
-        return handler.get(self._id)
+        return sensor.Sensor.from_db_model(self._handler.get(self._id),
+                                           pecan.request.host_url)
 
+    @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(sensor.Sensor, wtypes.text, body=sensor.Sensor)
     def put(self, data):
         """Modify this sensor."""
-        error = _("Not implemented")
-        pecan.response.translatable_error = error
-        raise wsme.exc.ClientSideError(six.text_type(error))
+        obj = self._handler.update(self._id,
+                                   data.as_dict(objects.registry.Sensor))
+        return sensor.Sensor.from_db_model(obj, pecan.request.host_url)
 
+    @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(None, wtypes.text, status_code=204)
     def delete(self):
         """Delete this sensor."""
-        error = _("Not implemented")
-        pecan.response.translatable_error = error
-        raise wsme.exc.ClientSideError(six.text_type(error))
+        self._handler.delete(self._id)
 
 
 class SensorsController(rest.RestController):
     """Manages operations on the sensors collection."""
+
+    def __init__(self):
+        super(SensorsController, self).__init__()
+        self._handler = sensor_handler.SensorHandler()
+        objects.load()
 
     @pecan.expose()
     def _lookup(self, sensor_id, *remainder):
@@ -60,14 +65,17 @@ class SensorsController(rest.RestController):
             remainder = remainder[:-1]
         return SensorController(sensor_id), remainder
 
-    @wsme_pecan.wsexpose(sensor.Sensor, body=sensor.Sensor, status_code=201)
+    @exception.wrap_controller_exception
+    @wsme_pecan.wsexpose(sensor.Sensor, wtypes.text,
+                         body=sensor.Sensor, status_code=201)
     def post(self, data):
         """Create a new sensor."""
-        error = _("Not implemented")
-        pecan.response.translatable_error = error
-        raise wsme.exc.ClientSideError(six.text_type(error))
+        obj = self._handler.create(data.as_dict(objects.registry.Sensor))
+        return sensor.Sensor.from_db_model(obj, pecan.request.host_url)
 
+    @exception.wrap_controller_exception
     @wsme_pecan.wsexpose([sensor.Sensor])
     def get_all(self):
         """Return all sensors, based on the query provided."""
-        return []
+        return [sensor.Sensor.from_db_model(obj, pecan.request.host_url)
+                for obj in self._handler.get_all()]
