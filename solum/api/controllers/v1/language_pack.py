@@ -28,7 +28,6 @@ class LanguagePackController(rest.RestController):
     """Manages operations on a single language pack."""
 
     def __init__(self, language_pack_id):
-        pecan.request.context['language_pack_id'] = language_pack_id
         self._id = language_pack_id
 
     @wsme_pecan.wsexpose(language_pack.LanguagePack, wtypes.text)
