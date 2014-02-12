@@ -17,7 +17,7 @@ from pecan import rest
 import wsmeext.pecan as wsme_pecan
 
 from solum.api.controllers.v1.datamodel import plan
-from solum.api.handlers import plan_handler as planhandler
+from solum.api.handlers import plan_handler
 from solum.common import exception
 
 
@@ -31,21 +31,21 @@ class PlanController(rest.RestController):
     @wsme_pecan.wsexpose(plan.Plan)
     def get(self):
         """Return this plan."""
-        handler = planhandler.PlanHandler()
+        handler = plan_handler.PlanHandler()
         return handler.get(self._id)
 
     @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(plan.Plan, body=plan.Plan)
     def put(self, data):
         """Modify this plan."""
-        handler = planhandler.PlanHandler()
+        handler = plan_handler.PlanHandler()
         return handler.update(self._id, data)
 
     @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(status_code=204)
     def delete(self):
         """Delete this plan."""
-        handler = planhandler.PlanHandler()
+        handler = plan_handler.PlanHandler()
         return handler.delete(self._id)
 
 
@@ -62,12 +62,12 @@ class PlansController(rest.RestController):
     @wsme_pecan.wsexpose(plan.Plan, body=plan.Plan, status_code=201)
     def post(self, data):
         """Create a new plan."""
-        handler = planhandler.PlanHandler()
+        handler = plan_handler.PlanHandler()
         return handler.create(data)
 
     @exception.wrap_controller_exception
     @wsme_pecan.wsexpose([plan.Plan])
     def get_all(self):
         """Return all plans, based on the query provided."""
-        handler = planhandler.PlanHandler()
+        handler = plan_handler.PlanHandler()
         return handler.get_all()
