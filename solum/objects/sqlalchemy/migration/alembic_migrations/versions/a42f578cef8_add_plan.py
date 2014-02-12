@@ -42,4 +42,4 @@ def upgrade():
 
 
 def downgrade():
-    op.drop_tables('plan')
+    op.drop_table('plan')

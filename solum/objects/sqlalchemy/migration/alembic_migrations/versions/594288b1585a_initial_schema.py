@@ -41,4 +41,4 @@ def upgrade():
 
 
 def downgrade():
-    op.drop_tables('application')
+    op.drop_table('application')
