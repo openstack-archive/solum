@@ -15,9 +15,11 @@
 from solum import objects
 from solum.objects import operation as abstract_operation
 from solum.objects import plan as abstract_plan
+from solum.objects import sensor as abstract_sensor
 from solum.objects import service as abstract_srvc
 from solum.objects.sqlalchemy import operation
 from solum.objects.sqlalchemy import plan
+from solum.objects.sqlalchemy import sensor
 from solum.objects.sqlalchemy import service
 
 
@@ -30,3 +32,5 @@ def load():
     objects.registry.add(abstract_operation.Operation, operation.Operation)
     objects.registry.add(abstract_operation.OperationList,
                          operation.OperationList)
+    objects.registry.add(abstract_sensor.Sensor, sensor.Sensor)
+    objects.registry.add(abstract_sensor.SensorList, sensor.SensorList)

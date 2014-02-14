@@ -160,6 +160,10 @@ class OperationNotFound(NotFound):
     msg_fmt = _("The operation %(operation_id)s could not be found.")
 
 
+class SensorNotFound(NotFound):
+    msg_fmt = _("The sensor %(sensor_id)s could not be found.")
+
+
 class ResourceExists(SolumException):
     msg_fmt = _("The requested resource already exists.")
     code = 409
@@ -179,6 +183,10 @@ class ServiceExists(ResourceExists):
 
 class OperationExists(ResourceExists):
     msg_fmt = _("This operation already exists.")
+
+
+class SensorExists(ResourceExists):
+    msg_fmt = _("This sensor already exists.")
 
 
 class NotImplemented(SolumException):
