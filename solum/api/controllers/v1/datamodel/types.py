@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import wsme
 from wsme import types as wtypes
 
 from solum.api.controllers import common_types
@@ -40,3 +41,22 @@ class Base(wtypes.Base):
 
     user_id = wtypes.text
     "The user that owns this resource."
+
+    @classmethod
+    def from_db_model(cls, m, host_url):
+        json = m.as_dict()
+        json['type'] = m.__tablename__
+        json['uri'] = '%s/v1/%s/%s' % (host_url, json['type'], m.uuid)
+        del json['id']
+        return cls(**(json))
+
+    def as_dict(self, db_model):
+        valid_keys = (attr for attr in db_model.__dict__.keys()
+                      if attr[:2] != '__')
+        return self.as_dict_from_keys(valid_keys)
+
+    def as_dict_from_keys(self, keys):
+        return dict((k, getattr(self, k))
+                    for k in keys
+                    if hasattr(self, k) and
+                    getattr(self, k) != wsme.Unset)
