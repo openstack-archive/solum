@@ -28,8 +28,7 @@ class TestPlan(base.BaseTestCase):
                       'project_id': 'bla',
                       'user_id': 'fred',
                       'raw_content': 'lots of stuff here'}]
-        utils.create_models_from_data(plan.Plan,
-                                      self.data, self.ctx)
+        utils.create_models_from_data(plan.Plan, self.data, self.ctx)
 
     def test_objects_registered(self):
         self.assertTrue(registry.Plan)

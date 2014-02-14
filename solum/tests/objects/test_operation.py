@@ -29,12 +29,7 @@ class TestOperation(base.BaseTestCase):
                       'description': 'Scale up the resource',
                       'documentation': 'http://documentation.link',
                       'target_resource': 'http://target.resource.link'}]
-        for pd in self.data:
-            pl = operation.Operation()
-            for key, value in pd.items():
-                setattr(pl, key, value)
-            pl.create(self.ctx)
-            pd['id'] = pl.id
+        utils.create_models_from_data(operation.Operation, self.data, self.ctx)
 
     def test_objects_registered(self):
         self.assertIsNotNone(registry.Operation)
