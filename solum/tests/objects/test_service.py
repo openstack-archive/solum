@@ -23,20 +23,13 @@ class TestService(base.BaseTestCase):
         super(TestService, self).setUp()
         self.db = self.useFixture(utils.Database())
         self.ctx = utils.dummy_context()
-
         self.data = [{'project_id': 'test_id',
                       'user_id': 'fred',
                       'uuid': '12345678abcdefgh',
                       'name': 'service1',
                       'description': 'test service',
                       'service_type': 'language_pack'}]
-
-        for srvc_data in self.data:
-            tst_srvc = service.Service()
-            for key, value in srvc_data.items():
-                setattr(tst_srvc, key, value)
-            tst_srvc.create(self.ctx)
-            srvc_data['id'] = tst_srvc.id
+        utils.create_models_from_data(service.Service, self.data, self.ctx)
 
     def test_objects_registered(self):
         self.assertTrue(registry.Service)
