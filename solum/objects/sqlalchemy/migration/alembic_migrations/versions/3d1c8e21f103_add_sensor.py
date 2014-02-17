@@ -14,7 +14,7 @@
 """Add sensor
 
 Revision ID: 3d1c8e21f103
-Revises: a42f578cef8
+Revises: 46ffedad6d56
 Create Date: 2014-02-06 15:15:19.447394
 
 """
