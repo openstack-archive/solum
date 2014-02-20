@@ -1,5 +1,11 @@
 #!/bin/bash
 
+sudo mkdir -p /opt/solum
+sudo chown -R ${USER}:${USER} /opt/solum
+
+mkdir -p /opt/solum/apps
+mkdir -p /opt/solum/cache
+
 # Slugbuilder builds the cedarish slug
 # We should own/customize this for solum
 # but for POC we can grab and build container
@@ -13,10 +19,11 @@ sudo docker build -t solum/slugbuilder github.com/paulczar/slugbuilder
 echo Creating slugrunner container
 sudo docker build -t solum/slugrunner github.com/paulczar/slugrunner
 
-
+if [ -d /opt/solum/buildpacks ]; then
+    exit 0
+fi
 echo Preparing Buildpacks
-sudo mkdir -p /opt/solum/buildpacks
-sudo chown -R ${USER}:${USER} /opt/solum
+mkdir -p /opt/solum/buildpacks
 cd /opt/solum/buildpacks
 # These buildpacks help with autodetection and app level depedency installs.
 git clone --depth 1 https://github.com/heroku/heroku-buildpack-java.git
@@ -30,6 +37,3 @@ git clone --depth 1 https://github.com/kr/heroku-buildpack-go.git
 git clone --depth 1 https://github.com/heroku/heroku-buildpack-scala
 git clone --depth 1 https://github.com/igrigorik/heroku-buildpack-dart.git
 git clone --depth 1 https://github.com/miyagawa/heroku-buildpack-perl.git
-
-mkdir -p /opt/solum/apps
-mkdir -p /opt/solum/cache
