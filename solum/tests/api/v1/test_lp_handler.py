@@ -14,22 +14,23 @@
 
 import mock
 
-from solum.api.controllers.v1.datamodel import language_pack
 from solum.api.handlers import language_pack_handler
 from solum.tests import base
 
 
+@mock.patch('solum.objects.registry')
 class TestLanguagePackHandler(base.BaseTestCase):
-    def test_language_pack_get(self):
-        fake_lp = language_pack.LanguagePack(language_pack_name='test')
-        language_pack.LanguagePack.sample = mock.MagicMock(
-            return_value=(fake_lp))
-
+    def test_language_pack_get(self, mock_registry):
+        mock_registry.LanguagePack.get_by_uuid.return_value = {}
         handler = language_pack_handler.LanguagePackHandler()
         resp = handler.get('test_id')
-        self.assertEqual(resp.language_pack_name, fake_lp.language_pack_name)
+        self.assertIsNotNone(resp)
+        (mock_registry.LanguagePack.get_by_uuid.
+            assert_called_once_with(None, 'test_id'))
 
-    def test_language_pack_get_all(self):
+    def test_language_pack_get_all(self, mock_registry):
+        mock_registry.LanguagePackList.get_all.return_value = {}
         handler = language_pack_handler.LanguagePackHandler()
         resp = handler.get_all()
         self.assertIsNotNone(resp)
+        mock_registry.LanguagePackList.get_all.assert_called_once_with(None)

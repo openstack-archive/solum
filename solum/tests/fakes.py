@@ -230,3 +230,32 @@ class FakeComponent(mock.Mock):
                     assembly_id=self.assembly_id,
                     parent_component_id=self.parent_component_id,
                     description=self.description)
+
+
+class FakeLanguagePack(mock.Mock):
+    def __init__(self, **kwargs):
+        super(FakeLanguagePack, self).__init__(**kwargs)
+        self.__resource__ = 'language_packs'
+        self.__tablename__ = 'language_pack'
+        self.user_id = 'test_user_id'
+        self.project_id = 'test_project_id'
+        self.uuid = 'test_uuid'
+        self.id = 'test_id'
+        self.name = 'test_name'
+        self.description = 'test_description'
+        self.language_impl = 'test_impl'
+        self.tags = ['tag1', 'tag2']
+        self.attr_blob = {'attr1': 'val1'}
+        self.service_id = '1'
+
+    def as_dict(self):
+        return dict(user_id=self.user_id,
+                    project_id=self.project_id,
+                    uuid=self.uuid,
+                    id=self.id,
+                    name=self.name,
+                    description=self.description,
+                    language_impl=self.language_impl,
+                    tags=self.tags,
+                    attr_blob=self.attr_blob,
+                    service_id=self.service_id)
