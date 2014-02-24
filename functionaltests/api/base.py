@@ -27,6 +27,7 @@ class SolumClient(rest_client.RestClient):
     def __init__(self, auth_provider):
         super(SolumClient, self).__init__(auth_provider)
         self.service = 'application_deployment'
+        self.endpoint_url = 'publicURL'
 
 
 class TestCase(testtools.TestCase):
