@@ -15,7 +15,6 @@ import sqlalchemy
 from solum.common import exception
 from solum.objects import extension as abstract
 from solum.objects.sqlalchemy import models as sql
-from solum.openstack.common.db.sqlalchemy import session as db_session
 
 
 class Extension(sql.Base, abstract.Extension):
@@ -38,14 +37,6 @@ class Extension(sql.Base, abstract.Extension):
     @classmethod
     def _raise_duplicate_object(cls, e, self):
         raise exception.ResourceExists(name='extension')
-
-    @classmethod
-    def get_by_uuid(cls, context, item_uuid):
-        try:
-            return db_session.get_session().query(cls).filter_by(
-                uuid=item_uuid).one()
-        except sqlalchemy.orm.exc.NoResultFound:
-            cls._raise_not_found(item_uuid)
 
 
 class ExtensionList(abstract.ExtensionList):

@@ -18,6 +18,7 @@ SQLAlchemy models for application data.
 
 from oslo.config import cfg
 from sqlalchemy.ext import declarative
+from sqlalchemy.orm import exc
 
 from solum import objects
 from solum.openstack.common.db import exception as db_exc
@@ -70,6 +71,14 @@ class SolumBase(models.TimestampMixin, models.ModelBase):
         if not result:
             cls._raise_not_found(item_id)
         return result
+
+    @classmethod
+    def get_by_uuid(cls, context, item_uuid):
+        try:
+            return db_session.get_session().query(cls).filter_by(
+                uuid=item_uuid).one()
+        except exc.NoResultFound:
+            cls._raise_not_found(item_uuid)
 
     def save(self, context):
         if objects.transition_schema():
