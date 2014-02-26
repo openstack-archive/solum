@@ -21,7 +21,7 @@ class Extension(base.CrudMixin):
     @classmethod
     def _raise_not_found(cls, item_id):
         """Raise a not found exception."""
-        raise exception.ExtensionNotFound(extension_id=item_id)
+        raise exception.NotFound(name='extension', id=item_id)
 
 
 class ExtensionList(list, base.CrudListMixin):

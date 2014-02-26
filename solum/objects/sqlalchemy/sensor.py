@@ -39,7 +39,7 @@ class Sensor(sql.Base, abstract.Sensor):
 
     @classmethod
     def _raise_duplicate_object(cls, e, self):
-        raise exception.SensorExists()
+        raise exception.ResourceExists(name='sensor')
 
     @classmethod
     def get_by_uuid(cls, context, item_uuid):

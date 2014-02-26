@@ -37,7 +37,7 @@ class Plan(sql.Base, abstract.Plan):
 
     @classmethod
     def _raise_duplicate_object(cls, e, self):
-        raise exception.PlanExists()
+        raise exception.ResourceExists(name='plan')
 
     @classmethod
     def get_by_uuid(cls, context, item_uuid):

@@ -24,18 +24,14 @@ from solum.tests import base
 class ExceptionTestCase(base.BaseTestCase):
     """Test cases for exception code."""
 
-    def test_not_found(self):
-        exc = exception.NotFound()
-        self.assertIn('could not be found', str(exc))
-        self.assertEqual(exc.code, 404)
-
     def test_with_kwargs(self):
-        exc = exception.ApplicationNotFound(application_id='green_paint')
-        self.assertIn('green_paint could not be found', six.text_type(exc))
+        exc = exception.NotFound(name='application', id='green_paint')
+        self.assertIn('green_paint could not be found.',
+                      six.text_type(exc))
         self.assertEqual(exc.code, 404)
 
     def test_with_kwargs_ru(self):
-        exc = exception.ApplicationNotFound(application_id=u'зеленой_краской')
+        exc = exception.NotFound(name='application', id=u'зеленой_краской')
         self.assertIn(u'зеленой_краской could not be found',
                       six.text_type(exc))
         self.assertEqual(exc.code, 404)
@@ -43,23 +39,24 @@ class ExceptionTestCase(base.BaseTestCase):
     def test_bad_kwargs_exception(self):
         cfg.CONF.set_override('fatal_exception_format_errors', True)
         self.assertRaises(KeyError,
-                          exception.ApplicationNotFound, a_field='green')
+                          exception.NotFound, a_field='green')
 
     def test_bad_kwargs(self):
         cfg.CONF.set_override('fatal_exception_format_errors', False)
-        exc = exception.ApplicationNotFound(a_field='green')
+        exc = exception.NotFound(a_field='green')
         self.assertIn('An unknown exception occurred', six.text_type(exc))
         self.assertEqual(exc.code, 404)
 
     def test_resource_exists(self):
-        exc = exception.ResourceExists()
-        self.assertIn("The requested resource already exists.",
+        exc = exception.ResourceExists(name='test')
+        self.assertIn("The test resource already exists.",
                       six.text_type(exc))
         self.assertEqual(exc.code, 409)
 
     def test_application_exists(self):
-        exc = exception.ApplicationExists()
-        self.assertIn("This application already exists.", six.text_type(exc))
+        exc = exception.ResourceExists(name='test')
+        self.assertIn("The test resource already exists.",
+                      six.text_type(exc))
         self.assertEqual(exc.code, 409)
 
     def test_not_implemented(self):

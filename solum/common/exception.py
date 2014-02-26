@@ -140,61 +140,13 @@ class SolumException(Exception):
 
 
 class NotFound(SolumException):
-    msg_fmt = _("The requested resource could not be found.")
+    msg_fmt = _("The %(name)s resource %(id)s could not be found.")
     code = 404
 
 
-class ApplicationNotFound(NotFound):
-    msg_fmt = _("The application %(application_id)s could not be found.")
-
-
-class PlanNotFound(NotFound):
-    msg_fmt = _("The plan %(plan_id)s could not be found.")
-
-
-class ServiceNotFound(NotFound):
-    msg_fmt = _("The service %(service_id)s could not be found.")
-
-
-class OperationNotFound(NotFound):
-    msg_fmt = _("The operation %(operation_id)s could not be found.")
-
-
-class SensorNotFound(NotFound):
-    msg_fmt = _("The sensor %(sensor_id)s could not be found.")
-
-
-class ExtensionNotFound(NotFound):
-    msg_fmt = _("The extension %(extension_id)s could not be found.")
-
-
 class ResourceExists(SolumException):
-    msg_fmt = _("The requested resource already exists.")
+    msg_fmt = _("The %(name)s resource already exists.")
     code = 409
-
-
-class ApplicationExists(ResourceExists):
-    msg_fmt = _("This application already exists.")
-
-
-class PlanExists(ResourceExists):
-    msg_fmt = _("This plan already exists.")
-
-
-class ServiceExists(ResourceExists):
-    msg_fmt = _("This service already exists.")
-
-
-class OperationExists(ResourceExists):
-    msg_fmt = _("This operation already exists.")
-
-
-class SensorExists(ResourceExists):
-    msg_fmt = _("This sensor already exists.")
-
-
-class ExtensionExists(ResourceExists):
-    msg_fmt = _("This extension already exists.")
 
 
 class NotImplemented(SolumException):

@@ -37,7 +37,7 @@ class Service(sql.Base, abstract.Service):
 
     @classmethod
     def _raise_duplicate_object(cls, e, self):
-        raise exception.ServiceExists()
+        raise exception.ResourceExists(name='service')
 
 
 class ServiceList(abstract.ServiceList):

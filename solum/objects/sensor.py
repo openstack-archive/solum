@@ -21,7 +21,7 @@ class Sensor(base.CrudMixin):
     @classmethod
     def _raise_not_found(cls, item_id):
         """Raise a not found exception."""
-        raise exception.SensorNotFound(sensor_id=item_id)
+        raise exception.NotFound(name='sensor', id=item_id)
 
 
 class SensorList(list, base.CrudListMixin):

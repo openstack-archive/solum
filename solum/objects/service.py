@@ -27,7 +27,7 @@ class Service(base.CrudMixin):
     @classmethod
     def _raise_not_found(cls, item_id):
         """Raise a not found exception."""
-        raise exception.ServiceNotFound(service_id=item_id)
+        raise exception.NotFound(name='service', id=item_id)
 
 
 class ServiceList(list, base.CrudListMixin):

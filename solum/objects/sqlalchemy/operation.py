@@ -35,7 +35,7 @@ class Operation(sql.Base, abstract.Operation):
 
     @classmethod
     def _raise_duplicate_object(cls, e, self):
-        raise exception.OperationExists()
+        raise exception.ResourceExists(name='operation')
 
 
 class OperationList(abstract.OperationList):

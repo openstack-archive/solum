@@ -36,7 +36,7 @@ class Extension(sql.Base, abstract.Extension):
 
     @classmethod
     def _raise_duplicate_object(cls, e, self):
-        raise exception.ExtensionExists()
+        raise exception.ResourceExists(name='extension')
 
     @classmethod
     def get_by_uuid(cls, context, item_uuid):

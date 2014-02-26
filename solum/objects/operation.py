@@ -25,7 +25,7 @@ class Operation(base.CrudMixin):
     @classmethod
     def _raise_not_found(cls, item_id):
         """Raise a not found exception."""
-        raise exception.OperationNotFound(operation_id=item_id)
+        raise exception.NotFound(name='operation', id=item_id)
 
 
 class OperationList(list, base.CrudListMixin):
