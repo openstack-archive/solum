@@ -164,6 +164,10 @@ class SensorNotFound(NotFound):
     msg_fmt = _("The sensor %(sensor_id)s could not be found.")
 
 
+class ExtensionNotFound(NotFound):
+    msg_fmt = _("The extension %(extension_id)s could not be found.")
+
+
 class ResourceExists(SolumException):
     msg_fmt = _("The requested resource already exists.")
     code = 409
@@ -187,6 +191,10 @@ class OperationExists(ResourceExists):
 
 class SensorExists(ResourceExists):
     msg_fmt = _("This sensor already exists.")
+
+
+class ExtensionExists(ResourceExists):
+    msg_fmt = _("This extension already exists.")
 
 
 class NotImplemented(SolumException):
