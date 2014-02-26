@@ -20,6 +20,7 @@ from solum.objects.sqlalchemy import models as sql
 class Operation(sql.Base, abstract.Operation):
     """Represent an operation in sqlalchemy."""
 
+    __resource__ = 'operations'
     __tablename__ = 'operation'
     __table_args__ = sql.table_args()
 

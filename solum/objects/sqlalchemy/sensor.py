@@ -21,6 +21,7 @@ from solum.openstack.common.db.sqlalchemy import session as db_session
 class Sensor(sql.Base, abstract.Sensor):
     """Represent an sensor in sqlalchemy."""
 
+    __resource__ = 'sensors'
     __tablename__ = 'sensor'
     __table_args__ = sql.table_args()
 

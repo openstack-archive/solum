@@ -21,6 +21,7 @@ from solum.openstack.common.db.sqlalchemy import session as db_session
 class Extension(sql.Base, abstract.Extension):
     """Represent an extension in sqlalchemy."""
 
+    __resource__ = 'extensions'
     __tablename__ = 'extension'
     __table_args__ = sql.table_args()
 
