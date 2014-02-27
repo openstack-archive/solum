@@ -34,7 +34,7 @@ Services
 .. rest-controller:: solum.api.controllers.v1.service:ServicesController
    :webprefix: /v1/services
 
-.. autotype:: solum.api.controllers.v1.service.Service
+.. autotype:: solum.api.controllers.v1.datamodel.service.Service
    :members:
 
 Operations
@@ -43,7 +43,7 @@ Operations
 .. rest-controller:: solum.api.controllers.v1.operation:OperationsController
    :webprefix: /v1/operations
 
-.. autotype:: solum.api.controllers.v1.operation.Operation
+.. autotype:: solum.api.controllers.v1.datamodel.operation.Operation
    :members:
 
 Sensors
@@ -52,7 +52,7 @@ Sensors
 .. rest-controller:: solum.api.controllers.v1.sensor:SensorsController
    :webprefix: /v1/sensors
 
-.. autotype:: solum.api.controllers.v1.sensor.Sensor
+.. autotype:: solum.api.controllers.v1.datamodel.sensor.Sensor
    :members:
 
 Components
@@ -71,5 +71,5 @@ Extensions
 .. rest-controller:: solum.api.controllers.v1.extension:ExtensionsController
    :webprefix: /v1/extensions
 
-.. autotype:: solum.api.controllers.v1.extension.Extension
+.. autotype:: solum.api.controllers.v1.datamodel.extension.Extension
    :members:
