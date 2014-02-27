@@ -100,3 +100,23 @@ class FakeExtension(mock.Mock):
                     version=self.version,
                     documentation=self.documentation,
                     description=self.description)
+
+
+class FakeAssembly(mock.Mock):
+    def __init__(self, **kwargs):
+        super(FakeAssembly, self).__init__(**kwargs)
+        self.__tablename__ = 'assembly'
+        self.__resource__ = 'assemblies'
+        self.user_id = 'fake user id'
+        self.project_id = 'fake project id'
+        self.uuid = 'test_uuid'
+        self.id = 8
+        self.name = 'faker'
+        self.components = []
+
+    def as_dict(self):
+        return dict(user_id=self.user_id,
+                    project_id=self.project_id,
+                    uuid=self.uuid,
+                    id=self.id,
+                    name=self.name)

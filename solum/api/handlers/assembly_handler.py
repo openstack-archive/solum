@@ -12,24 +12,46 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from solum.api.controllers.v1.datamodel import assembly
-from solum.api.controllers.v1.datamodel import component
+import uuid
+
 from solum.api.handlers import handler
+from solum import objects
 
 
 class AssemblyHandler(handler.Handler):
     """Fulfills a request on the assembly resource."""
 
-    def __init__(self):
-        pass
-
     def get(self, id):
-        """Return this assembly."""
-        response = assembly.Assembly.sample()
-        response.components.append(component.Component.sample())
-        return response
+        """Return an assembly."""
+        return objects.registry.Assembly.get_by_uuid(None, id)
+
+    def _update_db_object(self, db_obj, data):
+        for dk, dv in iter(data.items()):
+            if dk == 'type':
+                continue
+            elif hasattr(db_obj, dk):
+                setattr(db_obj, dk, dv)
+
+    def update(self, id, data):
+        """Modify a resource."""
+        db_obj = objects.registry.Assembly.get_by_uuid(None, id)
+        self._update_db_object(db_obj, data)
+        db_obj.save(None)
+        return db_obj
+
+    def delete(self, id):
+        """Delete a resource."""
+        db_obj = objects.registry.Assembly.get_by_uuid(None, id)
+        db_obj.destroy(None)
+
+    def create(self, data):
+        """Create a new resource."""
+        db_obj = objects.registry.Assembly()
+        db_obj.uuid = str(uuid.uuid4())
+        self._update_db_object(db_obj, data)
+        db_obj.create(None)
+        return db_obj
 
     def get_all(self):
         """Return all assemblies, based on the query provided."""
-        response = []
-        return response
+        return objects.registry.AssemblyList.get_all(None)

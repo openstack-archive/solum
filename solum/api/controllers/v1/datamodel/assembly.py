@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from solum.api.controllers import common_types
 from solum.api.controllers.v1.datamodel import component
 from solum.api.controllers.v1.datamodel import operation
 from solum.api.controllers.v1.datamodel import sensor
@@ -32,6 +33,9 @@ class Assembly(api_types.Base):
     one Component resource associated with it.
     """
 
+    plan_uri = common_types.Uri
+    """The URI to the plan to be used to create this assembly."""
+
     components = [component.Component]
     """Components that belong to the assembly."""
 
@@ -46,6 +50,7 @@ class Assembly(api_types.Base):
         return cls(uri='http://example.com/v1/assemblies/x4',
                    name='database',
                    type='assembly',
+                   plan_uri='http://example.com/v1/plans/45-09',
                    tags=['small'],
                    project_id='1dae5a09ef2b4d8cbf3594b0eb4f6b94',
                    user_id='55f41cf46df74320b9486a35f5d28a11',
