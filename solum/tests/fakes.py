@@ -75,3 +75,28 @@ class FakeSensor(mock.Mock):
                     documentation=self.documentation,
                     description=self.description,
                     target_resource=self.target_resource)
+
+
+class FakeExtension(mock.Mock):
+    def __init__(self, **kwargs):
+        super(FakeExtension, self).__init__(**kwargs)
+        self.__tablename__ = 'extension'
+        self.__resource__ = 'extension'
+        self.user_id = 'user_id'
+        self.project_id = 'test_id'
+        self.uuid = '44du3dx',
+        self.documentation = 'http://test_documentation.com'
+        self.description = 'test_desc'
+        self.id = 'test_id'
+        self.name = 'test_name'
+        self.version = '12.3'
+
+    def as_dict(self):
+        return dict(name=self.name,
+                    user_id=self.user_id,
+                    project_id=self.project_id,
+                    uuid=self.uuid,
+                    id=self.id,
+                    version=self.version,
+                    documentation=self.documentation,
+                    description=self.description)

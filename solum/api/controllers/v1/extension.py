@@ -18,6 +18,7 @@ import wsmeext.pecan as wsme_pecan
 from solum.api.controllers.v1.datamodel import extension
 from solum.api.handlers import extension_handler
 from solum.common import exception
+from solum import objects
 
 
 class ExtensionController(rest.RestController):
@@ -25,17 +26,39 @@ class ExtensionController(rest.RestController):
 
     def __init__(self, extension_id):
         self._id = extension_id
+        self._handler = extension_handler.ExtensionHandler()
+        objects.load()
 
     @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(extension.Extension, wtypes.text)
     def get(self):
         """Return this extension."""
-        handler = extension_handler.ExtensionHandler()
-        return handler.get(self._id)
+        return extension.Extension.from_db_model(self._handler.get(self._id),
+                                                 pecan.request.host_url)
+
+    @exception.wrap_controller_exception
+    @wsme_pecan.wsexpose(extension.Extension, wtypes.text,
+                         body=extension.Extension)
+    def put(self, data):
+        """Modify this extension."""
+        obj = self._handler.update(self._id,
+                                   data.as_dict(objects.registry.Extension))
+        return extension.Extension.from_db_model(obj, pecan.request.host_url)
+
+    @exception.wrap_controller_exception
+    @wsme_pecan.wsexpose(None, wtypes.text, status_code=204)
+    def delete(self):
+        """Delete this extension."""
+        self._handler.delete(self._id)
 
 
 class ExtensionsController(rest.RestController):
     """Manages operations on the extensions collection."""
+
+    def __init__(self):
+        super(ExtensionsController, self).__init__()
+        self._handler = extension_handler.ExtensionHandler()
+        objects.load()
 
     @pecan.expose()
     def _lookup(self, extension_id, *remainder):
@@ -43,7 +66,17 @@ class ExtensionsController(rest.RestController):
             remainder = remainder[:-1]
         return ExtensionController(extension_id), remainder
 
+    @exception.wrap_controller_exception
+    @wsme_pecan.wsexpose(extension.Extension, wtypes.text,
+                         body=extension.Extension,
+                         status_code=201)
+    def post(self, data):
+        """Create a new extension."""
+        obj = self._handler.create(data.as_dict(objects.registry.Extension))
+        return extension.Extension.from_db_model(obj, pecan.request.host_url)
+
     @wsme_pecan.wsexpose([extension.Extension])
     def get_all(self):
         """Return all extensions, based on the query provided."""
-        return []
+        return [extension.Extension.from_db_model(obj, pecan.request.host_url)
+                for obj in self._handler.get_all()]

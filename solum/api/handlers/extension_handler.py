@@ -10,14 +10,49 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from solum.api.controllers.v1.datamodel import extension
+import uuid
+
+import six
+
 from solum.api.handlers import handler
+from solum import objects
 
 
 class ExtensionHandler(handler.Handler):
     """Fulfills a request on the extension resource."""
 
+    def __init__(self):
+        super(ExtensionHandler, self).__init__()
+
     def get(self, id):
-        """Return an extension."""
-        response = extension.Extension.sample()
-        return response
+        """Return this extension."""
+        return objects.registry.Extension.get_by_uuid(None, id)
+
+    def _update_db_object(self, db_obj, data):
+        filtered_keys = set(('id', 'uuid', 'uri', 'type'))
+        for field in set(six.iterkeys(data)) - filtered_keys:
+            setattr(db_obj, field, data[field])
+
+    def update(self, id, data):
+        """Modify the extension."""
+        db_obj = objects.registry.Extension.get_by_uuid(None, id)
+        self._update_db_object(db_obj, data)
+        db_obj.save(None)
+        return db_obj
+
+    def delete(self, id):
+        """Delete the extension."""
+        db_obj = objects.registry.Extension.get_by_uuid(None, id)
+        db_obj.delete()
+
+    def create(self, data):
+        """Create a new extension."""
+        db_obj = objects.registry.Extension()
+        db_obj.uuid = str(uuid.uuid4())
+        self._update_db_object(db_obj, data)
+        db_obj.create()
+        return db_obj
+
+    def get_all(self):
+        """Return all operations."""
+        return objects.registry.ExtensionList.get_all(None)
