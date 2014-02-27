@@ -6,6 +6,6 @@ oslo.config>=1.2.0
 pbr>=0.6,<1.0
 pecan>=0.4.5
 python-keystoneclient>=0.6.0
-six>=1.4.1
+six>=1.5.2
 SQLAlchemy>=0.7.8,<=0.8.99
 WSME>=0.6
