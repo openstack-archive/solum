@@ -22,6 +22,7 @@ from solum.objects.sqlalchemy import models as sql
 class Service(sql.Base, abstract.Service):
     """Represent a service in sqlalchemy."""
 
+    __resource__ = 'services'
     __tablename__ = 'service'
     __table_args__ = sql.table_args()
 

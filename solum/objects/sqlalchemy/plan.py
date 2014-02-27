@@ -23,6 +23,7 @@ from solum.openstack.common.db.sqlalchemy import session as db_session
 class Plan(sql.Base, abstract.Plan):
     """Represent a plan in sqlalchemy."""
 
+    __resource__ = 'plans'
     __tablename__ = 'plan'
     __table_args__ = sql.table_args()
 

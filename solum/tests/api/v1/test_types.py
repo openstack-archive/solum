@@ -53,5 +53,5 @@ class TestTypes(base.BaseTestCase):
         self.assertEqual(data['project_id'], p.project_id)
         self.assertEqual('plan', p.type)
         self.assertEqual(data['user_id'], p.user_id)
-        self.assertEqual('%s/v1/%s/%s' % (host_url, p.type, data['uuid']),
-                         p.uri)
+        self.assertEqual('%s/v1/%s/%s' % (host_url, obj.__resource__,
+                                          data['uuid']), p.uri)

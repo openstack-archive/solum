@@ -46,7 +46,7 @@ class Base(wtypes.Base):
     def from_db_model(cls, m, host_url):
         json = m.as_dict()
         json['type'] = m.__tablename__
-        json['uri'] = '%s/v1/%s/%s' % (host_url, json['type'], m.uuid)
+        json['uri'] = '%s/v1/%s/%s' % (host_url, m.__resource__, m.uuid)
         del json['id']
         return cls(**(json))
 
