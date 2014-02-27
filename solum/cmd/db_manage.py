@@ -76,6 +76,7 @@ def get_manager():
     # Our CONF object is not the same as the db one so make sure the
     # database.connection is made know to the oslo DB layer.
     session.set_defaults(sql_connection=CONF.database.connection, sqlite_db='')
+    session.get_session(mysql_traditional_mode=True)
     alembic_path = os.path.join(os.path.dirname(__file__),
                                 '..', 'objects', 'sqlalchemy',
                                 'migration', 'alembic.ini')
