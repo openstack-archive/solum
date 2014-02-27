@@ -12,47 +12,49 @@
 
 import pecan
 from pecan import rest
-import six
-import wsme
-from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
 
 from solum.api.controllers.v1.datamodel import service
 from solum.api.handlers import service_handler
 from solum.common import exception
-from solum.openstack.common.gettextutils import _
+from solum import objects
 
 
 class ServiceController(rest.RestController):
     """Manages operations on a single service."""
 
     def __init__(self, service_id):
+        super(ServiceController, self).__init__()
         self._id = service_id
+        self._handler = service_handler.ServiceHandler()
 
     @exception.wrap_controller_exception
-    @wsme_pecan.wsexpose(service.Service, wtypes.text)
+    @wsme_pecan.wsexpose(service.Service)
     def get(self):
         """Return this service."""
-        handler = service_handler.ServiceHandler()
-        return handler.get(self._id)
+        return service.Service.from_db_model(self._handler.get(self._id),
+                                             pecan.request.host_url)
 
-    @wsme_pecan.wsexpose(service.Service, wtypes.text, body=service.Service)
+    @wsme_pecan.wsexpose(service.Service, body=service.Service)
     def put(self, data):
         """Modify this service."""
-        error = _("Not implemented")
-        pecan.response.translatable_error = error
-        raise wsme.exc.ClientSideError(six.text_type(error))
+        res = self._handler.update(self._id,
+                                   data.as_dict(objects.registry.Plan))
+        return service.Service.from_db_model(res, pecan.request.host_url)
 
-    @wsme_pecan.wsexpose(None, wtypes.text, status_code=204)
+    @exception.wrap_controller_exception
+    @wsme_pecan.wsexpose(status_code=204)
     def delete(self):
         """Delete this service."""
-        error = _("Not implemented")
-        pecan.response.translatable_error = error
-        raise wsme.exc.ClientSideError(six.text_type(error))
+        return self._handler.delete(self._id)
 
 
 class ServicesController(rest.RestController):
     """Manages operations on the services collection."""
+
+    def __init__(self):
+        super(ServicesController, self).__init__()
+        self._handler = service_handler.ServiceHandler()
 
     @pecan.expose()
     def _lookup(self, service_id, *remainder):
@@ -64,11 +66,11 @@ class ServicesController(rest.RestController):
                          status_code=201)
     def post(self, data):
         """Create a new service."""
-        error = _("Not implemented")
-        pecan.response.translatable_error = error
-        raise wsme.exc.ClientSideError(six.text_type(error))
+        return service.Service.from_db_model(
+            self._handler.create(data.as_dict()), pecan.request.host_url)
 
     @wsme_pecan.wsexpose([service.Service])
     def get_all(self):
-        """Return the collection of services."""
-        return []
+        """Return all services, based on the query provided."""
+        return [service.Service.from_db_model(ser, pecan.request.host_url)
+                for ser in self._handler.get_all()]

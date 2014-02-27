@@ -12,16 +12,46 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from solum.api.controllers.v1.datamodel import service
+import uuid
+
 from solum.api.handlers import handler
+from solum import objects
 
 
 class ServiceHandler(handler.Handler):
     """Fulfills a request on the service resource."""
 
-    def __init__(self):
-        pass
-
     def get(self, id):
-        response = service.Service.sample()
-        return response
+        """Return a service."""
+        return objects.registry.Service.get_by_uuid(None, id)
+
+    def _update_db_object(self, db_obj, data):
+        for dk, dv in iter(data.items()):
+            if dk == 'type':
+                continue
+            elif hasattr(db_obj, dk):
+                setattr(db_obj, dk, dv)
+
+    def update(self, id, data):
+        """Modify a resource."""
+        db_obj = objects.registry.Service.get_by_uuid(None, id)
+        self._update_db_object(db_obj, data)
+        db_obj.save(None)
+        return db_obj
+
+    def delete(self, id):
+        """Delete a resource."""
+        db_obj = objects.registry.Service.get_by_uuid(None, id)
+        db_obj.destroy(None)
+
+    def create(self, data):
+        """Create a new resource."""
+        db_obj = objects.registry.Service()
+        db_obj.uuid = str(uuid.uuid4())
+        self._update_db_object(db_obj, data)
+        db_obj.create(None)
+        return db_obj
+
+    def get_all(self):
+        """Return all services."""
+        return objects.registry.ServiceList.get_all(None)

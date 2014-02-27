@@ -12,42 +12,120 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import mock
+import json
 
+import mock
+import testscenarios
+
+from solum.api.controllers.v1.datamodel import service as servicemodel
 from solum.api.controllers.v1 import service
+from solum.common import exception
+from solum import objects
 from solum.tests import base
 from solum.tests import fakes
 
 
+load_tests = testscenarios.load_tests_apply_scenarios
+
+
 @mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
 @mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
+@mock.patch('solum.api.handlers.service_handler.ServiceHandler')
 class TestServiceController(base.BaseTestCase):
-    def test_service_get(self, resp_mock, request_mock):
-        obj = service.ServiceController('test_id')
-        obj.get()
+
+    def test_service_get(self, ServiceHandler, resp_mock, request_mock):
+        hand_get = ServiceHandler.return_value.get
+        hand_get.return_value = fakes.FakeService()
+        cont = service.ServiceController('test_id')
+        cont.get()
+        hand_get.assert_called_with('test_id')
         self.assertEqual(200, resp_mock.status)
 
-    def test_service_put(self, resp_mock, request_mock):
-        obj = service.ServiceController('test_id')
-        obj.put(None)
+    def test_service_get_not_found(self, ServiceHandler,
+                                   resp_mock, request_mock):
+        hand_get = ServiceHandler.return_value.get
+        hand_get.side_effect = exception.NotFound(name='service',
+                                                  service_id='test_id')
+        cont = service.ServiceController('test_id')
+        cont.get()
+        hand_get.assert_called_with('test_id')
+        self.assertEqual(404, resp_mock.status)
+
+    def test_service_put_none(self, ServiceHandler, resp_mock, request_mock):
+        request_mock.body = None
+        request_mock.content_type = 'application/json'
+        hand_put = ServiceHandler.return_value.put
+        hand_put.return_value = fakes.FakeService()
+        service.ServiceController('test_id').put()
         self.assertEqual(400, resp_mock.status)
 
-    def test_service_delete(self, resp_mock, request_mock):
+    def test_service_put_not_found(self, ServiceHandler,
+                                   resp_mock, request_mock):
+        json_update = {'user_id': 'foo', 'name': 'appy'}
+        request_mock.body = json.dumps(json_update)
+        request_mock.content_type = 'application/json'
+        hand_update = ServiceHandler.return_value.update
+        hand_update.side_effect = exception.NotFound(
+            name='service',
+            service_id='test_id')
+        service.ServiceController('test_id').put()
+        hand_update.assert_called_with('test_id', json_update)
+        self.assertEqual(404, resp_mock.status)
+
+    def test_service_put_ok(self, ServiceHandler, resp_mock, request_mock):
+        json_update = {'name': 'fee', 'user_id': 'me'}
+        request_mock.body = json.dumps(json_update)
+        request_mock.content_type = 'application/json'
+        hand_update = ServiceHandler.return_value.update
+        hand_update.return_value = fakes.FakeService()
+        service.ServiceController('test_id').put()
+        hand_update.assert_called_with('test_id', json_update)
+        self.assertEqual(200, resp_mock.status)
+
+    def test_service_delete_not_found(self, ServiceHandler,
+                                      resp_mock, request_mock):
+        hand_delete = ServiceHandler.return_value.delete
+        hand_delete.side_effect = exception.NotFound(
+            name='service',
+            service_id='test_id')
         obj = service.ServiceController('test_id')
         obj.delete()
-        self.assertEqual(400, resp_mock.status)
+        hand_delete.assert_called_with('test_id')
+        self.assertEqual(404, resp_mock.status)
+
+    def test_service_delete_ok(self, ServiceHandler, resp_mock, request_mock):
+        hand_delete = ServiceHandler.return_value.delete
+        hand_delete.return_value = None
+        obj = service.ServiceController('test_id')
+        obj.delete()
+        hand_delete.assert_called_with('test_id')
+        self.assertEqual(204, resp_mock.status)
 
 
-@mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
-@mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
-class TestServicesController(base.BaseTestCase):
-    def test_services_get_all(self, resp_mock, request_mock):
-        service_obj = service.ServicesController()
-        resp = service_obj.get_all()
-        self.assertIsNotNone(resp)
-        self.assertEqual(200, resp_mock.status)
+class TestServiceAsDict(base.BaseTestCase):
 
-    def test_services_post(self, resp_mock, request_mock):
-        obj = service.ServicesController()
-        obj.post(None)
-        self.assertEqual(400, resp_mock.status)
+    scenarios = [
+        ('none', dict(data=None)),
+        ('one', dict(data={'name': 'foo'})),
+        ('full', dict(data={'uri': 'http://example.com/v1/services/x1',
+                            'name': 'Example service',
+                            'type': 'service',
+                            'tags': ['small'],
+                            'project_id': '1dae5a09ef2b4d8cbf3594b0eb4f6b94',
+                            'user_id': '55f41cf46df74320b9486a35f5d28a11',
+                            'description': 'A service'}))
+    ]
+
+    def test_as_dict(self):
+        objects.load()
+        if self.data is None:
+            s = servicemodel.Service()
+            self.data = {}
+        else:
+            s = servicemodel.Service(**self.data)
+        if 'uri' in self.data:
+            del self.data['uri']
+        if 'type' in self.data:
+            del self.data['type']
+        self.assertEqual(self.data,
+                         s.as_dict(objects.registry.Service))

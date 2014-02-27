@@ -40,6 +40,33 @@ class FakeApp:
     pass
 
 
+class FakeService(mock.Mock):
+    def __init__(self, **kwargs):
+        super(FakeService, self).__init__(**kwargs)
+        self.__tablename__ = 'service'
+        self.__resource__ = 'services'
+        self.user_id = 'fake user id'
+        self.project_id = 'fake project id'
+        self.uuid = 'test_uuid'
+        self.id = 8
+        self.name = 'james'
+        self.service_type = 'not_this'
+        self.description = 'amazing'
+        self.tags = ['this', 'and that']
+        self.read_only = True
+
+    def as_dict(self):
+        return dict(service_type=self.service_type,
+                    user_id=self.user_id,
+                    project_id=self.project_id,
+                    uuid=self.uuid,
+                    id=self.id,
+                    name=self.name,
+                    tags=self.tags,
+                    read_only=self.read_only,
+                    description=self.description)
+
+
 class FakeAuthProtocol(mock.Mock):
 
     def __init__(self, **kwargs):
