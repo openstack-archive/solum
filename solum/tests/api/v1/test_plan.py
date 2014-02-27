@@ -36,3 +36,18 @@ class TestPlanController(base.BaseTestCase):
         obj = plan.PlanController('test_id')
         obj.delete()
         self.assertEqual(501, resp_mock.status)
+
+
+@mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
+@mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
+class TestPlansController(base.BaseTestCase):
+    def test_plans_get_all(self, resp_mock, request_mock):
+        plans_obj = plan.PlansController()
+        resp = plans_obj.get_all()
+        self.assertIsNotNone(resp)
+        self.assertEqual(200, resp_mock.status)
+
+    def test_plans_post(self, resp_mock, request_mock):
+        plans_obj = plan.PlansController()
+        plans_obj.post(None)
+        self.assertEqual(501, resp_mock.status)
