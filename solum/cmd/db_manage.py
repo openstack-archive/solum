@@ -30,7 +30,7 @@ CONF.register_opts(session.database_opts, 'database')
 
 
 def do_version(manager):
-    manager.version()
+    print('Current DB revision is %s' % manager.version())
 
 
 def do_upgrade(manager):
