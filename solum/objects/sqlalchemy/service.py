@@ -14,7 +14,6 @@
 
 import sqlalchemy as sa
 
-from solum.common import exception
 from solum.objects import service as abstract
 from solum.objects.sqlalchemy import models as sql
 
@@ -35,10 +34,6 @@ class Service(sql.Base, abstract.Service):
     service_type = sa.Column(sa.String(100))
     read_only = sa.Column(sa.Integer, default=0)
     tags = sa.Column(sa.Text)
-
-    @classmethod
-    def _raise_duplicate_object(cls, e, self):
-        raise exception.ResourceExists(name='service')
 
 
 class ServiceList(abstract.ServiceList):

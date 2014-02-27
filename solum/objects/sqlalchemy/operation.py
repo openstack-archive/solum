@@ -12,7 +12,6 @@
 
 import sqlalchemy as sa
 
-from solum.common import exception
 from solum.objects import operation as abstract
 from solum.objects.sqlalchemy import models as sql
 
@@ -33,10 +32,6 @@ class Operation(sql.Base, abstract.Operation):
     tags = sa.Column(sa.Text)
     documentation = sa.Column(sa.Text)
     target_resource = sa.Column(sa.Text)
-
-    @classmethod
-    def _raise_duplicate_object(cls, e, self):
-        raise exception.ResourceExists(name='operation')
 
 
 class OperationList(abstract.OperationList):

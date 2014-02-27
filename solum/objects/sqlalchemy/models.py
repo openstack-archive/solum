@@ -23,6 +23,7 @@ from sqlalchemy.ext import declarative
 from sqlalchemy.orm import exc
 from sqlalchemy import types
 
+from solum.common import exception
 from solum import objects
 from solum.openstack.common.db import exception as db_exc
 from solum.openstack.common.db.sqlalchemy import models
@@ -83,6 +84,10 @@ class SolumBase(models.TimestampMixin, models.ModelBase):
         except exc.NoResultFound:
             cls._raise_not_found(item_uuid)
 
+    @classmethod
+    def _raise_duplicate_object(cls):
+        raise exception.ResourceExists(name=cls.__tablename__)
+
     def save(self, context):
         if objects.transition_schema():
             self.add_forward_schema_changes()
@@ -96,8 +101,8 @@ class SolumBase(models.TimestampMixin, models.ModelBase):
         try:
             with session.begin():
                 session.add(self)
-        except (db_exc.DBDuplicateEntry) as e:
-            self.__class__._raise_duplicate_object(e, self)
+        except (db_exc.DBDuplicateEntry):
+            self.__class__._raise_duplicate_object()
 
     def destroy(self, context):
         session = db_session.get_session(mysql_traditional_mode=True)

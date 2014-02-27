@@ -12,7 +12,6 @@
 
 import sqlalchemy
 
-from solum.common import exception
 from solum.objects import sensor as abstract
 from solum.objects.sqlalchemy import models as sql
 
@@ -36,10 +35,6 @@ class Sensor(sql.Base, abstract.Sensor):
     description = sqlalchemy.Column(sqlalchemy.String(255))
     documentation = sqlalchemy.Column(sqlalchemy.String(255))
     target_resource = sqlalchemy.Column(sqlalchemy.String(255))
-
-    @classmethod
-    def _raise_duplicate_object(cls, e, self):
-        raise exception.ResourceExists(name='sensor')
 
 
 class SensorList(abstract.SensorList):

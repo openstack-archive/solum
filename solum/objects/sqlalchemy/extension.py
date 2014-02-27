@@ -12,7 +12,6 @@
 
 import sqlalchemy
 
-from solum.common import exception
 from solum.objects import extension as abstract
 from solum.objects.sqlalchemy import models as sql
 
@@ -33,10 +32,6 @@ class Extension(sql.Base, abstract.Extension):
     name = sqlalchemy.Column(sqlalchemy.String(100))
     version = sqlalchemy.Column(sqlalchemy.String(16))
     documentation = sqlalchemy.Column(sqlalchemy.String(255))
-
-    @classmethod
-    def _raise_duplicate_object(cls, e, self):
-        raise exception.ResourceExists(name='extension')
 
 
 class ExtensionList(abstract.ExtensionList):

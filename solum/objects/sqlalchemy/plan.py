@@ -14,7 +14,6 @@
 
 import sqlalchemy
 
-from solum.common import exception
 from solum.objects import plan as abstract
 from solum.objects.sqlalchemy import models as sql
 
@@ -35,10 +34,6 @@ class Plan(sql.Base, abstract.Plan):
     name = sqlalchemy.Column(sqlalchemy.String(255))
     description = sqlalchemy.Column(sqlalchemy.String(255))
     raw_content = sqlalchemy.Column(sqlalchemy.Text)
-
-    @classmethod
-    def _raise_duplicate_object(cls, e, self):
-        raise exception.ResourceExists(name='plan')
 
 
 class PlanList(abstract.PlanList):

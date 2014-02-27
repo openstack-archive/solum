@@ -14,7 +14,6 @@
 
 import sqlalchemy as sa
 
-from solum.common import exception
 from solum.objects import component as abstract
 from solum.objects.sqlalchemy import models as sql
 
@@ -35,10 +34,6 @@ class Component(sql.Base, abstract.Component):
     tags = sa.Column(sa.Text)
     assembly_id = sa.Column(sa.Integer)
     parent_component_id = sa.Column(sa.Integer)
-
-    @classmethod
-    def _raise_duplicate_object(cls, e, self):
-        raise exception.ResourceExists(name=self.__tablename__)
 
 
 class ComponentList(abstract.ComponentList):

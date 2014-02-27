@@ -15,7 +15,6 @@
 import sqlalchemy as sa
 from sqlalchemy import orm
 
-from solum.common import exception
 from solum.objects import compiler_versions as abs_cv
 from solum.objects import language_pack as abstract
 from solum.objects import os_platform as abs_op
@@ -44,10 +43,6 @@ class LanguagePack(sql.Base, abstract.LanguagePack):
     attr_blob = sa.Column(sql.JSONEncodedDict(255))
     service_id = sa.Column(sa.Integer, sa.ForeignKey('service.id'),
                            nullable=False)
-
-    @classmethod
-    def _raise_duplicate_object(cls, e, self):
-        raise exception.ResourceExists(name='language_pack')
 
 
 class CompilerVersions(sql.Base, abs_cv.CompilerVersions):

@@ -14,7 +14,6 @@
 
 import sqlalchemy as sa
 
-from solum.common import exception
 from solum.objects import assembly as abstract
 from solum.objects.sqlalchemy import models as sql
 from solum.openstack.common.db.sqlalchemy import session as db_session
@@ -35,10 +34,6 @@ class Assembly(sql.Base, abstract.Assembly):
     description = sa.Column(sa.String(255))
     tags = sa.Column(sa.Text)
     plan_id = sa.Column(sa.Integer, sa.ForeignKey('plan.id'), nullable=False)
-
-    @classmethod
-    def _raise_duplicate_object(cls, e, self):
-        raise exception.ResourceExists(name=self.__tablename__)
 
     @classmethod
     def get_by_uuid(cls, context, item_uuid):
