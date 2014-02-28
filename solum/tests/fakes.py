@@ -168,3 +168,26 @@ class FakePlan(mock.Mock):
                     uuid=self.uuid,
                     id=self.id,
                     name=self.name)
+
+
+class FakeComponent(mock.Mock):
+    def __init__(self, **kwargs):
+        super(FakeComponent, self).__init__(**kwargs)
+        self.id = 1
+        self.__tablename__ = 'component'
+        self.__resource__ = 'components'
+        self.name = 'james'
+        self.service_type = 'not_this'
+        self.description = 'amazing'
+        self.assembly_id = '1'
+        self.parent_component_id = '2'
+        self.tags = ['this', 'and that']
+
+    def as_dict(self):
+        return dict(service_type=self.service_type,
+                    id=self.id,
+                    name=self.name,
+                    tags=self.tags,
+                    assembly_id=self.assembly_id,
+                    parent_component_id=self.parent_component_id,
+                    description=self.description)

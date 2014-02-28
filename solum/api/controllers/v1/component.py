@@ -12,45 +12,51 @@
 
 import pecan
 from pecan import rest
-from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
 
 from solum.api.controllers.v1.datamodel import component
 from solum.api.handlers import component_handler
 from solum.common import exception
+from solum import objects
 
 
 class ComponentController(rest.RestController):
     """Manages operations on a single component."""
 
     def __init__(self, component_id):
+        super(ComponentController, self).__init__()
         self._id = component_id
+        self._handler = component_handler.ComponentHandler()
 
     @exception.wrap_controller_exception
-    @wsme_pecan.wsexpose(component.Component, wtypes.text)
+    @wsme_pecan.wsexpose(component.Component)
     def get(self):
         """Return this component."""
-        handler = component_handler.ComponentHandler()
-        return handler.get(self._id)
+        return component.Component.from_db_model(self._handler.get(self._id),
+                                                 pecan.request.host_url)
 
     @exception.wrap_controller_exception
-    @wsme_pecan.wsexpose(component.Component, wtypes.text,
-                         body=component.Component)
+    @wsme_pecan.wsexpose(component.Component, body=component.Component)
     def put(self, data):
         """Modify this component."""
-        handler = component_handler.ComponentHandler()
-        return handler.update(self._id, data)
+        res = self._handler.update(self._id,
+                                   data.as_dict(objects.registry.Plan))
+        return component.Component.from_db_model(res, pecan.request.host_url)
 
     @exception.wrap_controller_exception
-    @wsme_pecan.wsexpose(None, wtypes.text, status_code=204)
+    @wsme_pecan.wsexpose(None, status_code=204)
     def delete(self):
         """Delete this component."""
-        handler = component_handler.ComponentHandler()
-        return handler.delete(self._id)
+        return self._handler.delete(self._id)
 
 
 class ComponentsController(rest.RestController):
     """Manages operations on the components collection."""
+
+    def __init__(self):
+        super(ComponentsController, self).__init__()
+        self._handler = component_handler.ComponentHandler()
+        objects.load()
 
     @pecan.expose()
     def _lookup(self, component_id, *remainder):
@@ -63,12 +69,12 @@ class ComponentsController(rest.RestController):
                          status_code=201)
     def post(self, data):
         """Create a new component."""
-        handler = component_handler.ComponentHandler()
-        return handler.create(data)
+        return component.Component.from_db_model(
+            self._handler.create(data.as_dict()), pecan.request.host_url)
 
     @exception.wrap_controller_exception
     @wsme_pecan.wsexpose([component.Component])
     def get_all(self):
         """Return all components, based on the query provided."""
-        handler = component_handler.ComponentHandler()
-        return handler.get_all()
+        return [component.Component.from_db_model(ser, pecan.request.host_url)
+                for ser in self._handler.get_all()]
