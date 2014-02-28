@@ -16,7 +16,6 @@ import sqlalchemy as sa
 
 from solum.objects import assembly as abstract
 from solum.objects.sqlalchemy import models as sql
-from solum.openstack.common.db.sqlalchemy import session as db_session
 
 
 class Assembly(sql.Base, abstract.Assembly):
@@ -34,14 +33,6 @@ class Assembly(sql.Base, abstract.Assembly):
     description = sa.Column(sa.String(255))
     tags = sa.Column(sa.Text)
     plan_id = sa.Column(sa.Integer, sa.ForeignKey('plan.id'), nullable=False)
-
-    @classmethod
-    def get_by_uuid(cls, context, item_uuid):
-        try:
-            return db_session.get_session().query(cls).filter_by(
-                uuid=item_uuid).one()
-        except sa.orm.exc.NoResultFound:
-            cls._raise_not_found(item_uuid)
 
 
 class AssemblyList(abstract.AssemblyList):
