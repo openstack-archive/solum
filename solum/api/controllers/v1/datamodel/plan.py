@@ -57,6 +57,12 @@ class Artifact(wtypes.Base):
     requirements = [Requirement]
     "List of requirements for the artifact."
 
+    def __init__(self, **kwargs):
+        if 'requirements' in kwargs:
+            kwargs['requirements'] = [Requirement(**re)
+                                      for re in kwargs.get('requirements', [])]
+        super(Artifact, self).__init__(**kwargs)
+
 
 class Plan(api_types.Base):
     """Representation of an Plan file.
@@ -76,24 +82,33 @@ class Plan(api_types.Base):
     services = [ServiceReference]
     """List of services needed by the plan."""
 
+    def __init__(self, **kwargs):
+        if 'artifacts' in kwargs:
+            kwargs['artifacts'] = [Artifact(**art)
+                                   for art in kwargs.get('artifacts', [])]
+        if 'services' in kwargs:
+            kwargs['services'] = [ServiceReference(**sr)
+                                  for sr in kwargs.get('services', [])]
+        super(Plan, self).__init__(**kwargs)
+
     @classmethod
     def sample(cls):
         return cls(uri='http://example.com/v1/plans/x1',
                    name='Example plan',
                    type='plan',
                    tags=['small'],
-                   artifacts=[Artifact(
-                       name='My python app',
-                       artifact_type='git_pull',
-                       content={'href': 'git://example.com/project.git'},
-                       requirements=[Requirement(
-                           requirement_type='git_pull',
-                           language_pack=str(uuid.uuid4()),
-                           fulfillment='id:build')])],
-                   services=[ServiceReference(
-                       name='Build Service',
-                       id='build',
-                       characteristics=['python_build_service'])],
+                   artifacts=[{
+                       'name': 'My python app',
+                       'artifact_type': 'git_pull',
+                       'content': {'href': 'git://example.com/project.git'},
+                       'requirements': [{
+                           'requirement_type': 'git_pull',
+                           'language_pack': str(uuid.uuid4()),
+                           'fulfillment': 'id:build'}]}],
+                   services=[{
+                       'name': 'Build Service',
+                       'id': 'build',
+                       'characteristics': ['python_build_service']}],
                    project_id='1dae5a09ef2b4d8cbf3594b0eb4f6b94',
                    user_id='55f41cf46df74320b9486a35f5d28a11',
                    description='A plan with no services or artifacts shown')

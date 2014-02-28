@@ -120,3 +120,24 @@ class FakeAssembly(mock.Mock):
                     uuid=self.uuid,
                     id=self.id,
                     name=self.name)
+
+
+class FakePlan(mock.Mock):
+    def __init__(self, **kwargs):
+        super(FakePlan, self).__init__(**kwargs)
+        self.__tablename__ = 'plan'
+        self.__resource__ = 'plans'
+        self.raw_content = '{}'
+        self.user_id = 'fake user id'
+        self.project_id = 'fake project id'
+        self.uuid = 'test_uuid'
+        self.id = 8
+        self.name = 'faker'
+
+    def as_dict(self):
+        return dict(raw_content=self.raw_content,
+                    user_id=self.user_id,
+                    project_id=self.project_id,
+                    uuid=self.uuid,
+                    id=self.id,
+                    name=self.name)
