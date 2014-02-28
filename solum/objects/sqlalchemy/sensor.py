@@ -15,7 +15,6 @@ import sqlalchemy
 from solum.common import exception
 from solum.objects import sensor as abstract
 from solum.objects.sqlalchemy import models as sql
-from solum.openstack.common.db.sqlalchemy import session as db_session
 
 
 class Sensor(sql.Base, abstract.Sensor):
@@ -41,14 +40,6 @@ class Sensor(sql.Base, abstract.Sensor):
     @classmethod
     def _raise_duplicate_object(cls, e, self):
         raise exception.ResourceExists(name='sensor')
-
-    @classmethod
-    def get_by_uuid(cls, context, item_uuid):
-        query = db_session.get_session().query(cls).filter_by(uuid=item_uuid)
-        result = query.first()
-        if not result:
-            cls._raise_not_found(item_uuid)
-        return result
 
 
 class SensorList(abstract.SensorList):
