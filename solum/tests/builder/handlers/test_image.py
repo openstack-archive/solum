@@ -28,8 +28,11 @@ class TestImageHandler(base.BaseTestCase):
         mock_registry.Image.get_by_uuid.\
             assert_called_once_with(None, 'test_id')
 
-    def test_image_create(self, mock_registry):
+    @mock.patch('solum.builder.handlers.image_handler.'
+                'ImageHandler._start_build')
+    def test_image_create(self, mock_build, mock_registry):
         data = {'user_id': 'new_user_id'}
         handler = image_handler.ImageHandler()
         res = handler.create(data)
         self.assertEqual('new_user_id', res.user_id)
+        mock_build.assert_called_once_with(res)

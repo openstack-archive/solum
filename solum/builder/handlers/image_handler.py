@@ -12,10 +12,19 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import os.path
+import subprocess
 import uuid
 
 from solum.api.handlers import handler
 from solum import objects
+from solum.openstack.common import log as logging
+
+LOG = logging.getLogger(__name__)
+
+
+STATES = (PENDING, BUILDING, ERROR, COMPLETE) = (
+    'PENDING', 'BUILDING', 'ERROR', 'COMPLETE')
 
 
 class ImageHandler(handler.Handler):
@@ -34,5 +43,27 @@ class ImageHandler(handler.Handler):
         db_obj.name = data.get('name')
         db_obj.source_uri = data.get('source_uri')
         db_obj.tags = data.get('tags')
+        db_obj.state = PENDING
         db_obj.create(None)
+        self._start_build(db_obj)
         return db_obj
+
+    def _start_build(self, image):
+        # we could do this with the docker/git python client.
+
+        proj_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
+        build_app = os.path.join(proj_dir, 'contrib',
+                                 'lp-cedarish', 'docker', 'build-app')
+        image.state = BUILDING
+        image.save(None)
+        try:
+            out = subprocess.check_output([build_app, image.source_url,
+                                           image.name])
+        except subprocess.CalledProcessError as subex:
+            LOG.exception(subex)
+            image.state = ERROR
+            image.save(None)
+            return
+        LOG.debug(out)
+        image.state = COMPLETE
+        image.save(None)
