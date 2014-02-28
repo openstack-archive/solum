@@ -27,6 +27,7 @@ class TestPlan(base.BaseTestCase):
         self.data = [{'uuid': 'test-uuid-123',
                       'project_id': 'bla',
                       'user_id': 'fred',
+                      'description': 'some description',
                       'raw_content': 'lots of stuff here'}]
         utils.create_models_from_data(plan.Plan, self.data, self.ctx)
 

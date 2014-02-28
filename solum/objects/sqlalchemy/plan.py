@@ -33,6 +33,7 @@ class Plan(sql.Base, abstract.Plan):
     user_id = sqlalchemy.Column(sqlalchemy.String(36))
     glance_id = sqlalchemy.Column(sqlalchemy.String(36))
     name = sqlalchemy.Column(sqlalchemy.String(255))
+    description = sqlalchemy.Column(sqlalchemy.String(255))
     raw_content = sqlalchemy.Column(sqlalchemy.Text)
 
     @classmethod
