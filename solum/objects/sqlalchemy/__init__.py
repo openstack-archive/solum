@@ -15,12 +15,14 @@
 from solum import objects
 
 from solum.objects import assembly as abstract_assembly
+from solum.objects import component as abstract_component
 from solum.objects import extension as abstract_extension
 from solum.objects import operation as abstract_operation
 from solum.objects import plan as abstract_plan
 from solum.objects import sensor as abstract_sensor
 from solum.objects import service as abstract_srvc
 from solum.objects.sqlalchemy import assembly
+from solum.objects.sqlalchemy import component
 from solum.objects.sqlalchemy import extension
 from solum.objects.sqlalchemy import operation
 from solum.objects.sqlalchemy import plan
@@ -32,6 +34,9 @@ def load():
     """Activate the sqlalchemy backend."""
     objects.registry.add(abstract_assembly.Assembly, assembly.Assembly)
     objects.registry.add(abstract_assembly.AssemblyList, assembly.AssemblyList)
+    objects.registry.add(abstract_component.Component, component.Component)
+    objects.registry.add(abstract_component.ComponentList,
+                         component.ComponentList)
     objects.registry.add(abstract_plan.Plan, plan.Plan)
     objects.registry.add(abstract_plan.PlanList, plan.PlanList)
     objects.registry.add(abstract_srvc.Service, service.Service)
