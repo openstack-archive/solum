@@ -27,7 +27,7 @@ class Base(wtypes.Base):
     uuid = wtypes.text
     "Unique Identifier of the resource"
 
-    name = wtypes.text
+    name = wsme.wsattr(wtypes.text, mandatory=True)
     "Name of the resource."
 
     type = wtypes.text

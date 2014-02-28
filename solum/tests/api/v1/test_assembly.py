@@ -156,3 +156,13 @@ class TestAssembliesController(base.BaseTestCase):
         assembly.AssembliesController().post()
         hand_create.assert_called_with(json_create)
         self.assertEqual(201, resp_mock.status)
+
+    def test_assem_post_nodata(self, AssemblyHandler, resp_mock, request_mock):
+        request_mock.body = ''
+        request_mock.content_type = 'application/json'
+        hand_create = AssemblyHandler.return_value.create
+        hand_create.return_value = fakes.FakeAssembly()
+        ret_val = assembly.AssembliesController().post()
+        faultstring = str(ret_val['faultstring'])
+        self.assertEqual("Missing argument: \"data\"", faultstring)
+        self.assertEqual(400, resp_mock.status)
