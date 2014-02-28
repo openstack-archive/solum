@@ -20,6 +20,7 @@ from oslo.config import cfg
 from sqlalchemy.ext import declarative
 from sqlalchemy.orm import exc
 
+from solum.common import exception
 from solum import objects
 from solum.openstack.common.db import exception as db_exc
 from solum.openstack.common.db.sqlalchemy import models
@@ -102,6 +103,11 @@ class SolumBase(models.TimestampMixin, models.ModelBase):
             session.query(self.__class__).\
                 filter_by(id=self.id).\
                 delete()
+
+    @classmethod
+    def _raise_not_found(cls, item_id):
+        """Raise a not found exception."""
+        raise exception.NotFound(name=cls.__resource__, id=item_id)
 
 
 Base = declarative.declarative_base(cls=SolumBase)
