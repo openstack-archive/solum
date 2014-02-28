@@ -24,6 +24,9 @@ class Base(wtypes.Base):
     uri = common_types.Uri
     "URI to the resource."
 
+    uuid = wtypes.text
+    "Unique Identifier of the resource"
+
     name = wtypes.text
     "Name of the resource."
 

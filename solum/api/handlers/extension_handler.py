@@ -48,8 +48,8 @@ class ExtensionHandler(handler.Handler):
     def create(self, data):
         """Create a new extension."""
         db_obj = objects.registry.Extension()
-        db_obj.uuid = str(uuid.uuid4())
         self._update_db_object(db_obj, data)
+        db_obj.uuid = str(uuid.uuid4())
         db_obj.create()
         return db_obj
 

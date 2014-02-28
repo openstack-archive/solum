@@ -55,10 +55,12 @@ class TestExtensionHandler(base.BaseTestCase):
                                                                     'test_id')
 
     def test_extension_create(self, mock_registry):
-        data = {'user_id': 'new_user_id'}
+        data = {'user_id': 'new_user_id',
+                'uuid': 'input_uuid'}
         handler = extension.ExtensionHandler()
         res = handler.create(data)
         self.assertEqual('new_user_id', res.user_id)
+        self.assertNotEqual('uuid', res.uuid)
 
     def test_extension_delete(self, mock_registry):
         db_obj = fakes.FakeExtension()

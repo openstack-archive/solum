@@ -111,7 +111,7 @@ class FakeExtension(mock.Mock):
         self.__resource__ = 'extension'
         self.user_id = 'user_id'
         self.project_id = 'test_id'
-        self.uuid = '44du3dx',
+        self.uuid = '44du3dx'
         self.documentation = 'http://test_documentation.com'
         self.description = 'test_desc'
         self.id = 'test_id'
