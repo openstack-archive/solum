@@ -32,6 +32,9 @@ load_tests = testscenarios.load_tests_apply_scenarios
 @mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
 @mock.patch('solum.api.handlers.service_handler.ServiceHandler')
 class TestServiceController(base.BaseTestCase):
+    def setUp(self):
+        super(TestServiceController, self).setUp()
+        objects.load()
 
     def test_service_get(self, ServiceHandler, resp_mock, request_mock):
         hand_get = ServiceHandler.return_value.get

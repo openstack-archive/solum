@@ -31,6 +31,10 @@ load_tests = testscenarios.load_tests_apply_scenarios
 @mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
 @mock.patch('solum.api.handlers.component_handler.ComponentHandler')
 class TestComponentController(base.BaseTestCase):
+    def setUp(self):
+        super(TestComponentController, self).setUp()
+        objects.load()
+
     def test_component_get(self, ComponentHandler, resp_mock, request_mock):
         hand_get = ComponentHandler.return_value.get
         hand_get.return_value = fakes.FakeComponent()

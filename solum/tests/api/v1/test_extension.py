@@ -19,10 +19,9 @@ import testscenarios
 from solum.api.controllers.v1.datamodel import extension as model
 from solum.api.controllers.v1 import extension as controller
 from solum.common import exception
+from solum import objects
 from solum.tests import base
 from solum.tests import fakes
-
-from solum import objects
 
 
 load_tests = testscenarios.load_tests_apply_scenarios
@@ -33,6 +32,10 @@ load_tests = testscenarios.load_tests_apply_scenarios
 @mock.patch('solum.api.controllers.v1.extension.extension_handler.'
             'ExtensionHandler')
 class TestExtensionController(base.BaseTestCase):
+    def setUp(self):
+        super(TestExtensionController, self).setUp()
+        objects.load()
+
     def test_extension_get(self, handler_mock, resp_mock, request_mock):
         handler_get = handler_mock.return_value.get
         handler_get.return_value = fakes.FakeExtension()
@@ -111,6 +114,10 @@ class TestExtensionController(base.BaseTestCase):
 @mock.patch('solum.api.controllers.v1.extension.extension_handler.'
             'ExtensionHandler')
 class TestExtensionsController(base.BaseTestCase):
+    def setUp(self):
+        super(TestExtensionsController, self).setUp()
+        objects.load()
+
     def test_extensions_get_all(self, handler_mock, resp_mock, request_mock):
         obj = controller.ExtensionsController()
         resp = obj.get_all()
