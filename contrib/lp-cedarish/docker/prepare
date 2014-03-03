@@ -4,7 +4,7 @@
 # We should own/customize this for solum
 # but for POC we can grab and build container
 echo Creating slugbuilder container
-sudo docker build -t solum/slugbuilder github.com/flynn/slugbuilder
+sudo docker build -t solum/slugbuilder github.com/paulczar/slugbuilder
 
 # Slugrunner runs the cedarish slug built
 # by slugbuilder.

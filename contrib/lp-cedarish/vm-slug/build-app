@@ -22,12 +22,16 @@ if [ $? != 0 ]; then
   exit 1
 fi
 
-mkdir -p /opt/solum/apps/$APP
+APP_DIR=/opt/solum/apps/$APP
 
-[[ -d /opt/solum/apps/$APP/build ]] && rm -rf /opt/solum/apps/$APP/build
-git clone $GIT /opt/solum/apps/$APP/build
+mkdir -p $APP_DIR
 
-cd /opt/solum/apps/$APP/build
+[[ -d /opt/solum/apps/$APP/build ]] && rm -rf $APP_DIR/build
+git clone $GIT $APP_DIR/build
+
+cd $APP_DIR/build
+
+echo '===> building App'
 
 # Build the application slug
 BUILD_ID=$(git archive master | sudo docker run -i -a stdin \
@@ -37,30 +41,43 @@ BUILD_ID=$(git archive master | sudo docker run -i -a stdin \
 
 sudo docker attach $BUILD_ID
 
-cd /opt/solum/apps/$APP
-sudo docker cp $BUILD_ID:/tmp/slug.tgz /opt/solum/apps/$APP/
+cd $APP_DIR
+sudo docker cp $BUILD_ID:/tmp/slug.tgz $APP_DIR
 sudo docker rm $BUILD_ID
-rm -rf /opt/solum/apps/$APP/build
+
+rm -rf $APP_DIR/build
+
+echo '===> Injecting App into Image'
+
+[[ -f $APP_DIR/image.qcow2 ]] || cp /opt/solum/cedarish/image/cedarish.qcow2 $APP_DIR/image.qcow2
+mkdir -p $APP_DIR/mnt
+echo '-----> Mounting Image'
+sudo guestmount -a $APP_DIR/image.qcow2 -i --rw $APP_DIR/mnt
+sudo mkdir -p $APP_DIR/mnt/app
+echo '-----> Injecting App'
+sudo tar xzf $APP_DIR/slug.tgz -C $APP_DIR/mnt/app
+sudo umount $APP_DIR/mnt
+echo '-----> Done'
 
 cat << EOF > /opt/solum/apps/$APP/user-data.txt
 #!/bin/bash
+
 #export PORT=5000
-
 export APP=web
-
-HOST=\$(route  | grep default | awk '{print \$2}')
-
-mkdir -p /app
-useradd app
-chown app:app /app
+useradd app || echo .
 cd /app
-curl http://\${HOST}:8080/${APP}/slug.tgz | tar xzvf -
-sudo foreman export upstart /etc/init
-initctl start app
+HOME=/app foreman export upstart /etc/init
+start app-web
 EOF
 
+echo '===> Interacting with Openstack'
 ### how do we run this ???
-echo I will try and create you security groups
+echo '-----> Adding Image to Glance'
+glance image-delete $APP
+glance image-create --name $APP --disk-format qcow2 --container-format bare --file $APP_DIR/image.qcow2
+
+
+echo '-----> Adding Security Groups'
 
 nova secgroup-create $APP "allow ssh/web to instance"
 nova secgroup-add-rule $APP tcp 22 22 0.0.0.0/0
@@ -72,5 +89,5 @@ chmod 0600 /opt/solum/apps/$APP/key.priv
 
 echo modify ${DIR}/user-data.txt to set any needed ENV variables
 echo boot your app like this
-echo nova boot --flavor=2 --image=cedarish --security-groups=${APP} \
+echo nova boot --flavor=2 --image=$APP --security-groups=${APP} \
                --key-name=${APP}_key --user-data=/opt/solum/apps/$APP/user-data.txt ${APP}01
