@@ -67,6 +67,6 @@ class TestExtensionHandler(base.BaseTestCase):
         mock_registry.Extension.get_by_uuid.return_value = db_obj
         handler = extension.ExtensionHandler()
         handler.delete('test_id')
-        db_obj.delete.assert_called_once_with()
+        db_obj.destroy.assert_called_once_with(None)
         mock_registry.Extension.get_by_uuid.assert_called_once_with(None,
                                                                     'test_id')
