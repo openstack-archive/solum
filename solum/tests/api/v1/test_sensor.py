@@ -19,10 +19,9 @@ import testscenarios
 from solum.api.controllers.v1.datamodel import sensor as model
 from solum.api.controllers.v1 import sensor as controller
 from solum.common import exception
+from solum import objects
 from solum.tests import base
 from solum.tests import fakes
-
-from solum import objects
 
 
 load_tests = testscenarios.load_tests_apply_scenarios
@@ -74,6 +73,10 @@ class TestSensorValueTypeBad(base.BaseTestCase):
 @mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
 @mock.patch('solum.api.controllers.v1.sensor.sensor_handler.SensorHandler')
 class TestSensorController(base.BaseTestCase):
+    def setUp(self):
+        super(TestSensorController, self).setUp()
+        objects.load()
+
     def test_sensor_get(self, handler_mock, resp_mock, request_mock):
         handler_get = handler_mock.return_value.get
         handler_get.return_value = fakes.FakeSensor()
@@ -147,6 +150,10 @@ class TestSensorController(base.BaseTestCase):
 @mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
 @mock.patch('solum.api.controllers.v1.sensor.sensor_handler.SensorHandler')
 class TestSensorsController(base.BaseTestCase):
+    def setUp(self):
+        super(TestSensorsController, self).setUp()
+        objects.load()
+
     def test_sensors_get_all(self, handler_mock, resp_mock, request_mock):
         obj = controller.SensorsController()
         resp = obj.get_all()

@@ -27,7 +27,6 @@ class ExtensionController(rest.RestController):
     def __init__(self, extension_id):
         self._id = extension_id
         self._handler = extension_handler.ExtensionHandler()
-        objects.load()
 
     @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(extension.Extension, wtypes.text)
@@ -58,7 +57,6 @@ class ExtensionsController(rest.RestController):
     def __init__(self):
         super(ExtensionsController, self).__init__()
         self._handler = extension_handler.ExtensionHandler()
-        objects.load()
 
     @pecan.expose()
     def _lookup(self, extension_id, *remainder):

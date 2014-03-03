@@ -27,7 +27,6 @@ class SensorController(rest.RestController):
     def __init__(self, sensor_id):
         self._id = sensor_id
         self._handler = sensor_handler.SensorHandler()
-        objects.load()
 
     @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(sensor.Sensor, wtypes.text)
@@ -57,7 +56,6 @@ class SensorsController(rest.RestController):
     def __init__(self):
         super(SensorsController, self).__init__()
         self._handler = sensor_handler.SensorHandler()
-        objects.load()
 
     @pecan.expose()
     def _lookup(self, sensor_id, *remainder):
