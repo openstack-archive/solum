@@ -32,7 +32,7 @@ class Service(sql.Base, abstract.Service):
     project_id = sa.Column(sa.String(36))
     user_id = sa.Column(sa.String(36))
     service_type = sa.Column(sa.String(100))
-    read_only = sa.Column(sa.Integer, default=0)
+    read_only = sa.Column(sa.Boolean, default=False)
     tags = sa.Column(sa.Text)
 
 
