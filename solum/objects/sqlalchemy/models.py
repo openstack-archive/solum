@@ -111,6 +111,11 @@ class SolumBase(models.TimestampMixin, models.ModelBase):
                 filter_by(id=self.id).\
                 delete()
 
+    @classmethod
+    def _raise_not_found(cls, item_id):
+        """Raise a not found exception."""
+        raise exception.NotFound(name=cls.__resource__, id=item_id)
+
 
 Base = declarative.declarative_base(cls=SolumBase)
 

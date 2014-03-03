@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from solum.common import exception
 from solum.objects import base
 from solum.openstack.common import log as logging
 
@@ -23,11 +22,6 @@ LOG = logging.getLogger(__name__)
 class Plan(base.CrudMixin):
     # Version 1.0: Initial version
     VERSION = '1.0'
-
-    @classmethod
-    def _raise_not_found(cls, item_id):
-        """Raise a not found exception."""
-        raise exception.NotFound(name='application', id=item_id)
 
 
 class PlanList(list, base.CrudListMixin):
