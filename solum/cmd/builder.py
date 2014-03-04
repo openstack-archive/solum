@@ -14,6 +14,7 @@
 
 """Starter script for the Solum Builder API service."""
 
+import logging as std_logging
 import os
 import sys
 from wsgiref import simple_server
@@ -22,6 +23,7 @@ from oslo.config import cfg
 
 from solum.builder import app as api_app
 from solum.common import service
+from solum.openstack.common.gettextutils import _
 from solum.openstack.common import log as logging
 
 
@@ -37,12 +39,16 @@ def main():
     host, port = cfg.CONF.builder.host, cfg.CONF.builder.port
     srv = simple_server.make_server(host, port, app)
 
-    LOG.info('Starting server in PID %s' % os.getpid())
+    LOG.info(_('Starting server in PID %s') % os.getpid())
+    LOG.debug(_("Configuration:"))
+    cfg.CONF.log_opt_values(LOG, std_logging.DEBUG)
 
     if host == '0.0.0.0':
-        LOG.info('serving on 0.0.0.0:%s, view at http://127.0.0.1:%s' %
-                 (port, port))
+        LOG.info(_('serving on 0.0.0.0:%(port)s, '
+                   'view at http://127.0.0.1:%(port)s') %
+                 dict(port=port))
     else:
-        LOG.info("serving on http://%s:%s" % (host, port))
+        LOG.info(_('serving on http://%(host)s:%(port)s') %
+                 dict(host=host, port=port))
 
     srv.serve_forever()
