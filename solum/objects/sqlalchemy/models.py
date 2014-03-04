@@ -68,19 +68,22 @@ class SolumBase(models.TimestampMixin, models.ModelBase):
         return d
 
     @classmethod
+    def get_session(cls):
+        return db_session.get_session(mysql_traditional_mode=True)
+
+    @classmethod
     def get_by_id(cls, context, item_id):
-        query = db_session.get_session(
-            mysql_traditional_mode=True).query(cls).filter_by(id=item_id)
-        result = query.first()
-        if not result:
+        try:
+            session = SolumBase.get_session()
+            return session.query(cls).filter_by(id=item_id).one()
+        except exc.NoResultFound:
             cls._raise_not_found(item_id)
-        return result
 
     @classmethod
     def get_by_uuid(cls, context, item_uuid):
         try:
-            return db_session.get_session().query(cls).filter_by(
-                uuid=item_uuid).one()
+            session = SolumBase.get_session()
+            return session.query(cls).filter_by(uuid=item_uuid).one()
         except exc.NoResultFound:
             cls._raise_not_found(item_uuid)
 
@@ -92,12 +95,12 @@ class SolumBase(models.TimestampMixin, models.ModelBase):
         if objects.transition_schema():
             self.add_forward_schema_changes()
 
-        session = db_session.get_session(mysql_traditional_mode=True)
+        session = SolumBase.get_session()
         with session.begin():
             session.merge(self)
 
     def create(self, context):
-        session = db_session.get_session(mysql_traditional_mode=True)
+        session = SolumBase.get_session()
         try:
             with session.begin():
                 session.add(self)
@@ -105,7 +108,7 @@ class SolumBase(models.TimestampMixin, models.ModelBase):
             self.__class__._raise_duplicate_object()
 
     def destroy(self, context):
-        session = db_session.get_session(mysql_traditional_mode=True)
+        session = SolumBase.get_session()
         with session.begin():
             session.query(self.__class__).\
                 filter_by(id=self.id).\
