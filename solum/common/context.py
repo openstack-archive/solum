@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
+
 from solum.openstack.common import context
 
 
@@ -31,7 +33,23 @@ class RequestContext(context.RequestContext):
                                              request_id=request_id)
         self.roles = roles
         self.user_name = user_name
+        self._service_catalog_js = None
         self.service_catalog = service_catalog
+
+    def get_url_for(self, service_type=None, endpoint_type=None):
+        if self._service_catalog_js is None:
+            self._service_catalog_js = json.loads(self.service_catalog)
+
+        for sc in self._service_catalog_js:
+            if sc['type'] == service_type:
+                for ep in sc['endpoints']:
+                    if endpoint_type in ep:
+                        return ep[endpoint_type]
+
+    @property
+    def auth_url(self):
+        return self.get_url_for(service_type='identity',
+                                endpoint_type='publicURL')
 
     def to_dict(self):
         data = super(RequestContext, self).to_dict()
