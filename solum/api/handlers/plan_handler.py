@@ -52,8 +52,8 @@ class PlanHandler(handler.Handler):
     def create(self, data):
         """Create a new resource."""
         db_obj = objects.registry.Plan()
-        db_obj.uuid = str(uuid.uuid4())
         self._update_db_object(db_obj, data)
+        db_obj.uuid = str(uuid.uuid4())
         db_obj.create(None)
         return db_obj
 
