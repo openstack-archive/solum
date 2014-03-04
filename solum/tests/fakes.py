@@ -170,6 +170,29 @@ class FakePlan(mock.Mock):
                     name=self.name)
 
 
+class FakeImage(mock.Mock):
+    def __init__(self, **kwargs):
+        super(FakeImage, self).__init__(**kwargs)
+        self.__tablename__ = 'image'
+        self.__resource__ = 'images'
+        self.user_id = 'fake user id'
+        self.project_id = 'fake project id'
+        self.uuid = 'test_uuid'
+        self.id = 8
+        self.name = 'faker'
+        self.source_uri = 'git://here'
+        self.description = 'test_desc'
+
+    def as_dict(self):
+        return dict(user_id=self.user_id,
+                    project_id=self.project_id,
+                    uuid=self.uuid,
+                    id=self.id,
+                    name=self.name,
+                    source_uri=self.source_uri,
+                    description=self.description)
+
+
 class FakeComponent(mock.Mock):
     def __init__(self, **kwargs):
         super(FakeComponent, self).__init__(**kwargs)

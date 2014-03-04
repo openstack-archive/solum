@@ -144,6 +144,20 @@
 #host=0.0.0.0
 
 
+[builder]
+
+#
+# Options defined in solum.builder.app
+#
+
+# The port for the solum builder API server (integer value)
+#port=9778
+
+# The listen IP for the solum builder API server (string
+# value)
+#host=0.0.0.0
+
+
 [database]
 
 #
