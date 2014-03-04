@@ -13,7 +13,9 @@
 # under the License.
 
 from solum.api import app as api_app
+from solum.api import auth
 from solum.api import config as api_config
+
 from solum.tests import base
 
 
@@ -26,4 +28,6 @@ class TestAppConfig(base.BaseTestCase):
 
         config_d = dict(config.app)
 
-        self.assertEqual(config_d, api_config.app)
+        self.assertEqual(config_d['modules'], api_config.app['modules'])
+        self.assertEqual(config_d['root'], api_config.app['root'])
+        self.assertIsInstance(config_d['hooks'][0], auth.AuthInformationHook)
