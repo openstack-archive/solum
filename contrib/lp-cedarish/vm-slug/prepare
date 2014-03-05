@@ -21,12 +21,14 @@ echo Prepare image-builder:
 echo prepare slug building environment:
 . $DIR/../docker/prepare
 
+# Also need some things of my own
+sudo apt-get -y install guestmount
+sudo update-guestfs-appliance
+
 # we need a docker container to host slugs
 # this should end up being swift or glance or something
 mkdir -p /opt/solum/apps
 chmod g+s /opt/solum/apps
-sudo docker pull kstaken/apache2
-sudo docker run -d -v /opt/solum/apps:/var/www:ro -p 0.0.0.0:8080:80 -name slugweb kstaken/apache2
 
 mkdir -p /opt/solum/slugs
 
