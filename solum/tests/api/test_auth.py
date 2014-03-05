@@ -15,6 +15,7 @@
 import mock
 
 from solum.api import auth
+from solum.common import context
 from solum.openstack.common.fixture import config
 from solum.tests import base
 from solum.tests import fakes
@@ -47,3 +48,28 @@ class TestAuth(base.BaseTestCase):
         self.CONF.config(enable_authentication='False')
         result = auth.install(self.app, self.CONF.conf)
         self.assertIsInstance(result, fakes.FakeApp)
+
+    def test_auth_hook_before_method(self, mock_cls):
+        state = mock.Mock(request=fakes.FakePecanRequest())
+        hook = auth.AuthInformationHook()
+        hook.before(state)
+        ctx = state.request.security_context
+        self.assertIsInstance(ctx, context.RequestContext)
+        self.assertEqual(ctx.auth_token,
+                         fakes.fakeAuthTokenHeaders['X-Auth-Token'])
+        self.assertEqual(ctx.tenant,
+                         fakes.fakeAuthTokenHeaders['X-Project-Id'])
+        self.assertEqual(ctx.user,
+                         fakes.fakeAuthTokenHeaders['X-User-Id'])
+        self.assertEqual(ctx.roles,
+                         [u'admin', u'ResellerAdmin', u'_member_'])
+        self.assertEqual(ctx.service_catalog,
+                         fakes.fakeAuthTokenHeaders['X-Service-Catalog'])
+        self.assertEqual(ctx.user_name,
+                         fakes.fakeAuthTokenHeaders['X-User-Name'])
+        self.assertEqual(ctx.domain,
+                         fakes.fakeAuthTokenHeaders['X-Domain-Name'])
+        self.assertEqual(ctx.project_domain,
+                         fakes.fakeAuthTokenHeaders['X-Project-Domain-Id'])
+        self.assertEqual(ctx.user_domain,
+                         fakes.fakeAuthTokenHeaders['X-User-Domain-Id'])
