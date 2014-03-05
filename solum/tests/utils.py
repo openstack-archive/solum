@@ -12,15 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os.path
 import tempfile
 
 import fixtures
 from oslo.config import cfg
 
 from solum import objects
-from solum.openstack.common.db.sqlalchemy.migration_cli \
-    import manager as migration_manager
+from solum.objects.sqlalchemy import models
 from solum.openstack.common.db.sqlalchemy import session
 
 CONF = cfg.CONF
@@ -47,25 +45,11 @@ class Database(fixtures.Fixture):
     def setUp(self):
         super(Database, self).setUp()
         self.configure()
-        self.upgrade()
         self.addCleanup(self.engine.dispose)
         self.engine = session.get_engine()
+        models.Base.metadata.create_all(self.engine)
         self.engine.connect()
         objects.load()
-
-    def upgrade(self):
-        alembic_path = os.path.join(os.path.dirname(__file__),
-                                    '..', 'objects', 'sqlalchemy',
-                                    'migration', 'alembic.ini')
-        migrate_path = os.path.join(os.path.dirname(__file__),
-                                    '..', 'objects', 'sqlalchemy',
-                                    'migration', 'alembic_migrations')
-        migration_config = {'alembic_ini_path': alembic_path,
-                            'migration_repo_path': migrate_path,
-                            'alembic_repo_path': migrate_path}
-
-        manager = migration_manager.MigrationManager(migration_config)
-        manager.upgrade('head')
 
     def configure(self):
         session.set_defaults(sql_connection="sqlite:///%s" % self.db_file,
