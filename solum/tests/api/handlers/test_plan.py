@@ -37,12 +37,16 @@ class TestPlanHandler(base.BaseTestCase):
         mock_registry.PlanList.get_all.assert_called_once_with(None)
 
     def test_plan_update(self, mock_registry):
-        data = {'user_id': 'new_user_id'}
+        data = {'user_id': 'new_user_id', 'name': 'new_name',
+                'project_id': 'new_proj_id', 'uuid': 'new_uuid'}
         db_obj = fakes.FakePlan()
         mock_registry.Plan.get_by_uuid.return_value = db_obj
         handler = plan_handler.PlanHandler()
         res = handler.update('test_id', data)
         self.assertEqual(db_obj.user_id, res.user_id)
+        self.assertEqual(db_obj.name, res.name)
+        self.assertEqual(db_obj.project_id, res.project_id)
+        self.assertEqual(db_obj.uuid, res.uuid)
         db_obj.save.assert_called_once_with(None)
         mock_registry.Plan.get_by_uuid.assert_called_once_with(None,
                                                                'test_id')
