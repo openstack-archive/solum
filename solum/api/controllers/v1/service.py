@@ -39,7 +39,7 @@ class ServiceController(rest.RestController):
     def put(self, data):
         """Modify this service."""
         res = self._handler.update(self._id,
-                                   data.as_dict(objects.registry.Plan))
+                                   data.as_dict(objects.registry.Service))
         return service.Service.from_db_model(res, pecan.request.host_url)
 
     @exception.wrap_controller_exception
@@ -67,7 +67,8 @@ class ServicesController(rest.RestController):
     def post(self, data):
         """Create a new service."""
         return service.Service.from_db_model(
-            self._handler.create(data.as_dict()), pecan.request.host_url)
+            self._handler.create(data.as_dict(objects.registry.Service)),
+            pecan.request.host_url)
 
     @wsme_pecan.wsexpose([service.Service])
     def get_all(self):
