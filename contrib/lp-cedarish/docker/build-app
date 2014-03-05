@@ -37,7 +37,7 @@ rm -rf /opt/solum/apps/$APP/build
 cat << EOF > /opt/solum/apps/$APP/Dockerfile
 # SOLUM APP BUILDER
 FROM solum/slugrunner
-ADD slug.tgz /tmp/slug.tgz
+ADD slug.tgz /app
 EXPOSE 5000
 ENV port 5000
 ENTRYPOINT ["/runner/init"]
