@@ -23,7 +23,7 @@ class AssemblyHandler(handler.Handler):
 
     def get(self, id):
         """Return an assembly."""
-        return objects.registry.Assembly.get_by_uuid(None, id)
+        return objects.registry.Assembly.get_by_uuid(self.context, id)
 
     def trigger_workflow(self, trigger_id):
         """Get trigger by trigger id and start git worflow associated."""
@@ -41,25 +41,27 @@ class AssemblyHandler(handler.Handler):
 
     def update(self, id, data):
         """Modify a resource."""
-        db_obj = objects.registry.Assembly.get_by_uuid(None, id)
+        db_obj = objects.registry.Assembly.get_by_uuid(self.context, id)
         self._update_db_object(db_obj, data)
-        db_obj.save(None)
+        db_obj.save(self.context)
         return db_obj
 
     def delete(self, id):
         """Delete a resource."""
-        db_obj = objects.registry.Assembly.get_by_uuid(None, id)
-        db_obj.destroy(None)
+        db_obj = objects.registry.Assembly.get_by_uuid(self.context, id)
+        db_obj.destroy(self.context)
 
     def create(self, data):
         """Create a new resource."""
         db_obj = objects.registry.Assembly()
         self._update_db_object(db_obj, data)
         db_obj.uuid = str(uuid.uuid4())
+        db_obj.user_id = self.context.user
+        db_obj.project_id = self.context.tenant
         db_obj.trigger_id = str(uuid.uuid4())
-        db_obj.create(None)
+        db_obj.create(self.context)
         return db_obj
 
     def get_all(self):
         """Return all assemblies, based on the query provided."""
-        return objects.registry.AssemblyList.get_all(None)
+        return objects.registry.AssemblyList.get_all(self.context)

@@ -32,32 +32,32 @@ class TestServiceHandler(base.BaseTestCase):
         res = handler.get('test_id')
         self.assertIsNotNone(res)
         mock_registry.Service.get_by_uuid.\
-            assert_called_once_with(None, 'test_id')
+            assert_called_once_with(self.ctx, 'test_id')
 
     def test_get_all(self, mock_registry):
         mock_registry.ServiceList.get_all.return_value = {}
         handler = service_handler.ServiceHandler(self.ctx)
         res = handler.get_all()
         self.assertIsNotNone(res)
-        mock_registry.ServiceList.get_all.assert_called_once_with(None)
+        mock_registry.ServiceList.get_all.assert_called_once_with(self.ctx)
 
     def test_update(self, mock_registry):
-        data = {'user_id': 'new_user_id'}
+        data = {'name': 'new_name'}
         db_obj = fakes.FakeService()
         mock_registry.Service.get_by_uuid.return_value = db_obj
         handler = service_handler.ServiceHandler(self.ctx)
         res = handler.update('test_id', data)
         self.assertEqual(db_obj.user_id, res.user_id)
-        db_obj.save.assert_called_once_with(None)
-        mock_registry.Service.get_by_uuid.assert_called_once_with(None,
+        db_obj.save.assert_called_once_with(self.ctx)
+        mock_registry.Service.get_by_uuid.assert_called_once_with(self.ctx,
                                                                   'test_id')
 
     def test_create(self, mock_registry):
-        data = {'user_id': 'new_user_id',
+        data = {'name': 'new_name',
                 'uuid': 'input_uuid'}
         handler = service_handler.ServiceHandler(self.ctx)
         res = handler.create(data)
-        self.assertEqual('new_user_id', res.user_id)
+        self.assertEqual('new_name', res.name)
         self.assertNotEqual('uuid', res.uuid)
 
     def test_delete(self, mock_registry):
@@ -65,6 +65,6 @@ class TestServiceHandler(base.BaseTestCase):
         mock_registry.Service.get_by_uuid.return_value = db_obj
         handler = service_handler.ServiceHandler(self.ctx)
         handler.delete('test_id')
-        db_obj.destroy.assert_called_once_with(None)
-        mock_registry.Service.get_by_uuid.assert_called_once_with(None,
+        db_obj.destroy.assert_called_once_with(self.ctx)
+        mock_registry.Service.get_by_uuid.assert_called_once_with(self.ctx,
                                                                   'test_id')

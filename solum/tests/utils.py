@@ -17,6 +17,7 @@ import tempfile
 import fixtures
 from oslo.config import cfg
 
+from solum.common import context
 from solum import objects
 from solum.objects.sqlalchemy import models
 from solum.openstack.common.db.sqlalchemy import session
@@ -25,7 +26,7 @@ CONF = cfg.CONF
 
 
 def dummy_context(user='test_username', tenant_id='test_tenant_id'):
-    return {}
+    return context.RequestContext(user=user, tenant=tenant_id)
 
 
 class Database(fixtures.Fixture):

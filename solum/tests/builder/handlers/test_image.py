@@ -31,13 +31,15 @@ class TestImageHandler(base.BaseTestCase):
         res = handler.get('test_id')
         self.assertIsNotNone(res)
         mock_registry.Image.get_by_uuid.\
-            assert_called_once_with(None, 'test_id')
+            assert_called_once_with(self.ctx, 'test_id')
 
     @mock.patch('solum.builder.handlers.image_handler.'
                 'ImageHandler._start_build')
     def test_image_create(self, mock_build, mock_registry):
-        data = {'user_id': 'new_user_id'}
+        data = {'name': 'new app',
+                'source_uri': 'git://example.com/foo'}
         handler = image_handler.ImageHandler(self.ctx)
         res = handler.create(data)
-        self.assertEqual('new_user_id', res.user_id)
+        self.assertEqual('new app', res.name)
+        self.assertEqual('git://example.com/foo', res.source_uri)
         mock_build.assert_called_once_with(res)

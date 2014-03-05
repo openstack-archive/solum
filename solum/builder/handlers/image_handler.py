@@ -32,19 +32,19 @@ class ImageHandler(handler.Handler):
 
     def get(self, id):
         """Return an image."""
-        return objects.registry.Image.get_by_uuid(None, id)
+        return objects.registry.Image.get_by_uuid(self.context, id)
 
     def create(self, data):
         """Create a new resource."""
         db_obj = objects.registry.Image()
         db_obj.uuid = str(uuid.uuid4())
-        db_obj.user_id = data.get('user_id')
-        db_obj.project_id = data.get('project_id')
+        db_obj.user_id = self.context.user
+        db_obj.project_id = self.context.tenant
         db_obj.name = data.get('name')
         db_obj.source_uri = data.get('source_uri')
         db_obj.tags = data.get('tags')
         db_obj.state = PENDING
-        db_obj.create(None)
+        db_obj.create(self.context)
         self._start_build(db_obj)
         return db_obj
 
