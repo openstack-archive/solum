@@ -14,35 +14,35 @@
 
 import pecan
 from pecan import rest
-import six
-import wsme
-from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
 
-from solum.api.controllers.v1.datamodel import language_pack
-from solum.api.handlers import language_pack_handler
+from solum.api.controllers.v1.datamodel import language_pack as lp
+from solum.api.handlers import language_pack_handler as lp_handler
 from solum.common import exception
 
 
 class LanguagePackController(rest.RestController):
-    """Manages operations on a single language pack."""
+    """Manages operations on a single language_pack."""
 
     def __init__(self, language_pack_id):
+        super(LanguagePackController, self).__init__()
         self._id = language_pack_id
+        self._handler = lp_handler.LanguagePackHandler()
 
-    @wsme_pecan.wsexpose(language_pack.LanguagePack, wtypes.text)
+    @exception.wrap_controller_exception
+    @wsme_pecan.wsexpose(lp.LanguagePack)
     def get(self):
-        """Return a language pack."""
-        try:
-            handler = language_pack_handler.LanguagePackHandler()
-            return handler.get(self._id)
-        except exception.SolumException as excp:
-            pecan.response.translatable_error = excp
-            raise wsme.exc.ClientSideError(six.text_type(excp), excp.code)
+        """Return a language_pack."""
+        return lp.LanguagePack.from_db_model(
+            self._handler.get(self._id), pecan.request.host_url)
 
 
 class LanguagePacksController(rest.RestController):
-    """Manages operations on the language packs collection."""
+    """Manages operations on the language_packs collection."""
+
+    def __init__(self):
+        super(LanguagePacksController, self).__init__()
+        self._handler = lp_handler.LanguagePackHandler()
 
     @pecan.expose()
     def _lookup(self, language_pack_id, *remainder):
@@ -50,12 +50,10 @@ class LanguagePacksController(rest.RestController):
             remainder = remainder[:-1]
         return LanguagePackController(language_pack_id), remainder
 
-    @wsme_pecan.wsexpose([language_pack.LanguagePack])
+    @exception.wrap_controller_exception
+    @wsme_pecan.wsexpose([lp.LanguagePack])
     def get_all(self):
-        """Return all language packs, based on the query provided."""
-        try:
-            handler = language_pack_handler.LanguagePackHandler()
-            return handler.get_all()
-        except exception.SolumException as excp:
-            pecan.response.translatable_error = excp
-            raise wsme.exc.ClientSideError(six.text_type(excp), excp.code)
+        """Return all language_packs, based on the query provided."""
+        return [lp.LanguagePack.from_db_model(langpack,
+                pecan.request.host_url)
+                for langpack in self._handler.get_all()]

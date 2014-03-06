@@ -12,18 +12,17 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from solum.api.controllers.v1.datamodel import language_pack
 from solum.api.handlers import handler
+from solum import objects
 
 
 class LanguagePackHandler(handler.Handler):
-    """Fulfills a request on the language pack resource."""
+    """Fulfills a request on the language_pack resource."""
 
     def get(self, id):
-        response = language_pack.LanguagePack.sample()
-        return response
+        """Return a language_pack."""
+        return objects.registry.LanguagePack.get_by_uuid(None, id)
 
     def get_all(self):
-        """Return all language packs, based on the query provided."""
-        response = []
-        return response
+        """Return all language_packs, based on the query provided."""
+        return objects.registry.LanguagePackList.get_all(None)
