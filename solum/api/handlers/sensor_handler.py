@@ -43,14 +43,14 @@ class SensorHandler(handler.Handler):
     def delete(self, id):
         """Delete the sensor."""
         db_obj = objects.registry.Sensor.get_by_uuid(None, id)
-        db_obj.delete()
+        db_obj.destroy(None)
 
     def create(self, data):
         """Create a new sensor."""
         db_obj = objects.registry.Sensor()
         self._update_db_object(db_obj, data)
         db_obj.uuid = str(uuid.uuid4())
-        db_obj.create()
+        db_obj.create(None)
         return db_obj
 
     def get_all(self):
