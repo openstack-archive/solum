@@ -27,6 +27,15 @@ sample_data = {"name": "test_service",
 
 
 class TestServiceController(base.TestCase):
+    def setUp(self):
+        super(TestServiceController, self).setUp()
+        self.addCleanup(self._delete_all)
+
+    def _delete_all(self):
+        resp, body = self.client.get('v1/services')
+        data = json.loads(body)
+        self.assertEqual(resp.status, 200)
+        [self._delete_service(ser['uuid']) for ser in data]
 
     def _assert_output_expected(self, body_data, data):
         self.assertEqual(body_data['user_id'], data['user_id'])
