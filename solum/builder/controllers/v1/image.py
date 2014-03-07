@@ -65,13 +65,16 @@ class ImageController(rest.RestController):
     """Manages operations on a single image."""
 
     def __init__(self, image_id):
+        super(ImageController, self).__init__()
         self._id = image_id
 
     @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(Image)
     def get(self):
         """Return this image."""
-        handler = image_handler.ImageHandler()
+        handler = image_handler.ImageHandler(
+            pecan.request.security_context)
+
         host_url = pecan.request.host_url
         return Image.from_db_object(handler.get(self._id), host_url)
 
@@ -88,7 +91,8 @@ class ImagesController(rest.RestController):
     @wsme_pecan.wsexpose(Image, body=Image, status_code=201)
     def post(self, data):
         """Create a new image."""
-        handler = image_handler.ImageHandler()
+        handler = image_handler.ImageHandler(
+            pecan.request.security_context)
         host_url = pecan.request.host_url
         return Image.from_db_object(
             handler.create(data.as_dict()), host_url)

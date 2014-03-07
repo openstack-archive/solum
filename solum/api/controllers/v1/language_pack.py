@@ -27,22 +27,19 @@ class LanguagePackController(rest.RestController):
     def __init__(self, language_pack_id):
         super(LanguagePackController, self).__init__()
         self._id = language_pack_id
-        self._handler = lp_handler.LanguagePackHandler()
 
     @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(lp.LanguagePack)
     def get(self):
         """Return a language_pack."""
+        handler = lp_handler.LanguagePackHandler(
+            pecan.request.security_context)
         return lp.LanguagePack.from_db_model(
-            self._handler.get(self._id), pecan.request.host_url)
+            handler.get(self._id), pecan.request.host_url)
 
 
 class LanguagePacksController(rest.RestController):
-    """Manages operations on the language_packs collection."""
-
-    def __init__(self):
-        super(LanguagePacksController, self).__init__()
-        self._handler = lp_handler.LanguagePackHandler()
+    """Manages operations on the language packs collection."""
 
     @pecan.expose()
     def _lookup(self, language_pack_id, *remainder):
@@ -54,6 +51,8 @@ class LanguagePacksController(rest.RestController):
     @wsme_pecan.wsexpose([lp.LanguagePack])
     def get_all(self):
         """Return all language_packs, based on the query provided."""
+        handler = lp_handler.LanguagePackHandler(
+            pecan.request.security_context)
         return [lp.LanguagePack.from_db_model(langpack,
                 pecan.request.host_url)
-                for langpack in self._handler.get_all()]
+                for langpack in handler.get_all()]

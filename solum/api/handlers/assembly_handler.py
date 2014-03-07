@@ -27,6 +27,8 @@ class AssemblyHandler(handler.Handler):
 
     def trigger_workflow(self, trigger_id):
         """Get trigger by trigger id and start git worflow associated."""
+        # Note: self.context will be None at this point as this is a
+        # non-authenticated request.
         pass
         # Here, call a service which will trigger git workflow
 

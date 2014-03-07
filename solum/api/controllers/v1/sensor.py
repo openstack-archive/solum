@@ -25,37 +25,39 @@ class SensorController(rest.RestController):
     """Manages operations on a single sensor."""
 
     def __init__(self, sensor_id):
+        super(SensorController, self).__init__()
         self._id = sensor_id
-        self._handler = sensor_handler.SensorHandler()
 
     @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(sensor.Sensor, wtypes.text)
     def get(self):
         """Return this sensor."""
-        return sensor.Sensor.from_db_model(self._handler.get(self._id),
+        handler = sensor_handler.SensorHandler(
+            pecan.request.security_context)
+        return sensor.Sensor.from_db_model(handler.get(self._id),
                                            pecan.request.host_url)
 
     @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(sensor.Sensor, wtypes.text, body=sensor.Sensor)
     def put(self, data):
         """Modify this sensor."""
-        obj = self._handler.update(self._id,
-                                   data.as_dict(objects.registry.Sensor))
+        handler = sensor_handler.SensorHandler(
+            pecan.request.security_context)
+        obj = handler.update(self._id,
+                             data.as_dict(objects.registry.Sensor))
         return sensor.Sensor.from_db_model(obj, pecan.request.host_url)
 
     @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(None, wtypes.text, status_code=204)
     def delete(self):
         """Delete this sensor."""
-        self._handler.delete(self._id)
+        handler = sensor_handler.SensorHandler(
+            pecan.request.security_context)
+        handler.delete(self._id)
 
 
 class SensorsController(rest.RestController):
     """Manages operations on the sensors collection."""
-
-    def __init__(self):
-        super(SensorsController, self).__init__()
-        self._handler = sensor_handler.SensorHandler()
 
     @pecan.expose()
     def _lookup(self, sensor_id, *remainder):
@@ -68,12 +70,16 @@ class SensorsController(rest.RestController):
                          body=sensor.Sensor, status_code=201)
     def post(self, data):
         """Create a new sensor."""
-        obj = self._handler.create(data.as_dict(objects.registry.Sensor))
+        handler = sensor_handler.SensorHandler(
+            pecan.request.security_context)
+        obj = handler.create(data.as_dict(objects.registry.Sensor))
         return sensor.Sensor.from_db_model(obj, pecan.request.host_url)
 
     @exception.wrap_controller_exception
     @wsme_pecan.wsexpose([sensor.Sensor])
     def get_all(self):
         """Return all sensors, based on the query provided."""
+        handler = sensor_handler.SensorHandler(
+            pecan.request.security_context)
         return [sensor.Sensor.from_db_model(obj, pecan.request.host_url)
-                for obj in self._handler.get_all()]
+                for obj in handler.get_all()]

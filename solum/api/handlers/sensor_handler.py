@@ -21,9 +21,6 @@ from solum import objects
 class SensorHandler(handler.Handler):
     """Fulfills a request on the sensor resource."""
 
-    def __init__(self):
-        super(SensorHandler, self).__init__()
-
     def get(self, id):
         """Return a sensor."""
         return objects.registry.Sensor.get_by_uuid(None, id)

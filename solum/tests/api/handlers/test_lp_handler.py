@@ -16,13 +16,18 @@ import mock
 
 from solum.api.handlers import language_pack_handler
 from solum.tests import base
+from solum.tests import utils
 
 
 @mock.patch('solum.objects.registry')
 class TestLanguagePackHandler(base.BaseTestCase):
+    def setUp(self):
+        super(TestLanguagePackHandler, self).setUp()
+        self.ctx = utils.dummy_context()
+
     def test_language_pack_get(self, mock_registry):
         mock_registry.LanguagePack.get_by_uuid.return_value = {}
-        handler = language_pack_handler.LanguagePackHandler()
+        handler = language_pack_handler.LanguagePackHandler(self.ctx)
         resp = handler.get('test_id')
         self.assertIsNotNone(resp)
         (mock_registry.LanguagePack.get_by_uuid.
@@ -30,7 +35,7 @@ class TestLanguagePackHandler(base.BaseTestCase):
 
     def test_language_pack_get_all(self, mock_registry):
         mock_registry.LanguagePackList.get_all.return_value = {}
-        handler = language_pack_handler.LanguagePackHandler()
+        handler = language_pack_handler.LanguagePackHandler(self.ctx)
         resp = handler.get_all()
         self.assertIsNotNone(resp)
         mock_registry.LanguagePackList.get_all.assert_called_once_with(None)

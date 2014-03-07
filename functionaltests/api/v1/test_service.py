@@ -23,7 +23,8 @@ sample_data = {"name": "test_service",
                "project_id": "project_id",
                "user_id": "user_id",
                "service_type": "mysql",
-               "read_only": True}
+               "read_only": True,
+               "type": "service"}
 
 
 class TestServiceController(base.TestCase):
@@ -38,12 +39,11 @@ class TestServiceController(base.TestCase):
         [self._delete_service(ser['uuid']) for ser in data]
 
     def _assert_output_expected(self, body_data, data):
-        self.assertEqual(body_data['user_id'], data['user_id'])
-        self.assertEqual(body_data['project_id'], data['project_id'])
         self.assertEqual(body_data['description'], data['description'])
         self.assertEqual(body_data['name'], data['name'])
         self.assertEqual(body_data['service_type'], data['service_type'])
         self.assertEqual(body_data['read_only'], data['read_only'])
+        self.assertEqual(body_data['type'], 'service')
         self.assertIsNotNone(body_data['uuid'])
 
     def _delete_service(self, uuid):

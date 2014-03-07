@@ -16,13 +16,18 @@ import mock
 
 from solum.builder.handlers import image_handler
 from solum.tests import base
+from solum.tests import utils
 
 
 @mock.patch('solum.objects.registry')
 class TestImageHandler(base.BaseTestCase):
+    def setUp(self):
+        super(TestImageHandler, self).setUp()
+        self.ctx = utils.dummy_context()
+
     def test_image_get(self, mock_registry):
         mock_registry.Image.get_by_uuid.return_value = {}
-        handler = image_handler.ImageHandler()
+        handler = image_handler.ImageHandler(self.ctx)
         res = handler.get('test_id')
         self.assertIsNotNone(res)
         mock_registry.Image.get_by_uuid.\
@@ -32,7 +37,7 @@ class TestImageHandler(base.BaseTestCase):
                 'ImageHandler._start_build')
     def test_image_create(self, mock_build, mock_registry):
         data = {'user_id': 'new_user_id'}
-        handler = image_handler.ImageHandler()
+        handler = image_handler.ImageHandler(self.ctx)
         res = handler.create(data)
         self.assertEqual('new_user_id', res.user_id)
         mock_build.assert_called_once_with(res)

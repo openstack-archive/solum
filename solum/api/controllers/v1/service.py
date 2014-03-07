@@ -26,35 +26,36 @@ class ServiceController(rest.RestController):
     def __init__(self, service_id):
         super(ServiceController, self).__init__()
         self._id = service_id
-        self._handler = service_handler.ServiceHandler()
 
     @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(service.Service)
     def get(self):
         """Return this service."""
-        return service.Service.from_db_model(self._handler.get(self._id),
+        handler = service_handler.ServiceHandler(
+            pecan.request.security_context)
+        return service.Service.from_db_model(handler.get(self._id),
                                              pecan.request.host_url)
 
     @wsme_pecan.wsexpose(service.Service, body=service.Service)
     def put(self, data):
         """Modify this service."""
-        res = self._handler.update(self._id,
-                                   data.as_dict(objects.registry.Service))
+        handler = service_handler.ServiceHandler(
+            pecan.request.security_context)
+        res = handler.update(self._id,
+                             data.as_dict(objects.registry.Service))
         return service.Service.from_db_model(res, pecan.request.host_url)
 
     @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(status_code=204)
     def delete(self):
         """Delete this service."""
-        return self._handler.delete(self._id)
+        handler = service_handler.ServiceHandler(
+            pecan.request.security_context)
+        return handler.delete(self._id)
 
 
 class ServicesController(rest.RestController):
     """Manages operations on the services collection."""
-
-    def __init__(self):
-        super(ServicesController, self).__init__()
-        self._handler = service_handler.ServiceHandler()
 
     @pecan.expose()
     def _lookup(self, service_id, *remainder):
@@ -66,12 +67,16 @@ class ServicesController(rest.RestController):
                          status_code=201)
     def post(self, data):
         """Create a new service."""
+        handler = service_handler.ServiceHandler(
+            pecan.request.security_context)
         return service.Service.from_db_model(
-            self._handler.create(data.as_dict(objects.registry.Service)),
+            handler.create(data.as_dict(objects.registry.Service)),
             pecan.request.host_url)
 
     @wsme_pecan.wsexpose([service.Service])
     def get_all(self):
         """Return all services, based on the query provided."""
+        handler = service_handler.ServiceHandler(
+            pecan.request.security_context)
         return [service.Service.from_db_model(ser, pecan.request.host_url)
-                for ser in self._handler.get_all()]
+                for ser in handler.get_all()]

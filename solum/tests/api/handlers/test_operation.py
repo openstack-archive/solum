@@ -14,15 +14,20 @@
 
 from solum.api.handlers import operation_handler as operation
 from solum.tests import base
+from solum.tests import utils
 
 
 class TestOperationHandler(base.BaseTestCase):
+    def setUp(self):
+        super(TestOperationHandler, self).setUp()
+        self.ctx = utils.dummy_context()
+
     def test_operation_get(self):
-        handler = operation.OperationHandler()
+        handler = operation.OperationHandler(self.ctx)
         res = handler.get('test_id')
         self.assertIsNotNone(res)
 
     def test_operation_get_all(self):
-        handler = operation.OperationHandler()
+        handler = operation.OperationHandler(self.ctx)
         res = handler.get_all()
         self.assertIsNotNone(res)

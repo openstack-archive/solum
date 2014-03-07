@@ -27,13 +27,15 @@ class OperationController(rest.RestController):
     """Manages operations on a single operation."""
 
     def __init__(self, operation_id):
+        super(OperationController, self).__init__()
         self._id = operation_id
 
     @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(operation.Operation, wtypes.text)
     def get(self):
         """Return this operation."""
-        handler = operation_handler.OperationHandler()
+        handler = operation_handler.OperationHandler(
+            pecan.request.security_context)
         return handler.get(self._id)
 
     @wsme_pecan.wsexpose(operation.Operation, wtypes.text,
@@ -73,5 +75,6 @@ class OperationsController(rest.RestController):
     @wsme_pecan.wsexpose([operation.Operation])
     def get_all(self):
         """Return all operations, based on the query provided."""
-        handler = operation_handler.OperationHandler()
+        handler = operation_handler.OperationHandler(
+            pecan.request.security_context)
         return handler.get_all()

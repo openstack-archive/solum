@@ -26,37 +26,37 @@ class ComponentController(rest.RestController):
     def __init__(self, component_id):
         super(ComponentController, self).__init__()
         self._id = component_id
-        self._handler = component_handler.ComponentHandler()
 
     @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(component.Component)
     def get(self):
         """Return this component."""
-        return component.Component.from_db_model(self._handler.get(self._id),
+        handler = component_handler.ComponentHandler(
+            pecan.request.security_context)
+        return component.Component.from_db_model(handler.get(self._id),
                                                  pecan.request.host_url)
 
     @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(component.Component, body=component.Component)
     def put(self, data):
         """Modify this component."""
-        res = self._handler.update(self._id,
-                                   data.as_dict(objects.registry.Plan))
+        handler = component_handler.ComponentHandler(
+            pecan.request.security_context)
+        res = handler.update(self._id,
+                             data.as_dict(objects.registry.Plan))
         return component.Component.from_db_model(res, pecan.request.host_url)
 
     @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(None, status_code=204)
     def delete(self):
         """Delete this component."""
-        return self._handler.delete(self._id)
+        handler = component_handler.ComponentHandler(
+            pecan.request.security_context)
+        return handler.delete(self._id)
 
 
 class ComponentsController(rest.RestController):
     """Manages operations on the components collection."""
-
-    def __init__(self):
-        super(ComponentsController, self).__init__()
-        self._handler = component_handler.ComponentHandler()
-        objects.load()
 
     @pecan.expose()
     def _lookup(self, component_id, *remainder):
@@ -69,12 +69,16 @@ class ComponentsController(rest.RestController):
                          status_code=201)
     def post(self, data):
         """Create a new component."""
+        handler = component_handler.ComponentHandler(
+            pecan.request.security_context)
         return component.Component.from_db_model(
-            self._handler.create(data.as_dict()), pecan.request.host_url)
+            handler.create(data.as_dict()), pecan.request.host_url)
 
     @exception.wrap_controller_exception
     @wsme_pecan.wsexpose([component.Component])
     def get_all(self):
         """Return all components, based on the query provided."""
+        handler = component_handler.ComponentHandler(
+            pecan.request.security_context)
         return [component.Component.from_db_model(ser, pecan.request.host_url)
-                for ser in self._handler.get_all()]
+                for ser in handler.get_all()]

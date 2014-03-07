@@ -29,37 +29,37 @@ class AssemblyController(rest.RestController):
     def __init__(self, assembly_id):
         super(AssemblyController, self).__init__()
         self._id = assembly_id
-        self._handler = assembly_handler.AssemblyHandler()
 
     @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(assembly.Assembly)
     def get(self):
         """Return this assembly."""
-        return assembly.Assembly.from_db_model(self._handler.get(self._id),
+        handler = assembly_handler.AssemblyHandler(
+            pecan.request.security_context)
+        return assembly.Assembly.from_db_model(handler.get(self._id),
                                                pecan.request.host_url)
 
     @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(assembly.Assembly, body=assembly.Assembly)
     def put(self, data):
         """Modify this assembly."""
-
-        res = self._handler.update(self._id,
-                                   data.as_dict(objects.registry.Assembly))
+        handler = assembly_handler.AssemblyHandler(
+            pecan.request.security_context)
+        res = handler.update(self._id,
+                             data.as_dict(objects.registry.Assembly))
         return assembly.Assembly.from_db_model(res, pecan.request.host_url)
 
     @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(status_code=204)
     def delete(self):
         """Delete this assembly."""
-        return self._handler.delete(self._id)
+        handler = assembly_handler.AssemblyHandler(
+            pecan.request.security_context)
+        return handler.delete(self._id)
 
 
 class AssembliesController(rest.RestController):
     """Manages operations on the assemblies collection."""
-
-    def __init__(self):
-        super(AssembliesController, self).__init__()
-        self._handler = assembly_handler.AssemblyHandler()
 
     @pecan.expose()
     def _lookup(self, assembly_id, *remainder):
@@ -72,7 +72,6 @@ class AssembliesController(rest.RestController):
                          status_code=201)
     def post(self, data):
         """Create a new assembly."""
-
         js_data = data.as_dict(objects.registry.Assembly)
         if data.plan_uri is not wsme.Unset:
             plan_uri = data.plan_uri
@@ -85,12 +84,16 @@ class AssembliesController(rest.RestController):
                 # download the plan and insert it into our db.
                 pass
 
+        handler = assembly_handler.AssemblyHandler(
+            pecan.request.security_context)
         return assembly.Assembly.from_db_model(
-            self._handler.create(js_data), pecan.request.host_url)
+            handler.create(js_data), pecan.request.host_url)
 
     @exception.wrap_controller_exception
     @wsme_pecan.wsexpose([assembly.Assembly])
     def get_all(self):
         """Return all assemblies, based on the query provided."""
+        handler = assembly_handler.AssemblyHandler(
+            pecan.request.security_context)
         return [assembly.Assembly.from_db_model(assm, pecan.request.host_url)
-                for assm in self._handler.get_all()]
+                for assm in handler.get_all()]

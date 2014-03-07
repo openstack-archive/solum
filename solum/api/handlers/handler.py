@@ -16,10 +16,11 @@ from solum.common import exception as solum_exception
 
 
 class Handler(object):
-    """The handler is responsible for fulfilling a request."""
+    """The handler is responsible for fulfilling *one* request."""
 
-    def __init__(self):
-        pass
+    def __init__(self, context):
+        super(Handler, self).__init__()
+        self.context = context
 
     def get(self, id):
         """Return a resource."""

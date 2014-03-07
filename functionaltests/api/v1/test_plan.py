@@ -20,7 +20,8 @@ from functionaltests.api import base
 sample_data = {"name": "test_plan",
                "description": "A test to create plan",
                "project_id": "project_id",
-               "user_id": "user_id"}
+               "user_id": "user_id",
+               "type": "plan"}
 
 
 class TestPlanController(base.TestCase):
@@ -35,10 +36,9 @@ class TestPlanController(base.TestCase):
         [self._delete_plan(pl['uuid']) for pl in data]
 
     def _assert_output_expected(self, body_data, data):
-        self.assertEqual(body_data['user_id'], data['user_id'])
-        self.assertEqual(body_data['project_id'], data['project_id'])
         self.assertEqual(body_data['description'], data['description'])
         self.assertEqual(body_data['name'], data['name'])
+        self.assertEqual(body_data['type'], 'plan')
         self.assertIsNotNone(body_data['uuid'])
 
     def _delete_plan(self, uuid):
@@ -82,8 +82,7 @@ class TestPlanController(base.TestCase):
         uuid = self._create_plan()
         updated_data = {"name": "test_plan updated",
                         "description": "A test to create plan updated",
-                        "project_id": "project_id updated",
-                        "user_id": "user_id updated"}
+                        "type": "plan"}
         updated_json = json.dumps(updated_data)
         resp, body = self.client.put('v1/plans/%s' % uuid, updated_json)
         self.assertEqual(resp.status, 200)

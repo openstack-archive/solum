@@ -26,13 +26,14 @@ class ExtensionController(rest.RestController):
 
     def __init__(self, extension_id):
         self._id = extension_id
-        self._handler = extension_handler.ExtensionHandler()
 
     @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(extension.Extension, wtypes.text)
     def get(self):
         """Return this extension."""
-        return extension.Extension.from_db_model(self._handler.get(self._id),
+        handler = extension_handler.ExtensionHandler(
+            pecan.request.security_context)
+        return extension.Extension.from_db_model(handler.get(self._id),
                                                  pecan.request.host_url)
 
     @exception.wrap_controller_exception
@@ -40,23 +41,23 @@ class ExtensionController(rest.RestController):
                          body=extension.Extension)
     def put(self, data):
         """Modify this extension."""
-        obj = self._handler.update(self._id,
-                                   data.as_dict(objects.registry.Extension))
+        handler = extension_handler.ExtensionHandler(
+            pecan.request.security_context)
+        obj = handler.update(self._id,
+                             data.as_dict(objects.registry.Extension))
         return extension.Extension.from_db_model(obj, pecan.request.host_url)
 
     @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(None, wtypes.text, status_code=204)
     def delete(self):
         """Delete this extension."""
-        self._handler.delete(self._id)
+        handler = extension_handler.ExtensionHandler(
+            pecan.request.security_context)
+        handler.delete(self._id)
 
 
 class ExtensionsController(rest.RestController):
     """Manages operations on the extensions collection."""
-
-    def __init__(self):
-        super(ExtensionsController, self).__init__()
-        self._handler = extension_handler.ExtensionHandler()
 
     @pecan.expose()
     def _lookup(self, extension_id, *remainder):
@@ -70,11 +71,15 @@ class ExtensionsController(rest.RestController):
                          status_code=201)
     def post(self, data):
         """Create a new extension."""
-        obj = self._handler.create(data.as_dict(objects.registry.Extension))
+        handler = extension_handler.ExtensionHandler(
+            pecan.request.security_context)
+        obj = handler.create(data.as_dict(objects.registry.Extension))
         return extension.Extension.from_db_model(obj, pecan.request.host_url)
 
     @wsme_pecan.wsexpose([extension.Extension])
     def get_all(self):
         """Return all extensions, based on the query provided."""
+        handler = extension_handler.ExtensionHandler(
+            pecan.request.security_context)
         return [extension.Extension.from_db_model(obj, pecan.request.host_url)
-                for obj in self._handler.get_all()]
+                for obj in handler.get_all()]

@@ -17,13 +17,18 @@ import mock
 from solum.api.handlers import sensor_handler as sensor
 from solum.tests import base
 from solum.tests import fakes
+from solum.tests import utils
 
 
 @mock.patch('solum.objects.registry')
 class TestSensorHandler(base.BaseTestCase):
+    def setUp(self):
+        super(TestSensorHandler, self).setUp()
+        self.ctx = utils.dummy_context()
+
     def test_sensor_get(self, mock_registry):
         mock_registry.Sensor.get_by_uuid.return_value = {}
-        handler = sensor.SensorHandler()
+        handler = sensor.SensorHandler(self.ctx)
         res = handler.get('test_id')
         self.assertIsNotNone(res)
         mock_registry.Sensor.get_by_uuid.assert_called_once_with(None,
@@ -31,7 +36,7 @@ class TestSensorHandler(base.BaseTestCase):
 
     def test_sensor_get_all(self, mock_registry):
         mock_registry.SensorList.get_all.return_value = {}
-        handler = sensor.SensorHandler()
+        handler = sensor.SensorHandler(self.ctx)
         res = handler.get_all()
         self.assertIsNotNone(res)
         mock_registry.SensorList.get_all.assert_called_once_with(None)
@@ -40,7 +45,7 @@ class TestSensorHandler(base.BaseTestCase):
         data = {'user_id': 'new_user_id'}
         db_obj = fakes.FakeSensor()
         mock_registry.Sensor.get_by_uuid.return_value = db_obj
-        handler = sensor.SensorHandler()
+        handler = sensor.SensorHandler(self.ctx)
         res = handler.update('test_id', data)
         self.assertEqual(db_obj.user_id, res.user_id)
         self.assertEqual(db_obj.project_id, res.project_id)
@@ -58,7 +63,7 @@ class TestSensorHandler(base.BaseTestCase):
     def test_sensor_create(self, mock_registry):
         data = {'user_id': 'new_user_id',
                 'uuid': 'input_uuid'}
-        handler = sensor.SensorHandler()
+        handler = sensor.SensorHandler(self.ctx)
         res = handler.create(data)
         self.assertEqual('new_user_id', res.user_id)
         self.assertNotEqual('uuid', res.uuid)
@@ -66,7 +71,7 @@ class TestSensorHandler(base.BaseTestCase):
     def test_sensor_delete(self, mock_registry):
         db_obj = fakes.FakeSensor()
         mock_registry.Sensor.get_by_uuid.return_value = db_obj
-        handler = sensor.SensorHandler()
+        handler = sensor.SensorHandler(self.ctx)
         handler.delete('test_id')
         db_obj.destroy.assert_called_once_with(None)
         mock_registry.Sensor.get_by_uuid.assert_called_once_with(None,

@@ -21,9 +21,6 @@ from solum import objects
 class ExtensionHandler(handler.Handler):
     """Fulfills a request on the extension resource."""
 
-    def __init__(self):
-        super(ExtensionHandler, self).__init__()
-
     def get(self, id):
         """Return this extension."""
         return objects.registry.Extension.get_by_uuid(None, id)

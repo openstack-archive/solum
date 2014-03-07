@@ -25,5 +25,5 @@ class TriggerController(rest.RestController):
     @wsme_pecan.wsexpose(None, wtypes.text, status_code=200)
     def post(self, trigger_id):
         """Trigger a new event on Solum."""
-        handler = assembly_handler.AssemblyHandler()
+        handler = assembly_handler.AssemblyHandler(None)
         handler.trigger_workflow(trigger_id)
