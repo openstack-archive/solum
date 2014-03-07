@@ -31,7 +31,7 @@ class Sensor(sql.Base, abstract.Sensor):
     name = sqlalchemy.Column(sqlalchemy.String(255))
     sensor_type = sqlalchemy.Column(sqlalchemy.String(255))
     value = sqlalchemy.Column(sqlalchemy.String(255))
-    timestamp = sqlalchemy.Column(sqlalchemy.DateTime),
+    timestamp = sqlalchemy.Column(sqlalchemy.DateTime)
     description = sqlalchemy.Column(sqlalchemy.String(255))
     documentation = sqlalchemy.Column(sqlalchemy.String(255))
     target_resource = sqlalchemy.Column(sqlalchemy.String(255))
