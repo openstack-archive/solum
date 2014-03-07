@@ -29,7 +29,11 @@ This should prepare your system to use the docker builder by building a few cont
 The build script takes two positional arguments.   The location of the git repo, and the app name.  Currently requires sudo access to work with docker.   Run it as the same user you installed devstack which has passwordless sudo.
 
 ```
-/solum/contrib/lp-cedarish/docker/build-app https://github.com/paulczar/example-nodejs-express.git nodejs
+$ source ~/devstack/openrc
+$ keystone tenant-get $OS_TENANT_NAME
+# get the tenant_id and pass that into build-app
+
+/solum/contrib/lp-cedarish/docker/build-app https://github.com/paulczar/example-nodejs-express.git nodejs $OS_TENANT_ID
 ```
 
 This script will upload a docker container with your built application to glance to be run via nova.
@@ -39,7 +43,6 @@ This script will upload a docker container with your built application to glance
 Due to a bug with the docker driver the first VM you start will run `sh` instead of the embedded `CMD`.  thus we should kick off a dummy build first
 
 ```
-$ source ~/devstack/openrc
 $ nova image-list
 +--------------------------------------+---------------------------------+--------+--------+
 | ID                                   | Name                            | Status | Server |
