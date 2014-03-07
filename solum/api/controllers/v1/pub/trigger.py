@@ -10,22 +10,20 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import pecan
 from pecan import rest
-import six
-import wsme
 from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
 
-from solum.openstack.common.gettextutils import _
+from solum.api.handlers import assembly_handler
+from solum.common import exception
 
 
 class TriggerController(rest.RestController):
     """Manages triggers."""
 
+    @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(None, wtypes.text, status_code=200)
     def post(self, trigger_id):
         """Trigger a new event on Solum."""
-        error = _("Not implemented")
-        pecan.response.translatable_error = error
-        raise wsme.exc.ClientSideError(six.text_type(error))
+        handler = assembly_handler.AssemblyHandler()
+        handler.trigger_workflow(trigger_id)

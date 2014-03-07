@@ -21,8 +21,12 @@ from solum.tests import fakes
 
 @mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
 @mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
+@mock.patch('solum.api.controllers.v1.pub.trigger.assembly_handler'
+            '.AssemblyHandler')
 class TestTriggerController(base.BaseTestCase):
-    def test_trigger_post(self, resp_mock, request_mock):
+    def test_trigger_post(self, handler_mock, resp_mock, request_mock):
         obj = trigger.TriggerController()
-        obj.post(1)
-        self.assertEqual(400, resp_mock.status)
+        obj.post('test_id')
+        self.assertEqual(200, resp_mock.status)
+        handler_mock.return_value.trigger_workflow.\
+            assert_called_once_with('test_id')
