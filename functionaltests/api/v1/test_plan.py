@@ -55,10 +55,12 @@ class TestPlanController(base.TestCase):
         return uuid
 
     def test_plans_get_all(self):
+        uuid = self._create_plan()
         resp, body = self.client.get('v1/plans')
         data = json.loads(body)
         self.assertEqual(resp.status, 200)
-        self.assertEqual(data, [])
+        filtered = [pl for pl in data if pl['uuid'] == uuid]
+        self.assertEqual(filtered[0]['uuid'], uuid)
 
     def test_plans_create(self):
         sample_json = json.dumps(sample_data)
