@@ -14,8 +14,10 @@
 
 import sqlalchemy as sa
 
+from solum.common import exception
 from solum.objects import assembly as abstract
 from solum.objects.sqlalchemy import models as sql
+from solum.openstack.common.db.sqlalchemy import session as db_session
 
 
 class Assembly(sql.Base, abstract.Assembly):
@@ -29,10 +31,24 @@ class Assembly(sql.Base, abstract.Assembly):
     uuid = sa.Column(sa.String(36), nullable=False)
     project_id = sa.Column(sa.String(36))
     user_id = sa.Column(sa.String(36))
+    trigger_id = sa.Column(sa.String(36))
     name = sa.Column(sa.String(100))
     description = sa.Column(sa.String(255))
     tags = sa.Column(sa.Text)
     plan_id = sa.Column(sa.Integer, sa.ForeignKey('plan.id'), nullable=False)
+
+    @classmethod
+    def _raise_trigger_not_found(cls, item_id):
+        """Raise a NotFound exception."""
+        raise exception.NotFound(id=item_id, name='trigger')
+
+    @classmethod
+    def get_by_trigger_id(cls, context, trigger_id):
+        try:
+            session = db_session.get_session(mysql_traditional_mode=True)
+            return session.query(cls).filter_by(trigger_id=trigger_id).one()
+        except sa.orm.exc.NoResultFound:
+            cls._raise_trigger_not_found(trigger_id)
 
 
 class AssemblyList(abstract.AssemblyList):

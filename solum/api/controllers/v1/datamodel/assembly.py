@@ -12,6 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from wsme import types as wtypes
+
 from solum.api.controllers import common_types
 from solum.api.controllers.v1.datamodel import component
 from solum.api.controllers.v1.datamodel import operation
@@ -45,6 +47,9 @@ class Assembly(api_types.Base):
     sensors = [sensor.Sensor]
     """Sensors that belong to the assembly."""
 
+    trigger_id = wtypes.text
+    """The trigger id generated to trigger the build of the plan"""
+
     @classmethod
     def sample(cls):
         return cls(uri='http://example.com/v1/assemblies/x4',
@@ -55,6 +60,7 @@ class Assembly(api_types.Base):
                    project_id='1dae5a09ef2b4d8cbf3594b0eb4f6b94',
                    user_id='55f41cf46df74320b9486a35f5d28a11',
                    description='A mysql database',
+                   trigger_id='224578964aaa4320b9486a3545893487',
                    components=[],
                    operations=[],
                    sensors=[])
