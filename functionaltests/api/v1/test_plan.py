@@ -24,6 +24,15 @@ sample_data = {"name": "test_plan",
 
 
 class TestPlanController(base.TestCase):
+    def setUp(self):
+        super(TestPlanController, self).setUp()
+        self.addCleanup(self._delete_all)
+
+    def _delete_all(self):
+        resp, body = self.client.get('v1/plans')
+        data = json.loads(body)
+        self.assertEqual(resp.status, 200)
+        [self._delete_plan(pl['uuid']) for pl in data]
 
     def _assert_output_expected(self, body_data, data):
         self.assertEqual(body_data['user_id'], data['user_id'])
