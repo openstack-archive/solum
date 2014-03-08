@@ -60,10 +60,12 @@ class TestServiceController(base.TestCase):
         return uuid
 
     def test_services_get_all(self):
+        uuid = self._create_service()
         resp, body = self.client.get('v1/services')
         data = json.loads(body)
         self.assertEqual(resp.status, 200)
-        self.assertEqual(data, [])
+        filtered = [ser for ser in data if ser['uuid'] == uuid]
+        self.assertEqual(filtered[0]['uuid'], uuid)
 
     def test_services_create(self):
         sample_json = json.dumps(sample_data)
