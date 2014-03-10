@@ -58,6 +58,7 @@ class TestImageHandler(base.BaseTestCase):
                                                 '..', '..', '..', '..'))
         script = os.path.join(proj_dir, 'contrib/lp-cedarish/docker/build-app')
         mock_popen.assert_called_once_with([script, 'git://example.com/foo',
-                                            'new_app'], stdout=-1)
+                                            'new_app', self.ctx.tenant],
+                                           stdout=-1)
         expected = [mock.call(self.ctx), mock.call(self.ctx)]
         self.assertEqual(expected, fim.save.call_args_list)

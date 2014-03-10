@@ -59,7 +59,7 @@ class ImageHandler(handler.Handler):
         image.save(self.context)
         try:
             out = subprocess.Popen([build_app, image.source_uri,
-                                    image.name],
+                                    image.name, self.context.tenant],
                                    stdout=subprocess.PIPE).communicate()[0]
         except subprocess.CalledProcessError as subex:
             LOG.exception(subex)
