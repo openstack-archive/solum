@@ -95,9 +95,13 @@ class SolumBase(models.TimestampMixin, models.ModelBase):
     def _non_updatable_fields(self):
         return set(('uuid', 'id'))
 
+    def _lazyhasattr(self, name):
+        return any(name in d for d in (self.__dict__,
+                                       self.__class__.__dict__))
+
     def update(self, data):
         for field in set(six.iterkeys(data)) - self._non_updatable_fields():
-            if hasattr(self, field):
+            if self._lazyhasattr(field):
                 setattr(self, field, data[field])
 
     def save(self, context):
