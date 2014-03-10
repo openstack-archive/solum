@@ -14,6 +14,7 @@
 
 import sqlalchemy as sa
 
+from solum import objects
 from solum.objects import component as abstract
 from solum.objects.sqlalchemy import models as sql
 
@@ -34,6 +35,19 @@ class Component(sql.Base, abstract.Component):
     tags = sa.Column(sa.Text)
     assembly_id = sa.Column(sa.Integer)
     parent_component_id = sa.Column(sa.Integer)
+
+    @property
+    def assembly_uuid(self):
+        return objects.registry.Assembly.get_by_id(None, self.assembly_id).uuid
+
+    @assembly_uuid.setter
+    def assembly_uuid(self, assembly_uuid):
+        assembly = objects.registry.Assembly.get_by_uuid(None, assembly_uuid)
+        self.assembly_id = assembly.id
+
+    @property
+    def _extra_keys(self):
+        return ['assembly_uuid']
 
 
 class ComponentList(abstract.ComponentList):

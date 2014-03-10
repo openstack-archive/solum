@@ -33,8 +33,8 @@ class Component(api_types.Base):
     the PHP Service offered by the platform for running a PHP application.
     """
 
-    assembly_id = wtypes.text
-    """"The id of the assembly that this component belongs in."""
+    assembly_uuid = wtypes.text
+    """"The uuid of the assembly that this component belongs in."""
 
     services = [service.Service]
     """Services that belong to the component."""
