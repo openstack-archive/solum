@@ -33,7 +33,7 @@ class Plan(sql.Base, abstract.Plan):
     glance_id = sqlalchemy.Column(sqlalchemy.String(36))
     name = sqlalchemy.Column(sqlalchemy.String(255))
     description = sqlalchemy.Column(sqlalchemy.String(255))
-    raw_content = sqlalchemy.Column(sqlalchemy.Text)
+    raw_content = sqlalchemy.Column(sql.JSONEncodedDict(2048))
 
 
 class PlanList(abstract.PlanList):
