@@ -12,8 +12,6 @@
 
 import uuid
 
-import six
-
 from solum.api.handlers import handler
 from solum import objects
 
@@ -25,15 +23,10 @@ class ExtensionHandler(handler.Handler):
         """Return this extension."""
         return objects.registry.Extension.get_by_uuid(self.context, id)
 
-    def _update_db_object(self, db_obj, data):
-        filtered_keys = set(('id', 'uuid', 'uri', 'type'))
-        for field in set(six.iterkeys(data)) - filtered_keys:
-            setattr(db_obj, field, data[field])
-
     def update(self, id, data):
         """Modify the extension."""
         db_obj = objects.registry.Extension.get_by_uuid(self.context, id)
-        self._update_db_object(db_obj, data)
+        db_obj.update(data)
         db_obj.save(self.context)
         return db_obj
 
@@ -45,7 +38,7 @@ class ExtensionHandler(handler.Handler):
     def create(self, data):
         """Create a new extension."""
         db_obj = objects.registry.Extension()
-        self._update_db_object(db_obj, data)
+        db_obj.update(data)
         db_obj.uuid = str(uuid.uuid4())
         db_obj.user_id = self.context.user
         db_obj.project_id = self.context.tenant

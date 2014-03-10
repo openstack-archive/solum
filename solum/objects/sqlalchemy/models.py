@@ -17,6 +17,7 @@ SQLAlchemy models for application data.
 """
 
 import json
+import six
 
 from oslo.config import cfg
 from sqlalchemy.ext import declarative
@@ -90,6 +91,14 @@ class SolumBase(models.TimestampMixin, models.ModelBase):
     @classmethod
     def _raise_duplicate_object(cls):
         raise exception.ResourceExists(name=cls.__tablename__)
+
+    def _non_updatable_fields(self):
+        return set(('uuid', 'id'))
+
+    def update(self, data):
+        for field in set(six.iterkeys(data)) - self._non_updatable_fields():
+            if hasattr(self, field):
+                setattr(self, field, data[field])
 
     def save(self, context):
         if objects.transition_schema():
