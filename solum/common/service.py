@@ -19,9 +19,6 @@ from solum.openstack.common import log as logging
 
 
 def prepare_service(argv=[]):
-    cfg.set_defaults(logging.log_opts,
-                     default_log_levels=['sqlalchemy=WARN',
-                                         ])
     cfg.CONF(argv[1:], project='solum')
     logging.setup('solum')
     objects.load()
