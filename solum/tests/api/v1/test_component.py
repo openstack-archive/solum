@@ -75,7 +75,10 @@ class TestComponentController(base.BaseTestCase):
         self.assertEqual(404, resp_mock.status)
 
     def test_component_put_ok(self, ComponentHandler, resp_mock, request_mock):
-        json_update = {'name': 'fee', 'user_id': 'me'}
+        json_update = {'name': 'update_foo',
+                       'description': 'update_desc_component',
+                       'user_id': 'user_id_test',
+                       'project_id': 'project_id_test'}
         request_mock.body = json.dumps(json_update)
         request_mock.content_type = 'application/json'
         hand_update = ComponentHandler.return_value.update
@@ -102,6 +105,46 @@ class TestComponentController(base.BaseTestCase):
         obj.delete()
         hand_delete.assert_called_with('test_id')
         self.assertEqual(204, resp_mock.status)
+
+
+@mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
+@mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
+@mock.patch('solum.api.handlers.component_handler.ComponentHandler')
+class TestComponentsController(base.BaseTestCase):
+    def setUp(self):
+        super(TestComponentsController, self).setUp()
+        objects.load()
+
+    def test_components_get_all(self, handler_mock, resp_mock, request_mock):
+        obj = component.ComponentsController()
+        resp = obj.get_all()
+        self.assertIsNotNone(resp)
+        self.assertEqual(200, resp_mock.status)
+
+    def test_components_post(self, handler_mock, resp_mock, request_mock):
+        json_create = {'name': 'foo',
+                       'description': 'test_desc_component',
+                       'user_id': 'user_id_test',
+                       'project_id': 'project_id_test'}
+        request_mock.body = json.dumps(json_create)
+        request_mock.content_type = 'application/json'
+        handler_create = handler_mock.return_value.create
+        handler_create.return_value = fakes.FakeComponent()
+        component.ComponentsController().post()
+        handler_create.assert_called_with(json_create)
+        self.assertEqual(201, resp_mock.status)
+        handler_create.assert_called_once_with(json_create)
+
+    def test_components_post_nodata(self, handler_mock,
+                                    resp_mock, request_mock):
+        request_mock.body = ''
+        request_mock.content_type = 'application/json'
+        handler_create = handler_mock.return_value.create
+        handler_create.return_value = fakes.FakeComponent()
+        ret_val = component.ComponentsController().post()
+        self.assertEqual("Missing argument: \"data\"",
+                         str(ret_val['faultstring']))
+        self.assertEqual(400, resp_mock.status)
 
 
 class TestComponentAsDict(base.BaseTestCase):
