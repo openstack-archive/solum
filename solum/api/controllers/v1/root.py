@@ -27,6 +27,7 @@ from solum.api.controllers.v1 import plan
 from solum.api.controllers.v1 import public
 from solum.api.controllers.v1 import sensor
 from solum.api.controllers.v1 import service
+from solum.common import exception
 from solum import version
 
 
@@ -90,6 +91,7 @@ class Controller(object):
     language_packs = language_pack.LanguagePacksController()
     public = public.PublicController()
 
+    @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(Platform)
     def index(self):
         host_url = '%s/%s' % (pecan.request.host_url, 'v1')
