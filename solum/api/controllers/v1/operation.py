@@ -12,15 +12,13 @@
 
 import pecan
 from pecan import rest
-import six
-import wsme
 from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
 
 from solum.api.controllers.v1.datamodel import operation
 from solum.api.handlers import operation_handler
 from solum.common import exception
-from solum.openstack.common.gettextutils import _
+from solum import objects
 
 
 class OperationController(rest.RestController):
@@ -36,22 +34,27 @@ class OperationController(rest.RestController):
         """Return this operation."""
         handler = operation_handler.OperationHandler(
             pecan.request.security_context)
-        return handler.get(self._id)
+        return operation.Operation.from_db_model(handler.get(self._id),
+                                                 pecan.request.host_url)
 
+    @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(operation.Operation, wtypes.text,
                          body=operation.Operation)
     def put(self, data):
         """Modify this operation."""
-        error = _("Not implemented")
-        pecan.response.translatable_error = error
-        raise wsme.exc.ClientSideError(six.text_type(error))
+        handler = operation_handler.OperationHandler(
+            pecan.request.security_context)
+        res = handler.update(self._id,
+                             data.as_dict(objects.registry.Operation))
+        return operation.Operation.from_db_model(res, pecan.request.host_url)
 
-    @wsme_pecan.wsexpose(None, wtypes.text, status_code=204)
+    @exception.wrap_controller_exception
+    @wsme_pecan.wsexpose(status_code=204)
     def delete(self):
         """Delete this operation."""
-        error = _("Not implemented")
-        pecan.response.translatable_error = error
-        raise wsme.exc.ClientSideError(six.text_type(error))
+        handler = operation_handler.OperationHandler(
+            pecan.request.security_context)
+        handler.delete(self._id)
 
 
 class OperationsController(rest.RestController):
@@ -63,13 +66,15 @@ class OperationsController(rest.RestController):
             remainder = remainder[:-1]
         return OperationController(operation_id), remainder
 
+    @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(operation.Operation, body=operation.Operation,
                          status_code=201)
     def post(self, data):
         """Create a new operation."""
-        error = _("Not implemented")
-        pecan.response.translatable_error = error
-        raise wsme.exc.ClientSideError(six.text_type(error))
+        handler = operation_handler.OperationHandler(
+            pecan.request.security_context)
+        return operation.Operation.from_db_model(handler.create(
+            data.as_dict(objects.registry.Operation)), pecan.request.host_url)
 
     @exception.wrap_controller_exception
     @wsme_pecan.wsexpose([operation.Operation])
@@ -77,4 +82,5 @@ class OperationsController(rest.RestController):
         """Return all operations, based on the query provided."""
         handler = operation_handler.OperationHandler(
             pecan.request.security_context)
-        return handler.get_all()
+        return [operation.Operation.from_db_model(obj, pecan.request.host_url)
+                for obj in handler.get_all()]

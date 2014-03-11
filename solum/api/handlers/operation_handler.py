@@ -10,19 +10,39 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from solum.api.controllers.v1.datamodel import operation
+import uuid
+
 from solum.api.handlers import handler
+from solum import objects
 
 
 class OperationHandler(handler.Handler):
     """Fulfills a request on the operation resource."""
 
-    def get(self, id):
+    def get(self, uuid):
         """Return this operation."""
-        response = operation.Operation.sample()
-        return response
+        return objects.registry.Operation.get_by_uuid(self.context, uuid)
+
+    def update(self, uuid, data):
+        """Modify the operation."""
+        db_obj = objects.registry.Operation.get_by_uuid(self.context, uuid)
+        db_obj.update(data)
+        db_obj.save(self.context)
+        return db_obj
+
+    def delete(self, uuid):
+        """Delete the operation."""
+        db_obj = objects.registry.Operation.get_by_uuid(self.context, uuid)
+        db_obj.destroy(self.context)
+
+    def create(self, data):
+        """Create a new operation."""
+        db_obj = objects.registry.Operation()
+        db_obj.update(data)
+        db_obj.uuid = str(uuid.uuid4())
+        db_obj.create(self.context)
+        return db_obj
 
     def get_all(self):
-        """Return all operations, based on the query provided."""
-        response = []
-        return response
+        """Return all operations."""
+        return objects.registry.OperationList.get_all(self.context)

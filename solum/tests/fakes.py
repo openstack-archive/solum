@@ -259,3 +259,31 @@ class FakeLanguagePack(mock.Mock):
                     tags=self.tags,
                     attr_blob=self.attr_blob,
                     service_id=self.service_id)
+
+
+class FakeOperation(mock.Mock):
+
+    def __init__(self, **kwargs):
+        super(FakeOperation, self).__init__(**kwargs)
+        self.__tablename__ = 'operation'
+        self.__resource__ = 'operations'
+        self.user_id = 'fake_user_id'
+        self.project_id = 'fake_project_id'
+        self.uuid = 'fake_uuid'
+        self.id = 8
+        self.name = 'fake_name'
+        self.description = 'fake_description'
+        self.tags = ['this', 'and that']
+        self.documentation = 'fake_documentation'
+        self.target_resource = 'fake_target_resource'
+
+    def as_dict(self):
+        return dict(user_id=self.user_id,
+                    project_id=self.project_id,
+                    uuid=self.uuid,
+                    id=self.id,
+                    name=self.name,
+                    tags=self.tags,
+                    documentation=self.documentation,
+                    target_resource=self.target_resource,
+                    description=self.description)
