@@ -51,19 +51,21 @@ class ImageHandler(handler.Handler):
     def _start_build(self, image):
         # we could do this with the docker/git python client.
 
-        proj_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
+        proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                '..', '..', '..'))
         build_app = os.path.join(proj_dir, 'contrib',
                                  'lp-cedarish', 'docker', 'build-app')
         image.state = BUILDING
-        image.save(None)
+        image.save(self.context)
         try:
-            out = subprocess.check_output([build_app, image.source_url,
-                                           image.name])
+            out = subprocess.Popen([build_app, image.source_uri,
+                                    image.name],
+                                   stdout=subprocess.PIPE).communicate()[0]
         except subprocess.CalledProcessError as subex:
             LOG.exception(subex)
             image.state = ERROR
-            image.save(None)
+            image.save(self.context)
             return
         LOG.debug(out)
         image.state = COMPLETE
-        image.save(None)
+        image.save(self.context)
