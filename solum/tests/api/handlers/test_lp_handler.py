@@ -30,12 +30,13 @@ class TestLanguagePackHandler(base.BaseTestCase):
         handler = language_pack_handler.LanguagePackHandler(self.ctx)
         resp = handler.get('test_id')
         self.assertIsNotNone(resp)
-        (mock_registry.LanguagePack.get_by_uuid.
-            assert_called_once_with(None, 'test_id'))
+        mock_registry.LanguagePack.get_by_uuid.assert_called_once_with(
+            self.ctx, 'test_id')
 
     def test_language_pack_get_all(self, mock_registry):
         mock_registry.LanguagePackList.get_all.return_value = {}
         handler = language_pack_handler.LanguagePackHandler(self.ctx)
         resp = handler.get_all()
         self.assertIsNotNone(resp)
-        mock_registry.LanguagePackList.get_all.assert_called_once_with(None)
+        mock_registry.LanguagePackList.get_all.assert_called_once_with(
+            self.ctx)
