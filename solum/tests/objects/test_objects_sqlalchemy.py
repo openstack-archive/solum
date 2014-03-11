@@ -73,7 +73,7 @@ class TestObjectsSqlalchemy(tests.BaseTestCase):
         self.assertIsNotNone(plan)
         plan.uuid = str(uuid.uuid4())
         plan.name = 'abc'
-        plan.glance_id = '1-2-3-4'
+        plan.description = '1-2-3-4'
         plan.create(self.ctx)
         self.assertIsNotNone(plan.id)
 
@@ -82,7 +82,7 @@ class TestObjectsSqlalchemy(tests.BaseTestCase):
         self.assertEqual(plan.id, plan2.id)
         self.assertEqual(plan.uuid, plan2.uuid)
         self.assertEqual(plan.name, plan2.name)
-        self.assertEqual(plan.glance_id, plan2.glance_id)
+        self.assertEqual(plan.description, plan2.description)
 
         # visible via direct query
         query = utils.get_dummy_session().query(plan.__class__)\

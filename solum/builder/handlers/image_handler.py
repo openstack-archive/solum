@@ -53,13 +53,24 @@ class ImageHandler(handler.Handler):
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..'))
+        # map the input formats to script paths.
+        # TODO(asalkeld) we need an "auto".
+        pathm = {'heroku': 'lp-cedarish',
+                 'dib': 'diskimage-builder',
+                 'docker': 'docker',
+                 'qcow2': 'vm-slug'}
         build_app = os.path.join(proj_dir, 'contrib',
-                                 'lp-cedarish', 'docker', 'build-app')
+                                 pathm[image.source_format],
+                                 pathm[image.image_format],
+                                 'build-app')
         image.state = BUILDING
         image.save(self.context)
         try:
-            out = subprocess.Popen([build_app, image.source_uri,
-                                    image.name, self.context.tenant],
+            out = subprocess.Popen([build_app,
+                                    image.source_uri,
+                                    image.name,
+                                    self.context.tenant,
+                                    image.base_image_id],
                                    stdout=subprocess.PIPE).communicate()[0]
         except subprocess.CalledProcessError as subex:
             LOG.exception(subex)
@@ -67,5 +78,8 @@ class ImageHandler(handler.Handler):
             image.save(self.context)
             return
         LOG.debug(out)
+        # TODO(asalkeld) get the glance_id from the output and
+        # record it here.
+        image.created_image_id = 'ffoo'
         image.state = COMPLETE
         image.save(self.context)

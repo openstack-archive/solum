@@ -198,14 +198,22 @@ class FakeImage(mock.Mock):
         self.name = 'faker'
         self.source_uri = 'git://here'
         self.description = 'test_desc'
+        self.base_image_id = '1-2-3-4'
+        self.created_image_id = '7-2-3-4'
+        self.image_format = 'docker'
+        self.source_format = 'dib'
 
     def as_dict(self):
         return dict(user_id=self.user_id,
                     project_id=self.project_id,
+                    base_image_id=self.base_image_id,
+                    image_format=self.image_format,
+                    created_image_id=self.created_image_id,
                     uuid=self.uuid,
                     id=self.id,
                     name=self.name,
                     source_uri=self.source_uri,
+                    source_format=self.source_format,
                     description=self.description)
 
 

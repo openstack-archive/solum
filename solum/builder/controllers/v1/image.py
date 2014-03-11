@@ -23,6 +23,8 @@ from solum.builder.handlers import image_handler
 from solum.common import exception
 
 STATE_KIND = wtypes.Enum(str, 'BUILDING', 'ERROR', 'COMPLETE')
+IMAGE_KIND = wtypes.Enum(str, 'auto', 'qcow2', 'docker')
+SOURCE_KIND = wtypes.Enum(str, 'auto', 'heroku', 'dib')
 
 
 class Image(api_types.Base):
@@ -31,19 +33,35 @@ class Image(api_types.Base):
     source_uri = wtypes.text
     """The URI of the app/element."""
 
+    source_format = SOURCE_KIND
+    """The source repository format."""
+
     state = STATE_KIND
     """The state of the image. """
+
+    base_image_id = wtypes.text
+    """The id (in glance) of the image to customize."""
+
+    image_format = IMAGE_KIND
+    """The image format."""
+
+    created_image_id = wtypes.text
+    """The id of the created image in glance."""
 
     @classmethod
     def sample(cls):
         return cls(uri='http://example.com/v1/images/b3e0d79',
                    source_uri='git://example.com/project/app.git',
+                   source_format='heroku',
                    name='php-web-app',
                    type='image',
                    description='A php web application',
                    tags=['group_xyz'],
                    project_id='1dae5a09ef2b4d8cbf3594b0eb4f6b94',
-                   user_id='55f41cf46df74320b9486a35f5d28a11')
+                   user_id='55f41cf46df74320b9486a35f5d28a11',
+                   base_image_id='4dae5a09ef2b4d8cbf3594b0eb4f6b94',
+                   created_image_id='4afasa09ef2b4d8cbf3594b0ec4f6b94',
+                   image_format='docker')
 
     @classmethod
     def from_db_object(cls, obj, host_url):

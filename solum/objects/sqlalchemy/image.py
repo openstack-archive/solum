@@ -29,11 +29,15 @@ class Image(sql.Base, abstract.Image):
     uuid = sa.Column(sa.String(36), nullable=False)
     name = sa.Column(sa.String(100))
     source_uri = sa.Column(sa.String(255))
+    source_format = sa.Column(sa.String(12))
     description = sa.Column(sa.String(255))
     project_id = sa.Column(sa.String(36))
     user_id = sa.Column(sa.String(36))
     tags = sa.Column(sa.Text)
     state = sa.Column(sa.String(12))
+    base_image_id = sa.Column(sa.String(36))
+    created_image_id = sa.Column(sa.String(36))
+    image_format = sa.Column(sa.String(12))
 
 
 class ImageList(abstract.ImageList):
