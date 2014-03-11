@@ -20,10 +20,8 @@ from oslo.config import cfg
 from solum.openstack.common.db.sqlalchemy.migration_cli \
     import manager as migration_manager
 from solum.openstack.common.db.sqlalchemy import session
-from solum.openstack.common import log as logging
 
 
-LOG = logging.getLogger(__name__)
 CONF = cfg.ConfigOpts()
 CONF.register_opts(session.sqlite_db_opts)
 CONF.register_opts(session.database_opts, 'database')

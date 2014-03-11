@@ -13,10 +13,6 @@
 # limitations under the License.
 
 from solum.objects import base
-from solum.openstack.common import log as logging
-
-
-LOG = logging.getLogger(__name__)
 
 
 class Plan(base.CrudMixin):
