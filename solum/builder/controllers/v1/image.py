@@ -14,13 +14,13 @@
 
 import pecan
 from pecan import rest
-from wsme.rest import json as wjson
 from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
 
 from solum.api.controllers.v1.datamodel import types as api_types
 from solum.builder.handlers import image_handler
 from solum.common import exception
+from solum import objects
 
 STATE_KIND = wtypes.Enum(str, 'BUILDING', 'ERROR', 'COMPLETE')
 IMAGE_KIND = wtypes.Enum(str, 'auto', 'qcow2', 'docker')
@@ -63,21 +63,6 @@ class Image(api_types.Base):
                    created_image_id='4afasa09ef2b4d8cbf3594b0ec4f6b94',
                    image_format='docker')
 
-    @classmethod
-    def from_db_object(cls, obj, host_url):
-        jplan = {}
-        jplan['type'] = 'image'
-        jplan['uri'] = '%s/images/%s' % (host_url, obj.uuid)
-        jplan['user_id'] = obj.user_id
-        jplan['project_id'] = obj.project_id
-        jplan['source_uri'] = obj.source_uri
-        jplan['name'] = obj.name
-        jplan['description'] = obj.description
-        return cls(**jplan)
-
-    def as_dict(self):
-        return wjson.tojson(Image, self)
-
 
 class ImageController(rest.RestController):
     """Manages operations on a single image."""
@@ -94,7 +79,7 @@ class ImageController(rest.RestController):
             pecan.request.security_context)
 
         host_url = pecan.request.host_url
-        return Image.from_db_object(handler.get(self._id), host_url)
+        return Image.from_db_model(handler.get(self._id), host_url)
 
 
 class ImagesController(rest.RestController):
@@ -112,5 +97,5 @@ class ImagesController(rest.RestController):
         handler = image_handler.ImageHandler(
             pecan.request.security_context)
         host_url = pecan.request.host_url
-        return Image.from_db_object(
-            handler.create(data.as_dict()), host_url)
+        return Image.from_db_model(
+            handler.create(data.as_dict(objects.registry.Image)), host_url)

@@ -72,7 +72,13 @@ class TestImageAsDict(base.BaseTestCase):
             self.data = {}
         else:
             s = image.Image(**self.data)
-        self.assertEqual(self.data, s.as_dict())
+        # remove fields that are only in the API model and
+        # not in the db model so we can assertEqual()
+        if 'uri' in self.data:
+            del self.data['uri']
+        if 'type' in self.data:
+            del self.data['type']
+        self.assertEqual(self.data, s.as_dict(objects.registry.Image))
 
 
 @mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
