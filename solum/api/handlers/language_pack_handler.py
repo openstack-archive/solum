@@ -21,8 +21,8 @@ class LanguagePackHandler(handler.Handler):
 
     def get(self, id):
         """Return a language_pack."""
-        return objects.registry.LanguagePack.get_by_uuid(None, id)
+        return objects.registry.LanguagePack.get_by_uuid(self.context, id)
 
     def get_all(self):
         """Return all language_packs, based on the query provided."""
-        return objects.registry.LanguagePackList.get_all(None)
+        return objects.registry.LanguagePackList.get_all(self.context)
