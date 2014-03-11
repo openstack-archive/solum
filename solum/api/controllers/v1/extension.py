@@ -76,6 +76,7 @@ class ExtensionsController(rest.RestController):
         obj = handler.create(data.as_dict(objects.registry.Extension))
         return extension.Extension.from_db_model(obj, pecan.request.host_url)
 
+    @exception.wrap_controller_exception
     @wsme_pecan.wsexpose([extension.Extension])
     def get_all(self):
         """Return all extensions, based on the query provided."""
