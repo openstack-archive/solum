@@ -66,6 +66,8 @@ class SolumBase(models.TimestampMixin, models.ModelBase):
         d = {}
         for c in self.__table__.columns:
             d[c.name] = self[c.name]
+        for k in self._extra_keys:
+            d[k] = self[k]
         return d
 
     @classmethod
