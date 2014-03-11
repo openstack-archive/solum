@@ -25,17 +25,10 @@ class ComponentHandler(handler.Handler):
         """Return this component."""
         return objects.registry.Component.get_by_uuid(self.context, id)
 
-    def _update_db_object(self, db_obj, data):
-        for dk, dv in iter(data.items()):
-            if dk == 'type':
-                continue
-            elif hasattr(db_obj, dk):
-                setattr(db_obj, dk, dv)
-
     def update(self, id, data):
         """Modify a resource."""
         db_obj = objects.registry.Component.get_by_uuid(self.context, id)
-        self._update_db_object(db_obj, data)
+        db_obj.update(data)
         db_obj.save(self.context)
         return db_obj
 
@@ -48,7 +41,7 @@ class ComponentHandler(handler.Handler):
         """Create a new resource."""
         db_obj = objects.registry.Component()
         db_obj.uuid = str(uuid.uuid4())
-        self._update_db_object(db_obj, data)
+        db_obj.update(data)
         db_obj.user_id = self.context.user
         db_obj.project_id = self.context.tenant
         db_obj.create(self.context)

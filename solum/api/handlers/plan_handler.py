@@ -26,21 +26,18 @@ class PlanHandler(handler.Handler):
         """Return a plan."""
         return objects.registry.Plan.get_by_uuid(self.context, id)
 
-    def _update_db_object(self, db_obj, data):
+    def _update_raw_content(self, db_obj, data):
         filtered_data = {}
         for dk, dv in iter(data.items()):
-            if dk == 'type':
-                continue
-            elif hasattr(db_obj, dk):
-                setattr(db_obj, dk, dv)
-            else:
+            if not hasattr(db_obj, dk) and dk not in ('type', 'uri'):
                 filtered_data[dk] = dv
         db_obj.raw_content = json.dumps(filtered_data)
 
     def update(self, id, data):
         """Modify a resource."""
         db_obj = objects.registry.Plan.get_by_uuid(self.context, id)
-        self._update_db_object(db_obj, data)
+        db_obj.update(data)
+        self._update_raw_content(db_obj, data)
         db_obj.save(self.context)
         return db_obj
 
@@ -52,7 +49,8 @@ class PlanHandler(handler.Handler):
     def create(self, data):
         """Create a new resource."""
         db_obj = objects.registry.Plan()
-        self._update_db_object(db_obj, data)
+        db_obj.update(data)
+        self._update_raw_content(db_obj, data)
         db_obj.uuid = str(uuid.uuid4())
         db_obj.user_id = self.context.user
         db_obj.project_id = self.context.tenant

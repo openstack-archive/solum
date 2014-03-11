@@ -55,6 +55,7 @@ class TestExtensionHandler(base.BaseTestCase):
         self.assertEqual(db_obj.uuid, res.uuid)
         self.assertEqual(db_obj.uri, res.uri)
         self.assertEqual(db_obj.type, res.type)
+        db_obj.update.assert_called_once_with(data)
         db_obj.save.assert_called_once_with(self.ctx)
         mock_registry.Extension.get_by_uuid.assert_called_once_with(self.ctx,
                                                                     'test_id')
@@ -62,10 +63,13 @@ class TestExtensionHandler(base.BaseTestCase):
     def test_extension_create(self, mock_registry):
         data = {'name': 'new_name',
                 'uuid': 'input_uuid'}
+        db_obj = fakes.FakeExtension()
+        mock_registry.Extension.return_value = db_obj
         handler = extension.ExtensionHandler(self.ctx)
         res = handler.create(data)
-        self.assertEqual('new_name', res.name)
-        self.assertNotEqual('uuid', res.uuid)
+        db_obj.update.assert_called_once_with(data)
+        db_obj.create.assert_called_once_with(self.ctx)
+        self.assertEqual(db_obj, res)
 
     def test_extension_delete(self, mock_registry):
         db_obj = fakes.FakeExtension()
