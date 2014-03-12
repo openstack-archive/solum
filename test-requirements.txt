@@ -7,7 +7,7 @@ httplib2>=0.7.5
 lxml>=2.3
 python-subunit>=0.0.18
 sphinx>=1.1.2,<1.2
-oslo.sphinx
+oslosphinx
 sphinxcontrib-pecanwsme>=0.6
 sphinxcontrib-httpdomain
 docutils==0.9.1

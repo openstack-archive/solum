@@ -25,7 +25,7 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinxcontrib.autohttp.flask',
     'sphinxcontrib.pecanwsme.rest',
-    'oslo.sphinx',
+    'oslosphinx',
     'wsmeext.sphinxext',
 ]
 
