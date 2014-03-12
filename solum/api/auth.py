@@ -28,20 +28,20 @@ LOG = logging.getLogger(__name__)
 
 OPT_GROUP_NAME = 'keystone_authtoken'
 
-auth_opts = [
-    cfg.StrOpt('enable_authentication',
-               default='True',
-               help='This option enables or disables user authentication '
-               'via keystone. Default value is True.'),
+AUTH_OPTS = [
+    cfg.BoolOpt('enable_authentication',
+                default=True,
+                help='This option enables or disables user authentication '
+                'via keystone. Default value is True.'),
 ]
 
 CONF = cfg.CONF
-CONF.register_opts(auth_opts)
+CONF.register_opts(AUTH_OPTS)
 CONF.register_opts(auth_token.opts, group=OPT_GROUP_NAME)
 
 
 def install(app, conf):
-    if conf.get('enable_authentication').lower() == 'true':
+    if conf.get('enable_authentication'):
         return AuthProtocolWrapper(app, conf=dict(conf.get(OPT_GROUP_NAME)))
     else:
         LOG.warning(_('Keystone authentication is disabled by Solum '
@@ -73,7 +73,7 @@ class AuthProtocolWrapper(auth_token.AuthProtocol):
 class AuthInformationHook(hooks.PecanHook):
 
     def before(self, state):
-        if CONF.get('enable_authentication').lower() == 'false':
+        if not CONF.get('enable_authentication'):
             return
         #Do not proceed for triggers as they use non authenticated service
         regexp = re.compile('^/v[0-9]+/public/')
@@ -97,9 +97,9 @@ class AuthInformationHook(hooks.PecanHook):
 
         # Get the auth token
         try:
-            auth_token = headers.get('X-Auth-Token',
-                                     headers.get(
-                                         'X-Storage-Token'))
+            recv_auth_token = headers.get('X-Auth-Token',
+                                          headers.get(
+                                              'X-Storage-Token'))
         except ValueError:
             LOG.debug("No auth token found in the request.")
             raise Exception('Not authorized')
@@ -115,11 +115,14 @@ class AuthInformationHook(hooks.PecanHook):
                     _('Invalid service catalog json.'))
         identity_status = headers.get('X-Identity-Status')
         if identity_status == 'Confirmed':
-            ctx = context.RequestContext(auth_token=auth_token, user=user_id,
-                                         tenant=project_id, domain=domain,
+            ctx = context.RequestContext(auth_token=recv_auth_token,
+                                         user=user_id,
+                                         tenant=project_id,
+                                         domain=domain,
                                          user_domain=user_domain_id,
                                          project_domain=project_domain_id,
-                                         user_name=user_name, roles=roles,
+                                         user_name=user_name,
+                                         roles=roles,
                                          service_catalog=service_catalog)
             state.request.security_context = ctx
         else:
