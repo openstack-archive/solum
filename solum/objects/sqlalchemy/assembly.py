@@ -15,6 +15,7 @@
 import sqlalchemy as sa
 
 from solum.common import exception
+from solum import objects
 from solum.objects import assembly as abstract
 from solum.objects.sqlalchemy import models as sql
 from solum.openstack.common.db.sqlalchemy import session as db_session
@@ -49,6 +50,19 @@ class Assembly(sql.Base, abstract.Assembly):
             return session.query(cls).filter_by(trigger_id=trigger_id).one()
         except sa.orm.exc.NoResultFound:
             cls._raise_trigger_not_found(trigger_id)
+
+    @property
+    def plan_uuid(self):
+        return objects.registry.Plan.get_by_id(None, self.plan_id).uuid
+
+    @plan_uuid.setter
+    def plan_uuid(self, value):
+        plan = objects.registry.Plan.get_by_uuid(None, value)
+        self.plan_id = plan.id
+
+    @property
+    def _extra_keys(self):
+        return ['plan_uuid']
 
 
 class AssemblyList(abstract.AssemblyList):
