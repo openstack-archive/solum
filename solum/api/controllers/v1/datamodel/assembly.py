@@ -51,6 +51,12 @@ class Assembly(api_types.Base):
     """The trigger id generated to trigger the build of the plan"""
 
     @classmethod
+    def from_db_model(cls, m, host_url):
+        obj = super(Assembly, cls).from_db_model(m, host_url)
+        obj.plan_uri = '%s/v1/plans/%s' % (host_url, m.plan_uuid)
+        return obj
+
+    @classmethod
     def sample(cls):
         return cls(uri='http://example.com/v1/assemblies/x4',
                    name='database',
