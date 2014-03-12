@@ -141,7 +141,7 @@
 #port=9777
 
 # The listen IP for the solum API server (string value)
-#host=0.0.0.0
+#host=127.0.0.1
 
 
 [builder]
@@ -155,7 +155,7 @@
 
 # The listen IP for the solum builder API server (string
 # value)
-#host=0.0.0.0
+#host=127.0.0.1
 
 
 [database]
