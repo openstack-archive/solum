@@ -34,7 +34,8 @@ class LanguagePack(sql.Base, abstract.LanguagePack):
     description = sa.Column(sa.String(255))
     project_id = sa.Column(sa.String(36))
     user_id = sa.Column(sa.String(36))
-    language_impl = sa.Column(sa.String(100))
+    language_implementation = sa.Column(sa.String(100))
+    language_pack_type = sa.Column(sa.String(100))
     tags = sa.Column(sa.Text)
     compiler_versions = orm.relationship("CompilerVersions",
                                          backref=__tablename__)
