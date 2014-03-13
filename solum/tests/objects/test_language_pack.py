@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from solum.common import exception
 from solum.objects import registry
 from solum.objects.sqlalchemy import language_pack as lp
 from solum.tests import base
@@ -114,3 +115,52 @@ class TestLanguagePack(base.BaseTestCase):
         self.assertEqual(len(language_pack.compiler_versions), 2)
         self.assertIn('1.4', self._get_flat_versions(language_pack))
         self.assertIn('1.5', self._get_flat_versions(language_pack))
+
+    def test_update_os_platform_create(self):
+        data = {'os_platform': {'OS': 'ubuntu', 'version': '12.04'}}
+        language_pack = lp.LanguagePack()
+        language_pack.os_platform = None
+        language_pack._update_os_platform(data)
+        self.assertIsNotNone(language_pack.os_platform)
+        self.assertEqual(language_pack.os_platform.os, 'ubuntu')
+        self.assertEqual(language_pack.os_platform.version, '12.04')
+
+    def test_update_os_platform_delete_when_os_platform_not_specified(self):
+        data = {}
+        language_pack = lp.LanguagePack()
+        lp_os_platform = lp.OSPlatform()
+        lp_os_platform.os = 'ubuntu'
+        lp_os_platform.version = '12.04'
+        language_pack.os_platform = lp_os_platform
+        language_pack._update_os_platform(data)
+        self.assertIsNone(language_pack.os_platform)
+
+    def test_update_os_platform_delete_when_os_platform_is_empty(self):
+        data = {'os_platform': {}}
+        language_pack = lp.LanguagePack()
+        lp_os_platform = lp.OSPlatform()
+        lp_os_platform.os = 'ubuntu'
+        lp_os_platform.version = '12.04'
+        language_pack.os_platform = lp_os_platform
+        language_pack._update_os_platform(data)
+        self.assertIsNone(language_pack.os_platform)
+
+    def test_update_os_platform_update(self):
+        data = {'os_platform': {'OS': 'fedora', 'version': '17'}}
+        language_pack = lp.LanguagePack()
+        lp_os_platform = lp.OSPlatform()
+        lp_os_platform.os = 'ubuntu'
+        lp_os_platform.version = '12.04'
+        language_pack.os_platform = lp_os_platform
+        language_pack._update_os_platform(data)
+        self.assertIsNotNone(language_pack.os_platform)
+        self.assertEqual(language_pack.os_platform.os, 'fedora')
+        self.assertEqual(language_pack.os_platform.version, '17')
+
+    def test_update_os_platform_bad_request(self):
+        data = {'os_platform': {'OS': 'fedora', 'versasdsadion': '17'}}
+        language_pack = lp.LanguagePack()
+        language_pack.os_platform = None
+        self.assertRaises(exception.BadRequest,
+                          language_pack._update_os_platform,
+                          data)

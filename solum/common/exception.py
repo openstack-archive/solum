@@ -179,6 +179,11 @@ class ResourceExists(ObjectNotUnique):
     code = 409
 
 
+class BadRequest(SolumException):
+    msg_fmt = _("The request is malformed. Reason: %(reason)s")
+    code = 400
+
+
 class NotImplemented(SolumException):
     msg_fmt = _("The requested operation is not implemented.")
     code = 501
