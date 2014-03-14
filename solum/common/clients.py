@@ -16,6 +16,7 @@ from heatclient import client as heatclient
 from keystoneclient.v2_0 import client as ksclient
 from oslo.config import cfg
 
+from solum.common import exception
 from solum.openstack.common.gettextutils import _
 from solum.openstack.common import log as logging
 
@@ -77,6 +78,7 @@ class OpenStackClients(object):
     def _get_client_option(self, client, option):
         return getattr(getattr(cfg.CONF, '%s_client' % client), option)
 
+    @exception.wrap_keystone_exception
     def heat(self):
         if self._heat:
             return self._heat

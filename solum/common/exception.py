@@ -20,8 +20,10 @@ Includes decorator for re-raising Solum-type exceptions.
 
 import functools
 import pecan
+import sys
 import wsme
 
+from keystoneclient import exceptions as keystone_exceptions
 from oslo.config import cfg
 import six
 
@@ -29,6 +31,7 @@ from solum.common import safe_utils
 from solum.openstack.common import excutils
 from solum.openstack.common.gettextutils import _
 from solum.openstack.common import log as logging
+
 
 LOG = logging.getLogger(__name__)
 
@@ -96,6 +99,25 @@ def wrap_controller_exception(func):
     return wrapped
 
 
+def wrap_keystone_exception(func):
+    """This decorator wraps keystone exception by throwing Solum specific
+    exceptions.
+    """
+    @functools.wraps(func)
+    def wrapped(*args, **kw):
+        try:
+            return func(*args, **kw)
+        except keystone_exceptions.AuthorizationFailure:
+            raise AuthorizationFailure(
+                client=func.__name__, message="reason: %s" % sys.exc_info()[1])
+        except keystone_exceptions.ClientException:
+            raise AuthorizationFailure(
+                client=func.__name__,
+                message="unexpected keystone client error occurred: %s"
+                        % sys.exc_info()[1])
+    return wrapped
+
+
 class SolumException(Exception):
     """Base Solum Exception
 
@@ -152,3 +174,7 @@ class ResourceExists(SolumException):
 class NotImplemented(SolumException):
     msg_fmt = _("The requested operation is not implemented.")
     code = 501
+
+
+class AuthorizationFailure(SolumException):
+    msg_fmt = _("%(client)s connection failed. %(message)s")
