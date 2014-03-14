@@ -5,6 +5,7 @@ netaddr>=0.7.6
 oslo.config>=1.2.0
 pbr>=0.6,<1.0
 pecan>=0.4.5
+python-heatclient>=0.2.3
 python-keystoneclient>=0.6.0
 six>=1.5.2
 SQLAlchemy>=0.7.8,<=0.8.99
