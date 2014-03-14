@@ -24,7 +24,7 @@ API_SERVICE_OPTS = [
                default=9778,
                help='The port for the solum builder API server'),
     cfg.StrOpt('host',
-               default='0.0.0.0',
+               default='127.0.0.1',
                help='The listen IP for the solum builder API server')
 ]
 
