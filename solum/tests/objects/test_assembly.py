@@ -31,7 +31,8 @@ class TestAssembly(base.BaseTestCase):
                       'description': 'test assembly',
                       'trigger_id': 'trigger-uuid-1234',
                       'tags': 'assembly tags',
-                      'plan_id': 'plan_id_1'}]
+                      'plan_id': 'plan_id_1',
+                      'status': 'Building'}]
         utils.create_models_from_data(assembly.Assembly, self.data, self.ctx)
 
     def test_objects_registered(self):
