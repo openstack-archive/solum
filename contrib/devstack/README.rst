@@ -10,6 +10,7 @@ Add the following to your local.conf::
 
     enable_service solum
     enable_service solum-api
+    enable_service solum-build-api
     enable_service solum-conductor
     enable_service solum-deployer
     enable_service solum-worker

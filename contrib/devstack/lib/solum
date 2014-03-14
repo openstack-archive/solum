@@ -36,6 +36,7 @@ SOLUM_AUTH_CACHE_DIR=${SOLUM_AUTH_CACHE_DIR:-/var/cache/solum}
 
 SOLUM_SERVICE_HOST=${SOLUM_SERVICE_HOST:-$SERVICE_HOST}
 SOLUM_SERVICE_PORT=${SOLUM_SERVICE_PORT:-9777}
+SOLUM_BUILDER_SERVICE_PORT=${SOLUM_BUILDER_SERVICE_PORT:-9778}
 SOLUM_SERVICE_PROTOCOL=${SOLUM_SERVICE_PROTOCOL:-$SERVICE_PROTOCOL}
 
 # Support entry points installation of console scripts
@@ -63,6 +64,18 @@ function create_solum_service_and_endpoint() {
             --publicurl "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_SERVICE_PORT" \
             --adminurl "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_SERVICE_PORT" \
             --internalurl "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_SERVICE_PORT"
+
+        SOLUM_BUILDER_SERVICE=$(keystone service-create \
+            --name=solum \
+            --type=image_builder \
+            --description="Solum Image Builder" \
+            | grep " id " | get_field 2)
+        keystone endpoint-create \
+            --region RegionOne \
+            --service_id $SOLUM_BUILDER_SERVICE \
+            --publicurl "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_BUILDER_SERVICE_PORT" \
+            --adminurl "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_BUILDER_SERVICE_PORT" \
+            --internalurl "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_BUILDER_SERVICE_PORT"
     fi
 }
 
@@ -148,6 +161,7 @@ function install_solum() {
 # start_solum() - Start running processes, including screen
 function start_solum() {
     screen_it solum-api "cd $SOLUM_DIR && $SOLUM_BIN_DIR/solum-api --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE"
+    screen_it solum-build-api "cd $SOLUM_DIR && $SOLUM_BIN_DIR/solum-builder-api --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE"
     screen_it solum-conductor "cd $SOLUM_DIR && $SOLUM_BIN_DIR/solum-conductor --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE"
     screen_it solum-deployer "cd $SOLUM_DIR && $SOLUM_BIN_DIR/solum-deployer --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE"
     screen_it solum-worker "cd $SOLUM_DIR && $SOLUM_BIN_DIR/solum-worker --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE"
@@ -157,6 +171,7 @@ function start_solum() {
 function stop_solum() {
     # Kill the solum screen windows
     screen -S $SCREEN_NAME -p solum-api -X kill
+    screen -S $SCREEN_NAME -p solum-build-api -X kill
     screen -S $SCREEN_NAME -p solum-conductor -X kill
     screen -S $SCREEN_NAME -p solum-deployer -X kill
     screen -S $SCREEN_NAME -p solum-worker -X kill
