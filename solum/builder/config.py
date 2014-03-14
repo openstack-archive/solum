@@ -12,11 +12,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from solum.api import auth
+
 # Pecan Application Configurations
 app = {
     'root': 'solum.builder.controllers.root.RootController',
     'modules': ['solum.builder'],
     'debug': True,
+    'hooks': [auth.AuthInformationHook()]
 }
 
 # Custom Configurations must be in Python dictionary format::
