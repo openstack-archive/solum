@@ -5,8 +5,8 @@
 #
 
 # This option enables or disables user authentication via
-# keystone. Default value is True. (string value)
-#enable_authentication=True
+# keystone. Default value is True. (boolean value)
+#enable_authentication=true
 
 
 #

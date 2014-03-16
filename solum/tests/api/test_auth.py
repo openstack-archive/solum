@@ -36,7 +36,7 @@ class TestAuth(base.BaseTestCase):
                          auth_version="v2.0",
                          auth_uri=None,
                          group=auth.OPT_GROUP_NAME)
-        self.CONF.config(enable_authentication='True')
+        self.CONF.config(enable_authentication=True)
         result = auth.install(self.app, self.CONF.conf)
         self.assertIsInstance(result, fakes.FakeAuthProtocol)
 
@@ -45,7 +45,7 @@ class TestAuth(base.BaseTestCase):
                          auth_version="v2.0",
                          auth_uri=None,
                          group=auth.OPT_GROUP_NAME)
-        self.CONF.config(enable_authentication='False')
+        self.CONF.config(enable_authentication=False)
         result = auth.install(self.app, self.CONF.conf)
         self.assertIsInstance(result, fakes.FakeApp)
 
