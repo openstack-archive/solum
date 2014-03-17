@@ -55,7 +55,7 @@ class Base(wtypes.Base):
 
     def as_dict(self, db_model):
         valid_keys = (attr for attr in db_model.__dict__.keys()
-                      if attr[:2] != '__')
+                      if attr[:2] != '__' and attr != 'as_dict')
         return self.as_dict_from_keys(valid_keys)
 
     def as_dict_from_keys(self, keys):

@@ -61,3 +61,56 @@ class TestLanguagePack(base.BaseTestCase):
         test_lp.project_id = self.ctx.tenant
         test_lp.create(self.ctx)
         self.assertIsNotNone(test_lp.service_id)
+
+    def _get_flat_versions(self, language_packs):
+        versions = []
+        for compiler_version in language_packs.compiler_versions:
+            versions.append(compiler_version.version)
+        return versions
+
+    def test_update_compiler_versions_add(self):
+        data = {'compiler_versions': ['1.4', '1.5', '1.6']}
+        language_pack = lp.LanguagePack()
+        language_pack.compiler_versions = []
+        language_pack._update_compiler_versions(data)
+        self.assertEqual(len(language_pack.compiler_versions), 3)
+        self.assertIn('1.4', self._get_flat_versions(language_pack))
+        self.assertIn('1.5', self._get_flat_versions(language_pack))
+        self.assertIn('1.6', self._get_flat_versions(language_pack))
+
+    def test_update_compiler_versions_delete(self):
+        data = {'compiler_versions': []}
+        language_pack = lp.LanguagePack()
+        v14 = lp.CompilerVersions()
+        v14.version = '1.4'
+        v15 = lp.CompilerVersions()
+        v15.version = '1.5'
+        v16 = lp.CompilerVersions()
+        v16.version = '1.6'
+        language_pack.compiler_versions = [v14, v15, v16]
+        language_pack._update_compiler_versions(data)
+        self.assertEqual(len(language_pack.compiler_versions), 0)
+
+    def test_update_compiler_versions_modify(self):
+        data = {'compiler_versions': ['1.4', '1.7']}
+        language_pack = lp.LanguagePack()
+        v14 = lp.CompilerVersions()
+        v14.version = '1.4'
+        v15 = lp.CompilerVersions()
+        v15.version = '1.5'
+        v16 = lp.CompilerVersions()
+        v16.version = '1.6'
+        language_pack.compiler_versions = [v14, v15, v16]
+        language_pack._update_compiler_versions(data)
+        self.assertEqual(len(language_pack.compiler_versions), 2)
+        self.assertIn('1.4', self._get_flat_versions(language_pack))
+        self.assertIn('1.7', self._get_flat_versions(language_pack))
+
+    def test_update_compiler_versions_duplicates(self):
+        data = {'compiler_versions': ['1.4', '1.4', '1.5']}
+        language_pack = lp.LanguagePack()
+        language_pack.compiler_versions = []
+        language_pack._update_compiler_versions(data)
+        self.assertEqual(len(language_pack.compiler_versions), 2)
+        self.assertIn('1.4', self._get_flat_versions(language_pack))
+        self.assertIn('1.5', self._get_flat_versions(language_pack))

@@ -42,12 +42,20 @@ class LanguagePack(sql.Base, abstract.LanguagePack):
     language_pack_type = sa.Column(sa.String(100))
     tags = sa.Column(sa.Text)
     compiler_versions = orm.relationship("CompilerVersions",
-                                         backref=__tablename__)
+                                         backref=__tablename__,
+                                         lazy="joined")
     os_platform = orm.relationship("OSPlatform",
                                    backref=__tablename__)
     attr_blob = sa.Column(sql.JSONEncodedDict(255))
     service_id = sa.Column(sa.Integer, sa.ForeignKey('service.id'),
                            nullable=False)
+
+    def destroy(self, context):
+        session = sql.Base.get_session()
+        with session.begin(subtransactions=True):
+            for compiler_version in self.compiler_versions:
+                compiler_version.destroy(context)
+            session.query(self.__class__).filter_by(id=self.id).delete()
 
     def create(self, context):
         session = sql.Base.get_session()
@@ -67,6 +75,42 @@ class LanguagePack(sql.Base, abstract.LanguagePack):
                 session.add(self)
         except db_exc.DBDuplicateEntry:
             self.__class__._raise_duplicate_object()
+
+    def _non_updatable_fields(self):
+        return super(LanguagePack, self)._non_updatable_fields().union(
+            set(('compiler_versions', 'os_platform')))
+
+    def as_dict(self):
+        d = super(LanguagePack, self).as_dict()
+        if self.compiler_versions:
+            d['compiler_versions'] = []
+            for comp_version in self.compiler_versions:
+                d['compiler_versions'].append(comp_version.version)
+        return d
+
+    def _update_compiler_versions(self, data):
+        api_versions = data.get('compiler_versions', [])
+        obj_to_remove = []
+        existing_versions = []
+        for obj_db in self.compiler_versions:
+            if obj_db.version not in api_versions:
+                obj_to_remove.append(obj_db)
+            else:
+                existing_versions.append(obj_db.version)
+        for cv_to_remove in obj_to_remove:
+            self.compiler_versions.remove(cv_to_remove)
+            #TODO(julienvey) find a way to pass the context
+            cv_to_remove.destroy(None)
+        for comp_version in set(api_versions):
+            if comp_version not in existing_versions:
+                cv = CompilerVersions()
+                cv.version = comp_version
+                cv.uuid = uuid.uuid4()
+                self.compiler_versions.append(cv)
+
+    def update(self, data):
+        super(LanguagePack, self).update(data)
+        self._update_compiler_versions(data)
 
 
 class CompilerVersions(sql.Base, abs_cv.CompilerVersions):
