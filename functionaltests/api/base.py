@@ -37,5 +37,5 @@ class TestCase(testtools.TestCase):
         password = CONF.identity.password
         tenant_name = CONF.identity.tenant_name
         mgr = clients.Manager(username, password, tenant_name)
-        auth_provider = mgr.get_auth_provider()
+        auth_provider = mgr.get_auth_provider(mgr.get_default_credentials())
         self.client = SolumClient(auth_provider)
