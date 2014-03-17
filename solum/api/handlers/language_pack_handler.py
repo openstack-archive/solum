@@ -38,3 +38,10 @@ class LanguagePackHandler(handler.Handler):
         db_obj.project_id = self.context.tenant
         db_obj.create(self.context)
         return db_obj
+
+    def update(self, uuid, data):
+        """Modify a language_pack."""
+        db_obj = objects.registry.LanguagePack.get_by_uuid(self.context, uuid)
+        db_obj.update(data)
+        db_obj.save(self.context)
+        return db_obj

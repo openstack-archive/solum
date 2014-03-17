@@ -60,3 +60,23 @@ class TestLanguagePackHandler(base.BaseTestCase):
         self.assertEqual(db_obj.user_id, res.user_id)
         self.assertEqual(db_obj.language_impl, res.language_impl)
         self.assertEqual(db_obj.tags, res.tags)
+
+    def test_update(self, mock_registry):
+        data = {'name': 'new_name'}
+        db_obj = fakes.FakeLanguagePack()
+        mock_registry.LanguagePack.get_by_uuid.return_value = db_obj
+        handler = language_pack_handler.LanguagePackHandler(self.ctx)
+        res = handler.update('test_id', data)
+        self.assertEqual(db_obj, res)
+        self.assertEqual(db_obj.id, res.id)
+        self.assertEqual(db_obj.uuid, res.uuid)
+        self.assertEqual(db_obj.name, res.name)
+        self.assertEqual(db_obj.description, res.description)
+        self.assertEqual(db_obj.project_id, res.project_id)
+        self.assertEqual(db_obj.user_id, res.user_id)
+        self.assertEqual(db_obj.language_impl, res.language_impl)
+        self.assertEqual(db_obj.tags, res.tags)
+        db_obj.save.assert_called_once_with(self.ctx)
+        db_obj.update.assert_called_once_with(data)
+        mock_registry.LanguagePack.get_by_uuid.assert_called_once_with(
+            self.ctx, 'test_id')
