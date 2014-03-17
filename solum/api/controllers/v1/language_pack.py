@@ -19,6 +19,7 @@ import wsmeext.pecan as wsme_pecan
 from solum.api.controllers.v1.datamodel import language_pack as lp
 from solum.api.handlers import language_pack_handler as lp_handler
 from solum.common import exception
+from solum import objects
 
 
 class LanguagePackController(rest.RestController):
@@ -46,6 +47,17 @@ class LanguagePacksController(rest.RestController):
         if remainder and not remainder[-1]:
             remainder = remainder[:-1]
         return LanguagePackController(language_pack_id), remainder
+
+    @exception.wrap_controller_exception
+    @wsme_pecan.wsexpose(lp.LanguagePack, body=lp.LanguagePack,
+                         status_code=201)
+    def post(self, data):
+        """Create a new language_pack."""
+        handler = lp_handler.LanguagePackHandler(
+            pecan.request.security_context)
+        return lp.LanguagePack.from_db_model(
+            handler.create(data.as_dict(objects.registry.LanguagePack)),
+            pecan.request.host_url)
 
     @exception.wrap_controller_exception
     @wsme_pecan.wsexpose([lp.LanguagePack])
