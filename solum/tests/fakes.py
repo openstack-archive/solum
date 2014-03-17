@@ -152,6 +152,7 @@ class FakeAssembly(mock.Mock):
         self.__resource__ = 'assemblies'
         self.user_id = 'fake user id'
         self.project_id = 'fake project id'
+        self.plan_uuid = 'fake plan uuid'
         self.uuid = 'test_uuid'
         self.id = 8
         self.name = 'faker'

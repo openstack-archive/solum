@@ -27,7 +27,9 @@ class TestAssemblyHandler(base.BaseTestCase):
         self.ctx = utils.dummy_context()
 
     def test_assembly_get(self, mock_registry):
-        mock_registry.Assembly.get_by_uuid.return_value = {}
+        mock_registry.return_value.Assembly.get_by_uuid.return_value = {
+            'plan_id': '1234'
+        }
         handler = assembly_handler.AssemblyHandler(self.ctx)
         res = handler.get('test_id')
         self.assertIsNotNone(res)
@@ -42,7 +44,8 @@ class TestAssemblyHandler(base.BaseTestCase):
         mock_registry.AssemblyList.get_all.assert_called_once_with(self.ctx)
 
     def test_update(self, mock_registry):
-        data = {'name': 'new_name'}
+        data = {'user_id': 'new_user_id',
+                'plan_uuid': 'input_plan_uuid'}
         db_obj = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_uuid.return_value = db_obj
         handler = assembly_handler.AssemblyHandler(self.ctx)
@@ -54,11 +57,12 @@ class TestAssemblyHandler(base.BaseTestCase):
                                                                    'test_id')
 
     def test_create(self, mock_registry):
-        data = {'name': 'new_name',
-                'uuid': 'input_uuid'}
+        data = {'user_id': 'new_user_id',
+                'uuid': 'input_uuid',
+                'plan_uuid': 'input_plan_uuid'}
+        handler = assembly_handler.AssemblyHandler(self.ctx)
         db_obj = fakes.FakeAssembly()
         mock_registry.Assembly.return_value = db_obj
-        handler = assembly_handler.AssemblyHandler(self.ctx)
         res = handler.create(data)
         db_obj.update.assert_called_once_with(data)
         db_obj.create.assert_called_once_with(self.ctx)
