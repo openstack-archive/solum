@@ -45,3 +45,8 @@ class LanguagePackHandler(handler.Handler):
         db_obj.update(data)
         db_obj.save(self.context)
         return db_obj
+
+    def delete(self, uuid):
+        """Delete a language_pack."""
+        db_obj = objects.registry.LanguagePack.get_by_uuid(self.context, uuid)
+        db_obj.destroy(self.context)

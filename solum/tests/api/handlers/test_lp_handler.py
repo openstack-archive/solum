@@ -80,3 +80,12 @@ class TestLanguagePackHandler(base.BaseTestCase):
         db_obj.update.assert_called_once_with(data)
         mock_registry.LanguagePack.get_by_uuid.assert_called_once_with(
             self.ctx, 'test_id')
+
+    def test_delete(self, mock_registry):
+        db_obj = fakes.FakeLanguagePack()
+        mock_registry.LanguagePack.get_by_uuid.return_value = db_obj
+        handler = language_pack_handler.LanguagePackHandler(self.ctx)
+        handler.delete('test_id')
+        db_obj.destroy.assert_called_once_with(self.ctx)
+        mock_registry.LanguagePack.get_by_uuid.assert_called_once_with(
+            self.ctx, 'test_id')

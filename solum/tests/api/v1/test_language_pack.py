@@ -85,6 +85,25 @@ class TestLanguagePackController(base.BaseTestCase):
         hand_update.assert_called_with('test_id', json_update)
         self.assertEqual(200, resp_mock.status)
 
+    def test_language_pack_delete_not_found(self, LanguagePackHandler,
+                                            resp_mock, request_mock):
+        hand_delete = LanguagePackHandler.return_value.delete
+        hand_delete.side_effect = exception.NotFound(
+            name='language_pack', language_pack_id='test_id')
+        obj = language_pack.LanguagePackController('test_id')
+        obj.delete()
+        hand_delete.assert_called_with('test_id')
+        self.assertEqual(404, resp_mock.status)
+
+    def test_language_pack_delete_ok(self, LanguagePackHandler,
+                                     resp_mock, request_mock):
+        hand_delete = LanguagePackHandler.return_value.delete
+        hand_delete.return_value = None
+        obj = language_pack.LanguagePackController('test_id')
+        obj.delete()
+        hand_delete.assert_called_with('test_id')
+        self.assertEqual(204, resp_mock.status)
+
 
 class TestLanguagePackAsDict(base.BaseTestCase):
 

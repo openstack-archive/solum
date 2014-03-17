@@ -48,6 +48,14 @@ class LanguagePackController(rest.RestController):
                              data.as_dict(objects.registry.LanguagePack))
         return lp.LanguagePack.from_db_model(res, pecan.request.host_url)
 
+    @exception.wrap_controller_exception
+    @wsme_pecan.wsexpose(status_code=204)
+    def delete(self):
+        """Delete this language_pack."""
+        handler = lp_handler.LanguagePackHandler(
+            pecan.request.security_context)
+        return handler.delete(self._id)
+
 
 class LanguagePacksController(rest.RestController):
     """Manages operations on the language packs collection."""
