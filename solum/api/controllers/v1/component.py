@@ -43,7 +43,7 @@ class ComponentController(rest.RestController):
         handler = component_handler.ComponentHandler(
             pecan.request.security_context)
         res = handler.update(self._id,
-                             data.as_dict(objects.registry.Plan))
+                             data.as_dict(objects.registry.Component))
         return component.Component.from_db_model(res, pecan.request.host_url)
 
     @exception.wrap_controller_exception
@@ -72,7 +72,8 @@ class ComponentsController(rest.RestController):
         handler = component_handler.ComponentHandler(
             pecan.request.security_context)
         return component.Component.from_db_model(
-            handler.create(data.as_dict()), pecan.request.host_url)
+            handler.create(data.as_dict(objects.registry.Component)),
+            pecan.request.host_url)
 
     @exception.wrap_controller_exception
     @wsme_pecan.wsexpose([component.Component])
