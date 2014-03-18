@@ -94,6 +94,10 @@ function configure_solum() {
 
     # configure the database.
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE database connection `database_connection_url solum`
+
+    # configure the api servers to listen on 0.0.0.0
+    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE api host 0.0.0.0
+    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE builder host 0.0.0.0
 }
 
 #register solum user in Keystone
