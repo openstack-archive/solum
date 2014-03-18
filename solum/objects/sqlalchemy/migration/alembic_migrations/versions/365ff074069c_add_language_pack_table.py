@@ -73,6 +73,6 @@ def upgrade():
 
 
 def downgrade():
-    op.drop_table('language_pack')
     op.drop_table('compiler_versions')
     op.drop_table('os_platform')
+    op.drop_table('language_pack')
