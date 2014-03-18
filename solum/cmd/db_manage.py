@@ -22,9 +22,7 @@ from solum.openstack.common.db.sqlalchemy.migration_cli \
 from solum.openstack.common.db.sqlalchemy import session
 
 
-CONF = cfg.ConfigOpts()
-CONF.register_opts(session.sqlite_db_opts)
-CONF.register_opts(session.database_opts, 'database')
+CONF = cfg.CONF
 
 
 def do_version(manager):
@@ -71,9 +69,11 @@ def add_command_parsers(subparsers):
 
 
 def get_manager():
-    # Our CONF object is not the same as the db one so make sure the
-    # database.connection is made know to the oslo DB layer.
-    session.set_defaults(sql_connection=CONF.database.connection, sqlite_db='')
+    CONF.import_opt('connection',
+                    'solum.openstack.common.db.sqlalchemy.session',
+                    group='database')
+    session.set_defaults(sql_connection=CONF.database.connection,
+                         sqlite_db='')
     session.get_session(mysql_traditional_mode=True)
     alembic_path = os.path.join(os.path.dirname(__file__),
                                 '..', 'objects', 'sqlalchemy',
