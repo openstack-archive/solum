@@ -17,6 +17,7 @@ import sqlalchemy as sa
 from solum.common import exception
 from solum import objects
 from solum.objects import assembly as abstract
+from solum.objects.sqlalchemy import component
 from solum.objects.sqlalchemy import models as sql
 from solum.openstack.common.db.sqlalchemy import session as db_session
 
@@ -64,6 +65,12 @@ class Assembly(sql.Base, abstract.Assembly):
     @property
     def _extra_keys(self):
         return ['plan_uuid']
+
+    @property
+    def components(self):
+        session = db_session.get_session(mysql_traditional_mode=True)
+        return session.query(component.Component).filter_by(
+            assembly_id=self.id).all()
 
 
 class AssemblyList(abstract.AssemblyList):

@@ -156,7 +156,7 @@ class FakeAssembly(mock.Mock):
         self.uuid = 'test_uuid'
         self.id = 8
         self.name = 'faker'
-        self.components = []
+        self.components = [FakeComponent()]
         self.status = 'Deploying'
 
     def as_dict(self):
