@@ -98,6 +98,14 @@ function configure_solum() {
     # configure the api servers to listen on 0.0.0.0
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE api host 0.0.0.0
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE builder host 0.0.0.0
+
+    # common rpc settings
+    iniset_rpc_backend solum $SOLUM_CONF_DIR/$SOLUM_CONF_FILE DEFAULT
+
+    # service rpc settings
+    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE conductor topic solum-conductor
+    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE deployer topic solum-deployer
+    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE worker topic solum-worker
 }
 
 #register solum user in Keystone
@@ -139,13 +147,19 @@ function install_solum() {
 
 # start_solum() - Start running processes, including screen
 function start_solum() {
-    screen_it solum "cd $SOLUM_DIR && $SOLUM_BIN_DIR/solum-api --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE"
+    screen_it solum-api "cd $SOLUM_DIR && $SOLUM_BIN_DIR/solum-api --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE"
+    screen_it solum-conductor "cd $SOLUM_DIR && $SOLUM_BIN_DIR/solum-conductor --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE"
+    screen_it solum-deployer "cd $SOLUM_DIR && $SOLUM_BIN_DIR/solum-deployer --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE"
+    screen_it solum-worker "cd $SOLUM_DIR && $SOLUM_BIN_DIR/solum-worker --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE"
 }
 
 # stop_solum() - Stop running processes
 function stop_solum() {
     # Kill the solum screen windows
-    screen -S $SCREEN_NAME -p solum -X kill
+    screen -S $SCREEN_NAME -p solum-api -X kill
+    screen -S $SCREEN_NAME -p solum-conductor -X kill
+    screen -S $SCREEN_NAME -p solum-deployer -X kill
+    screen -S $SCREEN_NAME -p solum-worker -X kill
 }
 
 # Restore xtrace

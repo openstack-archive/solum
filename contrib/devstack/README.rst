@@ -6,11 +6,15 @@ To install::
     $ cp lib/solum ${DEVSTACK_DIR}/lib
     $ cp extras.d/70-solum.sh ${DEVSTACK_DIR}/extras.d
 
-To configure devstack to run solum::
+Add the following to your local.conf::
 
-    $ cd ${DEVSTACK_DIR}
-    $ echo "enable_service solum" >> localrc
+    enable_service solum
+    enable_service solum-api
+    enable_service solum-conductor
+    enable_service solum-deployer
+    enable_service solum-worker
 
 Run devstack as normal::
 
+    $ cd ${DEVSTACK_DIR}
     $ ./stack.sh

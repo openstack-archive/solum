@@ -1,0 +1,63 @@
+# Copyright 2014 - Rackspace Hosting
+#
+#    Licensed under the Apache License, Version 2.0 (the "License");
+#    you may not use this file except in compliance with the License.
+#    You may obtain a copy of the License at
+#
+#        http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
+
+"""Common RPC service and API tools for Solum."""
+
+from oslo.config import cfg
+from oslo import messaging
+
+# NOTE(asalkeld):
+# The solum.openstack.common.rpc entries are for compatability
+# with devstack rpc_backend configuration values.
+TRANSPORT_ALIASES = {
+    'solum.openstack.common.rpc.impl_kombu': 'rabbit',
+    'solum.openstack.common.rpc.impl_qpid': 'qpid',
+    'solum.openstack.common.rpc.impl_zmq': 'zmq',
+}
+
+
+class Service(object):
+    _server = None
+
+    def __init__(self, topic, server, handlers):
+        transport = messaging.get_transport(cfg.CONF,
+                                            aliases=TRANSPORT_ALIASES)
+        # TODO(asalkeld) add support for version='x.y'
+        target = messaging.Target(topic=topic, server=server)
+        self._server = messaging.get_rpc_server(transport, target, handlers)
+
+    def serve(self):
+        self._server.start()
+        self._server.wait()
+
+
+class API(object):
+    def __init__(self, transport=None, context=None, topic=None):
+        if transport is None:
+            transport = messaging.get_transport(cfg.CONF,
+                                                aliases=TRANSPORT_ALIASES)
+        self._context = context
+        if topic is None:
+            topic = ''
+        target = messaging.Target(topic=topic)
+        self._client = messaging.RPCClient(transport, target)
+
+    def _call(self, method, *args, **kwargs):
+        return self._client.call(self._context, method, *args, **kwargs)
+
+    def _cast(self, method, *args, **kwargs):
+        self._client.cast(self._context, method, *args, **kwargs)
+
+    def echo(self, message):
+        self._cast('echo', message=message)
