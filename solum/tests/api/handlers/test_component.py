@@ -27,7 +27,7 @@ class TestComponentHandler(base.BaseTestCase):
         self.ctx = utils.dummy_context()
 
     def test_component_get(self, mock_registry):
-        mock_registry.component.get_by_uuid.return_value = {}
+        mock_registry.component.get_by_uuid.return_value = {'assembly_id': 42}
         handler = component_handler.ComponentHandler(self.ctx)
         res = handler.get('test_id')
         self.assertIsNotNone(res)
@@ -42,7 +42,8 @@ class TestComponentHandler(base.BaseTestCase):
         mock_registry.ComponentList.get_all.assert_called_once_with(self.ctx)
 
     def test_update(self, mock_registry):
-        data = {'name': 'new_name'}
+        data = {'user_id': 'new_user_id',
+                'assembly_id': 'new_assembly_id'}
         db_obj = fakes.FakeComponent()
         mock_registry.Component.get_by_uuid.return_value = db_obj
         handler = component_handler.ComponentHandler(self.ctx)
@@ -54,7 +55,8 @@ class TestComponentHandler(base.BaseTestCase):
                                                                     'test_id')
 
     def test_create(self, mock_registry):
-        data = {'name': 'new_name'}
+        data = {'name': 'new_name',
+                'assembly_id': 'new_assembly_id'}
         db_obj = fakes.FakeComponent()
         mock_registry.Component.return_value = db_obj
         handler = component_handler.ComponentHandler(self.ctx)
