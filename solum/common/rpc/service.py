@@ -17,6 +17,9 @@
 from oslo.config import cfg
 from oslo import messaging
 
+import solum.common.context
+from solum.openstack.common import jsonutils
+
 # NOTE(asalkeld):
 # The solum.openstack.common.rpc entries are for compatability
 # with devstack rpc_backend configuration values.
@@ -27,15 +30,45 @@ TRANSPORT_ALIASES = {
 }
 
 
+class JsonPayloadSerializer(messaging.NoOpSerializer):
+    @staticmethod
+    def serialize_entity(context, entity):
+        return jsonutils.to_primitive(entity, convert_instances=True)
+
+
+class RequestContextSerializer(messaging.Serializer):
+
+    def __init__(self, base=None):
+        self._base = base or messaging.NoOpSerializer()
+
+    def serialize_entity(self, context, entity):
+        if not self._base:
+            return entity
+        return self._base.serialize_entity(context, entity)
+
+    def deserialize_entity(self, context, entity):
+        if not self._base:
+            return entity
+        return self._base.deserialize_entity(context, entity)
+
+    def serialize_context(self, context):
+        return context.to_dict()
+
+    def deserialize_context(self, context):
+        return solum.common.context.RequestContext.from_dict(context)
+
+
 class Service(object):
     _server = None
 
     def __init__(self, topic, server, handlers):
+        serializer = RequestContextSerializer(JsonPayloadSerializer())
         transport = messaging.get_transport(cfg.CONF,
                                             aliases=TRANSPORT_ALIASES)
         # TODO(asalkeld) add support for version='x.y'
         target = messaging.Target(topic=topic, server=server)
-        self._server = messaging.get_rpc_server(transport, target, handlers)
+        self._server = messaging.get_rpc_server(transport, target, handlers,
+                                                serializer=serializer)
 
     def serve(self):
         self._server.start()
@@ -44,6 +77,7 @@ class Service(object):
 
 class API(object):
     def __init__(self, transport=None, context=None, topic=None):
+        serializer = RequestContextSerializer(JsonPayloadSerializer())
         if transport is None:
             transport = messaging.get_transport(cfg.CONF,
                                                 aliases=TRANSPORT_ALIASES)
@@ -51,7 +85,8 @@ class API(object):
         if topic is None:
             topic = ''
         target = messaging.Target(topic=topic)
-        self._client = messaging.RPCClient(transport, target)
+        self._client = messaging.RPCClient(transport, target,
+                                           serializer=serializer)
 
     def _call(self, method, *args, **kwargs):
         return self._client.call(self._context, method, *args, **kwargs)
