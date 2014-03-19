@@ -25,9 +25,6 @@ class Requirement(wtypes.Base):
     requirement_type = wtypes.text
     "Type of requirement."
 
-    language_pack = wtypes.text
-    "The language pack."
-
     fulfillment = wtypes.text
     "The ID of the service."
 
@@ -55,6 +52,9 @@ class Artifact(wtypes.Base):
 
     content = {wtypes.text: wtypes.text}
     "Type specific content as a flat dict."
+
+    language_pack = wtypes.text
+    "The Language pack required for this artifact."
 
     requirements = [Requirement]
     "List of requirements for the artifact."
@@ -103,9 +103,9 @@ class Plan(api_types.Base):
                        'name': 'My python app',
                        'artifact_type': 'git_pull',
                        'content': {'href': 'git://example.com/project.git'},
+                       'language_pack': str(uuid.uuid4()),
                        'requirements': [{
                            'requirement_type': 'git_pull',
-                           'language_pack': str(uuid.uuid4()),
                            'fulfillment': 'id:build'}]}],
                    services=[{
                        'name': 'Build Service',

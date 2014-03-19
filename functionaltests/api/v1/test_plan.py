@@ -28,6 +28,7 @@ sample_data = {"name": "test_plan",
                    "content": {
                        "href": "https://example.com/git/a.git"
                    },
+                   "language_pack": "auto",
                }]}
 
 
