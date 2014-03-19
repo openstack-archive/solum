@@ -1,4 +1,5 @@
 # Copyright 2012 SINA Corporation
+# Copyright 2014 Cisco Systems, Inc.
 # All Rights Reserved.
 #
 #    Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -40,6 +41,7 @@ BOOLOPT = "BoolOpt"
 INTOPT = "IntOpt"
 FLOATOPT = "FloatOpt"
 LISTOPT = "ListOpt"
+DICTOPT = "DictOpt"
 MULTISTROPT = "MultiStrOpt"
 
 OPT_TYPES = {
@@ -48,11 +50,12 @@ OPT_TYPES = {
     INTOPT: 'integer value',
     FLOATOPT: 'floating point value',
     LISTOPT: 'list value',
+    DICTOPT: 'dict value',
     MULTISTROPT: 'multi valued',
 }
 
 OPTION_REGEX = re.compile(r"(%s)" % "|".join([STROPT, BOOLOPT, INTOPT,
-                                              FLOATOPT, LISTOPT,
+                                              FLOATOPT, LISTOPT, DICTOPT,
                                               MULTISTROPT]))
 
 PY_EXT = ".py"
@@ -61,10 +64,15 @@ BASEDIR = os.path.abspath(os.path.join(os.path.dirname(__file__),
 WORDWRAP_WIDTH = 60
 
 
+def raise_extension_exception(extmanager, ep, err):
+    raise
+
+
 def generate(argv):
     parser = argparse.ArgumentParser(
         description='generate sample configuration file',
     )
+    parser.add_argument('-m', dest='modules', action='append')
     parser.add_argument('-l', dest='libraries', action='append')
     parser.add_argument('srcfiles', nargs='*')
     parsed_args = parser.parse_args(argv)
@@ -84,10 +92,8 @@ def generate(argv):
     # The options list is a list of (module, options) tuples
     opts_by_group = {'DEFAULT': []}
 
-    extra_modules = os.getenv("SOLUM_CONFIG_GENERATOR_EXTRA_MODULES", "")
-    if extra_modules:
-        for module_name in extra_modules.split(','):
-            module_name = module_name.strip()
+    if parsed_args.modules:
+        for module_name in parsed_args.modules:
             module = _import_module(module_name)
             if module:
                 for group, opts in _list_opts(module):
@@ -105,6 +111,7 @@ def generate(argv):
             'oslo.config.opts',
             names=list(set(parsed_args.libraries)),
             invoke_on_load=False,
+            on_load_failure_callback=raise_extension_exception
         )
         for ext in loader:
             for group, opts in ext.plugin():
@@ -227,7 +234,7 @@ def _sanitize_default(name, value):
         return value.replace(BASEDIR, '')
     elif value == _get_my_ip():
         return '10.0.0.1'
-    elif value == socket.gethostname() and 'host' in name:
+    elif value in (socket.gethostname(), socket.getfqdn()) and 'host' in name:
         return 'solum'
     elif value.strip() != value:
         return '"%s"' % value
@@ -245,7 +252,8 @@ def _print_opt(opt):
     except (ValueError, AttributeError) as err:
         sys.stderr.write("%s\n" % str(err))
         sys.exit(1)
-    opt_help += ' (' + OPT_TYPES[opt_type] + ')'
+    opt_help = u'%s (%s)' % (opt_help,
+                             OPT_TYPES[opt_type])
     print('#', "\n# ".join(textwrap.wrap(opt_help, WORDWRAP_WIDTH)))
     if opt.deprecated_opts:
         for deprecated_opt in opt.deprecated_opts:
@@ -275,6 +283,11 @@ def _print_opt(opt):
         elif opt_type == LISTOPT:
             assert(isinstance(opt_default, list))
             print('#%s=%s' % (opt_name, ','.join(opt_default)))
+        elif opt_type == DICTOPT:
+            assert(isinstance(opt_default, dict))
+            opt_default_strlist = [str(key) + ':' + str(value)
+                                   for (key, value) in opt_default.items()]
+            print('#%s=%s' % (opt_name, ','.join(opt_default_strlist)))
         elif opt_type == MULTISTROPT:
             assert(isinstance(opt_default, list))
             if not opt_default:
