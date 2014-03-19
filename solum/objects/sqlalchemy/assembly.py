@@ -37,6 +37,7 @@ class Assembly(sql.Base, abstract.Assembly):
     description = sa.Column(sa.String(255))
     tags = sa.Column(sa.Text)
     plan_id = sa.Column(sa.Integer, sa.ForeignKey('plan.id'), nullable=False)
+    status = sa.Column(sa.String(36))
 
     @classmethod
     def _raise_trigger_not_found(cls, item_id):

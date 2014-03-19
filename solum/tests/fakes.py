@@ -157,13 +157,15 @@ class FakeAssembly(mock.Mock):
         self.id = 8
         self.name = 'faker'
         self.components = []
+        self.status = 'Deploying'
 
     def as_dict(self):
         return dict(user_id=self.user_id,
                     project_id=self.project_id,
                     uuid=self.uuid,
                     id=self.id,
-                    name=self.name)
+                    name=self.name,
+                    status=self.status)
 
 
 class FakePlan(mock.Mock):
