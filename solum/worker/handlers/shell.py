@@ -17,9 +17,10 @@
 import os
 import subprocess
 
+from solum.conductor import api as conductor_api
 from solum.openstack.common.gettextutils import _
 from solum.openstack.common import log as logging
-from solum.worker import api
+from solum.worker import api as worker_api
 
 LOG = logging.getLogger(__name__)
 
@@ -29,6 +30,9 @@ def job_update_notification(ctxt, build_id, status=None, reason=None,
     """send a status update to the conductor."""
     LOG.debug('build id:%s %s (%s) %s %s' % (build_id, status, reason,
                                              created_image_id, assembly_id))
+    conductor_api.API(context=ctxt).build_job_update(build_id, status, reason,
+                                                     created_image_id,
+                                                     assembly_id)
 
 
 class Handler(object):
@@ -51,7 +55,7 @@ class Handler(object):
                                  pathm.get(image_format, 'qcow2'),
                                  'build-app')
 
-        job_update_notification(ctxt, build_id, api.BUILDING,
+        job_update_notification(ctxt, build_id, worker_api.BUILDING,
                                 reason='Starting the image build',
                                 assembly_id=assembly_id)
         try:
@@ -63,7 +67,7 @@ class Handler(object):
                                    stdout=subprocess.PIPE).communicate()[0]
         except OSError as subex:
             LOG.exception(subex)
-            job_update_notification(ctxt, build_id, api.ERROR,
+            job_update_notification(ctxt, build_id, worker_api.ERROR,
                                     reason=subex, assembly_id=assembly_id)
             return
         # we expect one line in the output that looks like:
@@ -73,11 +77,11 @@ class Handler(object):
             if 'created_image_id' in line:
                 created_image_id = line.split('=')[-1]
         if created_image_id is None:
-            job_update_notification(ctxt, build_id, api.ERROR,
+            job_update_notification(ctxt, build_id, worker_api.ERROR,
                                     reason='image not created',
                                     assembly_id=assembly_id)
             return
-        job_update_notification(ctxt, build_id, api.COMPLETE,
+        job_update_notification(ctxt, build_id, worker_api.COMPLETE,
                                 reason='built successfully',
                                 created_image_id=created_image_id,
                                 assembly_id=assembly_id)

@@ -13,6 +13,7 @@
 # under the License.
 
 import sqlalchemy as sa
+import uuid
 
 from solum import objects
 from solum.objects import component as abstract
@@ -49,6 +50,20 @@ class Component(sql.Base, abstract.Component):
     @property
     def _extra_keys(self):
         return ['assembly_uuid']
+
+    @staticmethod
+    def assign_and_create(ctxt, assem, name, description, resource_uri):
+        """Helper function to make creating components easier."""
+        comp = objects.registry.Component()
+        comp.uuid = str(uuid.uuid4())
+        comp.name = name
+        comp.description = description
+        comp.assembly_id = assem.id
+        comp.user_id = ctxt.user
+        comp.project_id = ctxt.tenant
+        comp.resource_uri = resource_uri
+        comp.create(ctxt)
+        return comp
 
 
 class ComponentList(abstract.ComponentList):

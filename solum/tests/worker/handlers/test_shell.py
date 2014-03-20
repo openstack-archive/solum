@@ -31,8 +31,9 @@ class HandlerTest(base.BaseTestCase):
         handler.echo({}, 'foo')
         handler.echo.assert_called_once_with({}, 'foo')
 
+    @mock.patch('solum.conductor.api.API.build_job_update')
     @mock.patch('subprocess.Popen')
-    def test_start_build(self, mock_popen):
+    def test_start_build(self, mock_popen, mock_updater):
         handler = shell.Handler()
         mock_popen.communicate.return_value = 'glance_id=1-2-34'
         handler.build(self.ctx, 5, 'git://example.com/foo', 'new_app',
@@ -45,3 +46,7 @@ class HandlerTest(base.BaseTestCase):
         mock_popen.assert_called_once_with([script, 'git://example.com/foo',
                                             'new_app', self.ctx.tenant,
                                            '1-2-3-4'], stdout=-1)
+        expected = [mock.call(5, 'BUILDING', 'Starting the image build',
+                              None, 44),
+                    mock.call(5, 'ERROR', 'image not created', None, 44)]
+        self.assertEqual(expected, mock_updater.call_args_list)

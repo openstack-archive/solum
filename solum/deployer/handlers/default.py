@@ -15,7 +15,6 @@
 """Solum Deployer default handler."""
 
 import os
-import uuid
 import yaml
 
 from solum.common import clients
@@ -30,18 +29,6 @@ LOG = logging.getLogger(__name__)
 class Handler(object):
     def echo(self, ctxt, message):
         LOG.debug(_("%s") % message)
-
-    def _create_comp(self, ctxt, assem, name, description, resource_uri):
-        comp = objects.registry.Component()
-        comp.uuid = str(uuid.uuid4())
-        comp.name = name
-        comp.description = description
-        comp.assembly_id = assem.id
-        comp.user_id = ctxt.user
-        comp.project_id = ctxt.tenant
-        comp.resource_uri = resource_uri
-        comp.create(ctxt)
-        return comp
 
     def deploy(self, ctxt, created_image_id, assembly_id):
         # TODO(asalkeld) support template flavors (maybe an autoscaling one)
@@ -67,5 +54,7 @@ class Handler(object):
 
         stack = osc.heat().stacks.get(**stack_id)
         comp_description = 'Heat Stack %s' % template.get('description')
-        self._create_comp(ctxt, assem, 'Heat Stack', comp_description,
-                          stack.identifier())
+        objects.registry.Component.assign_and_create(ctxt, assem,
+                                                     'Heat Stack',
+                                                     comp_description,
+                                                     stack.identifier())

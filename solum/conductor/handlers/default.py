@@ -14,6 +14,8 @@
 
 """Solum Conductor default handler."""
 
+from solum.deployer import api
+from solum import objects
 from solum.openstack.common.gettextutils import _
 from solum.openstack.common import log as logging
 
@@ -23,3 +25,25 @@ LOG = logging.getLogger(__name__)
 class Handler(object):
     def echo(self, ctxt, message):
         LOG.debug(_("%s") % message)
+
+    def build_job_update(self, ctxt, build_id, status, reason,
+                         created_image_id, assembly_id):
+        image = objects.registry.Image.get_by_id(ctxt, build_id)
+        image.status = status
+        image.reason = reason
+        image.created_image_id = created_image_id
+        image.save(ctxt)
+
+        # create the component if needed.
+        if assembly_id is not None:
+            assem = objects.registry.Assembly.get_by_id(ctxt,
+                                                        assembly_id)
+            if not any([comp for comp in assem.components
+                        if 'Image Build' in comp.description]):
+                objects.registry.Component.assign_and_create(ctxt, assem,
+                                                             'Image Build',
+                                                             'Image Build job',
+                                                             created_image_id)
+            if image.status == 'COMPLETE':
+                api.API(context=ctxt).deploy(assembly_id=assem.id,
+                                             image_id=image.created_image_id)
