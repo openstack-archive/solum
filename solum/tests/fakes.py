@@ -173,7 +173,7 @@ class FakePlan(mock.Mock):
         super(FakePlan, self).__init__(**kwargs)
         self.__tablename__ = 'plan'
         self.__resource__ = 'plans'
-        self.raw_content = '{}'
+        self.raw_content = {'artifacts': []}
         self.user_id = 'fake user id'
         self.project_id = 'fake project id'
         self.uuid = 'test_uuid'

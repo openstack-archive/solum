@@ -12,7 +12,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import json
 import uuid
 
 from solum.api.handlers import handler
@@ -31,7 +30,7 @@ class PlanHandler(handler.Handler):
         for dk, dv in iter(data.items()):
             if not hasattr(db_obj, dk) and dk not in ('type', 'uri'):
                 filtered_data[dk] = dv
-        db_obj.raw_content = json.dumps(filtered_data)
+        db_obj.raw_content = filtered_data
 
     def update(self, id, data):
         """Modify a resource."""

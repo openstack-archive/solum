@@ -13,6 +13,8 @@
 # under the License.
 
 import uuid
+import wsme
+from wsme.rest import json as wjson
 from wsme import types as wtypes
 
 from solum.api.controllers.v1.datamodel import types as api_types
@@ -112,3 +114,25 @@ class Plan(api_types.Base):
                    project_id='1dae5a09ef2b4d8cbf3594b0eb4f6b94',
                    user_id='55f41cf46df74320b9486a35f5d28a11',
                    description='A plan with no services or artifacts shown')
+
+    @classmethod
+    def from_db_model(cls, m, host_url):
+        json = m.as_dict()
+        json['type'] = m.__tablename__
+        json['uri'] = '%s/v1/%s/%s' % (host_url, m.__resource__, m.uuid)
+        if m.raw_content is not None:
+            json.update(m.raw_content)
+        del json['id']
+        return cls(**(json))
+
+    def as_dict(self, db_model):
+        valid_keys = (attr for attr in db_model.__dict__.keys()
+                      if attr[:2] != '__')
+        base = self.as_dict_from_keys(valid_keys)
+        if self.artifacts is not wsme.Unset:
+            base.update({'artifacts': [wjson.tojson(Artifact, art)
+                                       for art in self.artifacts]})
+        if self.services is not wsme.Unset:
+            base.update({'services': [wjson.tojson(ServiceReference, ref)
+                                      for ref in self.services]})
+        return base
