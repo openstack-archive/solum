@@ -12,19 +12,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import os.path
-import subprocess
 import uuid
 
 from solum.api.handlers import handler
 from solum import objects
 from solum.openstack.common import log as logging
+from solum.worker import api
 
 LOG = logging.getLogger(__name__)
-
-
-STATES = (PENDING, BUILDING, ERROR, COMPLETE) = (
-    'PENDING', 'BUILDING', 'ERROR', 'COMPLETE')
 
 
 class ImageHandler(handler.Handler):
@@ -43,43 +38,16 @@ class ImageHandler(handler.Handler):
         db_obj.name = data.get('name')
         db_obj.source_uri = data.get('source_uri')
         db_obj.tags = data.get('tags')
-        db_obj.state = PENDING
+        db_obj.state = api.PENDING
         db_obj.create(self.context)
         self._start_build(db_obj)
         return db_obj
 
     def _start_build(self, image):
-        # we could do this with the docker/git python client.
-
-        proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                '..', '..', '..'))
-        # map the input formats to script paths.
-        # TODO(asalkeld) we need an "auto".
-        pathm = {'heroku': 'lp-cedarish',
-                 'dib': 'diskimage-builder',
-                 'docker': 'docker',
-                 'qcow2': 'vm-slug'}
-        build_app = os.path.join(proj_dir, 'contrib',
-                                 pathm[image.source_format],
-                                 pathm[image.image_format],
-                                 'build-app')
-        image.state = BUILDING
-        image.save(self.context)
-        try:
-            out = subprocess.Popen([build_app,
-                                    image.source_uri,
-                                    image.name,
-                                    self.context.tenant,
-                                    image.base_image_id],
-                                   stdout=subprocess.PIPE).communicate()[0]
-        except subprocess.CalledProcessError as subex:
-            LOG.exception(subex)
-            image.state = ERROR
-            image.save(self.context)
-            return
-        LOG.debug(out)
-        # TODO(asalkeld) get the glance_id from the output and
-        # record it here.
-        image.created_image_id = 'ffoo'
-        image.state = COMPLETE
-        image.save(self.context)
+        api.API(context=self.context).build(
+            build_id=image.id,
+            source_uri=image.source_uri,
+            name=image.name,
+            base_image_id=image.base_image_id,
+            source_format=image.source_format,
+            image_format=image.image_format)

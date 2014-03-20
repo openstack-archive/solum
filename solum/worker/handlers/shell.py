@@ -14,12 +14,70 @@
 
 """Solum Worker shell handler."""
 
+import os
+import subprocess
+
 from solum.openstack.common.gettextutils import _
 from solum.openstack.common import log as logging
+from solum.worker import api
 
 LOG = logging.getLogger(__name__)
+
+
+def job_update_notification(ctxt, build_id, status=None, reason=None,
+                            created_image_id=None, assembly_id=None):
+    """send a status update to the conductor."""
+    LOG.debug('build id:%s %s (%s) %s %s' % (build_id, status, reason,
+                                             created_image_id, assembly_id))
 
 
 class Handler(object):
     def echo(self, ctxt, message):
         LOG.debug(_("%s") % message)
+
+    def build(self, ctxt, build_id, source_uri, name, base_image_id,
+              source_format, image_format, assembly_id):
+
+        proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                '..', '..', '..'))
+        # map the input formats to script paths.
+        # TODO(asalkeld) we need an "auto".
+        pathm = {'heroku': 'lp-cedarish',
+                 'dib': 'diskimage-builder',
+                 'docker': 'docker',
+                 'qcow2': 'vm-slug'}
+        build_app = os.path.join(proj_dir, 'contrib',
+                                 pathm.get(source_format, 'heroku'),
+                                 pathm.get(image_format, 'qcow2'),
+                                 'build-app')
+
+        job_update_notification(ctxt, build_id, api.BUILDING,
+                                reason='Starting the image build',
+                                assembly_id=assembly_id)
+        try:
+            out = subprocess.Popen([build_app,
+                                    source_uri,
+                                    name,
+                                    ctxt.tenant,
+                                    base_image_id],
+                                   stdout=subprocess.PIPE).communicate()[0]
+        except OSError as subex:
+            LOG.exception(subex)
+            job_update_notification(ctxt, build_id, api.ERROR,
+                                    reason=subex, assembly_id=assembly_id)
+            return
+        # we expect one line in the output that looks like:
+        # created_image_id=<the glance_id>
+        created_image_id = None
+        for line in out.split('\n'):
+            if 'created_image_id' in line:
+                created_image_id = line.split('=')[-1]
+        if created_image_id is None:
+            job_update_notification(ctxt, build_id, api.ERROR,
+                                    reason='image not created',
+                                    assembly_id=assembly_id)
+            return
+        job_update_notification(ctxt, build_id, api.COMPLETE,
+                                reason='built successfully',
+                                created_image_id=created_image_id,
+                                assembly_id=assembly_id)

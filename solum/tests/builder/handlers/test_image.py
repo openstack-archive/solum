@@ -13,11 +13,9 @@
 # under the License.
 
 import mock
-import os
 
 from solum.builder.handlers import image_handler
 from solum.tests import base
-from solum.tests import fakes
 from solum.tests import utils
 
 
@@ -45,22 +43,3 @@ class TestImageHandler(base.BaseTestCase):
         self.assertEqual('new app', res.name)
         self.assertEqual('git://example.com/foo', res.source_uri)
         mock_build.assert_called_once_with(res)
-
-    @mock.patch('subprocess.Popen')
-    def test_start_build(self, mock_popen, not_used):
-        handler = image_handler.ImageHandler(self.ctx)
-        fim = fakes.FakeImage()
-        fim.name = 'new_app'
-        fim.source_format = 'heroku'
-        fim.image_format = 'docker'
-        fim.source_uri = 'git://example.com/foo'
-        mock_popen.communicate.return_value = 'glance_id=1-2-34'
-        handler._start_build(fim)
-        proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                '..', '..', '..', '..'))
-        script = os.path.join(proj_dir, 'contrib/lp-cedarish/docker/build-app')
-        mock_popen.assert_called_once_with([script, 'git://example.com/foo',
-                                            'new_app', self.ctx.tenant,
-                                            '1-2-3-4'], stdout=-1)
-        expected = [mock.call(self.ctx), mock.call(self.ctx)]
-        self.assertEqual(expected, fim.save.call_args_list)
