@@ -58,7 +58,7 @@ class AuthProtocolWrapper(auth_token.AuthProtocol):
 
     Does not perform verification of authentication tokens for pub routes in
     the API. Public routes are those which Uri starts with
-    '/{version_number}/pub/'
+    '/{version_number}/public/'
 
     """
 
