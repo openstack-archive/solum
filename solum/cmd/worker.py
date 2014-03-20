@@ -23,7 +23,7 @@ from oslo.config import cfg
 from solum.common.rpc import service
 from solum.openstack.common.gettextutils import _
 from solum.openstack.common import log as logging
-from solum.worker.handlers import subprocess as subprocess_handler
+from solum.worker.handlers import shell as shell_handler
 
 LOG = logging.getLogger(__name__)
 
@@ -39,8 +39,8 @@ def main():
     cfg.CONF.import_opt('topic', 'solum.worker.config', group='worker')
     cfg.CONF.import_opt('host', 'solum.worker.config', group='worker')
     endpoints = [
-        subprocess_handler.Handler(),
-        ]
+        shell_handler.Handler(),
+    ]
     server = service.Service(cfg.CONF.worker.topic,
                              cfg.CONF.worker.host, endpoints)
     server.serve()

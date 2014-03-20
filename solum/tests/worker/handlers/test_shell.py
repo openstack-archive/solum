@@ -15,13 +15,13 @@
 import mock
 
 from solum.tests import base
-from solum.worker.handlers import subprocess
+from solum.worker.handlers import shell
 
 
 class HandlerTest(base.BaseTestCase):
 
     def test_create(self):
-        handler = subprocess.Handler()
+        handler = shell.Handler()
         handler.echo = mock.MagicMock()
         handler.echo({}, 'foo')
         handler.echo.assert_called_once_with({}, 'foo')
