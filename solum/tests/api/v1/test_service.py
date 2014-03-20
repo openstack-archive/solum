@@ -105,6 +105,45 @@ class TestServiceController(base.BaseTestCase):
         self.assertEqual(204, resp_mock.status)
 
 
+@mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
+@mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
+@mock.patch('solum.api.handlers.service_handler.ServiceHandler')
+class TestServicesController(base.BaseTestCase):
+    def setUp(self):
+        super(TestServicesController, self).setUp()
+        objects.load()
+
+    def test_services_get_all(self, handler_mock, resp_mock, request_mock):
+        obj = service.ServicesController()
+        resp = obj.get_all()
+        self.assertIsNotNone(resp)
+        self.assertEqual(200, resp_mock.status)
+
+    def test_services_post(self, handler_mock, resp_mock, request_mock):
+        json_create = {'name': 'foo',
+                       'description': 'test_desc_service',
+                       'user_id': 'user_id_test',
+                       'project_id': 'project_id_test'}
+        request_mock.body = json.dumps(json_create)
+        request_mock.content_type = 'application/json'
+        handler_create = handler_mock.return_value.create
+        handler_create.return_value = fakes.FakeService()
+        service.ServicesController().post()
+        handler_create.assert_called_with(json_create)
+        self.assertEqual(201, resp_mock.status)
+        handler_create.assert_called_once_with(json_create)
+
+    def test_services_post_nodata(self, handler_mock, resp_mock, request_mock):
+        request_mock.body = ''
+        request_mock.content_type = 'application/json'
+        handler_create = handler_mock.return_value.create
+        handler_create.return_value = fakes.FakeService()
+        ret_val = service.ServicesController().post()
+        self.assertEqual("Missing argument: \"data\"",
+                         str(ret_val['faultstring']))
+        self.assertEqual(400, resp_mock.status)
+
+
 class TestServiceAsDict(base.BaseTestCase):
 
     scenarios = [
