@@ -13,6 +13,7 @@
 # under the License.
 from wsme import types as wtypes
 
+from solum.api.controllers import common_types
 from solum.api.controllers.v1.datamodel import operation
 from solum.api.controllers.v1.datamodel import sensor
 from solum.api.controllers.v1.datamodel import service
@@ -51,6 +52,9 @@ class Component(api_types.Base):
 
     components_ids = [wtypes.text]
     """IDs of nested component of the component."""
+
+    resource_uri = common_types.Uri
+    """Remote resource URI of the component."""
 
     @classmethod
     def sample(cls):
