@@ -36,8 +36,7 @@ class TestLanguagePack(base.BaseTestCase):
                       'uuid': '123456789abcdefghi',
                       'name': 'languagepack1',
                       'description': 'test language pack',
-                      'attr_blob': attr_dict,
-                      'service_id': 1234}]
+                      'attr_blob': attr_dict}]
 
         utils.create_models_from_data(lp.LanguagePack, self.data, self.ctx)
 
@@ -53,3 +52,12 @@ class TestLanguagePack(base.BaseTestCase):
         test_lp = lp.LanguagePack().get_by_id(self.ctx, self.data[0]['id'])
         for key, value in self.data[0].items():
             self.assertEqual(value, getattr(test_lp, key))
+
+    def test_create(self):
+        test_lp = lp.LanguagePack()
+        test_lp.update(self.data[0])
+        test_lp.uuid = '1234'
+        test_lp.user_id = self.ctx.user
+        test_lp.project_id = self.ctx.tenant
+        test_lp.create(self.ctx)
+        self.assertIsNotNone(test_lp.service_id)

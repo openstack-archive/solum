@@ -12,6 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import uuid
+
 from solum.api.handlers import handler
 from solum import objects
 
@@ -26,3 +28,13 @@ class LanguagePackHandler(handler.Handler):
     def get_all(self):
         """Return all language_packs, based on the query provided."""
         return objects.registry.LanguagePackList.get_all(self.context)
+
+    def create(self, data):
+        """Create a new language_pack."""
+        db_obj = objects.registry.LanguagePack()
+        db_obj.update(data)
+        db_obj.uuid = str(uuid.uuid4())
+        db_obj.user_id = self.context.user
+        db_obj.project_id = self.context.tenant
+        db_obj.create(self.context)
+        return db_obj

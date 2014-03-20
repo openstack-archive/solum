@@ -12,13 +12,17 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import uuid
+
 import sqlalchemy as sa
 from sqlalchemy import orm
 
 from solum.objects import compiler_versions as abs_cv
 from solum.objects import language_pack as abstract
 from solum.objects import os_platform as abs_op
+from solum.objects import registry
 from solum.objects.sqlalchemy import models as sql
+from solum.openstack.common.db import exception as db_exc
 
 
 class LanguagePack(sql.Base, abstract.LanguagePack):
@@ -44,6 +48,25 @@ class LanguagePack(sql.Base, abstract.LanguagePack):
     attr_blob = sa.Column(sql.JSONEncodedDict(255))
     service_id = sa.Column(sa.Integer, sa.ForeignKey('service.id'),
                            nullable=False)
+
+    def create(self, context):
+        session = sql.Base.get_session()
+        try:
+            with session.begin(subtransactions=True):
+                lp_service = registry.Service.get_first_by_type(
+                    context, 'language_pack')
+                if not lp_service:
+                    lp_service = registry.Service()
+                    lp_service.uuid = str(uuid.uuid4())
+                    lp_service.name = 'language_pack service'
+                    lp_service.service_type = 'language_pack'
+                    lp_service.user_id = context.user
+                    lp_service.project_id = context.tenant
+                    lp_service.create(context)
+                self.service_id = lp_service.id
+                session.add(self)
+        except db_exc.DBDuplicateEntry:
+            self.__class__._raise_duplicate_object()
 
 
 class CompilerVersions(sql.Base, abs_cv.CompilerVersions):

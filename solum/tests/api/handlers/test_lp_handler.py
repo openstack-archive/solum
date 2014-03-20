@@ -16,6 +16,7 @@ import mock
 
 from solum.api.handlers import language_pack_handler
 from solum.tests import base
+from solum.tests import fakes
 from solum.tests import utils
 
 
@@ -40,3 +41,22 @@ class TestLanguagePackHandler(base.BaseTestCase):
         self.assertIsNotNone(resp)
         mock_registry.LanguagePackList.get_all.assert_called_once_with(
             self.ctx)
+
+    def test_create(self, mock_registry):
+        data = {'name': 'new_name',
+                'uuid': 'input_uuid'}
+        db_obj = fakes.FakeLanguagePack()
+        mock_registry.LanguagePack.return_value = db_obj
+        handler = language_pack_handler.LanguagePackHandler(self.ctx)
+        res = handler.create(data)
+        db_obj.update.assert_called_once_with(data)
+        db_obj.create.assert_called_once_with(self.ctx)
+        self.assertEqual(db_obj, res)
+        self.assertEqual(db_obj.id, res.id)
+        self.assertEqual(db_obj.uuid, res.uuid)
+        self.assertEqual(db_obj.name, res.name)
+        self.assertEqual(db_obj.description, res.description)
+        self.assertEqual(db_obj.project_id, res.project_id)
+        self.assertEqual(db_obj.user_id, res.user_id)
+        self.assertEqual(db_obj.language_impl, res.language_impl)
+        self.assertEqual(db_obj.tags, res.tags)
