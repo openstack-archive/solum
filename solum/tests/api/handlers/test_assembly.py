@@ -93,3 +93,24 @@ class TestAssemblyHandler(base.BaseTestCase):
         db_obj.destroy.assert_called_once_with(self.ctx)
         mock_registry.Assembly.get_by_uuid.assert_called_once_with(self.ctx,
                                                                    'test_id')
+
+    def test_trigger_workflow(self, mock_registry):
+        trigger_id = 1
+        artifacts = [{"name": "Test",
+                      "artifact_type": "application.heroku",
+                      "content": {"href": "https://github.com/some/project"},
+                      "language_pack": "auto"}]
+        db_obj = fakes.FakeAssembly()
+        mock_registry.Assembly.get_by_trigger_id.return_value = db_obj
+        plan_obj = fakes.FakePlan()
+        mock_registry.Plan.get_by_id.return_value = plan_obj
+        plan_obj.raw_content = {"artifacts": artifacts}
+        handler = assembly_handler.AssemblyHandler(self.ctx)
+        handler._build_artifact = mock.MagicMock()
+        handler.trigger_workflow(trigger_id)
+        handler._build_artifact.assert_called_once_with(db_obj, plan_obj,
+                                                        artifacts[0])
+        mock_registry.Assembly.get_by_trigger_id.assert_called_once_with(
+            self.ctx, trigger_id)
+        mock_registry.Plan.get_by_id.assert_called_once_with(self.ctx,
+                                                             db_obj.plan_id)

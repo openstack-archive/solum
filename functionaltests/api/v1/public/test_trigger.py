@@ -10,15 +10,57 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import json
 import requests
 
 from functionaltests.api import base
 
+assembly_data = {'name': 'test_assembly',
+                 'description': 'desc assembly'}
+
+plan_data = {'name': 'test_plan',
+             'description': 'A test to create plan'}
+
 
 class TestTriggerController(base.TestCase):
 
+    def _create_assembly(self):
+        plan_uuid = self._create_plan()
+        assembly_data['plan_uri'] = "%s/v1/plans/%s" % (self.client.base_url,
+                                                        plan_uuid)
+        data = json.dumps(assembly_data)
+        resp, body = self.client.post('v1/assemblies', data)
+        self.assertEqual(resp.status, 201)
+        out_data = json.loads(body)
+        trigger_uri = out_data['trigger_uri']
+        uuid = out_data['uuid']
+        self.assertIsNotNone(trigger_uri)
+        self.assertIsNotNone(uuid)
+        return uuid, plan_uuid, trigger_uri
+
+    def _create_plan(self):
+        data = json.dumps(plan_data)
+        resp, body = self.client.post('v1/plans', data)
+        self.assertEqual(resp.status, 201)
+        out_data = json.loads(body)
+        uuid = out_data['uuid']
+        self.assertIsNotNone(uuid)
+        return uuid
+
     def test_trigger_post(self):
+
+        assembly_uuid, plan_uuid, trigger_uri = self._create_assembly()
         #Using requests instead of self.client to test unauthenticated request
-        resp = requests.post('http://127.0.0.1:9777/v1/public/triggers/'
-                             '7ad6f35961150bf83d0afdd913f8779417e538ea')
+        resp = requests.post(trigger_uri)
         self.assertEqual(resp.status_code, 200)
+
+        self._delete_assembly(assembly_uuid, plan_uuid)
+
+    def _delete_assembly(self, assembly_uuid, plan_uuid):
+        resp, body = self.client.delete('v1/assemblies/%s' % assembly_uuid)
+        self.assertEqual(resp.status, 204)
+        self._delete_plan(plan_uuid)
+
+    def _delete_plan(self, plan_uuid):
+        resp, body = self.client.delete('v1/plans/%s' % plan_uuid)
+        self.assertEqual(resp.status, 204)

@@ -30,8 +30,13 @@ class AssemblyHandler(handler.Handler):
         """Get trigger by trigger id and start git worflow associated."""
         # Note: self.context will be None at this point as this is a
         # non-authenticated request.
-        pass
-        # Here, call a service which will trigger git workflow
+        db_obj = objects.registry.Assembly.get_by_trigger_id(self.context,
+                                                             trigger_id)
+        plan_obj = objects.registry.Plan.get_by_id(self.context,
+                                                   db_obj.plan_id)
+        artifacts = plan_obj.raw_content.get('artifacts', [])
+        for arti in artifacts:
+            self._build_artifact(db_obj, plan_obj, arti)
 
     def update(self, id, data):
         """Modify a resource."""
