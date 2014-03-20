@@ -16,12 +16,41 @@ import mock
 
 from solum.deployer.handlers import default
 from solum.tests import base
+from solum.tests import fakes
+from solum.tests import utils
 
 
 class HandlerTest(base.BaseTestCase):
+    def setUp(self):
+        super(HandlerTest, self).setUp()
+        self.ctx = utils.dummy_context()
 
     def test_create(self):
         handler = default.Handler()
         handler.echo = mock.MagicMock()
         handler.echo({}, 'foo')
         handler.echo.assert_called_once_with({}, 'foo')
+
+    @mock.patch('yaml.load')
+    @mock.patch('solum.objects.registry')
+    @mock.patch('solum.common.clients.OpenStackClients')
+    def test_deploy(self, mock_clients, mock_registry, mock_load):
+        handler = default.Handler()
+
+        mock_registry.Assembly.get_by_id.return_value = \
+            fakes.FakeAssembly()
+        fake_template = {'description': 'test'}
+        mock_load.return_value = fake_template
+        mock_clients.return_value.heat.return_value.stacks.create.\
+            return_value = {'stack_id': 'stack2'}
+
+        handler.deploy(self.ctx, 'created_image_id', 77)
+        parameters = {'image': 'created_image_id',
+                      'app_name': 'faker'}
+        mock_clients.return_value.heat.return_value.stacks.create.\
+            assert_called_once_with(stack_name='faker',
+                                    template=fake_template,
+                                    parameters=parameters)
+
+        mock_clients.return_value.heat.return_value.stacks.get.\
+            assert_called_once_with(stack_id='stack2')
