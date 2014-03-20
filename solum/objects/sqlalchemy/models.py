@@ -92,7 +92,10 @@ class SolumBase(models.TimestampMixin, models.ModelBase):
 
     @classmethod
     def _raise_duplicate_object(cls):
-        raise exception.ResourceExists(name=cls.__tablename__)
+        if hasattr(cls, '__resource__'):
+            raise exception.ResourceExists(name=cls.__resource__)
+        else:
+            raise exception.ObjectNotUnique(name=cls.__tablename__)
 
     def _non_updatable_fields(self):
         return set(('uuid', 'id'))
@@ -132,7 +135,10 @@ class SolumBase(models.TimestampMixin, models.ModelBase):
     @classmethod
     def _raise_not_found(cls, item_id):
         """Raise a not found exception."""
-        raise exception.NotFound(name=cls.__resource__, id=item_id)
+        if hasattr(cls, '__resource__'):
+            raise exception.ResourceNotFound(name=cls.__resource__, id=item_id)
+        else:
+            raise exception.ObjectNotFound(name=cls.__tablename__, id=item_id)
 
 
 Base = declarative.declarative_base(cls=SolumBase)

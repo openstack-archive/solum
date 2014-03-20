@@ -65,7 +65,7 @@ class TestObjectsSqlalchemy(tests.BaseTestCase):
     #         plan2.create(self.ctx)
 
     def test_object_raises_not_found(self):
-        with testtools.ExpectedException(exception.NotFound):
+        with testtools.ExpectedException(exception.ResourceNotFound):
             objects.registry.Plan.get_by_id(None, 10000)
 
     def test_object_persist_and_retrieve(self):

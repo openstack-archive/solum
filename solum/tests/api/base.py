@@ -38,7 +38,7 @@ class FunctionalTest(base.BaseTestCase):
             }
         })
 
-    def assertNotFound(self, url):
+    def assertResourceNotFound(self, url):
         resp = self.app.get(url, status=404,
                             headers={'Accept': 'application/json'})
         self.assertEqual(resp.status_int, 404)

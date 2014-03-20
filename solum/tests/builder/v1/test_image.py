@@ -44,8 +44,8 @@ class TestImageController(base.BaseTestCase):
 
     def test_image_get_not_found(self, ImageHandler, resp_mock, request_mock):
         hand_get = ImageHandler.return_value.get
-        hand_get.side_effect = exception.NotFound(name='image',
-                                                  image_id='test_id')
+        hand_get.side_effect = exception.ResourceNotFound(name='image',
+                                                          image_id='test_id')
         cont = image.ImageController('test_id')
         cont.get()
         hand_get.assert_called_with('test_id')

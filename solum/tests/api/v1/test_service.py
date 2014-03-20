@@ -47,8 +47,8 @@ class TestServiceController(base.BaseTestCase):
     def test_service_get_not_found(self, ServiceHandler,
                                    resp_mock, request_mock):
         hand_get = ServiceHandler.return_value.get
-        hand_get.side_effect = exception.NotFound(name='service',
-                                                  service_id='test_id')
+        hand_get.side_effect = exception.ResourceNotFound(
+            name='service', service_id='test_id')
         cont = service.ServiceController('test_id')
         cont.get()
         hand_get.assert_called_with('test_id')
@@ -68,7 +68,7 @@ class TestServiceController(base.BaseTestCase):
         request_mock.body = json.dumps(json_update)
         request_mock.content_type = 'application/json'
         hand_update = ServiceHandler.return_value.update
-        hand_update.side_effect = exception.NotFound(
+        hand_update.side_effect = exception.ResourceNotFound(
             name='service',
             service_id='test_id')
         service.ServiceController('test_id').put()
@@ -88,7 +88,7 @@ class TestServiceController(base.BaseTestCase):
     def test_service_delete_not_found(self, ServiceHandler,
                                       resp_mock, request_mock):
         hand_delete = ServiceHandler.return_value.delete
-        hand_delete.side_effect = exception.NotFound(
+        hand_delete.side_effect = exception.ResourceNotFound(
             name='service',
             service_id='test_id')
         obj = service.ServiceController('test_id')

@@ -46,8 +46,8 @@ class TestComponentController(base.BaseTestCase):
     def test_component_get_not_found(self, ComponentHandler,
                                      resp_mock, request_mock):
         hand_get = ComponentHandler.return_value.get
-        hand_get.side_effect = exception.NotFound(name='component',
-                                                  component_id='test_id')
+        hand_get.side_effect = exception.ResourceNotFound(
+            name='component', component_id='test_id')
         cont = component.ComponentController('test_id')
         cont.get()
         hand_get.assert_called_with('test_id')
@@ -68,8 +68,8 @@ class TestComponentController(base.BaseTestCase):
         request_mock.body = json.dumps(json_update)
         request_mock.content_type = 'application/json'
         hand_update = ComponentHandler.return_value.update
-        hand_update.side_effect = exception.NotFound(name='component',
-                                                     component_id='test_id')
+        hand_update.side_effect = exception.ResourceNotFound(
+            name='component', component_id='test_id')
         component.ComponentController('test_id').put()
         hand_update.assert_called_with('test_id', json_update)
         self.assertEqual(404, resp_mock.status)
@@ -90,8 +90,8 @@ class TestComponentController(base.BaseTestCase):
     def test_component_delete_not_found(self, ComponentHandler,
                                         resp_mock, request_mock):
         hand_delete = ComponentHandler.return_value.delete
-        hand_delete.side_effect = exception.NotFound(name='component',
-                                                     component_id='test_id')
+        hand_delete.side_effect = exception.ResourceNotFound(
+            name='component', component_id='test_id')
         obj = component.ComponentController('test_id')
         obj.delete()
         hand_delete.assert_called_with('test_id')

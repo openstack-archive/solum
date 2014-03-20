@@ -46,7 +46,7 @@ class TestAssemblyController(base.BaseTestCase):
     def test_assembly_get_not_found(self, AssemblyHandler,
                                     resp_mock, request_mock):
         hand_get = AssemblyHandler.return_value.get
-        hand_get.side_effect = exception.NotFound(
+        hand_get.side_effect = exception.ResourceNotFound(
             name='assembly', assembly_id='test_id')
         cont = assembly.AssemblyController('test_id')
         cont.get()
@@ -67,7 +67,7 @@ class TestAssemblyController(base.BaseTestCase):
         request_mock.body = json.dumps(json_update)
         request_mock.content_type = 'application/json'
         hand_update = AssemblyHandler.return_value.update
-        hand_update.side_effect = exception.NotFound(
+        hand_update.side_effect = exception.ResourceNotFound(
             name='assembly', assembly_id='test_id')
         assembly.AssemblyController('test_id').put()
         hand_update.assert_called_with('test_id', json_update)
@@ -86,7 +86,7 @@ class TestAssemblyController(base.BaseTestCase):
     def test_assembly_delete_not_found(self, AssemblyHandler,
                                        resp_mock, request_mock):
         hand_delete = AssemblyHandler.return_value.delete
-        hand_delete.side_effect = exception.NotFound(
+        hand_delete.side_effect = exception.ResourceNotFound(
             name='assembly', assembly_id='test_id')
         obj = assembly.AssemblyController('test_id')
         obj.delete()

@@ -88,8 +88,8 @@ class TestSensorController(base.BaseTestCase):
 
     def test_sensor_get_not_found(self, handler_mock, resp_mock, request_mock):
         handler_get = handler_mock.return_value.get
-        handler_get.side_effect = exception.NotFound(name='sensor',
-                                                     sensor_id='test_id')
+        handler_get.side_effect = exception.ResourceNotFound(
+            name='sensor', sensor_id='test_id')
         obj = controller.SensorController('test_id')
         obj.get()
         self.assertEqual(404, resp_mock.status)
@@ -121,8 +121,8 @@ class TestSensorController(base.BaseTestCase):
         request_mock.body = json.dumps(json_update)
         request_mock.content_type = 'application/json'
         handler_update = handler_mock.return_value.update
-        handler_update.side_effect = exception.NotFound(name='sensor',
-                                                        sensor_id='test_id')
+        handler_update.side_effect = exception.ResourceNotFound(
+            name='sensor', sensor_id='test_id')
         controller.SensorController('test_id').put()
         handler_update.assert_called_with('test_id', json_update)
         self.assertEqual(404, resp_mock.status)
@@ -138,8 +138,8 @@ class TestSensorController(base.BaseTestCase):
     def test_sensor_delete_not_found(self, mock_handler,
                                      resp_mock, request_mock):
         handler_delete = mock_handler.return_value.delete
-        handler_delete.side_effect = exception.NotFound(name='sensor',
-                                                        sensor_id='test_id')
+        handler_delete.side_effect = exception.ResourceNotFound(
+            name='sensor', sensor_id='test_id')
         obj = controller.SensorController('test_id')
         obj.delete()
         handler_delete.assert_called_with('test_id')

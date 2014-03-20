@@ -43,7 +43,7 @@ class Assembly(sql.Base, abstract.Assembly):
     @classmethod
     def _raise_trigger_not_found(cls, item_id):
         """Raise a NotFound exception."""
-        raise exception.NotFound(id=item_id, name='trigger')
+        raise exception.ResourceNotFound(id=item_id, name='trigger')
 
     @classmethod
     def get_by_trigger_id(cls, context, trigger_id):

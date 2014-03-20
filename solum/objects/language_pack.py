@@ -23,7 +23,7 @@ class LanguagePack(base.CrudMixin):
     @classmethod
     def _raise_not_found(cls, item_id):
         """Raise a not found exception."""
-        raise exception.NotFound(name='language_pack', id=item_id)
+        raise exception.ResourceNotFound(name='language_pack', id=item_id)
 
 
 class LanguagePackList(list, base.CrudMixin):

@@ -25,13 +25,14 @@ class ExceptionTestCase(base.BaseTestCase):
     """Test cases for exception code."""
 
     def test_with_kwargs(self):
-        exc = exception.NotFound(name='application', id='green_paint')
+        exc = exception.ResourceNotFound(name='application', id='green_paint')
         self.assertIn('green_paint could not be found.',
                       six.text_type(exc))
         self.assertEqual(exc.code, 404)
 
     def test_with_kwargs_ru(self):
-        exc = exception.NotFound(name='application', id=u'зеленой_краской')
+        exc = exception.ResourceNotFound(name='application',
+                                         id=u'зеленой_краской')
         self.assertIn(u'зеленой_краской could not be found',
                       six.text_type(exc))
         self.assertEqual(exc.code, 404)
@@ -39,11 +40,11 @@ class ExceptionTestCase(base.BaseTestCase):
     def test_bad_kwargs_exception(self):
         cfg.CONF.set_override('fatal_exception_format_errors', True)
         self.assertRaises(KeyError,
-                          exception.NotFound, a_field='green')
+                          exception.ResourceNotFound, a_field='green')
 
     def test_bad_kwargs(self):
         cfg.CONF.set_override('fatal_exception_format_errors', False)
-        exc = exception.NotFound(a_field='green')
+        exc = exception.ResourceNotFound(a_field='green')
         self.assertIn('An unknown exception occurred', six.text_type(exc))
         self.assertEqual(exc.code, 404)
 

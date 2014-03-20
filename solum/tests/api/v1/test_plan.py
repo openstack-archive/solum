@@ -45,8 +45,8 @@ class TestPlanController(base.BaseTestCase):
 
     def test_plan_get_not_found(self, PlanHandler, resp_mock, request_mock):
         hand_get = PlanHandler.return_value.get
-        hand_get.side_effect = exception.NotFound(name='plan',
-                                                  plan_id='test_id')
+        hand_get.side_effect = exception.ResourceNotFound(
+            name='plan', plan_id='test_id')
         cont = plan.PlanController('test_id')
         cont.get()
         hand_get.assert_called_with('test_id')
@@ -65,8 +65,8 @@ class TestPlanController(base.BaseTestCase):
         request_mock.body = json.dumps(json_update)
         request_mock.content_type = 'application/json'
         hand_update = PlanHandler.return_value.update
-        hand_update.side_effect = exception.NotFound(name='plan',
-                                                     plan_id='test_id')
+        hand_update.side_effect = exception.ResourceNotFound(
+            name='plan', plan_id='test_id')
         plan.PlanController('test_id').put()
         hand_update.assert_called_with('test_id', json_update)
         self.assertEqual(404, resp_mock.status)
@@ -83,8 +83,8 @@ class TestPlanController(base.BaseTestCase):
 
     def test_plan_delete_not_found(self, PlanHandler, resp_mock, request_mock):
         hand_delete = PlanHandler.return_value.delete
-        hand_delete.side_effect = exception.NotFound(name='plan',
-                                                     plan_id='test_id')
+        hand_delete.side_effect = exception.ResourceNotFound(
+            name='plan', plan_id='test_id')
         obj = plan.PlanController('test_id')
         obj.delete()
         hand_delete.assert_called_with('test_id')

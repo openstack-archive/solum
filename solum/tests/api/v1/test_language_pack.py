@@ -43,8 +43,8 @@ class TestLanguagePackController(base.BaseTestCase):
 
     def test_lp_get_not_found(self, handler_mock, resp_mock, request_mock):
         handler_get = handler_mock.return_value.get
-        handler_get.side_effect = exception.NotFound(name='language_pack',
-                                                     id='test_id')
+        handler_get.side_effect = exception.ResourceNotFound(
+            name='language_pack', id='test_id')
         language_pack_obj = language_pack.LanguagePackController(
             'test_id')
         language_pack_obj.get()
@@ -68,8 +68,8 @@ class TestLanguagePackController(base.BaseTestCase):
         request_mock.body = json.dumps(json_update)
         request_mock.content_type = 'application/json'
         hand_update = LanguagePackHandler.return_value.update
-        hand_update.side_effect = exception.NotFound(
-            name='language_pack', language_pack_id='test_id')
+        hand_update.side_effect = exception.ResourceNotFound(
+            name='language_pack', id='test_id')
         language_pack.LanguagePackController('test_id').put()
         hand_update.assert_called_with('test_id', json_update)
         self.assertEqual(404, resp_mock.status)
@@ -88,7 +88,7 @@ class TestLanguagePackController(base.BaseTestCase):
     def test_language_pack_delete_not_found(self, LanguagePackHandler,
                                             resp_mock, request_mock):
         hand_delete = LanguagePackHandler.return_value.delete
-        hand_delete.side_effect = exception.NotFound(
+        hand_delete.side_effect = exception.ResourceNotFound(
             name='language_pack', language_pack_id='test_id')
         obj = language_pack.LanguagePackController('test_id')
         obj.delete()

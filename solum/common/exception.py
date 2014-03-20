@@ -161,12 +161,20 @@ class SolumException(Exception):
         return self.message
 
 
-class NotFound(SolumException):
+class ObjectNotFound(SolumException):
+    msg_fmt = _("The %(name)s %(id)s could not be found.")
+
+
+class ObjectNotUnique(SolumException):
+    msg_fmt = _("The %(name)s already exists.")
+
+
+class ResourceNotFound(ObjectNotFound):
     msg_fmt = _("The %(name)s resource %(id)s could not be found.")
     code = 404
 
 
-class ResourceExists(SolumException):
+class ResourceExists(ObjectNotUnique):
     msg_fmt = _("The %(name)s resource already exists.")
     code = 409
 
