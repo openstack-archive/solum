@@ -35,6 +35,7 @@ class Component(sql.Base, abstract.Component):
     tags = sa.Column(sa.Text)
     assembly_id = sa.Column(sa.Integer)
     parent_component_id = sa.Column(sa.Integer)
+    resource_uri = sa.Column(sa.String(1024))
 
     @property
     def assembly_uuid(self):
