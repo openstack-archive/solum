@@ -16,6 +16,7 @@ import uuid
 
 from solum.api.handlers import handler
 from solum import objects
+from solum.worker import api
 
 
 class AssemblyHandler(handler.Handler):
@@ -53,7 +54,36 @@ class AssemblyHandler(handler.Handler):
         db_obj.project_id = self.context.tenant
         db_obj.trigger_id = str(uuid.uuid4())
         db_obj.create(self.context)
+        plan_obj = objects.registry.Plan.get_by_id(self.context,
+                                                   db_obj.plan_id)
+        artifacts = plan_obj.raw_content.get('artifacts', [])
+        for arti in artifacts:
+            self._build_artifact(db_obj, plan_obj, arti)
         return db_obj
+
+    def _build_artifact(self, assem, plan, artifact):
+        # This is a tempory hack so we don't need the build client
+        # in the requirments.
+        image = objects.registry.Image()
+        image.name = artifact['name']
+        image.source_uri = artifact['content']['href']
+        image.base_image_id = artifact.get('language_pack', 'auto')
+        image.source_format = 'heroku'
+        image.image_format = 'qcow2'
+        image.uuid = str(uuid.uuid4())
+        image.user_id = self.context.user
+        image.project_id = self.context.tenant
+        image.state = api.PENDING
+        image.create(self.context)
+
+        api.API(context=self.context).build(
+            build_id=image.id,
+            source_uri=image.source_uri,
+            name=image.name,
+            base_image_id=image.base_image_id,
+            source_format=image.source_format,
+            image_format=image.image_format,
+            assembly_id=assem.id)
 
     def get_all(self):
         """Return all assemblies, based on the query provided."""

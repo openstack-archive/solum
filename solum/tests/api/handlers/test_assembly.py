@@ -56,17 +56,34 @@ class TestAssemblyHandler(base.BaseTestCase):
         mock_registry.Assembly.get_by_uuid.assert_called_once_with(self.ctx,
                                                                    'test_id')
 
-    def test_create(self, mock_registry):
+    @mock.patch('solum.worker.api.API.build')
+    def test_create(self, mock_build, mock_registry):
         data = {'user_id': 'new_user_id',
                 'uuid': 'input_uuid',
                 'plan_uuid': 'input_plan_uuid'}
-        handler = assembly_handler.AssemblyHandler(self.ctx)
+
         db_obj = fakes.FakeAssembly()
         mock_registry.Assembly.return_value = db_obj
+        fp = fakes.FakePlan()
+        mock_registry.Plan.get_by_id.return_value = fp
+        fp.raw_content = {
+            'name': 'theplan',
+            'artifacts': [{'name': 'nodeus',
+                           'artifact_type': 'application.heroku',
+                           'content': {
+                               'href': 'https://example.com/ex.git'},
+                           'language_pack': 'auto'}]}
+        mock_registry.Image.return_value = fakes.FakeImage()
+
+        handler = assembly_handler.AssemblyHandler(self.ctx)
         res = handler.create(data)
         db_obj.update.assert_called_once_with(data)
         db_obj.create.assert_called_once_with(self.ctx)
         self.assertEqual(db_obj, res)
+        mock_build.assert_called_once_with(
+            build_id=8, name='nodeus', assembly_id=8,
+            source_uri='https://example.com/ex.git',
+            base_image_id='auto', source_format='heroku', image_format='qcow2')
 
     def test_delete(self, mock_registry):
         db_obj = fakes.FakeAssembly()
