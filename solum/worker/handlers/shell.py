@@ -17,6 +17,7 @@
 import os
 import subprocess
 
+import solum
 from solum.conductor import api as conductor_api
 from solum.openstack.common.gettextutils import _
 from solum.openstack.common import log as logging
@@ -29,7 +30,8 @@ def job_update_notification(ctxt, build_id, status=None, reason=None,
                             created_image_id=None, assembly_id=None):
     """send a status update to the conductor."""
     LOG.debug('build id:%s %s (%s) %s %s' % (build_id, status, reason,
-                                             created_image_id, assembly_id))
+                                             created_image_id, assembly_id),
+              context=solum.TLS.trace)
     conductor_api.API(context=ctxt).build_job_update(build_id, status, reason,
                                                      created_image_id,
                                                      assembly_id)
@@ -41,6 +43,8 @@ class Handler(object):
 
     def build(self, ctxt, build_id, source_uri, name, base_image_id,
               source_format, image_format, assembly_id):
+        solum.TLS.trace.clear()
+        solum.TLS.trace.import_context(ctxt)
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..'))
@@ -55,6 +59,13 @@ class Handler(object):
                                  pathm.get(image_format, 'qcow2'),
                                  'build-app')
 
+        solum.TLS.trace.support_info(
+            build_cmd=' '.join([build_app,
+                                source_uri,
+                                name,
+                                ctxt.tenant,
+                                base_image_id]),
+            assembly_id=assembly_id)
         job_update_notification(ctxt, build_id, worker_api.BUILDING,
                                 reason='Starting the image build',
                                 assembly_id=assembly_id)
@@ -75,6 +86,7 @@ class Handler(object):
         created_image_id = None
         for line in out.split('\n'):
             if 'created_image_id' in line:
+                solum.TLS.trace.support_info(build_out_line=line)
                 created_image_id = line.split('=')[-1]
         if created_image_id is None:
             job_update_notification(ctxt, build_id, worker_api.ERROR,
