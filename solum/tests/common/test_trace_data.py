@@ -13,8 +13,8 @@
 # under the License.
 
 import solum
+from solum.common import context
 from solum.common import trace_data
-from solum.openstack.common import context
 from solum.tests import base
 
 solum.TLS.trace = trace_data.TraceData()
@@ -22,8 +22,8 @@ solum.TLS.trace = trace_data.TraceData()
 # Just putting highly recognizable values in context
 CONTEXT = context.RequestContext(
     '_auth_token_', '_user_', '_tenant_', '_domain_', '_user_domain_',
-    '_project_domain_', '_is_admin_', '_read_only_', '_show_deleted_',
-    '_request_id_', '_instance_uuid_')
+    '_project_domain_', '_is_admin_', '_read_only_', '_request_id_',
+    '_user_name_', '_roles_', '_service_catalog_')
 
 
 class TestTraceData(base.BaseTestCase):
@@ -46,20 +46,19 @@ class TestTraceData(base.BaseTestCase):
         self.assertEqual(
             solum.TLS.trace._user_data,
             {'user': '_user_', 'tenant': '_tenant_'})
-        self.assertEqual(
-            solum.TLS.trace._support_data, (
-                {
-                    'instance_uuid': '_instance_uuid_',
-                    'read_only': '_read_only_',
-                    'domain': '_domain_',
-                    'show_deleted': '_show_deleted_',
-                    'user_identity':
-                    '_user_ _tenant_ _domain_ _user_domain_ _project_domain_',
-                    'project_domain': '_project_domain_',
-                    'auth_token': '_auth_token_',
-                    'is_admin': '_is_admin_',
-                    'user_domain': '_user_domain_'
-                }))
+        self.assertEqual(({
+            'domain': '_domain_',
+            'instance_uuid': None,
+            'is_admin': '_is_admin_',
+            'project_domain': '_project_domain_',
+            'read_only': '_read_only_',
+            'roles': '_roles_',
+            'show_deleted': False,
+            'user_domain': '_user_domain_',
+            'user_identity': '_user_ _tenant_ _domain_ '
+            '_user_domain_ _project_domain_',
+            'user_name': '_user_name_'
+        }), solum.TLS.trace._support_data)
 
     def test_info_commands(self):
         """Test trace setting functions."""
