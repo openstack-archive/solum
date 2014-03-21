@@ -51,6 +51,40 @@ class TestLanguagePackController(base.BaseTestCase):
         self.assertEqual(404, resp_mock.status)
         handler_get.assert_called_once_with('test_id')
 
+    def test_language_pack_put_none(self, LanguagePackHandler, resp_mock,
+                                    request_mock):
+        request_mock.body = None
+        request_mock.content_type = 'application/json'
+        hand_put = LanguagePackHandler.return_value.put
+        hand_put.return_value = fakes.FakeLanguagePack()
+        ret_val = language_pack.LanguagePackController('test_id').put()
+        faultstring = str(ret_val['faultstring'])
+        self.assertEqual("Missing argument: \"data\"", faultstring)
+        self.assertEqual(400, resp_mock.status)
+
+    def test_language_pack_put_not_found(self, LanguagePackHandler,
+                                         resp_mock, request_mock):
+        json_update = {'name': 'foo'}
+        request_mock.body = json.dumps(json_update)
+        request_mock.content_type = 'application/json'
+        hand_update = LanguagePackHandler.return_value.update
+        hand_update.side_effect = exception.NotFound(
+            name='language_pack', language_pack_id='test_id')
+        language_pack.LanguagePackController('test_id').put()
+        hand_update.assert_called_with('test_id', json_update)
+        self.assertEqual(404, resp_mock.status)
+
+    def test_language_pack_put_ok(self, LanguagePackHandler, resp_mock,
+                                  request_mock):
+        json_update = {'name': 'foo'}
+        request_mock.body = json.dumps(json_update)
+        request_mock.content_type = 'application/json'
+        hand_update = LanguagePackHandler.return_value.update
+        hand_update.return_value = fakes.FakeLanguagePack()
+        language_pack.LanguagePackController('test_id').put()
+        hand_update.assert_called_with('test_id', json_update)
+        self.assertEqual(200, resp_mock.status)
+
 
 class TestLanguagePackAsDict(base.BaseTestCase):
 

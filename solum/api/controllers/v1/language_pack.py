@@ -38,6 +38,16 @@ class LanguagePackController(rest.RestController):
         return lp.LanguagePack.from_db_model(
             handler.get(self._id), pecan.request.host_url)
 
+    @exception.wrap_controller_exception
+    @wsme_pecan.wsexpose(lp.LanguagePack, body=lp.LanguagePack)
+    def put(self, data):
+        """Modify this language_pack."""
+        handler = lp_handler.LanguagePackHandler(
+            pecan.request.security_context)
+        res = handler.update(self._id,
+                             data.as_dict(objects.registry.LanguagePack))
+        return lp.LanguagePack.from_db_model(res, pecan.request.host_url)
+
 
 class LanguagePacksController(rest.RestController):
     """Manages operations on the language packs collection."""
