@@ -30,7 +30,7 @@ class Handler(object):
     def echo(self, ctxt, message):
         LOG.debug(_("%s") % message)
 
-    def deploy(self, ctxt, created_image_id, assembly_id):
+    def deploy(self, ctxt, assembly_id, image_id):
         # TODO(asalkeld) support template flavors (maybe an autoscaling one)
         #                this could also be stored in glance.
         template_flavor = 'basic'
@@ -47,7 +47,7 @@ class Handler(object):
                                                     assembly_id)
 
         parameters = {'app_name': assem.name,
-                      'image': created_image_id}
+                      'image': image_id}
         stack_id = osc.heat().stacks.create(stack_name=assem.name,
                                             template=template,
                                             parameters=parameters)

@@ -24,3 +24,6 @@ class API(service.API):
                             group='deployer')
         super(API, self).__init__(transport, context,
                                   topic=cfg.CONF.deployer.topic)
+
+    def deploy(self, assembly_id, image_id):
+        self._cast('deploy', assembly_id=assembly_id, image_id=image_id)

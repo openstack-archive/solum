@@ -44,7 +44,7 @@ class HandlerTest(base.BaseTestCase):
         mock_clients.return_value.heat.return_value.stacks.create.\
             return_value = {'stack_id': 'stack2'}
 
-        handler.deploy(self.ctx, 'created_image_id', 77)
+        handler.deploy(self.ctx, 77, 'created_image_id')
         parameters = {'image': 'created_image_id',
                       'app_name': 'faker'}
         mock_clients.return_value.heat.return_value.stacks.create.\
