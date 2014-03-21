@@ -27,6 +27,10 @@ LOG = logging.getLogger(__name__)
 
 
 class Handler(object):
+    def __init__(self):
+        super(Handler, self).__init__()
+        objects.load()
+
     def echo(self, ctxt, message):
         LOG.debug(_("%s") % message)
 
