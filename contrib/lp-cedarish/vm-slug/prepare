@@ -3,9 +3,9 @@
 DIR=$(dirname $0)
 
 # uncomment this if we want to auto build/download cedarish vm
-#ACTION=$1
-#shift
-#: ${ACTION:='download-cedarish'}
+ACTION=$1
+shift
+#${ACTION:='download-cedarish'}
 
 # great security practice in 3 ... 2 ... 1 ...
 # install docker
