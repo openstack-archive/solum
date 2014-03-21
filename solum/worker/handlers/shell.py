@@ -87,7 +87,7 @@ class Handler(object):
         for line in out.split('\n'):
             if 'created_image_id' in line:
                 solum.TLS.trace.support_info(build_out_line=line)
-                created_image_id = line.split('=')[-1]
+                created_image_id = line.split('=')[-1].strip()
         if created_image_id is None:
             job_update_notification(ctxt, build_id, worker_api.ERROR,
                                     reason='image not created',
