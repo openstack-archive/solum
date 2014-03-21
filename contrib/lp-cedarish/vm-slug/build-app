@@ -13,6 +13,9 @@ shift
 APP=$1
 shift
 TENANT=$1
+shift
+BASE_IMAGE=$1
+shift
 
 [[ -f ./openrc ]] && . ./openrc
 [[ -f ~/devstack/openrc ]] && . ~/devstack/openrc
