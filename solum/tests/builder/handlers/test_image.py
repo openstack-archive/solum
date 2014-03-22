@@ -16,6 +16,7 @@ import mock
 
 from solum.builder.handlers import image_handler
 from solum.tests import base
+from solum.tests import fakes
 from solum.tests import utils
 
 
@@ -38,8 +39,10 @@ class TestImageHandler(base.BaseTestCase):
     def test_image_create(self, mock_build, mock_registry):
         data = {'name': 'new app',
                 'source_uri': 'git://example.com/foo'}
+        fi = fakes.FakeImage()
+        mock_registry.Image.return_value = fi
         handler = image_handler.ImageHandler(self.ctx)
         res = handler.create(data)
-        self.assertEqual('new app', res.name)
-        self.assertEqual('git://example.com/foo', res.source_uri)
         mock_build.assert_called_once_with(res)
+        fi.update.assert_called_once_with(data)
+        fi.create.assert_called_once_with(self.ctx)

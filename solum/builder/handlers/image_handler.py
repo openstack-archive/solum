@@ -32,12 +32,10 @@ class ImageHandler(handler.Handler):
     def create(self, data):
         """Create a new resource."""
         db_obj = objects.registry.Image()
+        db_obj.update(data)
         db_obj.uuid = str(uuid.uuid4())
         db_obj.user_id = self.context.user
         db_obj.project_id = self.context.tenant
-        db_obj.name = data.get('name')
-        db_obj.source_uri = data.get('source_uri')
-        db_obj.tags = data.get('tags')
         db_obj.state = api.PENDING
         db_obj.create(self.context)
         self._start_build(db_obj)
