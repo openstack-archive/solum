@@ -1,0 +1,8 @@
+name: ex1
+description: Nodejs express.
+artifacts:
+- name: nodeus
+  artifact_type: application.heroku
+  content:
+    href: https://github.com/paulczar/example-nodejs-express.git
+  language_pack: auto
