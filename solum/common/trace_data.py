@@ -20,6 +20,7 @@ import six
 # can be relaxed more as needed.  This is only used if import_context() is
 # called.
 _TRACE_USER_KEYS = [six.u("user"), six.u("tenant")]
+_TRACE_CONTEXT_IGNORE = [six.u("auth_token"), six.u("service_catalog")]
 
 
 class TraceData(object):
@@ -46,6 +47,9 @@ class TraceData(object):
                 self.request_id = val
             elif key in _TRACE_USER_KEYS:
                 self._user_data[key] = val
+            elif key in _TRACE_CONTEXT_IGNORE:
+                # these are just too big.
+                continue
             else:
                 self._support_data[key] = val
 
