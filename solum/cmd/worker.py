@@ -20,7 +20,9 @@ import sys
 
 from oslo.config import cfg
 
+import solum
 from solum.common.rpc import service
+from solum.common import trace_data
 from solum.openstack.common.gettextutils import _
 from solum.openstack.common import log as logging
 from solum.worker.handlers import shell as shell_handler
@@ -31,6 +33,7 @@ LOG = logging.getLogger(__name__)
 def main():
     cfg.CONF(sys.argv[1:], project='solum')
     logging.setup('solum')
+    solum.TLS.trace = trace_data.TraceData()
 
     LOG.info(_('Starting server in PID %s') % os.getpid())
     LOG.debug(_("Configuration:"))
