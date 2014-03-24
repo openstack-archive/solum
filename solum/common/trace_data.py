@@ -66,8 +66,6 @@ class TraceData(object):
         """
         self.request_id = six.u("<not set>")
         self._user_data = {}
-        for key in six.iterkeys(self._support_data):
-            self._support_data[key] = "0" * len(self._support_data[key])
         self._support_data = {}
 
     def to_dict(self):
