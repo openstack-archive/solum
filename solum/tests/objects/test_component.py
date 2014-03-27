@@ -29,6 +29,8 @@ class TestComponent(base.BaseTestCase):
                       'uuid': 'ce43e347f0b0422825245b3e5f140a81cef6e65b',
                       'name': 'component1',
                       'description': 'test component',
+                      'assembly_id': '42d42d',
+                      'parent_component_id': '87d98s',
                       'tags': 'component tags'}]
         utils.create_models_from_data(component.Component, self.data, self.ctx)
 
