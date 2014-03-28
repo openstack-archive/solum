@@ -19,7 +19,7 @@ parameters:
     default: m1.small
   port:
     type: string
-    default: 5000
+    default: "5000"
     description: Port Number
 
 resources:
