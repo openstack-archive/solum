@@ -25,18 +25,22 @@ Hit the API server::
 Milestone 1 run-through
 -----------------------
 
-1. Prepare the build setup::
+1. Prepare the build setup
+::
 
  $ ./contrib/lp-cedarish/vm-slug/prepare download-cedarish
 
 2. Install solum using devstack (see above)
+::
 
-3. Join screen::
+3. Join screen
+::
 
  $ cd ${DEVSTACK_DIR}
  $ ./rejoin-stack.sh
 
-4. navigate in screen
+4. Navigate in screen
+::
 
  - goto solum-worker (Ctrl-a ")
  - Ctrl-C to stop the process
@@ -44,7 +48,8 @@ Milestone 1 run-through
  - restart the process
  - (Ctrl-a d) to exit screen
 
-5. Create example application::
+5. Create example application
+::
 
  $ solum app create example_plans/ex1.yaml
 
@@ -58,7 +63,8 @@ Milestone 1 run-through
  +-------------+------------------------------------------------------------------------+
 
 
-6. Create assembly::
+6. Create assembly
+::
 
  $ solum assembly create http://192.168.1.67:9777/v1/plans/32fcbf9d-8e88-47a7-9e2a-0705b7cec3a6 --assembly=test
 
