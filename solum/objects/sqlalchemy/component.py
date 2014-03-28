@@ -34,8 +34,8 @@ class Component(sql.Base, abstract.Component):
     name = sa.Column(sa.String(100))
     description = sa.Column(sa.String(255))
     tags = sa.Column(sa.Text)
-    assembly_id = sa.Column(sa.Integer)
-    parent_component_id = sa.Column(sa.Integer)
+    assembly_id = sa.Column(sa.Integer, sa.ForeignKey('assembly.id'))
+    parent_component_id = sa.Column(sa.Integer, sa.ForeignKey('component.id'))
     resource_uri = sa.Column(sa.String(1024))
 
     @property
