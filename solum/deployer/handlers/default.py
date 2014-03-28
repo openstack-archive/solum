@@ -14,8 +14,8 @@
 
 """Solum Deployer default handler."""
 
+import json
 import os
-import yaml
 
 from solum.common import clients
 from solum import objects
@@ -34,16 +34,19 @@ class Handler(object):
     def echo(self, ctxt, message):
         LOG.debug(_("%s") % message)
 
-    def deploy(self, ctxt, assembly_id, image_id):
-        # TODO(asalkeld) support template flavors (maybe an autoscaling one)
-        #                this could also be stored in glance.
-        template_flavor = 'basic'
-
+    def _get_template(self, template_flavor):
         proj_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
         templ = os.path.join(proj_dir, 'etc', 'solum', 'templates',
                              '%s.yaml' % template_flavor)
         with open(templ) as templ_file:
-            template = yaml.load(templ_file)
+            template = templ_file.read()
+        return template
+
+    def deploy(self, ctxt, assembly_id, image_id):
+        # TODO(asalkeld) support template flavors (maybe an autoscaling one)
+        #                this could also be stored in glance.
+        template_flavor = 'basic'
+        template = self._get_template(template_flavor)
 
         osc = clients.OpenStackClients(ctxt)
 
@@ -57,7 +60,8 @@ class Handler(object):
                                             parameters=parameters)
 
         stack = osc.heat().stacks.get(**stack_id)
-        comp_description = 'Heat Stack %s' % template.get('description')
+        comp_description = 'Heat Stack %s' % (
+            json.loads(template).get('description'))
         objects.registry.Component.assign_and_create(ctxt, assem,
                                                      'Heat Stack',
                                                      comp_description,

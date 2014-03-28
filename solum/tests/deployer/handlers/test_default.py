@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import json
 import mock
 
 from solum.deployer.handlers import default
@@ -31,16 +32,16 @@ class HandlerTest(base.BaseTestCase):
         handler.echo({}, 'foo')
         handler.echo.assert_called_once_with({}, 'foo')
 
-    @mock.patch('yaml.load')
+    @mock.patch('solum.deployer.handlers.default.Handler._get_template')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.common.clients.OpenStackClients')
-    def test_deploy(self, mock_clients, mock_registry, mock_load):
+    def test_deploy(self, mock_clients, mock_registry, mock_get_templ):
         handler = default.Handler()
 
         mock_registry.Assembly.get_by_id.return_value = \
             fakes.FakeAssembly()
-        fake_template = {'description': 'test'}
-        mock_load.return_value = fake_template
+        fake_template = json.dumps({'description': 'test'})
+        mock_get_templ.return_value = fake_template
         mock_clients.return_value.heat.return_value.stacks.create.\
             return_value = {'stack_id': 'stack2'}
 
