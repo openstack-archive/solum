@@ -18,7 +18,7 @@ parameters:
     description: Flavor to use for servers
     default: m1.tiny
   port:
-    type: number
+    type: string
     default: 5000
     description: Port Number
 
