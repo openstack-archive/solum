@@ -20,7 +20,7 @@ SOLUM=/path/to/code vagrant up devstack
 This should prepare your (devstack) system to build VMs.  It will install a few system packages and the `disk-image-builder` project.   Run this as the same user you installed devstack as to get passwordless sudo access.
 
 ```
-/solum/contrib/lp-cedarish/vm/prepare
+/opt/stack/solum/contrib/lp-cedarish/vm/prepare
 ```
 
 ### Build an Application
@@ -30,7 +30,7 @@ The build script takes two positional arguments.   The location of the git repo,
 make sure you have an `openrc` file with your openstack credentials in `~/` or `~/devstack/openrc` before running this script.
 
 ```
-/solum/contrib/buildpacker/vm/build-app https://github.com/paulczar/example-nodejs-express.git helloworld
+/opt/stack/solum/contrib/buildpacker/vm/build-app https://github.com/paulczar/example-nodejs-express.git helloworld
 ```
 
 The script should update glance with the resultant image as well as set up a sshkey and security-group.  it will provide you with the nova command required to boot the instance as well as a basic `user-data.txt` to set any environment variables ( to be passed to your app ) and run the app on boot. 

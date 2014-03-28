@@ -17,8 +17,11 @@ shift
 BASE_IMAGE=$1
 shift
 
-[[ -f ./openrc ]] && . ./openrc
-[[ -f ~/devstack/openrc ]] && . ~/devstack/openrc
+if [[ -z $OS_USERNAME ]]; then
+  echo 'openstack credentials not passed via ENV. hunting for openrc.'
+  [[ -f ./openrc ]] && . ./openrc
+  [[ -f ~/devstack/openrc ]] && . ~/devstack/openrc
+fi
 
 nova list 2> /dev/null > /dev/null
 if [ $? != 0 ]; then

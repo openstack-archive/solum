@@ -26,7 +26,7 @@ This should prepare your (devstack) system to build VMs.  It will install a few 
 Run this as the same user you installed devstack as to get passwordless sudo access.
 
 ```
-/solum/contrib/lp-cedarish/vm-slug/prepare
+/opt/stack/solum/contrib/lp-cedarish/vm-slug/prepare
 ```
 
 ### Cedarish VM
@@ -36,7 +36,7 @@ Run this as the same user you installed devstack as to get passwordless sudo acc
 This should build the cedarish VM and upload it to glance.
 
 ```
-/solum/contrib/lp-cedarish/vm-slug/build-cedarish
+/opt/stack/solum/contrib/lp-cedarish/vm-slug/build-cedarish
 ```
 
 #### Download it
@@ -44,7 +44,7 @@ This should build the cedarish VM and upload it to glance.
 canned qcow2 image can be found on Cloud Files.
 
 ```
-/solum/contrib/lp-cedarish/vm-slug/download-cedarish
+/opt/stack/solum/contrib/lp-cedarish/vm-slug/download-cedarish
 ```
 
 ### Build an Application
@@ -57,7 +57,7 @@ The script will build a slug that will be accessible by VMs and will also create
 
 
 ```
-/solum/contrib/lp-cedarish/vm-slug/build-app https://github.com/paulczar/example-nodejs-express.git helloworld
+/opt/stack/solum/contrib/lp-cedarish/vm-slug/build-app https://github.com/paulczar/example-nodejs-express.git helloworld
 ```
 
 
