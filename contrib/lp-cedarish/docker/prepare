@@ -19,21 +19,21 @@ sudo docker build -t solum/slugbuilder github.com/paulczar/slugbuilder
 echo Creating slugrunner container
 sudo docker build -t solum/slugrunner github.com/paulczar/slugrunner
 
-if [ -d /opt/solum/buildpacks ]; then
-    exit 0
+if [ ! -d /opt/solum/buildpacks ]; then
+    echo Preparing Buildpacks
+    mkdir -p /opt/solum/buildpacks
+    pushd /opt/solum/buildpacks
+    # These buildpacks help with autodetection and app level depedency installs.
+    git clone --depth 1 https://github.com/heroku/heroku-buildpack-java.git
+    git clone --depth 1 https://github.com/heroku/heroku-buildpack-ruby.git
+    git clone --depth 1 https://github.com/heroku/heroku-buildpack-python.git
+    git clone --depth 1 https://github.com/gabrtv/heroku-buildpack-nodejs
+    git clone --depth 1 https://github.com/heroku/heroku-buildpack-play.git
+    git clone --depth 1 https://github.com/CHH/heroku-buildpack-php.git
+    git clone --depth 1 https://github.com/heroku/heroku-buildpack-clojure.git
+    git clone --depth 1 https://github.com/kr/heroku-buildpack-go.git
+    git clone --depth 1 https://github.com/heroku/heroku-buildpack-scala
+    git clone --depth 1 https://github.com/igrigorik/heroku-buildpack-dart.git
+    git clone --depth 1 https://github.com/miyagawa/heroku-buildpack-perl.git
+    popd
 fi
-echo Preparing Buildpacks
-mkdir -p /opt/solum/buildpacks
-cd /opt/solum/buildpacks
-# These buildpacks help with autodetection and app level depedency installs.
-git clone --depth 1 https://github.com/heroku/heroku-buildpack-java.git
-git clone --depth 1 https://github.com/heroku/heroku-buildpack-ruby.git
-git clone --depth 1 https://github.com/heroku/heroku-buildpack-python.git
-git clone --depth 1 https://github.com/gabrtv/heroku-buildpack-nodejs
-git clone --depth 1 https://github.com/heroku/heroku-buildpack-play.git
-git clone --depth 1 https://github.com/CHH/heroku-buildpack-php.git
-git clone --depth 1 https://github.com/heroku/heroku-buildpack-clojure.git
-git clone --depth 1 https://github.com/kr/heroku-buildpack-go.git
-git clone --depth 1 https://github.com/heroku/heroku-buildpack-scala
-git clone --depth 1 https://github.com/igrigorik/heroku-buildpack-dart.git
-git clone --depth 1 https://github.com/miyagawa/heroku-buildpack-perl.git
