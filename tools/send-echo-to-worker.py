@@ -17,6 +17,7 @@ import sys
 
 from oslo.config import cfg
 
+from solum.common import context
 from solum.openstack.common import log as logging
 from solum.worker import api
 
@@ -28,4 +29,4 @@ if __name__ == '__main__':
     conf_files = ['--config-file=/etc/solum/solum.conf']
     cfg.CONF(conf_files, project='solum')
     message = ' '.join(sys.argv[1:])
-    api.API(context={}).echo(message)
+    api.API(context=context.RequestContext()).echo(message)
