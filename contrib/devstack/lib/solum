@@ -8,6 +8,7 @@
 # ``stack.sh`` calls the entry points in this order:
 #
 # install_solum
+# install_solumclient
 # configure_solum
 # start_solum
 # stop_solum
@@ -22,9 +23,12 @@ set +o xtrace
 # Set up default repos
 SOLUM_REPO=${SOLUM_REPO:-${GIT_BASE}/stackforge/solum.git}
 SOLUM_BRANCH=${SOLUM_BRANCH:-master}
+SOLUMCLIENT_REPO=${SOLUMCLIENT_REPO:-${GIT_BASE}/stackforge/python-solumclient.git}
+SOLUMCLIENT_BRANCH=${SOLUMCLIENT_BRANCH:-master}
 
 # Set up default directories
 SOLUM_DIR=$DEST/solum
+SOLUMCLIENT_DIR=$DEST/python-solumclient
 SOLUM_CONF_DIR=${SOLUM_CONF_DIR:-/etc/solum}
 SOLUM_CONF_FILE=solum.conf
 ADMIN_TENANT_NAME=${ADMIN_TENANT_NAME:-admin}
@@ -153,6 +157,14 @@ function init_solum() {
     # Run Solum db migrations
     solum-db-manage --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE upgrade head
     create_solum_cache_dir
+}
+
+# install_solumclient() - Collect source and prepare
+function install_solumclient {
+    ERROR_ON_CLONE=False
+    git_clone $SOLUMCLIENT_REPO $SOLUMCLIENT_DIR $SOLUMCLIENT_BRANCH
+    cd $SOLUMCLIENT_DIR
+    setup_develop $SOLUMCLIENT_DIR
 }
 
 # install_solum() - Collect source and prepare
