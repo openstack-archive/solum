@@ -2,12 +2,6 @@
 
 DIR=$(dirname $0)
 
-# uncomment this if we want to auto build/download cedarish vm
-ACTION=$1
-shift
-#${ACTION:='download-cedarish'}
-
-# great security practice in 3 ... 2 ... 1 ...
 # install docker
 echo Install docker:
 [[ -f /usr/bin/docker ]] || $DIR/get_docker_io.sh
@@ -32,12 +26,3 @@ mkdir -p /opt/solum/apps
 chmod g+s /opt/solum/apps
 
 mkdir -p /opt/solum/slugs
-
-case $ACTION in
-'build-cedarish')
-  . $DIR/build-cedarish
-  ;;
-'download-cedarish')
-  . $DIR/download-cedarish
-  ;;
-esac

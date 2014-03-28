@@ -31,15 +31,3 @@ if [[ ! -f $IMAGE_DIR/cedarish.qcow2 ]]; then
 fi
 
 echo image: $IMAGE_DIR/cedarish.qcow2
-
-glance image-list 2> /dev/null > /dev/null
-if [[ $? == 0 ]]; then
-  echo it would appear I know how to talk to glance
-  echo therefore I will attempt to upload your image
-  glance image-delete cedarish
-  glance image-create --name cedarish --disk-format qcow2 --container-format bare --file $IMAGE_DIR/cedarish.qcow2
-else
-  echo I cannot talk to glance your image is here: $IMAGE_DIR/$ID.qcow2
-  echo Try this: glance image-create --name cedarish --disk-format qcow2 --container-format bare --file $IMAGE_DIR/cedarish.qcow2
-  exit 1
-fi
