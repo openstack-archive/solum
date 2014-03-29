@@ -31,6 +31,8 @@ resources:
         {IpProtocol: tcp, FromPort: {get_param: port}, ToPort: {get_param: port},
          CidrIp: "0.0.0.0/0"},
         {IpProtocol: tcp, FromPort: "22", ToPort: "22",
+         CidrIp: "0.0.0.0/0"},
+        {IpProtocol: icmp, FromPort: "-1", ToPort: "-1",
          CidrIp: "0.0.0.0/0"}]
 
   compute:
