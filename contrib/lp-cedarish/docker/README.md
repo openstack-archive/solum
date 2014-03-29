@@ -21,7 +21,7 @@ DOCKER=true SOLUM=/path/to/code vagrant up devstack
 This should prepare your system to use the docker builder by building a few containers and syncing down the heroku buildpacks.  Currently requires sudo access to work with docker.   Run it as the same user you installed devstack which has passwordless sudo.
 
 ```
-/solum/contrib/lp-cedarish/docker/prepare
+/opt/stack/solum/contrib/lp-cedarish/docker/prepare
 ```
 
 ## Build an Application
@@ -33,7 +33,7 @@ $ source ~/devstack/openrc
 $ keystone tenant-get $OS_TENANT_NAME
 # get the tenant_id and pass that into build-app
 
-/solum/contrib/lp-cedarish/docker/build-app https://github.com/paulczar/example-nodejs-express.git nodejs $OS_TENANT_ID
+/opt/stack/solum/contrib/lp-cedarish/docker/build-app https://github.com/paulczar/example-nodejs-express.git nodejs $OS_TENANT_ID
 ```
 
 This script will upload a docker container with your built application to glance to be run via nova.

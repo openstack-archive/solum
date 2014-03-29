@@ -2,8 +2,11 @@
 
 DIR=`dirname $0`
 
-[[ -f ./openrc ]] && . ./openrc
-[[ -f ~/devstack/openrc ]] && . ~/devstack/openrc
+if [[ -z $OS_USERNAME ]]; then
+  echo 'openstack credentials not passed via ENV. hunting for openrc.'
+  [[ -f ./openrc ]] && . ./openrc
+  [[ -f ~/devstack/openrc ]] && . ~/devstack/openrc
+fi
 
 glance image-list 2> /dev/null > /dev/null
 if [ $? != 0 ]; then
