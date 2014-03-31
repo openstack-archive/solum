@@ -38,12 +38,14 @@ class HandlerTest(base.BaseTestCase):
     def test_deploy(self, mock_clients, mock_registry, mock_get_templ):
         handler = default.Handler()
 
-        mock_registry.Assembly.get_by_id.return_value = \
-            fakes.FakeAssembly()
+        fake_assembly = fakes.FakeAssembly()
+        mock_registry.Assembly.get_by_id.return_value = fake_assembly
         fake_template = json.dumps({'description': 'test'})
         mock_get_templ.return_value = fake_template
         mock_clients.return_value.heat.return_value.stacks.create.\
-            return_value = {'stack_id': 'stack2'}
+            return_value = {"stack": {"id": "fake_id",
+                                      "links": [{"href": "http://fake.ref",
+                                                 "rel": "self"}]}}
 
         handler.deploy(self.ctx, 77, 'created_image_id')
         parameters = {'image': 'created_image_id',
@@ -52,6 +54,9 @@ class HandlerTest(base.BaseTestCase):
             assert_called_once_with(stack_name='faker',
                                     template=fake_template,
                                     parameters=parameters)
-
-        mock_clients.return_value.heat.return_value.stacks.get.\
-            assert_called_once_with(stack_id='stack2')
+        assign_and_create_mock = mock_registry.Component.assign_and_create
+        assign_and_create_mock.assert_called_once_with(self.ctx,
+                                                       fake_assembly,
+                                                       'Heat Stack',
+                                                       'Heat Stack test',
+                                                       'http://fake.ref')

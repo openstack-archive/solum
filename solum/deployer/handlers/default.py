@@ -14,8 +14,8 @@
 
 """Solum Deployer default handler."""
 
-import json
 import os
+import yaml
 
 from solum.common import clients
 from solum import objects
@@ -55,14 +55,13 @@ class Handler(object):
 
         parameters = {'app_name': assem.name,
                       'image': image_id}
-        stack_id = osc.heat().stacks.create(stack_name=assem.name,
-                                            template=template,
-                                            parameters=parameters)
-
-        stack = osc.heat().stacks.get(**stack_id)
+        created_stack = osc.heat().stacks.create(stack_name=assem.name,
+                                                 template=template,
+                                                 parameters=parameters)
         comp_description = 'Heat Stack %s' % (
-            json.loads(template).get('description'))
+            yaml.load(template).get('description'))
         objects.registry.Component.assign_and_create(ctxt, assem,
                                                      'Heat Stack',
                                                      comp_description,
-                                                     stack.identifier())
+                                                     created_stack['stack']
+                                                     ['links'][0]['href'])
