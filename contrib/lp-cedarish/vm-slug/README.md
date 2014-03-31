@@ -17,13 +17,21 @@ cd vagrant-solum-dev
 SOLUM=/path/to/code vagrant up devstack
 ```
 
+If you're using your own devstack here's some useful localrc entries
+
+```
+SCREEN_LOGDIR=/opt/stack/logs/screen
+ENABLED_SERVICES+=,heat,h-api,h-api-cfn,h-api-cw,h-eng
+IMAGE_URLS+=,http://cc42a68525a2dda0151c-9a7653a0ba84bd9342f239dc5349667e.r38.cf1.rackcdn.com/cedarish.qcow2
+```
+
 ## Using VM Builder
 
 ### Prepare Environment
 
 This should prepare your (devstack) system to build VMs.  It will install a few system packages and the `disk-image-builder` project along with `docker` and some needed docker containers.   It also clones a bunch of git repos for the heroku buildpacks to help with auto-detection of the runtime environment needed.  Lastly it starts an apache docker container with the solum apps directory mapped to it so that VMs can download slugs.
 
-Run this as the same user you installed devstack as to get passwordless sudo access.
+This should be run by devstack when you include Solum,  but if it does not you can run it here.
 
 ```
 /opt/stack/solum/contrib/lp-cedarish/vm-slug/prepare
@@ -41,7 +49,7 @@ This should build the cedarish VM and upload it to glance.
 
 #### Download it
 
-canned qcow2 image can be found on Cloud Files.
+setting `IMAGE_URLS+=,http://cc42a68525a2dda0151c-9a7653a0ba84bd9342f239dc5349667e.r38.cf1.rackcdn.com/cedarish.qcow2` in `./localrc` should do this for you.  If you want to download it manually you can run the below.   You will need to upload it to glance manually once downloaded.
 
 ```
 /opt/stack/solum/contrib/lp-cedarish/vm-slug/download-cedarish

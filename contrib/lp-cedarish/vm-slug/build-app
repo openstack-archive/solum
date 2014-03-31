@@ -56,7 +56,7 @@ rm -rf $APP_DIR/build
 
 echo '===> Injecting App into Image'
 
-[[ -f $APP_DIR/image.qcow2 ]] || cp /opt/solum/cedarish/image/cedarish.qcow2 $APP_DIR/image.qcow2
+[[ -f $APP_DIR/image.qcow2 ]] || glance image-download --file $APP_DIR/image.qcow2 cedarish
 mkdir -p $APP_DIR/mnt
 echo '-----> Mounting Image'
 sudo guestmount -a $APP_DIR/image.qcow2 -i --rw $APP_DIR/mnt
