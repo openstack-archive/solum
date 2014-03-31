@@ -74,7 +74,7 @@ glance image-create --name $APP --disk-format qcow2 --container-format bare --fi
 
 # TODO(asalkeld) use --property <key=value> to set the tags
 
-image_id=$(glance image-show $APP | grep " id " | cut -d"|" -f3)
+image_id=$(glance image-show $APP | grep " id " | cut -d"|" -f3 | tr -d " ")
 
 echo "created_image_id=$image_id"
 
