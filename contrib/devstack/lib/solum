@@ -43,6 +43,9 @@ SOLUM_SERVICE_PORT=${SOLUM_SERVICE_PORT:-9777}
 SOLUM_BUILDER_SERVICE_PORT=${SOLUM_BUILDER_SERVICE_PORT:-9778}
 SOLUM_SERVICE_PROTOCOL=${SOLUM_SERVICE_PROTOCOL:-$SERVICE_PROTOCOL}
 
+SOLUM_MAX_ATTEMPTS=${SOLUM_MAX_ATTEMPTS:-2000}
+SOLUM_WAIT_INTERVAL=${SOLUM_WAIT_INTERVAL:-1}
+
 # Support entry points installation of console scripts
 if [[ -d $SOLUM_DIR/bin ]]; then
     SOLUM_BIN_DIR=$SOLUM_DIR/bin
@@ -126,6 +129,9 @@ function configure_solum() {
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE conductor topic solum-conductor
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE deployer topic solum-deployer
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE worker topic solum-worker
+
+    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE max_attempts $SOLUM_MAX_ATTEMPTS
+    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE wait_interval $SOLUM_WAIT_INTERVAL
 }
 
 #register solum user in Keystone

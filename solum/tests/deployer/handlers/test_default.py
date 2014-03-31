@@ -46,7 +46,7 @@ class HandlerTest(base.BaseTestCase):
             return_value = {"stack": {"id": "fake_id",
                                       "links": [{"href": "http://fake.ref",
                                                  "rel": "self"}]}}
-
+        handler._update_assembly_status = mock.MagicMock()
         handler.deploy(self.ctx, 77, 'created_image_id')
         parameters = {'image': 'created_image_id',
                       'app_name': 'faker'}
@@ -60,3 +60,42 @@ class HandlerTest(base.BaseTestCase):
                                                        'Heat Stack',
                                                        'Heat Stack test',
                                                        'http://fake.ref')
+
+    @mock.patch('solum.common.clients.OpenStackClients')
+    def test_update_assembly_status(self, mock_clients):
+        handler = default.Handler()
+        fake_assembly = fakes.FakeAssembly()
+        stack = mock.MagicMock()
+        stack.status = 'COMPLETE'
+        mock_clients.heat().stacks.get.return_value = stack
+        handler._parse_server_url = mock.MagicMock(return_value=('xyz'))
+        handler._update_assembly_status(self.ctx, fake_assembly, mock_clients,
+                                        'fake_id')
+        self.assertEqual(fake_assembly.status, 'READY')
+        fake_assembly.save.assert_called_once_with(self.ctx)
+
+    @mock.patch('solum.common.clients.OpenStackClients')
+    def test_update_assembly_status_failed(self, mock_clients):
+        handler = default.Handler()
+        fake_assembly = fakes.FakeAssembly()
+        stack = mock.MagicMock()
+        stack.status = 'FAILED'
+        mock_clients.heat().stacks.get.return_value = stack
+        handler._update_assembly_status(self.ctx, fake_assembly, mock_clients,
+                                        'fake_id')
+        self.assertEqual(fake_assembly.status, 'ERROR')
+        fake_assembly.save.assert_called_once_with(self.ctx)
+
+    def test_parse_server_url(self):
+        handler = default.Handler()
+        heat_output = mock.MagicMock()
+        heat_output._info = {"id": "fake_id",
+                             "outputs": [{"output_value": "192.168.78.21",
+                                          "description": "IP", "output_key":
+                                          "public_ip"},
+                                         {"output_value":
+                                          "http://192.168.78.21:5000",
+                                          "description": "URL", "output_key":
+                                          "URL"}]}
+        host_url = handler._parse_server_url(heat_output)
+        self.assertEqual(host_url, "http://192.168.78.21:5000")
