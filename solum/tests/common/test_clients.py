@@ -14,6 +14,7 @@ import mock
 
 from glanceclient import client as glanceclient
 from heatclient import client as heatclient
+from neutronclient.neutron import client as neutronclient
 
 from solum.common import clients
 from solum.common import exception
@@ -160,3 +161,49 @@ class ClientsTest(base.BaseTestCase):
         swift = obj.swift()
         swift_cached = obj.swift()
         self.assertEqual(swift, swift_cached)
+
+    @mock.patch.object(neutronclient, 'Client')
+    def test_clients_neutron(self, mock_call):
+        con = mock.MagicMock()
+        con.tenant = "b363706f891f48019483f8bd6503c54b"
+        con.auth_token = "3bcc3d3a03f44e3d8377f9247b0ad155"
+        auth_url = mock.PropertyMock(name="auth_url",
+                                     return_value="keystone_url")
+        type(con).auth_url = auth_url
+        con.get_url_for = mock.Mock(name="get_url_for")
+        con.get_url_for.return_value = "url_from_keystone"
+        obj = clients.OpenStackClients(con)
+        obj._neutron = None
+        obj.neutron()
+        mock_call.assert_called_once_with(
+            '2.0', endpoint_url='url_from_keystone', username=None,
+            token='3bcc3d3a03f44e3d8377f9247b0ad155', auth_url='keystone_url',
+            ca_cert=None, password=None, insecure=False)
+
+    def test_clients_neutron_noauth(self):
+        con = mock.MagicMock()
+        con.auth_token = None
+        con.tenant = "b363706f891f48019483f8bd6503c54b"
+        auth_url = mock.PropertyMock(name="auth_url",
+                                     return_value="keystone_url")
+        type(con).auth_url = auth_url
+        con.get_url_for = mock.Mock(name="get_url_for")
+        con.get_url_for.return_value = "url_from_keystone"
+        obj = clients.OpenStackClients(con)
+        obj._neutron = None
+        self.assertRaises(exception.AuthorizationFailure, obj.neutron)
+
+    def test_clients_neutron_cached(self):
+        con = mock.MagicMock()
+        con.tenant = "b363706f891f48019483f8bd6503c54b"
+        con.auth_token = "3bcc3d3a03f44e3d8377f9247b0ad155"
+        auth_url = mock.PropertyMock(name="auth_url",
+                                     return_value="keystone_url")
+        type(con).auth_url = auth_url
+        con.get_url_for = mock.Mock(name="get_url_for")
+        con.get_url_for.return_value = "url_from_keystone"
+        obj = clients.OpenStackClients(con)
+        obj._neutron = None
+        neutron = obj.neutron()
+        neutron_cached = obj.neutron()
+        self.assertEqual(neutron, neutron_cached)
