@@ -21,6 +21,15 @@ parameters:
     type: string
     default: "5000"
     description: Port Number
+  private_net:
+    type: string
+    description: Id of the private network for the compute server
+  private_subnet:
+    type: string
+    description: Id of the private sub network for the compute server
+  public_net:
+    type: string
+    description: Id of the public network for the compute server
 
 resources:
   external_access:
@@ -35,6 +44,21 @@ resources:
         {IpProtocol: icmp, FromPort: "-1", ToPort: "-1",
          CidrIp: "0.0.0.0/0"}]
 
+  public_port:
+    type: OS::Neutron::Port
+    properties:
+      network_id: { get_param: private_net }
+      fixed_ips:
+      - subnet_id: { get_param: private_subnet }
+      security_groups:
+      - {get_resource: external_access}
+
+  floating_ip:
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network_id: { get_param: public_net }
+      port_id: { get_resource: public_port }
+
   compute:
     type: OS::Nova::Server
     properties:
@@ -42,8 +66,8 @@ resources:
       image: {get_param: image}
       flavor: { get_param: flavor }
       key_name: { get_param: key_name }
-      security_groups:
-      - {get_resource: external_access}
+      networks:
+      - port: { get_resource: public_port }
       user_data_format: RAW
       user_data:
         str_replace:
@@ -59,12 +83,12 @@ resources:
 outputs:
   public_ip:
     description: The public IP address of the newly configured Server.
-    value: { get_attr: [compute, first_address ] }
+    value: { get_attr: [ floating_ip, floating_ip_address ] }
   URL:
     description: The URL for the Server.
     value:
       str_replace:
         template: http://%host%:%port%
         params:
-          "%host%": { get_attr: [ compute, first_address ] }
+          "%host%": { get_attr: [ floating_ip, floating_ip_address ] }
           "%port%": { get_param: port }

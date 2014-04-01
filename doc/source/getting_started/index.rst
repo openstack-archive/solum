@@ -25,7 +25,7 @@ At present it is a Stackforge project, and its repository is available on Github
   $ cd Solum
   $ git clone https://github.com/stackforge/solum
 
-In addition to Solum, your environment will also need Devstack to configure and run the requisite Openstack components, including Keystone, Glance, Nova, and Heat.
+In addition to Solum, your environment will also need Devstack to configure and run the requisite Openstack components, including Keystone, Glance, Nova, Neutron, and Heat.
 
 Vagrant (Optional)
 ------------------
@@ -55,6 +55,10 @@ Devstack (alternate)
 Using Vagrant is not a requirement for deploying Solum.
 You may instead opt to install Solum and Devstack yourself.
 The details of integrating Solum with Devstack can be found in :code:`contrib/devstack/README.rst`.
+
+Some additional configuration will be needed for Neutron, see `Neutron's Wiki page for Devstack`__
+
+__ https://wiki.openstack.org/wiki/NeutronDevstack
 
 Create your app
 ---------------

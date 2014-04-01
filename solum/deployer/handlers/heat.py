@@ -68,6 +68,19 @@ class Handler(object):
             template = templ_file.read()
         return template
 
+    def _get_network_parameters(self, osc):
+        #TODO(julienvey) In the long term, we should have optional parameters
+        # if the user wants to override this default behaviour
+        params = {}
+        tenant_networks = osc.neutron().list_networks()
+        for tenant_network in tenant_networks['networks']:
+            if tenant_network['router:external']:
+                params['public_net'] = tenant_network['id']
+            else:
+                params['private_net'] = tenant_network['id']
+                params['private_subnet'] = tenant_network['subnets'][0]
+        return params
+
     def deploy(self, ctxt, assembly_id, image_id):
         # TODO(asalkeld) support template flavors (maybe an autoscaling one)
         #                this could also be stored in glance.
@@ -81,6 +94,7 @@ class Handler(object):
 
         parameters = {'app_name': assem.name,
                       'image': image_id}
+        parameters.update(self._get_network_parameters(osc))
         created_stack = osc.heat().stacks.create(stack_name=assem.name,
                                                  template=template,
                                                  parameters=parameters)

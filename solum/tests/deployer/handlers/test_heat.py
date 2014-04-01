@@ -46,14 +46,25 @@ class HandlerTest(base.BaseTestCase):
             return_value = {"stack": {"id": "fake_id",
                                       "links": [{"href": "http://fake.ref",
                                                  "rel": "self"}]}}
+        mock_clients.return_value.neutron.return_value.list_networks.\
+            return_value = {"networks": [{"router:external": True,
+                                          "id": "public_net_id"},
+                                         {"router:external": False,
+                                          "id": "private_net_id",
+                                          "subnets": ["private_subnet_id"]}]}
         handler._update_assembly_status = mock.MagicMock()
         handler.deploy(self.ctx, 77, 'created_image_id')
         parameters = {'image': 'created_image_id',
-                      'app_name': 'faker'}
+                      'app_name': 'faker',
+                      'private_net': 'private_net_id',
+                      'public_net': 'public_net_id',
+                      'private_subnet': 'private_subnet_id'}
         mock_clients.return_value.heat.return_value.stacks.create.\
             assert_called_once_with(stack_name='faker',
                                     template=fake_template,
                                     parameters=parameters)
+        mock_clients.return_value.neutron.return_value.list_networks.\
+            assert_called_once_with()
         assign_and_create_mock = mock_registry.Component.assign_and_create
         assign_and_create_mock.assert_called_once_with(self.ctx,
                                                        fake_assembly,
