@@ -12,18 +12,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from solum.common import exception
 from solum.objects import base
 
 
 class LanguagePack(base.CrudMixin):
     # Version 1.0: Initial version
     VERSION = '1.0'
-
-    @classmethod
-    def _raise_not_found(cls, item_id):
-        """Raise a not found exception."""
-        raise exception.ResourceNotFound(name='language_pack', id=item_id)
 
 
 class LanguagePackList(list, base.CrudMixin):

@@ -257,7 +257,6 @@ class FakeLanguagePack(mock.Mock):
         self.language_impl = 'test_impl'
         self.tags = ['tag1', 'tag2']
         self.attr_blob = {'attr1': 'val1'}
-        self.service_id = '1'
 
     def as_dict(self):
         return dict(user_id=self.user_id,

@@ -35,11 +35,6 @@ class Service(sql.Base, abstract.Service):
     read_only = sa.Column(sa.Boolean, default=False)
     tags = sa.Column(sa.Text)
 
-    @classmethod
-    def get_first_by_type(cls, context, service_type):
-        session = sql.Base.get_session()
-        return session.query(cls).filter_by(service_type=service_type).first()
-
 
 class ServiceList(abstract.ServiceList):
     """Represent a list of services in sqlalchemy."""

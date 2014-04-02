@@ -38,13 +38,6 @@ class TestLanguagePackController(base.TestCase):
         data = json.loads(body)
         self.assertEqual(resp.status, 200)
         [self._delete_language_pack(pl['uuid']) for pl in data]
-        #Cleanup LanguagePack service
-        #TODO(julienvey) remove this when the 'language_pack' service is made
-        #permanent
-        resp, body = self.client.get('v1/services')
-        data = json.loads(body)
-        self.assertEqual(resp.status, 200)
-        [self._delete_service(pl['uuid']) for pl in data]
 
     def _assert_output_expected(self, body_data, data):
         self.assertEqual(body_data['description'], data['description'])
@@ -66,10 +59,6 @@ class TestLanguagePackController(base.TestCase):
 
     def _delete_language_pack(self, uuid):
         resp, _ = self.client.delete('v1/language_packs/%s' % uuid)
-        self.assertEqual(resp.status, 204)
-
-    def _delete_service(self, uuid):
-        resp, _ = self.client.delete('v1/services/%s' % uuid)
         self.assertEqual(resp.status, 204)
 
     def _create_language_pack(self):

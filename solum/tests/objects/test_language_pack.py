@@ -54,15 +54,6 @@ class TestLanguagePack(base.BaseTestCase):
         for key, value in self.data[0].items():
             self.assertEqual(value, getattr(test_lp, key))
 
-    def test_create(self):
-        test_lp = lp.LanguagePack()
-        test_lp.update(self.data[0])
-        test_lp.uuid = '1234'
-        test_lp.user_id = self.ctx.user
-        test_lp.project_id = self.ctx.tenant
-        test_lp.create(self.ctx)
-        self.assertIsNotNone(test_lp.service_id)
-
     def _get_flat_versions(self, language_packs):
         versions = []
         for compiler_version in language_packs.compiler_versions:
