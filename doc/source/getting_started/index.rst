@@ -51,7 +51,7 @@ Milestone 1 run-through
 5. Create example application
 ::
 
- $ solum app create example_plans/ex1.yaml
+ $ solum app create examples/plans/ex1.yaml
 
  +-------------+------------------------------------------------------------------------+
  | Property    | Value                                                                  |
