@@ -14,9 +14,23 @@
 
 import uuid
 
+from oslo.config import cfg
 from solum.api.handlers import handler
 from solum import objects
 from solum.worker import api
+
+# Register options for the service
+API_SERVICE_OPTS = [
+    cfg.StrOpt('image_format',
+               default='qcow2',
+               help='The format of the image to output'),
+]
+
+CONF = cfg.CONF
+opt_group = cfg.OptGroup(name='api',
+                         title='Options for the solum-api service')
+CONF.register_group(opt_group)
+CONF.register_opts(API_SERVICE_OPTS, opt_group)
 
 
 class AssemblyHandler(handler.Handler):
@@ -69,7 +83,7 @@ class AssemblyHandler(handler.Handler):
         image.source_uri = artifact['content']['href']
         image.base_image_id = artifact.get('language_pack', 'auto')
         image.source_format = 'heroku'
-        image.image_format = 'qcow2'
+        image.image_format = CONF.api.image_format
         image.uuid = str(uuid.uuid4())
         image.user_id = self.context.user
         image.project_id = self.context.tenant
