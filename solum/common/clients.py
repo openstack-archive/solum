@@ -15,6 +15,7 @@
 from heatclient import client as heatclient
 from keystoneclient.v2_0 import client as ksclient
 from oslo.config import cfg
+from swiftclient import client as swiftclient
 
 from solum.common import exception
 from solum.openstack.common.gettextutils import _
@@ -47,7 +48,21 @@ heat_client_opts = [
                 help=_("If set, then the server's certificate will not "
                        "be verified."))]
 
+
+swift_client_opts = [
+    cfg.StrOpt('endpoint_type',
+               default='publicURL',
+               help=_(
+                   'Type of endpoint in Identity service catalog to use '
+                   'for communication with the Swift service.')),
+    cfg.StrOpt('cacert',
+               help=_('Optional CA cert file to use in SSL connections.')),
+    cfg.BoolOpt('insecure',
+                default=False,
+                help=_("If set the server certificate will not be verified."))]
+
 cfg.CONF.register_opts(heat_client_opts, group='heat_client')
+cfg.CONF.register_opts(swift_client_opts, group='swift_client')
 
 
 class OpenStackClients(object):
@@ -57,6 +72,7 @@ class OpenStackClients(object):
         self.context = context
         self._keystone = None
         self._heat = None
+        self._swift = None
 
     @property
     def auth_token(self):
@@ -100,3 +116,21 @@ class OpenStackClients(object):
         self._heat = heatclient.Client('1', endpoint, **args)
 
         return self._heat
+
+    @exception.wrap_keystone_exception
+    def swift(self):
+        if self._swift:
+            return self._swift
+
+        endpoint_type = self._get_client_option('swift', 'endpoint_type')
+        args = {
+            'auth_version': '2.0',
+            'preauthtoken': self.auth_token,
+            'preauthurl': self.context.get_url_for(
+                service_type='object-store', endpoint_type=endpoint_type),
+            'os_options': {'endpoint_type': endpoint_type},
+            'cacert': self._get_client_option('swift', 'cacert'),
+            'insecure': self._get_client_option('swift', 'insecure')
+        }
+        self._swift = swiftclient.Connection(**args)
+        return self._swift
