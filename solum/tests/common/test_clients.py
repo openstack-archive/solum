@@ -12,6 +12,7 @@
 
 import mock
 
+from glanceclient import client as glanceclient
 from heatclient import client as heatclient
 
 from solum.common import clients
@@ -21,6 +22,50 @@ from swiftclient import client as swiftclient
 
 
 class ClientsTest(base.BaseTestCase):
+
+    @mock.patch.object(glanceclient, 'Client')
+    def test_clients_glance(self, mock_call):
+        con = mock.MagicMock()
+        con.tenant = "b363706f891f48019483f8bd6503c54d"
+        con.auth_token = "3bcc3d3a03f44e3d8377f9247b0ad155"
+        auth_url = mock.PropertyMock(name="auth_url",
+                                     return_value="keystone_url")
+        type(con).auth_url = auth_url
+        con.get_url_for = mock.Mock(name="get_url_for")
+        con.get_url_for.return_value = "url_from_keystone"
+        obj = clients.OpenStackClients(con)
+        obj._glance = None
+        obj.glance()
+        mock_call.assert_called_once_with(
+            '1', 'url_from_keystone', token='3bcc3d3a03f44e3d8377f9247b0ad155')
+
+    def test_clients_glance_noauth(self):
+        con = mock.MagicMock()
+        con.auth_token = None
+        con.tenant = "b363706f891f48019483f8bd6503c54d"
+        auth_url = mock.PropertyMock(name="auth_url",
+                                     return_value="keystone_url")
+        type(con).auth_url = auth_url
+        con.get_url_for = mock.Mock(name="get_url_for")
+        con.get_url_for.return_value = "url_from_keystone"
+        obj = clients.OpenStackClients(con)
+        obj._glance = None
+        self.assertRaises(exception.AuthorizationFailure, obj.glance)
+
+    def test_clients_glance_cached(self):
+        con = mock.MagicMock()
+        con.tenant = "b363706f891f48019483f8bd6503c54d"
+        con.auth_token = "3bcc3d3a03f44e3d8377f9247b0ad155"
+        auth_url = mock.PropertyMock(name="auth_url",
+                                     return_value="keystone_url")
+        type(con).auth_url = auth_url
+        con.get_url_for = mock.Mock(name="get_url_for")
+        con.get_url_for.return_value = "url_from_keystone"
+        obj = clients.OpenStackClients(con)
+        obj._glance = None
+        glance = obj.glance()
+        glance_cached = obj.glance()
+        self.assertEqual(glance, glance_cached)
 
     @mock.patch.object(heatclient, 'Client')
     def test_clients_heat(self, mock_call):

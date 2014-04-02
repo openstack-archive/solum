@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from glanceclient import client as glanceclient
 from heatclient import client as heatclient
 from keystoneclient.v2_0 import client as ksclient
 from oslo.config import cfg
@@ -30,6 +31,13 @@ LOG = logging.getLogger(__name__)
 # There is a place holder bug here:
 # https://bugs.launchpad.net/solum/+bug/1292334
 # that we use to track this.
+glance_client_opts = [
+    cfg.StrOpt('endpoint_type',
+               default='publicURL',
+               help=_(
+                   'Type of endpoint in Identity service catalog to use '
+                   'for communication with the Glance service.'))]
+
 heat_client_opts = [
     cfg.StrOpt('endpoint_type',
                default='publicURL',
@@ -48,7 +56,6 @@ heat_client_opts = [
                 help=_("If set, then the server's certificate will not "
                        "be verified."))]
 
-
 swift_client_opts = [
     cfg.StrOpt('endpoint_type',
                default='publicURL',
@@ -61,6 +68,7 @@ swift_client_opts = [
                 default=False,
                 help=_("If set the server certificate will not be verified."))]
 
+cfg.CONF.register_opts(glance_client_opts, group='glance_client')
 cfg.CONF.register_opts(heat_client_opts, group='heat_client')
 cfg.CONF.register_opts(swift_client_opts, group='swift_client')
 
@@ -71,6 +79,7 @@ class OpenStackClients(object):
     def __init__(self, context):
         self.context = context
         self._keystone = None
+        self._glance = None
         self._heat = None
         self._swift = None
 
@@ -93,6 +102,21 @@ class OpenStackClients(object):
 
     def _get_client_option(self, client, option):
         return getattr(getattr(cfg.CONF, '%s_client' % client), option)
+
+    @exception.wrap_keystone_exception
+    def glance(self):
+        if self._glance:
+            return self._glance
+
+        args = {
+            'token': self.auth_token,
+        }
+        endpoint_type = self._get_client_option('glance', 'endpoint_type')
+        endpoint = self.context.get_url_for(service_type='image',
+                                            endpoint_type=endpoint_type)
+        self._glance = glanceclient.Client('1', endpoint, **args)
+
+        return self._glance
 
     @exception.wrap_keystone_exception
     def heat(self):
