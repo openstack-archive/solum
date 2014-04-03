@@ -659,4 +659,7 @@
 # The location of the build rpc queue (string value)
 #host=localhost
 
+# The worker endpoint to employ (string value)
+#handler=default
+
 

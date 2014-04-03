@@ -24,6 +24,9 @@ SERVICE_OPTS = [
     cfg.StrOpt('host',
                default='localhost',
                help='The location of the build rpc queue'),
+    cfg.StrOpt('handler',
+               default='default',
+               help='The worker endpoint to employ'),
 ]
 
 opt_group = cfg.OptGroup(

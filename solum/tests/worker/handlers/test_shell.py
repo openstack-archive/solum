@@ -15,9 +15,10 @@
 import mock
 import os.path
 
+from solum.openstack.common.gettextutils import _
 from solum.tests import base
 from solum.tests import utils
-from solum.worker.handlers import shell
+from solum.worker.handlers import shell as shell_handler
 
 
 class HandlerTest(base.BaseTestCase):
@@ -25,16 +26,15 @@ class HandlerTest(base.BaseTestCase):
         super(HandlerTest, self).setUp()
         self.ctx = utils.dummy_context()
 
-    def test_create(self):
-        handler = shell.Handler()
-        handler.echo = mock.MagicMock()
-        handler.echo({}, 'foo')
-        handler.echo.assert_called_once_with({}, 'foo')
+    @mock.patch('solum.worker.handlers.shell.LOG')
+    def test_echo(self, fake_LOG):
+        shell_handler.Handler().echo({}, 'foo')
+        fake_LOG.debug.assert_called_once_with(_('%s') % 'foo')
 
     @mock.patch('solum.conductor.api.API.build_job_update')
     @mock.patch('subprocess.Popen')
-    def test_start_build(self, mock_popen, mock_updater):
-        handler = shell.Handler()
+    def test_build(self, mock_popen, mock_updater):
+        handler = shell_handler.Handler()
         mock_popen.communicate.return_value = 'glance_id=1-2-34'
         handler.build(self.ctx, 5, 'git://example.com/foo', 'new_app',
                       '1-2-3-4', 'heroku',
