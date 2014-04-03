@@ -15,8 +15,10 @@
 """Solum Deployer default handler."""
 
 import os
+import time
 import yaml
 
+from oslo.config import cfg
 from solum.common import clients
 from solum import objects
 from solum.openstack.common.gettextutils import _
@@ -24,6 +26,26 @@ from solum.openstack.common import log as logging
 
 
 LOG = logging.getLogger(__name__)
+
+STATES = (PENDING, BUILDING, ERROR, READY, ERROR_STACK_CREATE_FAILED) = (
+    'PENDING', 'BUILDING', 'ERROR', 'READY', 'ERROR_STACK_CREATE_FAILED')
+
+OPT_GROUP = cfg.OptGroup(name='deployer',
+                         title='Options for the solum-deployer service')
+SERVICE_OPTS = [
+    cfg.IntOpt('max_attempts',
+               default=400,
+               help=('Number of attempts to query the Heat stack for '
+                     'finding out the status of the created stack and '
+                     'getting url of the DU created in the stack')),
+    cfg.IntOpt('wait_interval',
+               default=5,
+               help=('Sleep time interval between two attempts of querying '
+                     'the Heat stack. This interval is in seconds.')),
+]
+
+cfg.CONF.register_group(OPT_GROUP)
+cfg.CONF.register_opts(SERVICE_OPTS, OPT_GROUP)
 
 
 class Handler(object):
@@ -58,6 +80,11 @@ class Handler(object):
         created_stack = osc.heat().stacks.create(stack_name=assem.name,
                                                  template=template,
                                                  parameters=parameters)
+
+        assem.status = BUILDING
+        assem.save(ctxt)
+        stack_id = created_stack['stack']['id']
+
         comp_description = 'Heat Stack %s' % (
             yaml.load(template).get('description'))
         objects.registry.Component.assign_and_create(ctxt, assem,
@@ -65,3 +92,34 @@ class Handler(object):
                                                      comp_description,
                                                      created_stack['stack']
                                                      ['links'][0]['href'])
+
+        self._update_assembly_status(ctxt, assem, osc, stack_id)
+
+    def _update_assembly_status(self, ctxt, assem, osc, stack_id):
+        got_stack_status = False
+        for count in range(cfg.CONF.deployer.max_attempts):
+            stack = osc.heat().stacks.get(stack_id)
+            if stack.status == 'COMPLETE':
+                host_url = self._parse_server_url(stack)
+                if host_url is not None:
+                    assem.status = READY
+                    assem.application_uri = host_url
+                    assem.save(ctxt)
+                    got_stack_status = True
+                    break
+            elif stack.status == 'FAILED':
+                assem.status = ERROR
+                assem.save(ctxt)
+                got_stack_status = True
+                break
+            time.sleep(cfg.CONF.deployer.wait_interval)
+
+        if not got_stack_status:
+            assem.status = ERROR_STACK_CREATE_FAILED
+            assem.save(ctxt)
+
+    def _parse_server_url(self, heat_output):
+        """Parse server url from heat-stack-show output."""
+        if 'outputs' in heat_output._info:
+            return heat_output._info['outputs'][1]['output_value']
+        return None

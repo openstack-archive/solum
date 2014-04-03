@@ -466,6 +466,20 @@
 #host=localhost
 
 
+#
+# Options defined in solum.deployer.handlers.default
+#
+
+# Number of attempts to query the Heat stack for finding out
+# the status of the created stack and getting url of the DU
+# created in the stack (integer value)
+#max_attempts=400
+
+# Sleep time interval between two attempts of querying the
+# Heat stack. This interval is in seconds. (integer value)
+#wait_interval=5
+
+
 [heat_client]
 
 #
