@@ -195,6 +195,14 @@
 
 
 #
+# Options defined in solum.api.app
+#
+
+# Maximum raw byte size of a plan (integer value)
+#max_plan_size=65536
+
+
+#
 # Options defined in solum.api.auth
 #
 

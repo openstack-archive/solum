@@ -30,11 +30,19 @@ API_SERVICE_OPTS = [
                help='The listen IP for the solum API server')
 ]
 
+API_PLAN_OPTS = [
+    cfg.IntOpt('max_plan_size',
+               default=65536,
+               help='Maximum raw byte size of a plan'),
+]
+
+
 CONF = cfg.CONF
 opt_group = cfg.OptGroup(name='api',
                          title='Options for the solum-api service')
 CONF.register_group(opt_group)
 CONF.register_opts(API_SERVICE_OPTS, opt_group)
+CONF.register_opts(API_PLAN_OPTS)
 
 
 def get_pecan_config():
