@@ -19,6 +19,27 @@ from solum.tests import base
 from solum.tests import fakes
 from solum.tests import utils
 
+image_sample = {"status": "active",
+                "name": "nodeus",
+                "tags": [
+                    "solum::lp::name::fake_name",
+                    "solum::lp::type::fake_type",
+                    "solum::lp::compiler_version::1.3",
+                    "solum::lp::compiler_version::1.4",
+                    "solum::lp::compiler_version::1.5",
+                    "solum::lp::runtime_version::1.4",
+                    "solum::lp::runtime_version::1.5",
+                    "solum::lp::runtime_version::1.6",
+                    "solum::lp::implementation::Sun",
+                    "solum::lp::build_tool::maven::3.0",
+                    "solum::lp::build_tool::ant::2.1",
+                    "solum::lp::os_platform::Ubuntu::12.04",
+                    "solum::lp::attribute::attr1key::attr1value",
+                    "solum::lp::attribute::attr2key::attr2value"
+                ],
+                "self": "/v2/images/bc68cd73",
+                "id": "bc68cd73"}
+
 
 @mock.patch('solum.objects.registry')
 class TestLanguagePackHandler(base.BaseTestCase):
@@ -26,13 +47,14 @@ class TestLanguagePackHandler(base.BaseTestCase):
         super(TestLanguagePackHandler, self).setUp()
         self.ctx = utils.dummy_context()
 
-    def test_language_pack_get(self, mock_registry):
-        mock_registry.LanguagePack.get_by_uuid.return_value = {}
+    @mock.patch('solum.common.clients.OpenStackClients')
+    def test_language_pack_get(self, mock_clients, mock_registry):
+        images_get = mock_clients.return_value.glance.return_value.images.get
+        images_get.return_value = image_sample
         handler = language_pack_handler.LanguagePackHandler(self.ctx)
         resp = handler.get('test_id')
         self.assertIsNotNone(resp)
-        mock_registry.LanguagePack.get_by_uuid.assert_called_once_with(
-            self.ctx, 'test_id')
+        images_get.assert_called_once_with('test_id')
 
     def test_language_pack_get_all(self, mock_registry):
         mock_registry.LanguagePackList.get_all.return_value = {}

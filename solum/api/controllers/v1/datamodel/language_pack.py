@@ -16,6 +16,13 @@ from wsme import types as wtypes
 
 from solum.api.controllers.v1.datamodel import types as api_types
 
+TAGS = (TYPE, COMPILER_VERSION, RUNTIME_VERSION, IMPLEMENTATION,
+        BUILD_TOOL, OS_PLATFORM, ATTRIBUTE) = (
+            'solum::lp::type::', 'solum::lp::compiler_version::',
+            'solum::lp::runtime_version::', 'solum::lp::implementation::',
+            'solum::lp::build_tool::', 'solum::lp::os_platform::',
+            'solum::lp::attribute::')
+
 
 class BuildTool(wtypes.Base):
     """A build tool representation."""
@@ -28,7 +35,7 @@ class BuildTool(wtypes.Base):
 
     @classmethod
     def sample(cls):
-        return cls(type=('ant'), version='1.7')
+        return cls(type='ant', version='1.7')
 
 
 class LanguagePack(api_types.Base):
@@ -42,17 +49,11 @@ class LanguagePack(api_types.Base):
     refer: https://etherpad.openstack.org/p/Solum-Language-pack-json-format
     """
 
-    language_pack_name = wtypes.text
-    """Name of the language pack."""
-
     language_pack_type = wtypes.text
     """Type of the language pack. Identifies the language supported by the
     language pack. This attribute value will use the
     org.openstack.solum namespace.
     """
-
-    language_pack_id = wtypes.text
-    """Identifier of the language pack image as returned by glance."""
 
     compiler_versions = [wtypes.text]
     """List of all the compiler versions supported by the language pack.
@@ -88,6 +89,45 @@ class LanguagePack(api_types.Base):
     """Additional section attributes will be used to expose custom
     attributes designed by language pack creator.
     """
+
+    @classmethod
+    def from_image(cls, image, host_url):
+        as_dict = {}
+        image_id = image['id']
+        as_dict['uuid'] = image_id
+        as_dict['name'] = image['name']
+        as_dict['type'] = 'language_pack'
+        as_dict['uri'] = '%s/v1/%s/%s' % (host_url, 'language_packs', image_id)
+        image_tags = image['tags']
+        comp_versions = []
+        run_versions = []
+        build_tools = []
+        attrs = {}
+        for tag in image_tags:
+            if tag.startswith(TYPE):
+                as_dict['language_pack_type'] = tag[len(TYPE):]
+            if tag.startswith(COMPILER_VERSION):
+                comp_versions.append(tag[len(COMPILER_VERSION):])
+            if tag.startswith(RUNTIME_VERSION):
+                run_versions.append(tag[len(RUNTIME_VERSION):])
+            if tag.startswith(IMPLEMENTATION):
+                as_dict['language_implementation'] = tag[len(IMPLEMENTATION):]
+            if tag.startswith(BUILD_TOOL):
+                bt_type, bt_version = tag[len(BUILD_TOOL):].split('::')
+                build_tool = BuildTool(type=bt_type, version=bt_version)
+                build_tools.append(build_tool)
+            if tag.startswith(OS_PLATFORM):
+                osp_type, osp_version = tag[len(OS_PLATFORM):].split('::')
+                os_platform = {'OS': osp_type, 'version': osp_version}
+                as_dict['os_platform'] = os_platform
+            if tag.startswith(ATTRIBUTE):
+                key, value = tag[len(ATTRIBUTE):].split('::')
+                attrs[key] = value
+        as_dict['attributes'] = attrs
+        as_dict['compiler_versions'] = comp_versions
+        as_dict['runtime_versions'] = run_versions
+        as_dict['build_tool_chain'] = build_tools
+        return cls(**(as_dict))
 
     @classmethod
     def sample(cls):
