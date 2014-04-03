@@ -28,8 +28,9 @@ class LanguagePackHandler(handler.Handler):
         return osc.glance().images.get(id)
 
     def get_all(self):
-        """Return all language_packs, based on the query provided."""
-        return objects.registry.LanguagePackList.get_all(self.context)
+        """Return all language_packs images."""
+        osc = clients.OpenStackClients(self.context)
+        return osc.glance().images.list(filters={'tag': ['solum::lp']})
 
     def create(self, data):
         """Create a new language_pack."""

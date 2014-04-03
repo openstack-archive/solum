@@ -83,6 +83,5 @@ class LanguagePacksController(rest.RestController):
         """Return all language_packs, based on the query provided."""
         handler = lp_handler.LanguagePackHandler(
             pecan.request.security_context)
-        return [lp.LanguagePack.from_db_model(langpack,
-                pecan.request.host_url)
+        return [lp.LanguagePack.from_image(langpack, pecan.request.host_url)
                 for langpack in handler.get_all()]
