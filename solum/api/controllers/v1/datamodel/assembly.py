@@ -50,6 +50,12 @@ class Assembly(api_types.Base):
     trigger_uri = wtypes.text
     """The trigger uri used to trigger the build of the assembly"""
 
+    status = wtypes.text
+    """The status of the assembly."""
+
+    application_uri = common_types.Uri
+    """The uri of the deployed application."""
+
     @classmethod
     def from_db_model(cls, m, host_url):
         obj = super(Assembly, cls).from_db_model(m, host_url)

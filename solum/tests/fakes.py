@@ -158,6 +158,7 @@ class FakeAssembly(mock.Mock):
         self.name = 'faker'
         self.components = [FakeComponent()]
         self.status = 'Deploying'
+        self.application_uri = 'test_uri'
 
     def as_dict(self):
         return dict(user_id=self.user_id,
