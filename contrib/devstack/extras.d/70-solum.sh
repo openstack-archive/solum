@@ -5,7 +5,9 @@ if is_service_enabled solum; then
         echo_summary "Installing Solum"
         install_solum
         install_solumclient
-        install_lp-cedarish
+        if [[ "$SOLUM_INSTALL_CEDARISH" == "True" ]]; then
+            install_lp-cedarish
+        fi
     elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
         echo_summary "Configuring Solum"
         add_solum_user

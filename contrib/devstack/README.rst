@@ -15,6 +15,10 @@ Add the following to your local.conf::
     enable_service solum-deployer
     enable_service solum-worker
 
+Declare SOLUM_INSTALL_CEDARISH to automatically install cedarish LangPack::
+
+    export SOLUM_INSTALL_CEDARISH=True
+
 Run devstack as normal::
 
     $ cd ${DEVSTACK_DIR}
