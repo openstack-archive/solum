@@ -481,9 +481,12 @@
 # The location of the deployer rpc queue (string value)
 #host=localhost
 
+# The deployer endpoint to deploy (string value)
+#handler=heat
+
 
 #
-# Options defined in solum.deployer.handlers.default
+# Options defined in solum.deployer.handlers.heat
 #
 
 # Number of attempts to query the Heat stack for finding out
