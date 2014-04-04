@@ -13,6 +13,7 @@
 import mock
 
 from heatclient import client as heatclient
+
 from solum.common import clients
 from solum.common import exception
 from solum.tests import base
