@@ -73,9 +73,8 @@ class LanguagePacksController(rest.RestController):
         """Create a new language_pack."""
         handler = lp_handler.LanguagePackHandler(
             pecan.request.security_context)
-        return lp.LanguagePack.from_db_model(
-            handler.create(data.as_dict(objects.registry.LanguagePack)),
-            pecan.request.host_url)
+        return lp.LanguagePack.from_image(handler.create(data.as_image_dict()),
+                                          pecan.request.host_url)
 
     @exception.wrap_controller_exception
     @wsme_pecan.wsexpose([lp.LanguagePack])

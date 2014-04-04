@@ -16,6 +16,8 @@ import json
 import mock
 import testscenarios
 
+import wsme
+
 from solum.api.controllers.v1.datamodel import language_pack as lp_model
 from solum.api.controllers.v1 import language_pack
 from solum.common import exception
@@ -29,7 +31,6 @@ load_tests = testscenarios.load_tests_apply_scenarios
 image_sample = {"status": "active",
                 "name": "nodeus",
                 "tags": [
-                    "solum::lp::name::fake_name",
                     "solum::lp::type::fake_type",
                     "solum::lp::compiler_version::1.3",
                     "solum::lp::compiler_version::1.4",
@@ -46,6 +47,27 @@ image_sample = {"status": "active",
                 ],
                 "self": "/v2/images/bc68cd73",
                 "id": "bc68cd73"}
+
+lp_sample = {
+    "name": "fake_name",
+    "description": "A test to create language_pack",
+    "project_id": "project_id",
+    "user_id": "user_id",
+    "language_implementation": "Sun",
+    "language_pack_type": "Java",
+    "compiler_versions": ["1.3", "1.4", "1.5"],
+    "runtime_versions": ["1.5", "1.6", "1.7"],
+    "os_platform": {
+        "OS": "Ubuntu",
+        "version": "12.04"
+    },
+    "build_tool_chain": [lp_model.BuildTool(type="maven", version="3.0"),
+    lp_model.BuildTool(type="ant", version="2.1")],
+    "attributes": {
+        "attr1key": "attr1value",
+        "attr2key": "attr2value"
+    }
+}
 
 
 @mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
@@ -126,7 +148,7 @@ class TestLanguagePackController(base.BaseTestCase):
         self.assertEqual(204, resp_mock.status)
 
 
-class TestLanguagePackFromImage(base.BaseTestCase):
+class TestLanguagePackImage(base.BaseTestCase):
 
     def test_from_image(self):
         lp = lp_model.LanguagePack.from_image(image_sample, 'fake_host_url')
@@ -144,6 +166,46 @@ class TestLanguagePackFromImage(base.BaseTestCase):
         self.assertIn('attr2key', lp.attributes)
         self.assertEqual(lp.attributes['attr1key'], 'attr1value')
         self.assertEqual(lp.attributes['attr2key'], 'attr2value')
+
+    def test_as_image_dict(self):
+        lp = lp_model.LanguagePack(**lp_sample)
+        image_dict = lp.as_image_dict()
+        self.assertEqual(image_dict['name'], lp.name)
+        self.assertIn('solum::lp', image_dict['tags'])
+        self.assertIn(lp_model.TYPE + lp.language_pack_type,
+                      image_dict['tags'])
+        self.assertIn(lp_model.COMPILER_VERSION + lp.compiler_versions[0],
+                      image_dict['tags'])
+        self.assertIn(lp_model.COMPILER_VERSION + lp.compiler_versions[1],
+                      image_dict['tags'])
+        self.assertIn(lp_model.COMPILER_VERSION + lp.compiler_versions[2],
+                      image_dict['tags'])
+        self.assertIn(lp_model.RUNTIME_VERSION + lp.runtime_versions[0],
+                      image_dict['tags'])
+        self.assertIn(lp_model.RUNTIME_VERSION + lp.runtime_versions[0],
+                      image_dict['tags'])
+        self.assertIn(lp_model.RUNTIME_VERSION + lp.runtime_versions[0],
+                      image_dict['tags'])
+        self.assertIn(lp_model.RUNTIME_VERSION + lp.runtime_versions[0],
+                      image_dict['tags'])
+        self.assertIn(lp_model.BUILD_TOOL + lp.build_tool_chain[0].type +
+                      '::' + lp.build_tool_chain[0].version,
+                      image_dict['tags'])
+        self.assertIn(lp_model.BUILD_TOOL + lp.build_tool_chain[1].type +
+                      '::' + lp.build_tool_chain[1].version,
+                      image_dict['tags'])
+        self.assertIn(lp_model.OS_PLATFORM + lp.os_platform['OS'] +
+                      '::' + lp.os_platform['version'], image_dict['tags'])
+        self.assertIn(lp_model.ATTRIBUTE + lp.attributes.items()[0][0] +
+                      '::' + lp.attributes.items()[0][1], image_dict['tags'])
+        self.assertIn(lp_model.ATTRIBUTE + lp.attributes.items()[1][0] +
+                      '::' + lp.attributes.items()[1][1], image_dict['tags'])
+
+    def test_as_image_dict_unset(self):
+        lp = lp_model.LanguagePack()
+        image_dict = lp.as_image_dict()
+        self.assertEqual(image_dict, {'name': wsme.Unset,
+                                      'tags': ['solum::lp']})
 
 
 class TestLanguagePackAsDict(base.BaseTestCase):
@@ -196,8 +258,9 @@ class TestLanguagePacksController(base.BaseTestCase):
         request_mock.body = json.dumps(json_create)
         request_mock.content_type = 'application/json'
         hand_create = LanguagePackHandler.return_value.create
-        hand_create.return_value = fakes.FakeLanguagePack()
+        hand_create.return_value = image_sample
         language_pack.LanguagePacksController().post()
+        json_create.update(dict(tags=['solum::lp']))
         hand_create.assert_called_with(json_create)
         self.assertEqual(201, resp_mock.status)
 
@@ -206,7 +269,7 @@ class TestLanguagePacksController(base.BaseTestCase):
         request_mock.body = ''
         request_mock.content_type = 'application/json'
         hand_create = LanguagePackHandler.return_value.create
-        hand_create.return_value = fakes.FakeLanguagePack()
+        hand_create.return_value = image_sample
         ret_val = language_pack.LanguagePacksController().post()
         faultstring = str(ret_val['faultstring'])
         self.assertEqual("Missing argument: \"data\"", faultstring)

@@ -12,8 +12,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import uuid
-
 from solum.api.handlers import handler
 from solum.common import clients
 from solum import objects
@@ -34,13 +32,8 @@ class LanguagePackHandler(handler.Handler):
 
     def create(self, data):
         """Create a new language_pack."""
-        db_obj = objects.registry.LanguagePack()
-        db_obj.update(data)
-        db_obj.uuid = str(uuid.uuid4())
-        db_obj.user_id = self.context.user
-        db_obj.project_id = self.context.tenant
-        db_obj.create(self.context)
-        return db_obj
+        osc = clients.OpenStackClients(self.context)
+        return osc.glance().images.create(**data)
 
     def update(self, uuid, data):
         """Modify a language_pack."""

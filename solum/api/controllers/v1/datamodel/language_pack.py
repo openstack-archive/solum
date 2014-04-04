@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import wsme
 from wsme import types as wtypes
 
 from solum.api.controllers.v1.datamodel import types as api_types
@@ -128,6 +129,31 @@ class LanguagePack(api_types.Base):
         as_dict['runtime_versions'] = run_versions
         as_dict['build_tool_chain'] = build_tools
         return cls(**(as_dict))
+
+    def as_image_dict(self):
+        tags = ['solum::lp']
+        if self.language_pack_type is not wsme.Unset:
+            tags.append(TYPE + self.language_pack_type)
+        if self.compiler_versions is not wsme.Unset:
+            for cv in self.compiler_versions:
+                tags.append(COMPILER_VERSION + cv)
+        if self.runtime_versions is not wsme.Unset:
+            for rv in self.runtime_versions:
+                tags.append(RUNTIME_VERSION + rv)
+        if self.language_implementation is not wsme.Unset:
+            tags.append(IMPLEMENTATION + self.language_implementation)
+        if self.build_tool_chain is not wsme.Unset:
+            for bt in self.build_tool_chain:
+                tags.append(BUILD_TOOL + bt.type + '::' + bt.version)
+        ptfm = self.os_platform
+        if ptfm is not wsme.Unset and 'OS' in ptfm and 'version' in ptfm:
+            tags.append(OS_PLATFORM + ptfm['OS'] + '::' + ptfm['version'])
+        if self.build_tool_chain is not wsme.Unset:
+            for key, value in self.attributes.iteritems():
+                tags.append(ATTRIBUTE + key + '::' + value)
+        # TODO(julienvey) parse specific attributes for image creation from
+        # self.attributes, such as image_format...
+        return {'name': self.name, 'tags': tags}
 
     @classmethod
     def sample(cls):
