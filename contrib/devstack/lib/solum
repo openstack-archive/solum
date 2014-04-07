@@ -129,6 +129,7 @@ function configure_solum() {
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE conductor topic solum-conductor
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE deployer topic solum-deployer
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE worker topic solum-worker
+    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE worker handler shell
 
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE max_attempts $SOLUM_MAX_ATTEMPTS
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE wait_interval $SOLUM_WAIT_INTERVAL
