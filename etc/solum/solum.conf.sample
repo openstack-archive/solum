@@ -346,6 +346,14 @@
 #host=127.0.0.1
 
 
+#
+# Options defined in solum.api.handlers.assembly_handler
+#
+
+# The format of the image to output (string value)
+#image_format=qcow2
+
+
 [builder]
 
 #

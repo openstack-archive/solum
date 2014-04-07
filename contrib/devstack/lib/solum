@@ -42,6 +42,7 @@ SOLUM_SERVICE_HOST=${SOLUM_SERVICE_HOST:-$SERVICE_HOST}
 SOLUM_SERVICE_PORT=${SOLUM_SERVICE_PORT:-9777}
 SOLUM_BUILDER_SERVICE_PORT=${SOLUM_BUILDER_SERVICE_PORT:-9778}
 SOLUM_SERVICE_PROTOCOL=${SOLUM_SERVICE_PROTOCOL:-$SERVICE_PROTOCOL}
+SOLUM_IMAGE_FORMAT=${SOLUM_IMAGE_FORMAT:-'qcow2'}
 
 SOLUM_MAX_ATTEMPTS=${SOLUM_MAX_ATTEMPTS:-2000}
 SOLUM_WAIT_INTERVAL=${SOLUM_WAIT_INTERVAL:-1}
@@ -122,6 +123,9 @@ function configure_solum() {
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE api host 0.0.0.0
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE builder host 0.0.0.0
 
+    # configure assembly handler to create appropriate image format
+    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE api image_format $SOLUM_IMAGE_FORMAT
+
     # common rpc settings
     iniset_rpc_backend solum $SOLUM_CONF_DIR/$SOLUM_CONF_FILE DEFAULT
 
@@ -182,7 +186,11 @@ function install_solum() {
 
 # install_lp-cedarish() - Install tooling to support cedarish LP
 function install_lp-cedarish() {
-    $SOLUM_DIR/contrib/lp-cedarish/vm-slug/prepare
+    if [[ SOLUM_IMAGE_FORMAT == 'docker' ]]; then
+        $SOLUM_DIR/contrib/lp-cedarish/docker/prepare
+    else
+        $SOLUM_DIR/contrib/lp-cedarish/vm-slug/prepare
+    fi
 }
 
 # start_solum() - Start running processes, including screen

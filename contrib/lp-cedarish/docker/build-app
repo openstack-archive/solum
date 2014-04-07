@@ -9,8 +9,19 @@ if [[ -z $1 ]] || [[ -z $2 ]] || [[ -z $3 ]]; then
 fi
 
 GIT=$1
-APP=$2
-TENANT=$3
+shift
+APP=$1
+shift
+TENANT=$1
+shift
+BASE_IMAGE=$1
+shift
+
+if [[ -z $OS_USERNAME ]]; then
+  echo 'openstack credentials not passed via ENV. hunting for openrc.'
+  [[ -f ./openrc ]] && . ./openrc
+  [[ -f ~/devstack/openrc ]] && . ~/devstack/openrc
+fi
 
 APP_DIR=/opt/solum/apps/$TENANT/$APP
 mkdir -p $APP_DIR
@@ -52,3 +63,9 @@ cd $APP_DIR
 sudo docker build -t 127.0.0.1:5042/$APP .
 
 sudo docker push 127.0.0.1:5042/$APP
+
+image_id=$(glance image-show $APP:latest | grep " id " | cut -d"|" -f3 | tr -d " ")
+
+echo "created_image_id=$image_id"
+
+exit 0
