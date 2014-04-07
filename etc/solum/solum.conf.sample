@@ -647,6 +647,25 @@
 #ringfile=/etc/oslo/matchmaker_ring.json
 
 
+[swift_client]
+
+#
+# Options defined in solum.common.clients
+#
+
+# Type of endpoint in Identity service catalog to use for
+# communication with the Swift service. (string value)
+#endpoint_type=publicURL
+
+# Optional CA cert file to use in SSL connections. (string
+# value)
+#cacert=<None>
+
+# If set the server certificate will not be verified. (boolean
+# value)
+#insecure=false
+
+
 [worker]
 
 #
