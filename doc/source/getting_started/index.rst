@@ -117,7 +117,7 @@ Use that URI from above to create an assembly for your app.
   +-------------+--------------------------------------+
   | Property    | Value                                |
   +-------------+--------------------------------------+
-  | status      |                                      |
+  | status      | None                                 |
   | description | None                                 |
   | uuid        | de666039-841f-45d7-9ed0-03cc3929f28e |
   | name        | ex1                                  |
@@ -134,73 +134,36 @@ The status field will show the progress of your app through the process.
 ::
 
   $ solum assembly get de666039-841f-45d7-9ed0-03cc3929f28e
-  +-------------+--------------------------------------+
-  | Property    | Value                                |
-  +-------------+--------------------------------------+
-  | status      |                                      |
-  | description | None                                 |
-  | uuid        | de666039-841f-45d7-9ed0-03cc3929f28e |
-  | name        | ex1                                  |
-  +-------------+--------------------------------------+
+  +-----------------+--------------------------------------+
+  | Property        | Value                                |
+  +-----------------+--------------------------------------+
+  | status          | BUILDING                             |
+  | description     | None                                 |
+  | uuid            | de666039-841f-45d7-9ed0-03cc3929f28e |
+  | application_uri | None                                 |
+  | name            | ex1                                  |
+  +-----------------+--------------------------------------+
 
-You can also check on your app in Heat.
+You will see the following when the app is ready.
+The :code:`status` field changes to READY and the
+:code:`application_uri` is available.
 
 ::
 
-  $ heat stack-show ex1
-  +----------------------+-----------------------------------------------------------------------------------------------------------+
-  | Property             | Value                                                                                                     |
-  +----------------------+-----------------------------------------------------------------------------------------------------------+
-  | capabilities         | []                                                                                                        |
-  | creation_time        | 2014-04-01T18:09:32Z                                                                                      |
-  | description          | Basic app deploy.                                                                                         |
-  | disable_rollback     | True                                                                                                      |
-  | id                   | 309ecf99-7e05-48c2-8264-66b55fde2dc2                                                                      |
-  | links                | http://10.0.2.15:8004/v1/313094c3e4044500aab2c7956b8a0716/stacks/ex1/309ecf99-7e05-48c2-8264-66b55fde2dc2 |
-  | notification_topics  | []                                                                                                        |
-  | outputs              | [                                                                                                         |
-  |                      |   {                                                                                                       |
-  |                      |     "output_value": "192.168.78.21",                                                                      |
-  |                      |     "description": "The public IP address of the newly configured Server.",                               |
-  |                      |     "output_key": "public_ip"                                                                             |
-  |                      |   },                                                                                                      |
-  |                      |   {                                                                                                       |
-  |                      |     "output_value": "http://192.168.78.21:5000",                                                          |
-  |                      |     "description": "The URL for the Server.",                                                             |
-  |                      |     "output_key": "URL"                                                                                   |
-  |                      |   }                                                                                                       |
-  |                      | ]                                                                                                         |
-  | parameters           | {                                                                                                         |
-  |                      |   "OS::stack_id": "309ecf99-7e05-48c2-8264-66b55fde2dc2",                                                 |
-  |                      |   "OS::stack_name": "ex1",                                                                                |
-  |                      |   "key_name": "",                                                                                         |
-  |                      |   "image": "590cdd36-efb3-4c11-885e-b92aacfc88df",                                                        |
-  |                      |   "flavor": "m1.small",                                                                                   |
-  |                      |   "port": "5000",                                                                                         |
-  |                      |   "app_name": "ex1"                                                                                       |
-  |                      | }                                                                                                         |
-  | stack_name           | ex1                                                                                                       |
-  | stack_status         | CREATE_COMPLETE                                                                                           |
-  | stack_status_reason  | Stack CREATE completed successfully                                                                       |
-  | template_description | Basic app deploy.                                                                                         |
-  | timeout_mins         | 60                                                                                                        |
-  | updated_time         | None                                                                                                      |
-  +----------------------+-----------------------------------------------------------------------------------------------------------+
+  $ solum assembly get de666039-841f-45d7-9ed0-03cc3929f28e
+  +-----------------+--------------------------------------+
+  | Property        | Value                                |
+  +-----------------+--------------------------------------+
+  | status          | READY                                |
+  | description     | None                                 |
+  | uuid            | de666039-841f-45d7-9ed0-03cc3929f28e |
+  | application_uri | http://192.168.76.21:5000            |
+  | name            | ex1                                  |
+  +-----------------+--------------------------------------+
 
 Connect to your app
 -------------------
-9. In the output of :code:`heat stack-show ex1`, you will see :code:`public_ip` mentioned in the details of :code:`outputs`.
-That is the public IP your app is listening on.
-
-::
-
-  $ heat stack-show ex1 | grep -B 2 public_ip
-  |                      |     "output_value": "192.168.78.21",                                                                      |
-  |                      |     "description": "The public IP address of the newly configured Server.",                               |
-  |                      |     "output_key": "public_ip"
-
-10. Connect to your app via that IP.
-The example app deployed in this text listens on port 5000 by default.
+9. Connect to your app using the value in the :code:`application_uri` field.
 
 ::
 
@@ -211,4 +174,3 @@ Update your app
 ---------------
 *TODO: explain git hooks*
 
-*TODO: Remove Heat mentions in 8 and 9 after url and status are in assembly*
