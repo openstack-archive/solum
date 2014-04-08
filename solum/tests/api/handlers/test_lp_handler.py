@@ -22,6 +22,7 @@ from solum.tests import utils
 image_sample = {"status": "active",
                 "name": "nodeus",
                 "tags": [
+                    "solum::lp",
                     "solum::lp::name::fake_name",
                     "solum::lp::type::fake_type",
                     "solum::lp::compiler_version::1.3",
@@ -56,13 +57,14 @@ class TestLanguagePackHandler(base.BaseTestCase):
         self.assertIsNotNone(resp)
         images_get.assert_called_once_with('test_id')
 
-    def test_language_pack_get_all(self, mock_registry):
-        mock_registry.LanguagePackList.get_all.return_value = {}
+    @mock.patch('solum.common.clients.OpenStackClients')
+    def test_language_pack_get_all(self, mock_clients, mock_registry):
+        images_list = mock_clients.return_value.glance.return_value.images.list
+        images_list.return_value = [image_sample]
         handler = language_pack_handler.LanguagePackHandler(self.ctx)
         resp = handler.get_all()
         self.assertIsNotNone(resp)
-        mock_registry.LanguagePackList.get_all.assert_called_once_with(
-            self.ctx)
+        images_list.assert_called_once_with(filters={'tag': ['solum::lp']})
 
     def test_create(self, mock_registry):
         data = {'name': 'new_name',
