@@ -14,7 +14,7 @@
 
 from wsme import types as wtypes
 
-from solum.api.controllers.v1.datamodel import service
+from solum.api.controllers.v1.datamodel import types as api_types
 
 
 class BuildTool(wtypes.Base):
@@ -31,7 +31,7 @@ class BuildTool(wtypes.Base):
         return cls(type=('ant'), version='1.7')
 
 
-class LanguagePack(service.Service):
+class LanguagePack(api_types.Base):
     """Representation of a language pack.
 
     When a user creates an application, he specifies the language pack
@@ -96,12 +96,10 @@ class LanguagePack(service.Service):
                    type='service',
                    description=('Base Java LP with Java version 1.4-1.7.'
                                 ' Supports ant, maven.'),
-                   service_type='language_pack',
-                   read_only=False,
                    project_id='1dae5a09ef2b4d8cbf3594b0eb4f6b94',
                    user_id='55f41cf46df74320b9486a35f5d28a11',
                    tags=['group_xyz'],
-                   language_pack_name=('java-1.4-1.7'),
+                   language_pack_name='java-1.4-1.7',
                    language_pack_type='org.openstack.solum.Java',
                    language_pack_id='123456789abcdef',
                    compiler_versions=['1.4', '1.6', '1.7'],
