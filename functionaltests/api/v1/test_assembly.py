@@ -21,7 +21,9 @@ from functionaltests.api import base
 sample_data = {"name": "test_assembly",
                "description": "A test to create assembly",
                "project_id": "project_id",
-               "user_id": "user_id"}
+               "user_id": "user_id",
+               "status": "status",
+               "application_uri": "http://localhost:5000"}
 
 plan_sample_data = {"name": "test_plan",
                     "description": "A test to create plan",
@@ -36,6 +38,8 @@ class TestAssemblyController(base.TestCase):
         self.assertEqual(body_data['plan_uri'], data['plan_uri'])
         self.assertEqual(body_data['name'], data['name'])
         self.assertIsNotNone(body_data['uuid'])
+        self.assertEqual(body_data['status'], data['status'])
+        self.assertEqual(body_data['application_uri'], data['application_uri'])
 
     def _delete_assembly(self, uuid, plan_uuid):
         resp, _ = self.client.delete('v1/assemblies/%s' % uuid)
@@ -101,7 +105,9 @@ class TestAssemblyController(base.TestCase):
                         "description": "A test to create assembly updated",
                         "plan_uri": uri,
                         "project_id": "project_id updated",
-                        "user_id": "user_id updated"}
+                        "user_id": "user_id updated",
+                        "status": "new_status",
+                        "application_uri": "new_uri"}
         updated_json = json.dumps(updated_data)
         resp, body = self.client.put('v1/assemblies/%s' % uuid, updated_json)
         self.assertEqual(resp.status, 200)
