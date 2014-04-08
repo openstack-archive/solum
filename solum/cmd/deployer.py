@@ -21,8 +21,8 @@ import sys
 from oslo.config import cfg
 
 from solum.common.rpc import service
-from solum.deployer.handlers import default as default_handler
 from solum.deployer.handlers import heat as heat_handler
+from solum.deployer.handlers import noop as noop_handler
 from solum.openstack.common.gettextutils import _
 from solum.openstack.common import log as logging
 
@@ -42,7 +42,7 @@ def main():
     cfg.CONF.import_opt('handler', 'solum.deployer.config', group='deployer')
 
     handlers = {
-        'default': default_handler.Handler,
+        'noop': noop_handler.Handler,
         'heat': heat_handler.Handler,
     }
 

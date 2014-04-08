@@ -12,7 +12,7 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-"""Solum Worker default handler."""
+"""Solum Worker noop handler."""
 
 from solum.openstack.common.gettextutils import _
 from solum.openstack.common import log as logging

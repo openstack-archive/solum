@@ -709,6 +709,6 @@
 #host=localhost
 
 # The worker endpoint to employ (string value)
-#handler=default
+#handler=shell
 
 
