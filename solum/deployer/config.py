@@ -24,6 +24,9 @@ SERVICE_OPTS = [
     cfg.StrOpt('host',
                default='localhost',
                help='The location of the deployer rpc queue'),
+    cfg.StrOpt('handler',
+               default='heat',
+               help='The deployer endpoint to deploy'),
 ]
 
 opt_group = cfg.OptGroup(

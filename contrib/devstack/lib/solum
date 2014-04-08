@@ -133,6 +133,7 @@ function configure_solum() {
     # service rpc settings
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE conductor topic solum-conductor
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE deployer topic solum-deployer
+    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE deployer handler heat
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE worker topic solum-worker
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE worker handler shell
 
