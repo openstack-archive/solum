@@ -15,6 +15,7 @@
 import uuid
 
 from solum.api.handlers import handler
+from solum.common import clients
 from solum import objects
 
 
@@ -22,8 +23,9 @@ class LanguagePackHandler(handler.Handler):
     """Fulfills a request on the language_pack resource."""
 
     def get(self, id):
-        """Return a language_pack."""
-        return objects.registry.LanguagePack.get_by_uuid(self.context, id)
+        """Return a language_pack image."""
+        osc = clients.OpenStackClients(self.context)
+        return osc.glance().images.get(id)
 
     def get_all(self):
         """Return all language_packs, based on the query provided."""

@@ -35,7 +35,7 @@ class LanguagePackController(rest.RestController):
         """Return a language_pack."""
         handler = lp_handler.LanguagePackHandler(
             pecan.request.security_context)
-        return lp.LanguagePack.from_db_model(
+        return lp.LanguagePack.from_image(
             handler.get(self._id), pecan.request.host_url)
 
     @exception.wrap_controller_exception

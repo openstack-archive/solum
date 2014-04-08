@@ -26,6 +26,27 @@ from solum.tests import fakes
 
 load_tests = testscenarios.load_tests_apply_scenarios
 
+image_sample = {"status": "active",
+                "name": "nodeus",
+                "tags": [
+                    "solum::lp::name::fake_name",
+                    "solum::lp::type::fake_type",
+                    "solum::lp::compiler_version::1.3",
+                    "solum::lp::compiler_version::1.4",
+                    "solum::lp::compiler_version::1.5",
+                    "solum::lp::runtime_version::1.4",
+                    "solum::lp::runtime_version::1.5",
+                    "solum::lp::runtime_version::1.6",
+                    "solum::lp::implementation::Sun",
+                    "solum::lp::build_tool::maven::3.0",
+                    "solum::lp::build_tool::ant::2.1",
+                    "solum::lp::os_platform::Ubuntu::12.04",
+                    "solum::lp::attribute::attr1key::attr1value",
+                    "solum::lp::attribute::attr2key::attr2value"
+                ],
+                "self": "/v2/images/bc68cd73",
+                "id": "bc68cd73"}
+
 
 @mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
 @mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
@@ -33,7 +54,7 @@ load_tests = testscenarios.load_tests_apply_scenarios
 class TestLanguagePackController(base.BaseTestCase):
     def test_language_pack_get(self, handler_mock, resp_mock, request_mock):
         handler_get = handler_mock.return_value.get
-        handler_get.return_value = fakes.FakeLanguagePack()
+        handler_get.return_value = image_sample
         language_pack_obj = language_pack.LanguagePackController(
             'test_id')
         result = language_pack_obj.get()
@@ -103,6 +124,26 @@ class TestLanguagePackController(base.BaseTestCase):
         obj.delete()
         hand_delete.assert_called_with('test_id')
         self.assertEqual(204, resp_mock.status)
+
+
+class TestLanguagePackFromImage(base.BaseTestCase):
+
+    def test_from_image(self):
+        lp = lp_model.LanguagePack.from_image(image_sample, 'fake_host_url')
+        self.assertEqual(lp.name, 'nodeus')
+        self.assertEqual(lp.language_pack_type, 'fake_type')
+        self.assertEqual(lp.uuid, 'bc68cd73')
+        self.assertEqual(lp.compiler_versions, ['1.3', '1.4', '1.5'])
+        self.assertEqual(lp.runtime_versions, ['1.4', '1.5', '1.6'])
+        self.assertEqual(lp.language_implementation, 'Sun')
+        self.assertEqual(len(lp.build_tool_chain), 2)
+        self.assertEqual(lp.build_tool_chain[0].type, 'maven')
+        self.assertEqual(lp.build_tool_chain[0].version, '3.0')
+        self.assertEqual(lp.os_platform, {'OS': 'Ubuntu', 'version': '12.04'})
+        self.assertIn('attr1key', lp.attributes)
+        self.assertIn('attr2key', lp.attributes)
+        self.assertEqual(lp.attributes['attr1key'], 'attr1value')
+        self.assertEqual(lp.attributes['attr2key'], 'attr2value')
 
 
 class TestLanguagePackAsDict(base.BaseTestCase):
