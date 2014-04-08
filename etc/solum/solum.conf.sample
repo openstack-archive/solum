@@ -496,6 +496,17 @@
 #wait_interval=5
 
 
+[glance_client]
+
+#
+# Options defined in solum.common.clients
+#
+
+# Type of endpoint in Identity service catalog to use for
+# communication with the Glance service. (string value)
+#endpoint_type=publicURL
+
+
 [heat_client]
 
 #
