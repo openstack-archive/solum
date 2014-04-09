@@ -1,5 +1,7 @@
 #!/bin/bash
 
+DOCKER_REGISTRY=${DOCKER_REGISTRY:-'127.0.0.1:5042'}
+
 sudo mkdir -p /opt/solum
 sudo chown -R ${USER}:${USER} /opt/solum
 
@@ -10,14 +12,16 @@ mkdir -p /opt/solum/cache
 # We should own/customize this for solum
 # but for POC we can grab and build container
 echo Creating slugbuilder container
-sudo docker build -t solum/slugbuilder github.com/paulczar/slugbuilder
+docker pull paulczar/slugbuilder
+docker tag paulczar/slugbuilder $DOCKER_REGISTRY/slugbuilder
 
 # Slugrunner runs the cedarish slug built
 # by slugbuilder.
 # We should own/customize this for solum
-# but for POC we can grab and build container
+# now available from trusted builds.
 echo Creating slugrunner container
-sudo docker build -t solum/slugrunner github.com/paulczar/slugrunner
+docker pull paulczar/slugrunner
+docker tag paulczar/slugrunner $DOCKER_REGISTRY/slugrunner
 
 if [ ! -d /opt/solum/buildpacks ]; then
     echo Preparing Buildpacks
