@@ -58,23 +58,14 @@ class Handler(object):
                                  pathm.get(source_format, 'heroku'),
                                  pathm.get(image_format, 'qcow2'),
                                  'build-app')
-
-        solum.TLS.trace.support_info(
-            build_cmd=' '.join([build_app,
-                                source_uri,
-                                name,
-                                ctxt.tenant,
-                                base_image_id]),
-            assembly_id=assembly_id)
+        build_cmd = [build_app, source_uri, name, ctxt.tenant, base_image_id]
+        solum.TLS.trace.support_info(build_cmd=' '.join(build_cmd),
+                                     assembly_id=assembly_id)
         job_update_notification(ctxt, build_id, worker_api.BUILDING,
                                 reason='Starting the image build',
                                 assembly_id=assembly_id)
         try:
-            out = subprocess.Popen([build_app,
-                                    source_uri,
-                                    name,
-                                    ctxt.tenant,
-                                    base_image_id],
+            out = subprocess.Popen(build_cmd,
                                    stdout=subprocess.PIPE).communicate()[0]
         except OSError as subex:
             LOG.exception(subex)
