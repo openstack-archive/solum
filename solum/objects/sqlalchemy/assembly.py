@@ -19,7 +19,6 @@ from solum import objects
 from solum.objects import assembly as abstract
 from solum.objects.sqlalchemy import component
 from solum.objects.sqlalchemy import models as sql
-from solum.openstack.common.db.sqlalchemy import session as db_session
 
 
 class Assembly(sql.Base, abstract.Assembly):
@@ -49,7 +48,7 @@ class Assembly(sql.Base, abstract.Assembly):
     @classmethod
     def get_by_trigger_id(cls, context, trigger_id):
         try:
-            session = db_session.get_session(mysql_traditional_mode=True)
+            session = sql.Base.get_session()
             return session.query(cls).filter_by(trigger_id=trigger_id).one()
         except sa.orm.exc.NoResultFound:
             cls._raise_trigger_not_found(trigger_id)
@@ -69,7 +68,7 @@ class Assembly(sql.Base, abstract.Assembly):
 
     @property
     def components(self):
-        session = db_session.get_session(mysql_traditional_mode=True)
+        session = sql.Base.get_session()
         return session.query(component.Component).filter_by(
             assembly_id=self.id).all()
 
