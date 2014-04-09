@@ -34,14 +34,18 @@ OPT_GROUP = cfg.OptGroup(name='deployer',
                          title='Options for the solum-deployer service')
 SERVICE_OPTS = [
     cfg.IntOpt('max_attempts',
-               default=400,
+               default=2000,
                help=('Number of attempts to query the Heat stack for '
                      'finding out the status of the created stack and '
                      'getting url of the DU created in the stack')),
     cfg.IntOpt('wait_interval',
-               default=5,
+               default=1,
                help=('Sleep time interval between two attempts of querying '
                      'the Heat stack. This interval is in seconds.')),
+    cfg.FloatOpt('growth_factor',
+                 default=1.1,
+                 help=('Factor by which sleep time interval increases. '
+                       'This value should be >= 1.0')),
 ]
 
 cfg.CONF.register_group(OPT_GROUP)
@@ -96,7 +100,11 @@ class Handler(object):
         self._update_assembly_status(ctxt, assem, osc, stack_id)
 
     def _update_assembly_status(self, ctxt, assem, osc, stack_id):
+
+        wait_interval = cfg.CONF.deployer.wait_interval
+        growth_factor = cfg.CONF.deployer.growth_factor
         got_stack_status = False
+
         for count in range(cfg.CONF.deployer.max_attempts):
             stack = osc.heat().stacks.get(stack_id)
             if stack.status == 'COMPLETE':
@@ -112,7 +120,9 @@ class Handler(object):
                 assem.save(ctxt)
                 got_stack_status = True
                 break
-            time.sleep(cfg.CONF.deployer.wait_interval)
+
+            time.sleep(wait_interval)
+            wait_interval *= growth_factor
 
         if not got_stack_status:
             assem.status = ERROR_STACK_CREATE_FAILED
