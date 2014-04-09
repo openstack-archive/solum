@@ -19,6 +19,10 @@ Declare SOLUM_INSTALL_CEDARISH to automatically install cedarish LangPack::
 
     export SOLUM_INSTALL_CEDARISH=True
 
+To use docker image format::
+
+    export SOLUM_IMAGE_FORMAT='docker'
+
 Run devstack as normal::
 
     $ cd ${DEVSTACK_DIR}

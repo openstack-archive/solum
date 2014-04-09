@@ -188,7 +188,7 @@ function install_solum() {
 
 # install_lp-cedarish() - Install tooling to support cedarish LP
 function install_lp-cedarish() {
-    if [[ SOLUM_IMAGE_FORMAT == 'docker' ]]; then
+    if [[ $SOLUM_IMAGE_FORMAT == 'docker' ]]; then
         $SOLUM_DIR/contrib/lp-cedarish/docker/prepare
     else
         $SOLUM_DIR/contrib/lp-cedarish/vm-slug/prepare
