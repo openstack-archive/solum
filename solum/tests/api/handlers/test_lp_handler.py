@@ -41,14 +41,13 @@ image_sample = {"status": "active",
                 "id": "bc68cd73"}
 
 
-@mock.patch('solum.objects.registry')
+@mock.patch('solum.common.clients.OpenStackClients')
 class TestLanguagePackHandler(base.BaseTestCase):
     def setUp(self):
         super(TestLanguagePackHandler, self).setUp()
         self.ctx = utils.dummy_context()
 
-    @mock.patch('solum.common.clients.OpenStackClients')
-    def test_language_pack_get(self, mock_clients, mock_registry):
+    def test_language_pack_get(self, mock_clients):
         images_get = mock_clients.return_value.glance.return_value.images.get
         images_get.return_value = image_sample
         handler = language_pack_handler.LanguagePackHandler(self.ctx)
@@ -56,8 +55,7 @@ class TestLanguagePackHandler(base.BaseTestCase):
         self.assertIsNotNone(resp)
         images_get.assert_called_once_with('test_id')
 
-    @mock.patch('solum.common.clients.OpenStackClients')
-    def test_language_pack_get_all(self, mock_clients, mock_registry):
+    def test_language_pack_get_all(self, mock_clients):
         images_list = mock_clients.return_value.glance.return_value.images.list
         images_list.return_value = [image_sample]
         handler = language_pack_handler.LanguagePackHandler(self.ctx)
@@ -65,8 +63,7 @@ class TestLanguagePackHandler(base.BaseTestCase):
         self.assertIsNotNone(resp)
         images_list.assert_called_once_with(filters={'tag': ['solum::lp']})
 
-    @mock.patch('solum.common.clients.OpenStackClients')
-    def test_create(self, mock_clients, mock_registry):
+    def test_create(self, mock_clients):
         data = {'name': 'new_name'}
         img_mock = mock_clients.return_value.glance.return_value.images.create
         img_mock.return_value = image_sample
@@ -75,8 +72,7 @@ class TestLanguagePackHandler(base.BaseTestCase):
         img_mock.assert_called_once_with(**data)
         self.assertEqual(res, image_sample)
 
-    @mock.patch('solum.common.clients.OpenStackClients')
-    def test_update(self, mock_clients, mock_registry):
+    def test_update(self, mock_clients):
         data = {'name': 'new_name'}
         img_mock = mock_clients.return_value.glance.return_value.images.update
         img_mock.return_value = image_sample
@@ -85,8 +81,7 @@ class TestLanguagePackHandler(base.BaseTestCase):
         img_mock.assert_called_once_with('fake_id', **data)
         self.assertEqual(res, image_sample)
 
-    @mock.patch('solum.common.clients.OpenStackClients')
-    def test_delete(self, mock_clients, mock_registry):
+    def test_delete(self, mock_clients):
         img_mock = mock_clients.return_value.glance.return_value.images.delete
         handler = language_pack_handler.LanguagePackHandler(self.ctx)
         handler.delete('test_id')
