@@ -114,6 +114,7 @@ class TestLanguagePackController(base.BaseTestCase):
         hand_update.side_effect = exception.ResourceNotFound(
             name='language_pack', id='test_id')
         language_pack.LanguagePackController('test_id').put()
+        json_update.update(dict(tags=['solum::lp']))
         hand_update.assert_called_with('test_id', json_update)
         self.assertEqual(404, resp_mock.status)
 
@@ -123,8 +124,9 @@ class TestLanguagePackController(base.BaseTestCase):
         request_mock.body = json.dumps(json_update)
         request_mock.content_type = 'application/json'
         hand_update = LanguagePackHandler.return_value.update
-        hand_update.return_value = fakes.FakeLanguagePack()
+        hand_update.return_value = image_sample
         language_pack.LanguagePackController('test_id').put()
+        json_update.update(dict(tags=['solum::lp']))
         hand_update.assert_called_with('test_id', json_update)
         self.assertEqual(200, resp_mock.status)
 

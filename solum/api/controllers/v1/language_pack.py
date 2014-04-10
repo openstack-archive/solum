@@ -19,7 +19,6 @@ import wsmeext.pecan as wsme_pecan
 from solum.api.controllers.v1.datamodel import language_pack as lp
 from solum.api.handlers import language_pack_handler as lp_handler
 from solum.common import exception
-from solum import objects
 
 
 class LanguagePackController(rest.RestController):
@@ -44,9 +43,8 @@ class LanguagePackController(rest.RestController):
         """Modify this language_pack."""
         handler = lp_handler.LanguagePackHandler(
             pecan.request.security_context)
-        res = handler.update(self._id,
-                             data.as_dict(objects.registry.LanguagePack))
-        return lp.LanguagePack.from_db_model(res, pecan.request.host_url)
+        res = handler.update(self._id, data.as_image_dict())
+        return lp.LanguagePack.from_image(res, pecan.request.host_url)
 
     @exception.wrap_controller_exception
     @wsme_pecan.wsexpose(status_code=204)
