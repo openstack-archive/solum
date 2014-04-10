@@ -1,81 +1,123 @@
 #!/bin/bash
 
-sudo docker ps 2> /dev/null > /dev/null
-[[ $? != 0 ]] && echo "cannot talk to docker." && exit 1
+function check_docker () {
+  sudo docker ps 2> /dev/null > /dev/null
+  if [[ $? != 0 ]]; then
+    echo "Cannot talk to Docker." >&2
+    exit 1
+  fi
+}
 
-if [[ -z $1 ]] || [[ -z $2 ]] || [[ -z $3 ]]; then
-  echo "Usage:  build git_url appname tenant_id"
+
+function check_os_credentials () {
+  if [[ -z "$OS_USERNAME" ]]; then
+    echo "OpenStack credentials not passed via ENV. Hunting for openrc."
+    [[ -f ./openrc ]] && source ./openrc
+    [[ -f ~/devstack/openrc ]] && source ~/devstack/openrc
+  fi
+}
+
+function check_nova_access () {
+  nova list 2> /dev/null > /dev/null
+  if [ $? != 0 ]; then
+    echo "Cannot talk to Nova. Check your OpenStack credentials." >&2
+    exit 1
+  fi
+}
+
+function build_app () {
+  echo "Building app..."
+  local GIT_URL=$1
+  local APP_DIR=$2
+
+  mkdir -p $APP_DIR
+  pushd $APP_DIR
+    [[ -d build ]] && rm -rf build
+    git clone $GIT_URL build
+    if [[ ! -d build ]]; then
+      echo "Git clone failed." >&2
+      exit 1
+    fi
+    pushd build
+      # Build the application slug
+      local BUILD_ID=$(git archive master | sudo docker run -i -a stdin \
+                       -v /opt/solum/cache:/tmp/cache:rw \
+                       -v /opt/solum/buildpacks:/tmp/buildpacks:rw \
+                       solum/slugbuilder)
+      if [[ -z "$BUILD_ID" ]]; then
+        echo "Docker build failed. Did not get a build ID." >&2
+        exit 1
+      fi
+      sudo docker attach $BUILD_ID
+    popd
+
+    sudo docker cp $BUILD_ID:/tmp/slug.tgz $APP_DIR
+    sudo docker rm $BUILD_ID
+    rm -rf build
+  popd
+  echo "...done building."
+}
+
+function inject_app_into_image () {
+  echo "Injecting app into image..."
+  local APP_DIR=$1
+
+  pushd $APP_DIR
+    [[ -f image.qcow2 ]] || glance image-download --file image.qcow2 cedarish
+    echo "Mounting image."
+    mkdir -p mnt
+    sudo guestmount -a image.qcow2 -i --rw mnt
+    sudo mkdir -p mnt/app
+    echo "Injecting app."
+    sudo tar xzf slug.tgz -C mnt/app
+    sudo umount mnt
+  popd
+  echo "...done injecting."
+}
+
+function upload_image_to_glance () {
+  echo "Uploading to Glance..."
+  local APP=$1
+  local APP_DIR=$2
+
+  glance image-delete $APP
+  glance image-create --name $APP --disk-format qcow2 --container-format bare --file $APP_DIR/image.qcow2
+
+  # TODO(asalkeld) use --property <key=value> to set the tags
+
+  local IMAGE_ID=$(glance image-show $APP | grep " id " | cut -d"|" -f3 | tr -d " ")
+
+  echo "created_image_id=$IMAGE_ID"
+  echo "...done uploading."
+}
+
+
+function main () {
+  local GIT_URL=$1
+  shift
+  local APP=$1
+  shift
+  local TENANT=$1
+  shift
+
+  # Not used?
+  # local BASE_IMAGE=$1
+  # shift
+
+  local APP_DIR=/opt/solum/apps/$TENANT/$APP
+
+  check_docker
+  check_os_credentials
+  check_nova_access
+  build_app $GIT_URL $APP_DIR
+  inject_app_into_image $APP_DIR
+  upload_image_to_glance $APP $APP_DIR
+}
+
+if [[ -z "$1" ]] || [[ -z "$2" ]] || [[ -z "$3" ]]; then
+  echo "Usage: $0 git_url appname tenant_id" >&2
   exit 1
 fi
 
-GIT=$1
-shift
-APP=$1
-shift
-TENANT=$1
-shift
-BASE_IMAGE=$1
-shift
-
-if [[ -z $OS_USERNAME ]]; then
-  echo 'openstack credentials not passed via ENV. hunting for openrc.'
-  [[ -f ./openrc ]] && . ./openrc
-  [[ -f ~/devstack/openrc ]] && . ~/devstack/openrc
-fi
-
-nova list 2> /dev/null > /dev/null
-if [ $? != 0 ]; then
-  echo 'cannot talk to nova. check your openstack credentials'
-  exit 1
-fi
-
-APP_DIR=/opt/solum/apps/$TENANT/$APP
-
-mkdir -p $APP_DIR
-
-[[ -d $APP_DIR/build ]] && rm -rf $APP_DIR/build
-git clone $GIT $APP_DIR/build
-
-cd $APP_DIR/build
-
-echo '===> building App'
-
-# Build the application slug
-BUILD_ID=$(git archive master | sudo docker run -i -a stdin \
-           -v /opt/solum/cache:/tmp/cache:rw  \
-           -v /opt/solum/buildpacks:/tmp/buildpacks:rw  \
-           solum/slugbuilder)
-
-sudo docker attach $BUILD_ID
-
-cd $APP_DIR
-sudo docker cp $BUILD_ID:/tmp/slug.tgz $APP_DIR
-sudo docker rm $BUILD_ID
-
-rm -rf $APP_DIR/build
-
-echo '===> Injecting App into Image'
-
-[[ -f $APP_DIR/image.qcow2 ]] || glance image-download --file $APP_DIR/image.qcow2 cedarish
-mkdir -p $APP_DIR/mnt
-echo '-----> Mounting Image'
-sudo guestmount -a $APP_DIR/image.qcow2 -i --rw $APP_DIR/mnt
-sudo mkdir -p $APP_DIR/mnt/app
-echo '-----> Injecting App'
-sudo tar xzf $APP_DIR/slug.tgz -C $APP_DIR/mnt/app
-sudo umount $APP_DIR/mnt
-echo '-----> Done'
-
-echo '===> Interacting with Openstack'
-### how do we run this ???
-echo '-----> Adding Image to Glance'
-glance image-delete $APP
-glance image-create --name $APP --disk-format qcow2 --container-format bare --file $APP_DIR/image.qcow2
-
-# TODO(asalkeld) use --property <key=value> to set the tags
-
-image_id=$(glance image-show $APP | grep " id " | cut -d"|" -f3 | tr -d " ")
-
-echo "created_image_id=$image_id"
-
+main $@
 exit 0
