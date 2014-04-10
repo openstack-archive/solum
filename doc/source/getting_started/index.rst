@@ -113,7 +113,9 @@ Use that URI from above to create an assembly for your app.
 
 ::
 
-  $ solum assembly create http://10.0.2.15:9777/v1/plans/ceda0408-c93d-4772-abb2-18f65189d440 --assembly=ex1
+  $ solum assembly create \
+    http://10.0.2.15:9777/v1/plans/ceda0408-c93d-4772-abb2-18f65189d440 \
+    --assembly=ex1
   +-------------+--------------------------------------+
   | Property    | Value                                |
   +-------------+--------------------------------------+
@@ -133,7 +135,7 @@ The status field will show the progress of your app through the process.
 
 ::
 
-  $ solum assembly get de666039-841f-45d7-9ed0-03cc3929f28e
+  $ solum assembly show de666039-841f-45d7-9ed0-03cc3929f28e
   +-----------------+--------------------------------------+
   | Property        | Value                                |
   +-----------------+--------------------------------------+
