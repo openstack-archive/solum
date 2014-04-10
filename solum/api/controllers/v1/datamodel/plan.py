@@ -126,9 +126,7 @@ class Plan(api_types.Base):
         return cls(**(json))
 
     def as_dict(self, db_model):
-        valid_keys = (attr for attr in db_model.__dict__.keys()
-                      if attr[:2] != '__')
-        base = self.as_dict_from_keys(valid_keys)
+        base = super(Plan, self).as_dict(db_model)
         if self.artifacts is not wsme.Unset:
             base.update({'artifacts': [wjson.tojson(Artifact, art)
                                        for art in self.artifacts]})
