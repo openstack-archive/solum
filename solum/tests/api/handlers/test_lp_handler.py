@@ -66,24 +66,15 @@ class TestLanguagePackHandler(base.BaseTestCase):
         self.assertIsNotNone(resp)
         images_list.assert_called_once_with(filters={'tag': ['solum::lp']})
 
-    def test_create(self, mock_registry):
-        data = {'name': 'new_name',
-                'uuid': 'input_uuid'}
-        db_obj = fakes.FakeLanguagePack()
-        mock_registry.LanguagePack.return_value = db_obj
+    @mock.patch('solum.common.clients.OpenStackClients')
+    def test_create(self, mock_clients, mock_registry):
+        data = {'name': 'new_name'}
+        img_mock = mock_clients.return_value.glance.return_value.images.create
+        img_mock.return_value = image_sample
         handler = language_pack_handler.LanguagePackHandler(self.ctx)
         res = handler.create(data)
-        db_obj.update.assert_called_once_with(data)
-        db_obj.create.assert_called_once_with(self.ctx)
-        self.assertEqual(db_obj, res)
-        self.assertEqual(db_obj.id, res.id)
-        self.assertEqual(db_obj.uuid, res.uuid)
-        self.assertEqual(db_obj.name, res.name)
-        self.assertEqual(db_obj.description, res.description)
-        self.assertEqual(db_obj.project_id, res.project_id)
-        self.assertEqual(db_obj.user_id, res.user_id)
-        self.assertEqual(db_obj.language_impl, res.language_impl)
-        self.assertEqual(db_obj.tags, res.tags)
+        img_mock.assert_called_once_with(**data)
+        self.assertEqual(res, image_sample)
 
     def test_update(self, mock_registry):
         data = {'name': 'new_name'}
