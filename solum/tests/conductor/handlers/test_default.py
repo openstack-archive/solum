@@ -14,7 +14,7 @@
 
 import mock
 
-from solum.deployer.handlers import default
+from solum.conductor.handlers import default
 from solum.tests import base
 
 

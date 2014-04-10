@@ -14,10 +14,10 @@
 
 import mock
 
-from solum.deployer.handlers import default as default_handler
 from solum.openstack.common.gettextutils import _
 from solum.tests import base
 from solum.tests import utils
+from solum.worker.handlers import noop as noop_handler
 
 
 class HandlerTest(base.BaseTestCase):
@@ -25,16 +25,15 @@ class HandlerTest(base.BaseTestCase):
         super(HandlerTest, self).setUp()
         self.ctx = utils.dummy_context()
 
-    @mock.patch('solum.deployer.handlers.default.LOG')
+    @mock.patch('solum.worker.handlers.noop.LOG')
     def test_echo(self, fake_LOG):
-        default_handler.Handler().echo({}, 'foo')
+        noop_handler.Handler().echo({}, 'foo')
         fake_LOG.debug.assert_called_once_with(_('%s') % 'foo')
 
-    @mock.patch('solum.deployer.handlers.default.LOG')
-    def test_deploy(self, fake_LOG):
+    @mock.patch('solum.worker.handlers.noop.LOG')
+    def test_build(self, fake_LOG):
         args = [5, 'git://example.com/foo', 'new_app',
                 '1-2-3-4', 'heroku', 'docker', 44]
-        args = [77, 'created_image_id']
-        default_handler.Handler().deploy(self.ctx, *args)
-        message = 'Deploy %s %s' % tuple(args)
+        noop_handler.Handler().build(self.ctx, *args)
+        message = 'Build %s %s %s %s %s %s %s' % tuple(args)
         fake_LOG.debug.assert_called_once_with(_("%s") % message)
