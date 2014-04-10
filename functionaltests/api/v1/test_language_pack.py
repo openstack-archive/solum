@@ -23,7 +23,16 @@ sample_data = {"name": "test_language_pack",
                "language_pack_type": "java",
                "language_implementation": "Sun",
                "compiler_versions": ["1.4", "1.5", "1.6"],
+               "runtime_versions": ["1.5", "1.6", "1.7"],
+               "build_tool_chain": [{
+                   "type": "maven",
+                   "version": "3.0"
+               }, {
+                   "type": "ant",
+                   "version": "1.7"
+               }],
                "os_platform": {"OS": "Ubuntu", "version": "12.04"},
+               "attributes": {"key1": "value1", "key2": "value2"},
                "type": "language_pack"}
 
 
@@ -31,9 +40,6 @@ class TestLanguagePackController(base.TestCase):
 
     def setUp(self):
         super(TestLanguagePackController, self).setUp()
-        self.skipTest("Disabled until store-language-packs-in-glance "
-                      "is complete")
-        #self.addCleanup(self._delete_all)
 
     def _delete_all(self):
         resp, body = self.client.get('v1/language_packs')
@@ -53,6 +59,11 @@ class TestLanguagePackController(base.TestCase):
                          len(data['compiler_versions']))
         for compiler_version in data['compiler_versions']:
             self.assertIn(compiler_version, body_data['compiler_versions'])
+        for runtime_version in data['runtime_versions']:
+            self.assertIn(runtime_version, body_data['runtime_versions'])
+        for build_tool in data['build_tool_chain']:
+            self.assertIn(build_tool, body_data['build_tool_chain'])
+        self.assertEqual(body_data['attributes'], data['attributes'])
         self.assertEqual(body_data['os_platform']['OS'],
                          data['os_platform']['OS'])
         self.assertEqual(body_data['os_platform']['version'],
@@ -97,13 +108,24 @@ class TestLanguagePackController(base.TestCase):
         self._delete_language_pack(uuid)
 
     def test_language_packs_put(self):
+        self.skipTest("Tags update not implemented yet in python-glanceclient")
+        # See http://goo.gl/vg9h6G
         uuid = self._create_language_pack()
         updated_data = {"name": "test_language_pack updated",
                         "description": "A test to create language_pack update",
                         "language_pack_type": "python",
                         "language_implementation": "py",
+                        "runtime_versions": ["1.3", "1.5"],
                         "compiler_versions": ["1.4", "1.7"],
+                        "build_tool_chain": [{
+                            "type": "maven",
+                            "version": "3.1"
+                        }, {
+                            "type": "gradle",
+                            "version": "0.9"
+                        }],
                         "os_platform": {"OS": "Fedora", "version": "17"},
+                        "attributes": {"key11": "value11", "key2": "value22"},
                         "type": "language_pack"}
         updated_json = json.dumps(updated_data)
         resp, body = self.client.put('v1/language_packs/%s' % uuid,
