@@ -15,6 +15,7 @@
 from glanceclient import client as glanceclient
 from heatclient import client as heatclient
 from keystoneclient.v2_0 import client as ksclient
+from neutronclient.neutron import client as neutronclient
 from oslo.config import cfg
 from swiftclient import client as swiftclient
 
@@ -56,6 +57,19 @@ heat_client_opts = [
                 help=_("If set, then the server's certificate will not "
                        "be verified."))]
 
+neutron_client_opts = [
+    cfg.StrOpt('endpoint_type',
+               default='publicURL',
+               help=_(
+                   'Type of endpoint in Identity service catalog to use '
+                   'for communication with the Neutron service.')),
+    cfg.StrOpt('ca_cert',
+               help=_('Optional CA bundle file to use in SSL connections.')),
+    cfg.BoolOpt('insecure',
+                default=False,
+                help=_("If set, then the server's certificate for neutron "
+                       "will not be verified."))]
+
 swift_client_opts = [
     cfg.StrOpt('endpoint_type',
                default='publicURL',
@@ -70,6 +84,7 @@ swift_client_opts = [
 
 cfg.CONF.register_opts(glance_client_opts, group='glance_client')
 cfg.CONF.register_opts(heat_client_opts, group='heat_client')
+cfg.CONF.register_opts(neutron_client_opts, group='neutron_client')
 cfg.CONF.register_opts(swift_client_opts, group='swift_client')
 
 
@@ -81,6 +96,7 @@ class OpenStackClients(object):
         self._keystone = None
         self._glance = None
         self._heat = None
+        self._neutron = None
         self._swift = None
 
     @property
@@ -99,6 +115,26 @@ class OpenStackClients(object):
         }
         self._keystone = ksclient.Client(**args)
         return self._keystone
+
+    @exception.wrap_keystone_exception
+    def neutron(self):
+        if self._neutron:
+            return self._neutron
+
+        endpoint_type = self._get_client_option('neutron', 'endpoint_type')
+        endpoint_url = self.context.get_url_for(service_type='network',
+                                                endpoint_type=endpoint_type)
+        args = {
+            'auth_url': self.context.auth_url,
+            'endpoint_url': endpoint_url,
+            'token': self.auth_token,
+            'username': None,
+            'password': None,
+            'insecure': self._get_client_option('neutron', 'insecure'),
+            'ca_cert': self._get_client_option('neutron', 'ca_cert')
+        }
+        self._neutron = neutronclient.Client('2.0', **args)
+        return self._neutron
 
     def _get_client_option(self, client, option):
         return getattr(getattr(cfg.CONF, '%s_client' % client), option)

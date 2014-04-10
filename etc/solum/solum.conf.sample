@@ -681,6 +681,25 @@
 #ringfile=/etc/oslo/matchmaker_ring.json
 
 
+[neutron_client]
+
+#
+# Options defined in solum.common.clients
+#
+
+# Type of endpoint in Identity service catalog to use for
+# communication with the Neutron service. (string value)
+#endpoint_type=publicURL
+
+# Optional CA bundle file to use in SSL connections. (string
+# value)
+#ca_cert=<None>
+
+# If set, then the server's certificate for neutron will not
+# be verified. (boolean value)
+#insecure=false
+
+
 [swift_client]
 
 #
