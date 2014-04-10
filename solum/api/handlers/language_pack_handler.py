@@ -14,7 +14,6 @@
 
 from solum.api.handlers import handler
 from solum.common import clients
-from solum import objects
 
 
 class LanguagePackHandler(handler.Handler):
@@ -42,5 +41,5 @@ class LanguagePackHandler(handler.Handler):
 
     def delete(self, uuid):
         """Delete a language_pack."""
-        db_obj = objects.registry.LanguagePack.get_by_uuid(self.context, uuid)
-        db_obj.destroy(self.context)
+        osc = clients.OpenStackClients(self.context)
+        return osc.glance().images.delete(uuid)
