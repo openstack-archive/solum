@@ -32,6 +32,7 @@ image_sample = {"status": "active",
                 "name": "nodeus",
                 "tags": [
                     "solum::lp::type::fake_type",
+                    "solum::lp::description::a fake description",
                     "solum::lp::compiler_version::1.3",
                     "solum::lp::compiler_version::1.4",
                     "solum::lp::compiler_version::1.5",
@@ -155,6 +156,7 @@ class TestLanguagePackImage(base.BaseTestCase):
     def test_from_image(self):
         lp = lp_model.LanguagePack.from_image(image_sample, 'fake_host_url')
         self.assertEqual(lp.name, 'nodeus')
+        self.assertEqual(lp.description, 'a fake description')
         self.assertEqual(lp.language_pack_type, 'fake_type')
         self.assertEqual(lp.uuid, 'bc68cd73')
         self.assertEqual(lp.compiler_versions, ['1.3', '1.4', '1.5'])
@@ -175,6 +177,8 @@ class TestLanguagePackImage(base.BaseTestCase):
         self.assertEqual(image_dict['name'], lp.name)
         self.assertIn('solum::lp', image_dict['tags'])
         self.assertIn(lp_model.TYPE + lp.language_pack_type,
+                      image_dict['tags'])
+        self.assertIn(lp_model.DESCRIPTION + lp.description,
                       image_dict['tags'])
         self.assertIn(lp_model.COMPILER_VERSION + lp.compiler_versions[0],
                       image_dict['tags'])

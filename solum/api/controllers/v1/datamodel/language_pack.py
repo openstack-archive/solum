@@ -18,11 +18,11 @@ from wsme import types as wtypes
 from solum.api.controllers.v1.datamodel import types as api_types
 
 TAGS = (TYPE, COMPILER_VERSION, RUNTIME_VERSION, IMPLEMENTATION,
-        BUILD_TOOL, OS_PLATFORM, ATTRIBUTE) = (
+        BUILD_TOOL, OS_PLATFORM, ATTRIBUTE, DESCRIPTION) = (
             'solum::lp::type::', 'solum::lp::compiler_version::',
             'solum::lp::runtime_version::', 'solum::lp::implementation::',
             'solum::lp::build_tool::', 'solum::lp::os_platform::',
-            'solum::lp::attribute::')
+            'solum::lp::attribute::', 'solum::lp::description::')
 
 
 class BuildTool(wtypes.Base):
@@ -105,6 +105,8 @@ class LanguagePack(api_types.Base):
         build_tools = []
         attrs = {}
         for tag in image_tags:
+            if tag.startswith(DESCRIPTION):
+                as_dict['description'] = tag[len(DESCRIPTION):]
             if tag.startswith(TYPE):
                 as_dict['language_pack_type'] = tag[len(TYPE):]
             if tag.startswith(COMPILER_VERSION):
@@ -132,6 +134,8 @@ class LanguagePack(api_types.Base):
 
     def as_image_dict(self):
         tags = ['solum::lp']
+        if self.description is not wsme.Unset:
+            tags.append(DESCRIPTION + self.description)
         if self.language_pack_type is not wsme.Unset:
             tags.append(TYPE + self.language_pack_type)
         if self.compiler_versions is not wsme.Unset:
