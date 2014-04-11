@@ -38,78 +38,80 @@ class TestObjectsSqlalchemy(tests.BaseTestCase):
         self.useFixture(utils.Database())
 
     def test_objects_reloadable(self):
-        self.assertIsNotNone(objects.registry.Plan)
+        self.assertIsNotNone(objects.registry.Component)
 
         objects.registry.clear()
 
         with testtools.ExpectedException(KeyError):
-            objects.registry.Plan
+            objects.registry.Component
 
         objects.load()
 
-        self.assertIsNotNone(objects.registry.Plan)
+        self.assertIsNotNone(objects.registry.Component)
 
     def test_object_creatable(self):
-        plan = objects.registry.Plan()
-        self.assertIsNotNone(plan)
-        self.assertIsNone(plan.id)
+        component = objects.registry.Component()
+        self.assertIsNotNone(component)
+        self.assertIsNone(component.id)
 
     # (claytonc) Depends on https://bugs.launchpad.net/oslo/+bug/1256954
     # for python 3.3
     # def test_object_duplicate_create(self):
-    #     plan = objects.registry.Plan()
-    #     plan.create(self.ctx)
-    #     plan2 = objects.registry.Plan()
-    #     plan2.id = plan.id
+    #     component = objects.registry.Component()
+    #     component.create(self.ctx)
+    #     component2 = objects.registry.Component()
+    #     component2.id = component.id
     #     with testtools.ExpectedException(db_exc.DBError):
-    #         plan2.create(self.ctx)
+    #         component2.create(self.ctx)
 
     def test_object_raises_not_found(self):
         with testtools.ExpectedException(exception.ResourceNotFound):
-            objects.registry.Plan.get_by_id(None, 10000)
+            objects.registry.Component.get_by_id(None, 10000)
 
     def test_object_persist_and_retrieve(self):
-        plan = objects.registry.Plan()
-        self.assertIsNotNone(plan)
-        plan.uuid = str(uuid.uuid4())
-        plan.name = 'abc'
-        plan.description = '1-2-3-4'
-        plan.create(self.ctx)
-        self.assertIsNotNone(plan.id)
+        component = objects.registry.Component()
+        self.assertIsNotNone(component)
+        component.uuid = str(uuid.uuid4())
+        component.name = 'abc'
+        component.description = '1-2-3-4'
+        component.plan_id = 1
+        component.create(self.ctx)
+        self.assertIsNotNone(component.id)
 
-        plan2 = objects.registry.Plan.get_by_id(None, plan.id)
-        self.assertIsNotNone(plan2)
-        self.assertEqual(plan.id, plan2.id)
-        self.assertEqual(plan.uuid, plan2.uuid)
-        self.assertEqual(plan.name, plan2.name)
-        self.assertEqual(plan.description, plan2.description)
+        component2 = objects.registry.Component.get_by_id(None, component.id)
+        self.assertIsNotNone(component2)
+        self.assertEqual(component.id, component2.id)
+        self.assertEqual(component.uuid, component2.uuid)
+        self.assertEqual(component.name, component2.name)
+        self.assertEqual(component.description, component2.description)
 
         # visible via direct query
-        query = utils.get_dummy_session().query(plan.__class__)\
-            .filter_by(id=plan.id)
-        plan3 = query.first()
-        self.assertIsNotNone(plan3)
-        self.assertEqual(plan3.id, plan.id)
+        query = utils.get_dummy_session().query(component.__class__)\
+            .filter_by(id=component.id)
+        component3 = query.first()
+        self.assertIsNotNone(component3)
+        self.assertEqual(component3.id, component3.id)
 
         # visible via get_all
-        plans = objects.registry.PlanList.get_all(None)
-        exists = [item for item in plans if item.id == plan.id]
+        components = objects.registry.ComponentList.get_all(None)
+        exists = [item for item in components if item.id == component.id]
         self.assertTrue(len(exists) > 0)
 
     def test_object_mutate(self):
         begin = datetime.datetime.utcnow()
 
-        plan = objects.registry.Plan()
-        self.assertIsNotNone(plan)
-        plan.uuid = str(uuid.uuid4())
-        plan.create(self.ctx)
+        component = objects.registry.Component()
+        self.assertIsNotNone(component)
+        component.uuid = str(uuid.uuid4())
+        component.plan_id = 1
+        component.create(self.ctx)
 
-        self.assertIsNotNone(plan.id)
-        self.assertThat(plan.created_at, matchers.GreaterThan(begin))
-        self.assertIsNone(plan.updated_at)
+        self.assertIsNotNone(component.id)
+        self.assertThat(component.created_at, matchers.GreaterThan(begin))
+        self.assertIsNone(component.updated_at)
 
         next_time = datetime.datetime.utcnow()
 
-        plan.save(self.ctx)
+        component.save(self.ctx)
 
-        self.assertThat(next_time, matchers.GreaterThan(plan.created_at))
+        self.assertThat(next_time, matchers.GreaterThan(component.created_at))
