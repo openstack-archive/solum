@@ -16,7 +16,6 @@ import mock
 
 from solum.api.handlers import language_pack_handler
 from solum.tests import base
-from solum.tests import fakes
 from solum.tests import utils
 
 image_sample = {"status": "active",
@@ -86,11 +85,9 @@ class TestLanguagePackHandler(base.BaseTestCase):
         img_mock.assert_called_once_with('fake_id', **data)
         self.assertEqual(res, image_sample)
 
-    def test_delete(self, mock_registry):
-        db_obj = fakes.FakeLanguagePack()
-        mock_registry.LanguagePack.get_by_uuid.return_value = db_obj
+    @mock.patch('solum.common.clients.OpenStackClients')
+    def test_delete(self, mock_clients, mock_registry):
+        img_mock = mock_clients.return_value.glance.return_value.images.delete
         handler = language_pack_handler.LanguagePackHandler(self.ctx)
         handler.delete('test_id')
-        db_obj.destroy.assert_called_once_with(self.ctx)
-        mock_registry.LanguagePack.get_by_uuid.assert_called_once_with(
-            self.ctx, 'test_id')
+        img_mock.assert_called_once_with('test_id')
