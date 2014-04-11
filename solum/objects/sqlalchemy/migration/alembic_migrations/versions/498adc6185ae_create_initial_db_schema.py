@@ -160,52 +160,8 @@ def upgrade():
         sa.Column('tags', sa.Text),
     )
 
-    op.create_table(
-        'language_pack',
-        sa.Column('id', sa.Integer, primary_key=True, nullable=False),
-        sa.Column('uuid', sa.String(36), nullable=False),
-        sa.Column('created_at', sa.DateTime, default=timeutils.utcnow),
-        sa.Column('updated_at', sa.DateTime, onupdate=timeutils.utcnow),
-        sa.Column('name', sa.String(100)),
-        sa.Column('description', sa.String(255)),
-        sa.Column('project_id', sa.String(36)),
-        sa.Column('user_id', sa.String(36)),
-        sa.Column('tags', sa.Text),
-        sa.Column('attr_blob', models.JSONEncodedDict(255)),
-        sa.Column('language_implementation', sa.String(length=100),
-                  nullable=True),
-        sa.Column('language_pack_type', sa.String(length=100),
-                  nullable=True),
-    )
-
-    op.create_table(
-        'compiler_versions',
-        sa.Column('id', sa.Integer, primary_key=True, nullable=False),
-        sa.Column('uuid', sa.String(36), nullable=False),
-        sa.Column('created_at', sa.DateTime, default=timeutils.utcnow),
-        sa.Column('updated_at', sa.DateTime, onupdate=timeutils.utcnow),
-        sa.Column('version', sa.String(36), nullable=False),
-        sa.Column('language_pack_id', sa.Integer,
-                  sa.ForeignKey('language_pack.id'), nullable=False),
-    )
-
-    op.create_table(
-        'os_platform',
-        sa.Column('id', sa.Integer, primary_key=True, nullable=False),
-        sa.Column('uuid', sa.String(36), nullable=False),
-        sa.Column('created_at', sa.DateTime, default=timeutils.utcnow),
-        sa.Column('updated_at', sa.DateTime, onupdate=timeutils.utcnow),
-        sa.Column('OS', sa.String(36), nullable=False),
-        sa.Column('version', sa.String(36), nullable=False),
-        sa.Column('language_pack_id', sa.Integer,
-                  sa.ForeignKey('language_pack.id'), nullable=False),
-    )
-
 
 def downgrade():
-    op.drop_table('os_platform')
-    op.drop_table('compiler_versions')
-    op.drop_table('language_pack')
     op.drop_table('service')
     op.drop_table('component')
     op.drop_table('assembly')

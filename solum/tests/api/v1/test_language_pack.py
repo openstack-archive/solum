@@ -214,33 +214,6 @@ class TestLanguagePackImage(base.BaseTestCase):
                                       'tags': ['solum::lp']})
 
 
-class TestLanguagePackAsDict(base.BaseTestCase):
-
-    scenarios = [
-        ('none', dict(data=None)),
-        ('one', dict(data={'name': 'foo'})),
-        ('full', dict(data={'uri': 'http://example.com/v1/language_packs/x1',
-                            'name': 'Example language_pack',
-                            'type': 'language_pack',
-                            'project_id': '1dae5a09ef2b4d8cbf3594b0eb4f6b94',
-                            'user_id': '55f41cf46df74320b9486a35f5d28a11'}))
-    ]
-
-    def test_as_dict(self):
-        objects.load()
-        if self.data is None:
-            s = lp_model.LanguagePack()
-            self.data = {}
-        else:
-            s = lp_model.LanguagePack(**self.data)
-        if 'uri' in self.data:
-            del self.data['uri']
-        if 'type' in self.data:
-            del self.data['type']
-
-        self.assertEqual(self.data, s.as_dict(objects.registry.LanguagePack))
-
-
 @mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
 @mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
 @mock.patch('solum.api.handlers.language_pack_handler.LanguagePackHandler')
