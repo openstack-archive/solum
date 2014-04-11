@@ -37,10 +37,8 @@ class LanguagePackHandler(handler.Handler):
 
     def update(self, uuid, data):
         """Modify a language_pack."""
-        db_obj = objects.registry.LanguagePack.get_by_uuid(self.context, uuid)
-        db_obj.update(data)
-        db_obj.save(self.context)
-        return db_obj
+        osc = clients.OpenStackClients(self.context)
+        return osc.glance().images.update(uuid, **data)
 
     def delete(self, uuid):
         """Delete a language_pack."""
