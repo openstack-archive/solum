@@ -50,7 +50,7 @@ class AssemblyHandler(handler.Handler):
                                                    db_obj.plan_id)
         artifacts = plan_obj.raw_content.get('artifacts', [])
         for arti in artifacts:
-            self._build_artifact(db_obj, plan_obj, arti)
+            self._build_artifact(db_obj, arti)
 
     def update(self, id, data):
         """Modify a resource."""
@@ -77,10 +77,10 @@ class AssemblyHandler(handler.Handler):
                                                    db_obj.plan_id)
         artifacts = plan_obj.raw_content.get('artifacts', [])
         for arti in artifacts:
-            self._build_artifact(db_obj, plan_obj, arti)
+            self._build_artifact(db_obj, arti)
         return db_obj
 
-    def _build_artifact(self, assem, plan, artifact):
+    def _build_artifact(self, assem, artifact):
         # This is a tempory hack so we don't need the build client
         # in the requirments.
         image = objects.registry.Image()

@@ -108,8 +108,7 @@ class TestAssemblyHandler(base.BaseTestCase):
         handler = assembly_handler.AssemblyHandler(self.ctx)
         handler._build_artifact = mock.MagicMock()
         handler.trigger_workflow(trigger_id)
-        handler._build_artifact.assert_called_once_with(db_obj, plan_obj,
-                                                        artifacts[0])
+        handler._build_artifact.assert_called_once_with(db_obj, artifacts[0])
         mock_registry.Assembly.get_by_trigger_id.assert_called_once_with(
             self.ctx, trigger_id)
         mock_registry.Plan.get_by_id.assert_called_once_with(self.ctx,
