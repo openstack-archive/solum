@@ -71,7 +71,7 @@ def upgrade():
         sa.Column('updated_at', sa.DateTime, onupdate=timeutils.utcnow),
         sa.Column('name', sa.String(100)),
         sa.Column('description', sa.String(255)),
-        sa.Column('source_uri', sa.String(255)),
+        sa.Column('source_uri', sa.String(1024)),
         sa.Column('project_id', sa.String(36)),
         sa.Column('user_id', sa.String(36)),
         sa.Column('tags', sa.Text),
