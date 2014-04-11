@@ -11,8 +11,8 @@
 # under the License.
 
 
-from solum.api.controllers.v1.datamodel import plan as plan_api
-from solum.objects.sqlalchemy import plan as plan_model
+from solum.api.controllers.v1.datamodel import component as component_api
+from solum.objects.sqlalchemy import component as component_model
 from solum.tests import base
 from solum.tests import utils
 
@@ -26,21 +26,21 @@ class TestTypes(base.BaseTestCase):
 
     def test_as_dict(self):
         data = {'name': 'test_hb',
-                'uri': 'http://test_host/v1/plans/hb',
+                'uri': 'http://test_host/v1/components/hb',
                 'project_id': 'a3266ef8-b3fa-4ab8-b468-d42b5fab5c4d',
                 'user_id': '59a9da1f-9a19-4f1e-8877-120865da716b'}
-        p = plan_api.Plan(**data)
+        a = component_api.Component(**data)
         del data['uri']
-        self.assertEqual(data, p.as_dict(plan_model.Plan))
+        self.assertEqual(data, a.as_dict(component_model.Component))
 
     def test_as_dict_from_keys(self):
         data = {'name': 'test_hb',
                 'project_id': 'a3266ef8-b3fa-4ab8-b468-d42b5fab5c4d'}
-        p = plan_api.Plan(**data)
-        self.assertEqual(data, p.as_dict_from_keys(['name', 'project_id']))
+        a = component_api.Component(**data)
+        self.assertEqual(data, a.as_dict_from_keys(['name', 'project_id']))
 
     def test_from_db_model(self):
-        obj = objects.registry.Plan()
+        obj = objects.registry.Component()
         data = {'uuid': '8705981d-162b-4431-943e-53609fdc1750',
                 'name': 'test_hb',
                 'project_id': '3594fb87-487f-44f8-889a-c76bec06174c',
@@ -48,10 +48,28 @@ class TestTypes(base.BaseTestCase):
                 'does_not_exist': 'n/a'}
         obj.update(data)
         host_url = 'http://test_host'
-        p = plan_api.Plan.from_db_model(obj, host_url)
-        self.assertEqual(data['name'], p.name)
-        self.assertEqual(data['project_id'], p.project_id)
-        self.assertEqual('plan', p.type)
-        self.assertEqual(data['user_id'], p.user_id)
+        c = component_api.Component.from_db_model(obj, host_url)
+        self.assertEqual(data['name'], c.name)
+        self.assertEqual(data['project_id'], c.project_id)
+        self.assertEqual('component', c.type)
+        self.assertEqual(data['user_id'], c.user_id)
         self.assertEqual('%s/v1/%s/%s' % (host_url, obj.__resource__, None),
-                         p.uri)
+                         c.uri)
+        self.assertIsNone(c.assembly_uuid)
+
+    def test_from_db_model_extra_keys(self):
+        assembly_data = {'uuid': '42d',
+                         'name': 'test_assembly',
+                         'plan_id': 1,
+                         'project_id': '3594fb87-487f-44f8-889a-c76bec06174c',
+                         'user_id': 'd724ff2b-0035-457d-9afc-07f6efa3f0a5'}
+        a = objects.registry.Assembly(**assembly_data)
+        a.create(utils.dummy_context())
+        data = {'uuid': '8705981d-162b-4431-943e-53609fdc1750',
+                'name': 'test_hb',
+                'project_id': '3594fb87-487f-44f8-889a-c76bec06174c',
+                'user_id': 'd724ff2b-0035-457d-9afc-07f6efa3f0a5',
+                'assembly_uuid': assembly_data['uuid']}
+        obj = objects.registry.Component(**data)
+        c = component_api.Component.from_db_model(obj, 'http://test_host')
+        self.assertEqual(assembly_data['uuid'], c.assembly_uuid)
