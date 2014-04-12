@@ -28,7 +28,7 @@ class Image(sql.Base, abstract.Image):
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
     uuid = sa.Column(sa.String(36), nullable=False)
     name = sa.Column(sa.String(100))
-    source_uri = sa.Column(sa.String(255))
+    source_uri = sa.Column(sa.String(1024))
     source_format = sa.Column(sa.String(12))
     description = sa.Column(sa.String(255))
     project_id = sa.Column(sa.String(36))
