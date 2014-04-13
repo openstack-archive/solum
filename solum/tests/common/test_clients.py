@@ -15,11 +15,11 @@ import mock
 from glanceclient import client as glanceclient
 from heatclient import client as heatclient
 from neutronclient.neutron import client as neutronclient
+from swiftclient import client as swiftclient
 
 from solum.common import clients
 from solum.common import exception
 from solum.tests import base
-from swiftclient import client as swiftclient
 
 
 class ClientsTest(base.BaseTestCase):
@@ -133,8 +133,7 @@ class ClientsTest(base.BaseTestCase):
             cacert=None, preauthurl="url_from_keystone", insecure=False,
             preauthtoken="3bcc3d3a03f44e3d8377f9247b0ad155")
 
-    @mock.patch.object(swiftclient, 'Connection')
-    def test_clients_swift_noauth(self, mock_call):
+    def test_clients_swift_noauth(self):
         con = mock.MagicMock()
         con.auth_token = None
         con.tenant = "b363706f891f48019483f8bd6503c54b"
