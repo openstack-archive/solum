@@ -40,6 +40,8 @@ class Component(sql.Base, abstract.Component):
 
     @property
     def assembly_uuid(self):
+        if self.assembly_id is None:
+            return None
         return objects.registry.Assembly.get_by_id(None, self.assembly_id).uuid
 
     @assembly_uuid.setter
