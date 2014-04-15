@@ -15,13 +15,10 @@
 from solum import objects
 
 from solum.objects import assembly as abstract_assembly
-from solum.objects import compiler_versions as abstract_cv
 from solum.objects import component as abstract_component
 from solum.objects import extension as abstract_extension
 from solum.objects import image as abstract_image
-from solum.objects import language_pack as abstract_lp
 from solum.objects import operation as abstract_operation
-from solum.objects import os_platform as abstract_op
 from solum.objects import plan as abstract_plan
 from solum.objects import sensor as abstract_sensor
 from solum.objects import service as abstract_srvc
@@ -29,7 +26,6 @@ from solum.objects.sqlalchemy import assembly
 from solum.objects.sqlalchemy import component
 from solum.objects.sqlalchemy import extension
 from solum.objects.sqlalchemy import image
-from solum.objects.sqlalchemy import language_pack
 from solum.objects.sqlalchemy import operation
 from solum.objects.sqlalchemy import plan
 from solum.objects.sqlalchemy import sensor
@@ -57,9 +53,3 @@ def load():
                          extension.ExtensionList)
     objects.registry.add(abstract_image.Image, image.Image)
     objects.registry.add(abstract_image.ImageList, image.ImageList)
-    objects.registry.add(abstract_lp.LanguagePack, language_pack.LanguagePack)
-    objects.registry.add(abstract_lp.LanguagePackList,
-                         language_pack.LanguagePackList)
-    objects.registry.add(abstract_cv.CompilerVersions,
-                         language_pack.CompilerVersions)
-    objects.registry.add(abstract_op.OSPlatform, language_pack.OSPlatform)
