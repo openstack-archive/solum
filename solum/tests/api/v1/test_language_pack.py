@@ -100,7 +100,7 @@ class TestLanguagePackController(base.BaseTestCase):
         request_mock.body = None
         request_mock.content_type = 'application/json'
         hand_put = LanguagePackHandler.return_value.put
-        hand_put.return_value = fakes.FakeLanguagePack()
+        hand_put.return_value = image_sample
         ret_val = language_pack.LanguagePackController('test_id').put()
         faultstring = str(ret_val['faultstring'])
         self.assertEqual("Missing argument: \"data\"", faultstring)
