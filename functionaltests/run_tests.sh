@@ -26,4 +26,4 @@ TEMPEST_DIR=${TEMPEST_DIR:-/opt/stack/new/tempest}
 # Add tempest source tree to PYTHONPATH
 export PYTHONPATH=$PYTHONPATH:$TEMPEST_DIR
 
-nosetests -v .
+nosetests -v $1
