@@ -150,7 +150,7 @@ class OpenStackClients(object):
         endpoint_type = self._get_client_option('glance', 'endpoint_type')
         endpoint = self.context.get_url_for(service_type='image',
                                             endpoint_type=endpoint_type)
-        self._glance = glanceclient.Client('1', endpoint, **args)
+        self._glance = glanceclient.Client('2', endpoint, **args)
 
         return self._glance
 

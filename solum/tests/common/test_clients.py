@@ -38,7 +38,7 @@ class ClientsTest(base.BaseTestCase):
         obj._glance = None
         obj.glance()
         mock_call.assert_called_once_with(
-            '1', 'url_from_keystone', token='3bcc3d3a03f44e3d8377f9247b0ad155')
+            '2', 'url_from_keystone', token='3bcc3d3a03f44e3d8377f9247b0ad155')
 
     def test_clients_glance_noauth(self):
         con = mock.MagicMock()
@@ -53,7 +53,8 @@ class ClientsTest(base.BaseTestCase):
         obj._glance = None
         self.assertRaises(exception.AuthorizationFailure, obj.glance)
 
-    def test_clients_glance_cached(self):
+    @mock.patch.object(glanceclient, 'Client')
+    def test_clients_glance_cached(self, mock_call):
         con = mock.MagicMock()
         con.tenant = "b363706f891f48019483f8bd6503c54d"
         con.auth_token = "3bcc3d3a03f44e3d8377f9247b0ad155"
