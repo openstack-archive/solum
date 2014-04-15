@@ -21,7 +21,7 @@ import testtools
 
 from solum.common import service
 from solum import objects
-from solum.objects import plan as abstract
+from solum.objects import component as abstract
 from solum.tests import base
 
 
@@ -30,6 +30,7 @@ class TestService(base.BaseTestCase):
     def test_prepare_invokes_object_load(self):
         objects.registry.clear()
         with testtools.ExpectedException(KeyError):
-            objects.registry.Plan()
+            objects.registry.Component()
         service.prepare_service([])
-        self.assertTrue(issubclass(objects.registry.Plan, abstract.Plan))
+        self.assertTrue(issubclass(objects.registry.Component,
+                                   abstract.Component))
