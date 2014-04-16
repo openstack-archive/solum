@@ -50,6 +50,8 @@ SERVICE_OPTS = [
 
 cfg.CONF.register_group(OPT_GROUP)
 cfg.CONF.register_opts(SERVICE_OPTS, OPT_GROUP)
+cfg.CONF.import_opt('image_format', 'solum.api.handlers.assembly_handler',
+                    group='api')
 
 
 class Handler(object):
@@ -82,23 +84,27 @@ class Handler(object):
         return params
 
     def deploy(self, ctxt, assembly_id, image_id):
-        # TODO(asalkeld) support template flavors (maybe an autoscaling one)
-        #                this could also be stored in glance.
-        template_flavor = 'basic'
-        template = self._get_template(template_flavor)
-
         osc = clients.OpenStackClients(ctxt)
 
         assem = objects.registry.Assembly.get_by_id(ctxt,
                                                     assembly_id)
-
         parameters = {'app_name': assem.name,
                       'image': image_id}
-        parameters.update(self._get_network_parameters(osc))
+
+        # TODO(asalkeld) support template flavors (maybe an autoscaling one)
+        #                this could also be stored in glance.
+        if cfg.CONF.api.image_format == 'qcow2':
+            parameters.update(self._get_network_parameters(osc))
+            template_flavor = 'basic'
+        else:
+            #Docker does not support floating IP right now, so we use a
+            # template without neutron
+            template_flavor = 'basic_for_docker'
+
+        template = self._get_template(template_flavor)
         created_stack = osc.heat().stacks.create(stack_name=assem.name,
                                                  template=template,
                                                  parameters=parameters)
-
         assem.status = BUILDING
         assem.save(ctxt)
         stack_id = created_stack['stack']['id']

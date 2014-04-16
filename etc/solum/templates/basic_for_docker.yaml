@@ -1,0 +1,71 @@
+heat_template_version: 2013-05-23
+description: >
+  Basic app deploy.
+parameters:
+  app_name:
+    type: string
+    default: solum-app
+    description: The name of the application.
+  key_name:
+    type: string
+    description: Name of keypair to assign to servers
+    default: ''
+  image:
+    type: string
+    description: glance_id of the image to start
+  flavor:
+    type: string
+    description: Flavor to use for servers
+    default: m1.small
+  port:
+    type: string
+    default: "5000"
+    description: Port Number
+
+resources:
+  external_access:
+    type: AWS::EC2::SecurityGroup
+    properties:
+      GroupDescription: Enable access to the application and SSH access
+      SecurityGroupIngress: [
+        {IpProtocol: tcp, FromPort: {get_param: port}, ToPort: {get_param: port},
+         CidrIp: "0.0.0.0/0"},
+        {IpProtocol: tcp, FromPort: "22", ToPort: "22",
+         CidrIp: "0.0.0.0/0"},
+        {IpProtocol: icmp, FromPort: "-1", ToPort: "-1",
+         CidrIp: "0.0.0.0/0"}]
+
+  compute:
+    type: OS::Nova::Server
+    properties:
+      name: {get_param: app_name}
+      image: {get_param: image}
+      flavor: { get_param: flavor }
+      key_name: { get_param: key_name }
+      security_groups:
+      - {get_resource: external_access}
+      user_data_format: RAW
+      user_data:
+        str_replace:
+          template: |
+            #!/usr/bin/env bash
+            set -v
+            export PORT=%port%
+            cd /app
+            foreman start
+          params:
+            "%port%": {get_param: port}
+
+outputs:
+  public_ip:
+    description: The public IP address of the newly configured Server.
+    value: { get_attr: [compute, first_address ] }
+  URL:
+    description: The URL for the Server.
+    value:
+      str_replace:
+        template: http://%host%:%port%
+        params:
+          "%host%": { get_attr: [ compute, first_address ] }
+          "%port%": { get_param: port }
+

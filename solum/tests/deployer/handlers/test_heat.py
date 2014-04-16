@@ -72,6 +72,37 @@ class HandlerTest(base.BaseTestCase):
                                                        'Heat Stack test',
                                                        'http://fake.ref')
 
+    @mock.patch('solum.deployer.handlers.heat.Handler._get_template')
+    @mock.patch('solum.objects.registry')
+    @mock.patch('solum.common.clients.OpenStackClients')
+    @mock.patch('solum.deployer.handlers.heat.cfg.CONF.api.image_format')
+    def test_deploy_docker(self, image_format, mock_clients, mock_registry,
+                           mock_get_templ):
+        handler = heat_handler.Handler()
+        image_format.return_value = "docker"
+        fake_assembly = fakes.FakeAssembly()
+        mock_registry.Assembly.get_by_id.return_value = fake_assembly
+        fake_template = json.dumps({'description': 'test'})
+        mock_get_templ.return_value = fake_template
+        mock_clients.return_value.heat.return_value.stacks.create.\
+            return_value = {"stack": {"id": "fake_id",
+                                      "links": [{"href": "http://fake.ref",
+                                                 "rel": "self"}]}}
+        handler._update_assembly_status = mock.MagicMock()
+        handler.deploy(self.ctx, 77, 'created_image_id')
+        parameters = {'image': 'created_image_id',
+                      'app_name': 'faker'}
+        mock_clients.return_value.heat.return_value.stacks.create.\
+            assert_called_once_with(stack_name='faker',
+                                    template=fake_template,
+                                    parameters=parameters)
+        assign_and_create_mock = mock_registry.Component.assign_and_create
+        assign_and_create_mock.assert_called_once_with(self.ctx,
+                                                       fake_assembly,
+                                                       'Heat Stack',
+                                                       'Heat Stack test',
+                                                       'http://fake.ref')
+
     @mock.patch('solum.common.clients.OpenStackClients')
     def test_update_assembly_status(self, mock_clients):
         handler = heat_handler.Handler()
