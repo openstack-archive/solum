@@ -21,14 +21,14 @@ import yaml
 from oslo.config import cfg
 from solum.common import clients
 from solum import objects
+from solum.objects import assembly
 from solum.openstack.common.gettextutils import _
 from solum.openstack.common import log as logging
 
 
 LOG = logging.getLogger(__name__)
 
-STATES = (PENDING, BUILDING, ERROR, READY, ERROR_STACK_CREATE_FAILED) = (
-    'PENDING', 'BUILDING', 'ERROR', 'READY', 'ERROR_STACK_CREATE_FAILED')
+STATES = assembly.States
 
 OPT_GROUP = cfg.OptGroup(name='deployer',
                          title='Options for the solum-deployer service')
@@ -105,7 +105,7 @@ class Handler(object):
         created_stack = osc.heat().stacks.create(stack_name=assem.name,
                                                  template=template,
                                                  parameters=parameters)
-        assem.status = BUILDING
+        assem.status = STATES.DEPLOYING
         assem.save(ctxt)
         stack_id = created_stack['stack']['id']
 
@@ -130,13 +130,13 @@ class Handler(object):
             if stack.status == 'COMPLETE':
                 host_url = self._parse_server_url(stack)
                 if host_url is not None:
-                    assem.status = READY
+                    assem.status = STATES.READY
                     assem.application_uri = host_url
                     assem.save(ctxt)
                     got_stack_status = True
                     break
             elif stack.status == 'FAILED':
-                assem.status = ERROR
+                assem.status = STATES.ERROR
                 assem.save(ctxt)
                 got_stack_status = True
                 break
@@ -145,7 +145,7 @@ class Handler(object):
             wait_interval *= growth_factor
 
         if not got_stack_status:
-            assem.status = ERROR_STACK_CREATE_FAILED
+            assem.status = STATES.ERROR_STACK_CREATE_FAILED
             assem.save(ctxt)
 
     def _parse_server_url(self, heat_output):

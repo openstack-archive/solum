@@ -17,6 +17,7 @@ import os.path
 
 from solum.openstack.common.gettextutils import _
 from solum.tests import base
+from solum.tests import fakes
 from solum.tests import utils
 from solum.worker.handlers import shell as shell_handler
 
@@ -31,10 +32,14 @@ class HandlerTest(base.BaseTestCase):
         shell_handler.Handler().echo({}, 'foo')
         fake_LOG.debug.assert_called_once_with(_('%s') % 'foo')
 
+    @mock.patch('solum.objects.registry')
     @mock.patch('solum.conductor.api.API.build_job_update')
     @mock.patch('subprocess.Popen')
-    def test_build(self, mock_popen, mock_updater):
+    def test_build(self, mock_popen, mock_updater, mock_registry):
         handler = shell_handler.Handler()
+        fake_assembly = fakes.FakeAssembly()
+        mock_registry.Assembly.get_by_id.return_value = fake_assembly
+        handler._update_assembly_status = mock.MagicMock()
         mock_popen.communicate.return_value = 'glance_id=1-2-34'
         handler.build(self.ctx, 5, 'git://example.com/foo', 'new_app',
                       '1-2-3-4', 'heroku',

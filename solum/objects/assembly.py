@@ -22,3 +22,12 @@ class Assembly(base.CrudMixin):
 
 class AssemblyList(list, base.CrudListMixin):
     """List of Assemblies."""
+
+
+class States(object):
+    PENDING = 'PENDING'
+    BUILDING = 'BUILDING'
+    DEPLOYING = 'DEPLOYING'
+    ERROR = 'ERROR'
+    READY = 'READY'
+    ERROR_STACK_CREATE_FAILED = 'ERROR_STACK_CREATE_FAILED'

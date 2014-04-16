@@ -19,11 +19,14 @@ import subprocess
 
 import solum
 from solum.conductor import api as conductor_api
+from solum.objects import assembly
 from solum.openstack.common.gettextutils import _
 from solum.openstack.common import log as logging
 from solum.worker import api as worker_api
 
 LOG = logging.getLogger(__name__)
+
+STATES = assembly.States
 
 
 def job_update_notification(ctxt, build_id, status=None, reason=None,
@@ -43,6 +46,11 @@ class Handler(object):
 
     def build(self, ctxt, build_id, source_uri, name, base_image_id,
               source_format, image_format, assembly_id):
+        assem = solum.objects.registry.Assembly.get_by_id(ctxt,
+                                                          assembly_id)
+        assem.status = STATES.BUILDING
+        assem.save(ctxt)
+
         solum.TLS.trace.clear()
         solum.TLS.trace.import_context(ctxt)
 
