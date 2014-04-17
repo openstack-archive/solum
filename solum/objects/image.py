@@ -22,3 +22,10 @@ class Image(base.CrudMixin):
 
 class ImageList(list, base.CrudListMixin):
     """List of images."""
+
+
+class States(object):
+    PENDING = 'PENDING'
+    BUILDING = 'BUILDING'
+    ERROR = 'ERROR'
+    COMPLETE = 'COMPLETE'

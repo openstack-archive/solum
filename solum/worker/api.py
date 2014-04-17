@@ -18,10 +18,6 @@ from oslo.config import cfg
 from solum.common.rpc import service
 
 
-STATES = (PENDING, BUILDING, ERROR, COMPLETE) = (
-    'PENDING', 'BUILDING', 'ERROR', 'COMPLETE')
-
-
 class API(service.API):
     def __init__(self, transport=None, context=None):
         cfg.CONF.import_opt('topic', 'solum.worker.config',

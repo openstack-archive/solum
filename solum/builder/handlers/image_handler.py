@@ -16,6 +16,7 @@ import uuid
 
 from solum.api.handlers import handler
 from solum import objects
+from solum.objects import image
 from solum.openstack.common import log as logging
 from solum.worker import api
 
@@ -36,7 +37,7 @@ class ImageHandler(handler.Handler):
         db_obj.uuid = str(uuid.uuid4())
         db_obj.user_id = self.context.user
         db_obj.project_id = self.context.tenant
-        db_obj.state = api.PENDING
+        db_obj.state = image.States.PENDING
         db_obj.create(self.context)
         self._start_build(db_obj)
         return db_obj
