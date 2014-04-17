@@ -18,6 +18,7 @@ from oslo.config import cfg
 from oslo import messaging
 
 import solum.common.context
+from solum import objects
 from solum.openstack.common import jsonutils
 
 # NOTE(asalkeld):
@@ -71,6 +72,7 @@ class Service(object):
                                                 serializer=serializer)
 
     def serve(self):
+        objects.load()
         self._server.start()
         self._server.wait()
 
