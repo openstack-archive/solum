@@ -17,6 +17,7 @@ import uuid
 from oslo.config import cfg
 from solum.api.handlers import handler
 from solum import objects
+from solum.objects import image
 from solum.worker import api
 
 # Register options for the service
@@ -31,6 +32,8 @@ opt_group = cfg.OptGroup(name='api',
                          title='Options for the solum-api service')
 CONF.register_group(opt_group)
 CONF.register_opts(API_SERVICE_OPTS, opt_group)
+
+IMAGE_STATES = image.States
 
 
 class AssemblyHandler(handler.Handler):
@@ -92,7 +95,7 @@ class AssemblyHandler(handler.Handler):
         image.uuid = str(uuid.uuid4())
         image.user_id = self.context.user
         image.project_id = self.context.tenant
-        image.state = api.PENDING
+        image.state = IMAGE_STATES.PENDING
         image.create(self.context)
 
         api.API(context=self.context).build(

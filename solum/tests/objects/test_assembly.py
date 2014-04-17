@@ -32,7 +32,7 @@ class TestAssembly(base.BaseTestCase):
                       'trigger_id': 'trigger-uuid-1234',
                       'tags': 'assembly tags',
                       'plan_id': 'plan_id_1',
-                      'status': 'Building',
+                      'status': 'BUILDING',
                       'application_uri': 'http://192.168.78.21:5000'}]
         utils.create_models_from_data(assembly.Assembly, self.data, self.ctx)
 

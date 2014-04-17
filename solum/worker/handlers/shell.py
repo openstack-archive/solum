@@ -20,13 +20,14 @@ import subprocess
 import solum
 from solum.conductor import api as conductor_api
 from solum.objects import assembly
+from solum.objects import image
 from solum.openstack.common.gettextutils import _
 from solum.openstack.common import log as logging
-from solum.worker import api as worker_api
 
 LOG = logging.getLogger(__name__)
 
-STATES = assembly.States
+ASSEMBLY_STATES = assembly.States
+IMAGE_STATES = image.States
 
 
 def job_update_notification(ctxt, build_id, status=None, reason=None,
@@ -40,16 +41,22 @@ def job_update_notification(ctxt, build_id, status=None, reason=None,
                                                      assembly_id)
 
 
+def update_assembly_status(ctxt, assembly_id, status):
+    #TODO(datsun180b): use conductor to update assembly status
+    assem = solum.objects.registry.Assembly.get_by_id(ctxt,
+                                                      assembly_id)
+    assem.status = status
+    assem.save(ctxt)
+
+
 class Handler(object):
     def echo(self, ctxt, message):
         LOG.debug(_("%s") % message)
 
     def build(self, ctxt, build_id, source_uri, name, base_image_id,
               source_format, image_format, assembly_id):
-        assem = solum.objects.registry.Assembly.get_by_id(ctxt,
-                                                          assembly_id)
-        assem.status = STATES.BUILDING
-        assem.save(ctxt)
+
+        update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.BUILDING)
 
         solum.TLS.trace.clear()
         solum.TLS.trace.import_context(ctxt)
@@ -69,7 +76,7 @@ class Handler(object):
         build_cmd = [build_app, source_uri, name, ctxt.tenant, base_image_id]
         solum.TLS.trace.support_info(build_cmd=' '.join(build_cmd),
                                      assembly_id=assembly_id)
-        job_update_notification(ctxt, build_id, worker_api.BUILDING,
+        job_update_notification(ctxt, build_id, IMAGE_STATES.BUILDING,
                                 reason='Starting the image build',
                                 assembly_id=assembly_id)
         try:
@@ -77,7 +84,7 @@ class Handler(object):
                                    stdout=subprocess.PIPE).communicate()[0]
         except OSError as subex:
             LOG.exception(subex)
-            job_update_notification(ctxt, build_id, worker_api.ERROR,
+            job_update_notification(ctxt, build_id, IMAGE_STATES.ERROR,
                                     reason=subex, assembly_id=assembly_id)
             return
         # we expect one line in the output that looks like:
@@ -88,11 +95,11 @@ class Handler(object):
                 solum.TLS.trace.support_info(build_out_line=line)
                 created_image_id = line.split('=')[-1].strip()
         if created_image_id is None:
-            job_update_notification(ctxt, build_id, worker_api.ERROR,
+            job_update_notification(ctxt, build_id, IMAGE_STATES.ERROR,
                                     reason='image not created',
                                     assembly_id=assembly_id)
             return
-        job_update_notification(ctxt, build_id, worker_api.COMPLETE,
+        job_update_notification(ctxt, build_id, IMAGE_STATES.COMPLETE,
                                 reason='built successfully',
                                 created_image_id=created_image_id,
                                 assembly_id=assembly_id)
