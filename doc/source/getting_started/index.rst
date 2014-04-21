@@ -120,14 +120,19 @@ Use that URI from above to create an assembly for your app.
   $ solum assembly create \
     http://10.0.2.15:9777/v1/plans/ceda0408-c93d-4772-abb2-18f65189d440 \
     --assembly=ex1
-  +-------------+--------------------------------------+
-  | Property    | Value                                |
-  +-------------+--------------------------------------+
-  | status      | None                                 |
-  | description | None                                 |
-  | uuid        | de666039-841f-45d7-9ed0-03cc3929f28e |
-  | name        | ex1                                  |
-  +-------------+--------------------------------------+
+
+  +-----------------+--------------------------------------------------------------------------+
+  | Property        | Value                                                                    |
+  +-----------------+--------------------------------------------------------------------------+
+  | status          | None                                                                     |
+  | description     | None                                                                     |
+  | application_uri | None                                                                     |
+  | name            | ex1                                                                      |
+  | trigger_uri     | http://10.0.2.15:9777/v1/public/triggers/ad74f96e-7769-4462-ad90-e31b94f |
+  |                 | 147c4                                                                    |
+  | uuid            | de666039-841f-45d7-9ed0-03cc3929f28e                                     |
+  +-----------------+--------------------------------------------------------------------------+
+
 
 Solum builds a disk image by layering your app's code on top of the related language pack's image.
 Once the image is created, it is uploaded to Glance.
@@ -140,15 +145,17 @@ The status field will show the progress of your app through the process.
 ::
 
   $ solum assembly show de666039-841f-45d7-9ed0-03cc3929f28e
-  +-----------------+--------------------------------------+
-  | Property        | Value                                |
-  +-----------------+--------------------------------------+
-  | status          | BUILDING                             |
-  | description     | None                                 |
-  | uuid            | de666039-841f-45d7-9ed0-03cc3929f28e |
-  | application_uri | None                                 |
-  | name            | ex1                                  |
-  +-----------------+--------------------------------------+
+  +-----------------+--------------------------------------------------------------------------+
+  | Property        | Value                                                                    |
+  +-----------------+--------------------------------------------------------------------------+
+  | status          | BUILDING                                                                 |
+  | description     | None                                                                     |
+  | application_uri | None                                                                     |
+  | name            | ex1                                                                      |
+  | trigger_uri     | http://10.0.2.15:9777/v1/public/triggers/ad74f96e-7769-4462-ad90-e31b94f |
+  |                 | 147c4                                                                    |
+  | uuid            | de666039-841f-45d7-9ed0-03cc3929f28e                                     |
+  +-----------------+--------------------------------------------------------------------------+
 
 You will see the following when the app is ready.
 The :code:`status` field changes to READY and the
@@ -156,16 +163,18 @@ The :code:`status` field changes to READY and the
 
 ::
 
-  $ solum assembly get de666039-841f-45d7-9ed0-03cc3929f28e
-  +-----------------+--------------------------------------+
-  | Property        | Value                                |
-  +-----------------+--------------------------------------+
-  | status          | READY                                |
-  | description     | None                                 |
-  | uuid            | de666039-841f-45d7-9ed0-03cc3929f28e |
-  | application_uri | http://192.168.76.21:5000            |
-  | name            | ex1                                  |
-  +-----------------+--------------------------------------+
+  $ solum assembly show de666039-841f-45d7-9ed0-03cc3929f28e
+  +-----------------+--------------------------------------------------------------------------+
+  | Property        | Value                                                                    |
+  +-----------------+--------------------------------------------------------------------------+
+  | status          | READY                                                                    |
+  | description     | None                                                                     |
+  | application_uri | 192.168.76.21:5000                                                       |
+  | name            | ex1                                                                      |
+  | trigger_uri     | http://10.0.2.15:9777/v1/public/triggers/ad74f96e-7769-4462-ad90-e31b94f |
+  |                 | 147c4                                                                    |
+  | uuid            | de666039-841f-45d7-9ed0-03cc3929f28e                                     |
+  +-----------------+--------------------------------------------------------------------------+
 
 Connect to your app
 -------------------
