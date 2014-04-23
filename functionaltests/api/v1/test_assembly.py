@@ -139,3 +139,7 @@ class TestAssemblyController(base.TestCase):
         self.assertEqual(resp.status, 204)
         self.assertEqual(body, '')
         self._delete_plan(plan_uuid)
+
+    def test_assemblies_delete_not_found(self):
+        self.assertRaises(tempest_exceptions.NotFound,
+                          self.client.delete, 'v1/assemblies/not_found')
