@@ -17,6 +17,7 @@
 import json
 
 from functionaltests.api import base
+from tempest import exceptions as tempest_exceptions
 
 sample_data = {"name": "test_assembly",
                "description": "A test to create assembly",
@@ -97,6 +98,10 @@ class TestAssemblyController(base.TestCase):
         json_data = json.loads(body)
         self._assert_output_expected(json_data, sample_data)
         self._delete_assembly(uuid, plan_uuid)
+
+    def test_assemblies_get_not_found(self):
+        self.assertRaises(tempest_exceptions.NotFound,
+                          self.client.get, 'v1/assemblies/not_found')
 
     def test_assemblies_put(self):
         uuid, plan_uuid = self._create_assembly()
