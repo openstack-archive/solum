@@ -115,6 +115,10 @@ class TestServiceController(base.TestCase):
                           self.client.put, 'v1/services/not_found',
                           updated_json)
 
+    def test_services_put_none(self):
+        self.assertRaises(tempest_exceptions.BadRequest,
+                          self.client.put, 'v1/services/any', "{}")
+
     def test_services_delete(self):
         uuid = self._create_service()
         resp, body = self.client.delete('v1/services/%s' % uuid)
