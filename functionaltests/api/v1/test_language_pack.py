@@ -167,3 +167,7 @@ class TestLanguagePackController(base.TestCase):
         resp, body = self.client.delete('v1/language_packs/%s' % uuid)
         self.assertEqual(resp.status, 204)
         self.assertEqual(body, '')
+
+    def test_language_packs_delete_not_found(self):
+        self.assertRaises(tempest_exceptions.NotFound,
+                          self.client.delete, 'v1/language_packs/not_found')

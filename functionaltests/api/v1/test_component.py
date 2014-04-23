@@ -147,3 +147,7 @@ class TestComponentController(base.TestCase):
         self.assertEqual(resp.status, 204)
         self.assertEqual(body, '')
         self._delete_assembly(assembly_uuid, plan_uuid)
+
+    def test_components_delete_not_found(self):
+        self.assertRaises(tempest_exceptions.NotFound,
+                          self.client.delete, 'v1/components/not_found')
