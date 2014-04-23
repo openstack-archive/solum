@@ -15,6 +15,7 @@
 import json
 
 from functionaltests.api import base
+from tempest import exceptions as tempest_exceptions
 
 sample_data = {"name": "test_language_pack",
                "description": "A test to create language_pack",
@@ -106,6 +107,10 @@ class TestLanguagePackController(base.TestCase):
         json_data = json.loads(body)
         self._assert_output_expected(json_data, sample_data)
         self._delete_language_pack(uuid)
+
+    def test_language_packs_get_not_found(self):
+        self.assertRaises(tempest_exceptions.NotFound,
+                          self.client.get, 'v1/language_packs/not_found')
 
     def test_language_packs_put(self):
         self.skipTest("Tags update not implemented yet in python-glanceclient")

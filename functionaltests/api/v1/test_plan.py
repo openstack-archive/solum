@@ -16,6 +16,7 @@
 import json
 
 from functionaltests.api import base
+from tempest import exceptions as tempest_exceptions
 
 sample_data = {"name": "test_plan",
                "description": "A test to create plan",
@@ -86,6 +87,10 @@ class TestPlanController(base.TestCase):
         json_data = json.loads(body)
         self._assert_output_expected(json_data, sample_data)
         self._delete_plan(uuid)
+
+    def test_plans_get_not_found(self):
+        self.assertRaises(tempest_exceptions.NotFound,
+                          self.client.get, 'v1/plans/not_found')
 
     def test_plans_put(self):
         uuid = self._create_plan()

@@ -112,7 +112,7 @@ class TestComponentController(base.TestCase):
         self._assert_output_expected(json_data, sample_data)
         self._delete_component(uuid, assembly_uuid, plan_uuid)
 
-    def test_components_get_notfound(self):
+    def test_components_get_not_found(self):
         self.assertRaises(tempest_exceptions.NotFound,
                           self.client.get, 'v1/components/not_found')
 
