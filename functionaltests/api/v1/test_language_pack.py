@@ -140,6 +140,28 @@ class TestLanguagePackController(base.TestCase):
         self._assert_output_expected(json_data, updated_data)
         self._delete_language_pack(uuid)
 
+    def test_language_packs_put_not_found(self):
+        updated_data = {"name": "test_language_pack updated",
+                        "description": "A test to create language_pack update",
+                        "language_pack_type": "python",
+                        "language_implementation": "py",
+                        "runtime_versions": ["1.3", "1.5"],
+                        "compiler_versions": ["1.4", "1.7"],
+                        "build_tool_chain": [{
+                            "type": "maven",
+                            "version": "3.1"
+                        }, {
+                            "type": "gradle",
+                            "version": "0.9"
+                        }],
+                        "os_platform": {"OS": "Fedora", "version": "17"},
+                        "attributes": {"key11": "value11", "key2": "value22"},
+                        "type": "language_pack"}
+        updated_json = json.dumps(updated_data)
+        self.assertRaises(tempest_exceptions.NotFound,
+                          self.client.put, 'v1/language_packs/not_found',
+                          updated_json)
+
     def test_language_packs_delete(self):
         uuid = self._create_language_pack()
         resp, body = self.client.delete('v1/language_packs/%s' % uuid)

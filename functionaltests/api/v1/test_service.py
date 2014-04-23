@@ -103,6 +103,18 @@ class TestServiceController(base.TestCase):
         self._assert_output_expected(json_data, updated_data)
         self._delete_service(uuid)
 
+    def test_services_put_not_found(self):
+        updated_data = {"name": "test_service updated",
+                        "description": "A test to create service updated",
+                        "project_id": "project_id updated",
+                        "user_id": "user_id updated",
+                        "service_type": "mysql updated",
+                        "read_only": False}
+        updated_json = json.dumps(updated_data)
+        self.assertRaises(tempest_exceptions.NotFound,
+                          self.client.put, 'v1/services/not_found',
+                          updated_json)
+
     def test_services_delete(self):
         uuid = self._create_service()
         resp, body = self.client.delete('v1/services/%s' % uuid)
