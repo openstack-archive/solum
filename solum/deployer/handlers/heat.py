@@ -18,6 +18,7 @@ import os
 import time
 import yaml
 
+from heatclient import exc
 from oslo.config import cfg
 from solum.common import clients
 from solum import objects
@@ -102,20 +103,28 @@ class Handler(object):
             template_flavor = 'basic_for_docker'
 
         template = self._get_template(template_flavor)
-        created_stack = osc.heat().stacks.create(stack_name=assem.name,
-                                                 template=template,
-                                                 parameters=parameters)
+
+        stack_id = self._find_id_if_stack_exists(osc, assem.name)
+        if stack_id is not None:
+            osc.heat().stacks.update(stack_id,
+                                     stack_name=assem.name,
+                                     template=template,
+                                     parameters=parameters)
+        else:
+            created_stack = osc.heat().stacks.create(stack_name=assem.name,
+                                                     template=template,
+                                                     parameters=parameters)
+            stack_id = created_stack['stack']['id']
+
+            comp_description = 'Heat Stack %s' % (
+                yaml.load(template).get('description'))
+            objects.registry.Component.assign_and_create(ctxt, assem,
+                                                         'Heat Stack',
+                                                         comp_description,
+                                                         created_stack['stack']
+                                                         ['links'][0]['href'])
         assem.status = STATES.DEPLOYING
         assem.save(ctxt)
-        stack_id = created_stack['stack']['id']
-
-        comp_description = 'Heat Stack %s' % (
-            yaml.load(template).get('description'))
-        objects.registry.Component.assign_and_create(ctxt, assem,
-                                                     'Heat Stack',
-                                                     comp_description,
-                                                     created_stack['stack']
-                                                     ['links'][0]['href'])
 
         self._update_assembly_status(ctxt, assem, osc, stack_id)
 
@@ -153,3 +162,11 @@ class Handler(object):
         if 'outputs' in heat_output._info:
             return heat_output._info['outputs'][1]['output_value']
         return None
+
+    def _find_id_if_stack_exists(self, osc, stack_name):
+        try:
+            stack = osc.heat().stacks.get(stack_name)
+            if stack is not None:
+                return stack.identifier.split('/')[-1]
+        except exc.HTTPNotFound:
+            return None

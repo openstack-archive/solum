@@ -42,6 +42,7 @@ class HandlerTest(base.BaseTestCase):
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
         fake_template = json.dumps({'description': 'test'})
         mock_get_templ.return_value = fake_template
+        handler._find_id_if_stack_exists = mock.MagicMock(return_value=(None))
         mock_clients.return_value.heat.return_value.stacks.create.\
             return_value = {"stack": {"id": "fake_id",
                                       "links": [{"href": "http://fake.ref",
@@ -84,6 +85,7 @@ class HandlerTest(base.BaseTestCase):
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
         fake_template = json.dumps({'description': 'test'})
         mock_get_templ.return_value = fake_template
+        handler._find_id_if_stack_exists = mock.MagicMock(return_value=(None))
         mock_clients.return_value.heat.return_value.stacks.create.\
             return_value = {"stack": {"id": "fake_id",
                                       "links": [{"href": "http://fake.ref",
@@ -141,3 +143,12 @@ class HandlerTest(base.BaseTestCase):
                                           "URL"}]}
         host_url = handler._parse_server_url(heat_output)
         self.assertEqual(host_url, "http://192.168.78.21:5000")
+
+    @mock.patch('solum.common.clients.OpenStackClients')
+    def test_find_id_if_stack_exists(self, mock_clients):
+        handler = heat_handler.Handler()
+        stack = mock.MagicMock
+        stack.identifier = 'test/123'
+        mock_clients.heat.stacks.get.return_value = stack
+        id = handler._find_id_if_stack_exists(mock_clients, 'test')
+        self.assertEqual(id, '123')
