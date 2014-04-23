@@ -3,8 +3,8 @@
 docker ps 2> /dev/null > /dev/null
 [[ $? != 0 ]] && echo "cannot talk to docker." && exit 1
 
-if [[ -z $1 ]] || [[ -z $2 ]] || [[ -z $3 ]]; then
-  echo "Usage:  build git_url appname project_id"
+if [[ -z $1 ]] || [[ -z $2 ]] || [[ -z $3 ]] || [[ -z $4 ]]; then
+  echo "Usage:  build git_url appname project_id base_image"
   exit 1
 fi
 
