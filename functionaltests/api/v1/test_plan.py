@@ -105,6 +105,15 @@ class TestPlanController(base.TestCase):
         self._assert_output_expected(json_data, updated_data)
         self._delete_plan(uuid)
 
+    def test_plans_put_not_found(self):
+        updated_data = {"name": "test_plan updated",
+                        "description": "A test to create plan updated",
+                        "type": "plan",
+                        "artifacts": []}
+        updated_json = json.dumps(updated_data)
+        self.assertRaises(tempest_exceptions.NotFound,
+                          self.client.put, 'v1/plans/not_found', updated_json)
+
     def test_plans_delete(self):
         uuid = self._create_plan()
         resp, body = self.client.delete('v1/plans/%s' % uuid)

@@ -120,6 +120,19 @@ class TestAssemblyController(base.TestCase):
         self._assert_output_expected(json_data, updated_data)
         self._delete_assembly(uuid, plan_uuid)
 
+    def test_assemblies_put_not_found(self):
+        updated_data = {"name": "test_assembly updated",
+                        "description": "A test to create assembly updated",
+                        "plan_uri": 'fake_uri',
+                        "project_id": "project_id updated",
+                        "user_id": "user_id updated",
+                        "status": "new_status",
+                        "application_uri": "new_uri"}
+        updated_json = json.dumps(updated_data)
+        self.assertRaises(tempest_exceptions.NotFound,
+                          self.client.put, 'v1/assemblies/not_found',
+                          updated_json)
+
     def test_assemblies_delete(self):
         uuid, plan_uuid = self._create_assembly()
         resp, body = self.client.delete('v1/assemblies/%s' % uuid)

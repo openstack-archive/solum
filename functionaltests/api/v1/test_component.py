@@ -130,6 +130,17 @@ class TestComponentController(base.TestCase):
         self._assert_output_expected(json_data, updated_data)
         self._delete_component(uuid, assembly_uuid, plan_uuid)
 
+    def test_components_put_not_found(self):
+        updated_data = {'name': 'test_service updated',
+                        'description': 'desc updated',
+                        'plan_uri': "%s/v1/plans/%s" % (self.client.base_url,
+                                                        'not_found'),
+                        'assembly_uuid': 'not_found'}
+        updated_json = json.dumps(updated_data)
+        self.assertRaises(tempest_exceptions.NotFound,
+                          self.client.put, 'v1/components/not_found',
+                          updated_json)
+
     def test_components_delete(self):
         uuid, assembly_uuid, plan_uuid = self._create_component()
         resp, body = self.client.delete('v1/components/%s' % uuid)
