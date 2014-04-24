@@ -76,6 +76,10 @@ class TestServiceController(base.TestCase):
         self._assert_output_expected(json_data, sample_data)
         self._delete_service(json_data['uuid'])
 
+    def test_services_create_none(self):
+        self.assertRaises(tempest_exceptions.BadRequest,
+                          self.client.post, 'v1/services', "{}")
+
     def test_services_get(self):
         uuid = self._create_service()
         resp, body = self.client.get('v1/services/%s' % uuid)

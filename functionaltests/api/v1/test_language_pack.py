@@ -100,6 +100,10 @@ class TestLanguagePackController(base.TestCase):
         self._assert_output_expected(json_data, sample_data)
         self._delete_language_pack(json_data['uuid'])
 
+    def test_language_packs_create_none(self):
+        self.assertRaises(tempest_exceptions.BadRequest,
+                          self.client.post, 'v1/language_packs', "{}")
+
     def test_language_packs_get(self):
         uuid = self._create_language_pack()
         resp, body = self.client.get('v1/language_packs/%s' % uuid)

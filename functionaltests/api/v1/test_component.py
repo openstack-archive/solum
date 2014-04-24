@@ -102,6 +102,10 @@ class TestComponentController(base.TestCase):
         self._assert_output_expected(json_data, sample_data)
         self._delete_component(json_data['uuid'], assembly_uuid, plan_uuid)
 
+    def test_components_create_none(self):
+        self.assertRaises(tempest_exceptions.BadRequest,
+                          self.client.post, 'v1/components', "{}")
+
     def test_components_get(self):
         uuid, assembly_uuid, plan_uuid = self._create_component()
         sample_data['plan_uri'] = "%s/v1/plans/%s" % (self.client.base_url,

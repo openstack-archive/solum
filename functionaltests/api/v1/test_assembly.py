@@ -89,6 +89,10 @@ class TestAssemblyController(base.TestCase):
         self._assert_output_expected(json_data, sample_data)
         self._delete_assembly(json_data['uuid'], p_uuid)
 
+    def test_assemblies_create_none(self):
+        self.assertRaises(tempest_exceptions.BadRequest,
+                          self.client.post, 'v1/assemblies', "{}")
+
     def test_assemblies_get(self):
         uuid, plan_uuid = self._create_assembly()
         sample_data['plan_uri'] = "%s/v1/plans/%s" % (self.client.base_url,

@@ -80,6 +80,10 @@ class TestPlanController(base.TestCase):
         self._assert_output_expected(json_data, sample_data)
         self._delete_plan(json_data['uuid'])
 
+    def test_plans_create_none(self):
+        self.assertRaises(tempest_exceptions.BadRequest,
+                          self.client.post, 'v1/plans', "{}")
+
     def test_plans_get(self):
         uuid = self._create_plan()
         resp, body = self.client.get('v1/plans/%s' % uuid)
