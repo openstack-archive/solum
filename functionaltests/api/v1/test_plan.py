@@ -114,6 +114,10 @@ class TestPlanController(base.TestCase):
         self.assertRaises(tempest_exceptions.NotFound,
                           self.client.put, 'v1/plans/not_found', updated_json)
 
+    def test_plans_put_none(self):
+        self.assertRaises(tempest_exceptions.BadRequest,
+                          self.client.put, 'v1/plans/any', "{}")
+
     def test_plans_delete(self):
         uuid = self._create_plan()
         resp, body = self.client.delete('v1/plans/%s' % uuid)

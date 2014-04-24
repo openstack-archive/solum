@@ -133,6 +133,10 @@ class TestAssemblyController(base.TestCase):
                           self.client.put, 'v1/assemblies/not_found',
                           updated_json)
 
+    def test_assemblies_put_none(self):
+        self.assertRaises(tempest_exceptions.BadRequest,
+                          self.client.put, 'v1/assemblies/any', "{}")
+
     def test_assemblies_delete(self):
         uuid, plan_uuid = self._create_assembly()
         resp, body = self.client.delete('v1/assemblies/%s' % uuid)

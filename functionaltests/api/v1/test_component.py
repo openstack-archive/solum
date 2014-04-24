@@ -141,6 +141,10 @@ class TestComponentController(base.TestCase):
                           self.client.put, 'v1/components/not_found',
                           updated_json)
 
+    def test_components_put_none(self):
+        self.assertRaises(tempest_exceptions.BadRequest,
+                          self.client.put, 'v1/components/any', "{}")
+
     def test_components_delete(self):
         uuid, assembly_uuid, plan_uuid = self._create_component()
         resp, body = self.client.delete('v1/components/%s' % uuid)
