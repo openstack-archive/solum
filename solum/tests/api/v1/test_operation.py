@@ -106,6 +106,48 @@ class TestOperationController(base.BaseTestCase):
         self.assertEqual(204, resp_mock.status)
 
 
+@mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
+@mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
+@mock.patch('solum.api.handlers.operation_handler.OperationHandler')
+class TestOperationsController(base.BaseTestCase):
+    def setUp(self):
+        super(TestOperationsController, self).setUp()
+        objects.load()
+
+    def test_operations_get_all(self, handler_mock, resp_mock, request_mock):
+        hand_get_all = handler_mock.return_value.get_all
+        hand_get_all.return_value = [fakes.FakeOperation()]
+        obj = operation.OperationsController()
+        resp = obj.get_all()
+        self.assertIsNotNone(resp)
+        self.assertEqual(200, resp_mock.status)
+
+    def test_operations_post(self, handler_mock, resp_mock, request_mock):
+        json_create = {'name': 'foo',
+                       'description': 'test_desc_operation',
+                       'user_id': 'user_id_test',
+                       'project_id': 'project_id_test'}
+        request_mock.body = json.dumps(json_create)
+        request_mock.content_type = 'application/json'
+        handler_create = handler_mock.return_value.create
+        handler_create.return_value = fakes.FakeOperation()
+        operation.OperationsController().post()
+        handler_create.assert_called_with(json_create)
+        self.assertEqual(201, resp_mock.status)
+        handler_create.assert_called_once_with(json_create)
+
+    def test_operations_post_nodata(self, handler_mock,
+                                    resp_mock, request_mock):
+        request_mock.body = ''
+        request_mock.content_type = 'application/json'
+        handler_create = handler_mock.return_value.create
+        handler_create.return_value = fakes.FakeComponent()
+        ret_val = operation.OperationsController().post()
+        self.assertEqual("Missing argument: \"data\"",
+                         str(ret_val['faultstring']))
+        self.assertEqual(400, resp_mock.status)
+
+
 class TestOperationAsDict(base.BaseTestCase):
 
     scenarios = [
