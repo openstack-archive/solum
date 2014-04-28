@@ -125,6 +125,16 @@ class TestPlansController(base.BaseTestCase):
         hand_create.assert_called_with(json_update)
         self.assertEqual(201, resp_mock.status)
 
+    def test_plans_post_nodata(self, handler_mock, resp_mock, request_mock):
+        request_mock.body = ''
+        request_mock.content_type = 'application/json'
+        handler_create = handler_mock.return_value.create
+        handler_create.return_value = fakes.FakePlan()
+        ret_val = plan.PlansController().post()
+        self.assertEqual("Missing argument: \"data\"",
+                         str(ret_val['faultstring']))
+        self.assertEqual(400, resp_mock.status)
+
 
 class TestPlanAsDict(base.BaseTestCase):
 
