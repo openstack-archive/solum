@@ -141,8 +141,17 @@ class TestAssembliesController(base.BaseTestCase):
     def test_assemblies_get_all(self, AssemblyHandler,
                                 resp_mock, request_mock):
         hand_get = AssemblyHandler.return_value.get_all
-        hand_get.return_value = []
+        fake_assembly = fakes.FakeAssembly()
+        hand_get.return_value = [fake_assembly]
         resp = assembly.AssembliesController().get_all()
+        self.assertEqual(fake_assembly.name, resp['result'][0].name)
+        self.assertEqual(fake_assembly.project_id,
+                         resp['result'][0].project_id)
+        self.assertEqual(fake_assembly.uuid, resp['result'][0].uuid)
+        self.assertEqual(fake_assembly.status, resp['result'][0].status)
+        self.assertEqual(fake_assembly.user_id, resp['result'][0].user_id)
+        self.assertEqual(fake_assembly.application_uri,
+                         resp['result'][0].application_uri)
         hand_get.assert_called_with()
         self.assertEqual(200, resp_mock.status)
         self.assertIsNotNone(resp)

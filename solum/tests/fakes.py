@@ -164,6 +164,7 @@ class FakeAssembly(mock.Mock):
     def as_dict(self):
         return dict(user_id=self.user_id,
                     project_id=self.project_id,
+                    application_uri=self.application_uri,
                     uuid=self.uuid,
                     id=self.id,
                     name=self.name,
