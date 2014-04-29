@@ -178,6 +178,16 @@ class TestSensorsController(base.BaseTestCase):
         self.assertEqual(201, resp_mock.status)
         handler_create.assert_called_once_with(json_update)
 
+    def test_sensors_post_nodata(self, handler_mock, resp_mock, request_mock):
+        request_mock.body = ''
+        request_mock.content_type = 'application/json'
+        handler_create = handler_mock.return_value.create
+        handler_create.return_value = fakes.FakeSensor()
+        ret_val = controller.SensorsController().post()
+        self.assertEqual("Missing argument: \"data\"",
+                         str(ret_val['faultstring']))
+        self.assertEqual(400, resp_mock.status)
+
 
 class TestSensorAsDict(base.BaseTestCase):
 
