@@ -23,7 +23,7 @@ solum.TLS.trace = trace_data.TraceData()
 CONTEXT = context.RequestContext(
     '_auth_token_', '_user_', '_tenant_', '_domain_', '_user_domain_',
     '_project_domain_', '_is_admin_', '_read_only_', '_request_id_',
-    '_user_name_', '_roles_', '_service_catalog_')
+    '_user_name_', '_roles_', '_auth_url_')
 
 
 class TestTraceData(base.BaseTestCase):
@@ -57,7 +57,8 @@ class TestTraceData(base.BaseTestCase):
             'user_domain': '_user_domain_',
             'user_identity': '_user_ _tenant_ _domain_ '
             '_user_domain_ _project_domain_',
-            'user_name': '_user_name_'
+            'user_name': '_user_name_',
+            'auth_url': '_auth_url_'
         }), solum.TLS.trace._support_data)
 
     def test_info_commands(self):

@@ -14,13 +14,14 @@
 
 from glanceclient import client as glanceclient
 from heatclient import client as heatclient
-from keystoneclient.v2_0 import client as ksclient
+from keystoneclient.v3 import client as ksclient
 from neutronclient.neutron import client as neutronclient
 from oslo.config import cfg
 from swiftclient import client as swiftclient
 
 from solum.common import exception
 from solum.openstack.common.gettextutils import _
+from solum.openstack.common import importutils
 from solum.openstack.common import log as logging
 
 
@@ -86,6 +87,8 @@ cfg.CONF.register_opts(glance_client_opts, group='glance_client')
 cfg.CONF.register_opts(heat_client_opts, group='heat_client')
 cfg.CONF.register_opts(neutron_client_opts, group='neutron_client')
 cfg.CONF.register_opts(swift_client_opts, group='swift_client')
+cfg.CONF.import_opt('auth_uri', 'keystoneclient.middleware.auth_token',
+                    group='keystone_authtoken')
 
 
 class OpenStackClients(object):
@@ -98,6 +101,16 @@ class OpenStackClients(object):
         self._heat = None
         self._neutron = None
         self._swift = None
+        if self.context.auth_url:
+            self.auth_url = self.context.auth_url.replace('v2.0', 'v3')
+        else:
+            # Import auth_token to have keystone_authtoken settings setup.
+            importutils.import_module('keystoneclient.middleware.auth_token')
+            self.auth_url = cfg.CONF.keystone_authtoken.auth_uri.replace(
+                'v2.0', 'v3')
+
+    def url_for(self, **kwargs):
+        return self.keystone().service_catalog.url_for(**kwargs)
 
     @property
     def auth_token(self):
@@ -108,7 +121,7 @@ class OpenStackClients(object):
             return self._keystone
 
         args = {
-            'auth_url': self.context.auth_url,
+            'auth_url': self.auth_url,
             'token': self.context.auth_token,
             'username': None,
             'password': None
@@ -122,10 +135,10 @@ class OpenStackClients(object):
             return self._neutron
 
         endpoint_type = self._get_client_option('neutron', 'endpoint_type')
-        endpoint_url = self.context.get_url_for(service_type='network',
-                                                endpoint_type=endpoint_type)
+        endpoint_url = self.url_for(service_type='network',
+                                    endpoint_type=endpoint_type)
         args = {
-            'auth_url': self.context.auth_url,
+            'auth_url': self.auth_url,
             'endpoint_url': endpoint_url,
             'token': self.auth_token,
             'username': None,
@@ -148,8 +161,8 @@ class OpenStackClients(object):
             'token': self.auth_token,
         }
         endpoint_type = self._get_client_option('glance', 'endpoint_type')
-        endpoint = self.context.get_url_for(service_type='image',
-                                            endpoint_type=endpoint_type)
+        endpoint = self.url_for(service_type='image',
+                                endpoint_type=endpoint_type)
         self._glance = glanceclient.Client('2', endpoint, **args)
 
         return self._glance
@@ -161,7 +174,7 @@ class OpenStackClients(object):
 
         endpoint_type = self._get_client_option('heat', 'endpoint_type')
         args = {
-            'auth_url': self.context.auth_url,
+            'auth_url': self.auth_url,
             'token': self.auth_token,
             'username': None,
             'password': None,
@@ -171,8 +184,8 @@ class OpenStackClients(object):
             'insecure': self._get_client_option('heat', 'insecure')
         }
 
-        endpoint = self.context.get_url_for(service_type='orchestration',
-                                            endpoint_type=endpoint_type)
+        endpoint = self.url_for(service_type='orchestration',
+                                endpoint_type=endpoint_type)
         self._heat = heatclient.Client('1', endpoint, **args)
 
         return self._heat
@@ -186,8 +199,8 @@ class OpenStackClients(object):
         args = {
             'auth_version': '2.0',
             'preauthtoken': self.auth_token,
-            'preauthurl': self.context.get_url_for(
-                service_type='object-store', endpoint_type=endpoint_type),
+            'preauthurl': self.url_for(service_type='object-store',
+                                       endpoint_type=endpoint_type),
             'os_options': {'endpoint_type': endpoint_type},
             'cacert': self._get_client_option('swift', 'cacert'),
             'insecure': self._get_client_option('swift', 'insecure')

@@ -24,45 +24,45 @@ from solum.tests import base
 
 class ClientsTest(base.BaseTestCase):
 
+    @mock.patch.object(clients.OpenStackClients, 'keystone')
+    def test_url_for(self, mock_keystone):
+        con = mock.MagicMock()
+        obj = clients.OpenStackClients(con)
+        obj.url_for(service_type='fake_service', endpoint_type='fake_endpoint')
+        mock_keystone.return_value.service_catalog.url_for.\
+            assert_called_once_with(service_type='fake_service',
+                                    endpoint_type='fake_endpoint')
+
     @mock.patch.object(glanceclient, 'Client')
-    def test_clients_glance(self, mock_call):
+    @mock.patch.object(clients.OpenStackClients, 'url_for')
+    def test_clients_glance(self, mock_url, mock_call):
         con = mock.MagicMock()
         con.tenant = "b363706f891f48019483f8bd6503c54d"
         con.auth_token = "3bcc3d3a03f44e3d8377f9247b0ad155"
-        auth_url = mock.PropertyMock(name="auth_url",
-                                     return_value="keystone_url")
-        type(con).auth_url = auth_url
-        con.get_url_for = mock.Mock(name="get_url_for")
-        con.get_url_for.return_value = "url_from_keystone"
+        mock_url.return_value = "url_from_keystone"
         obj = clients.OpenStackClients(con)
         obj._glance = None
         obj.glance()
         mock_call.assert_called_once_with(
             '2', 'url_from_keystone', token='3bcc3d3a03f44e3d8377f9247b0ad155')
+        mock_url.assert_called_once_with(service_type='image',
+                                         endpoint_type='publicURL')
 
     def test_clients_glance_noauth(self):
         con = mock.MagicMock()
         con.auth_token = None
         con.tenant = "b363706f891f48019483f8bd6503c54d"
-        auth_url = mock.PropertyMock(name="auth_url",
-                                     return_value="keystone_url")
-        type(con).auth_url = auth_url
-        con.get_url_for = mock.Mock(name="get_url_for")
-        con.get_url_for.return_value = "url_from_keystone"
         obj = clients.OpenStackClients(con)
         obj._glance = None
         self.assertRaises(exception.AuthorizationFailure, obj.glance)
 
     @mock.patch.object(glanceclient, 'Client')
-    def test_clients_glance_cached(self, mock_call):
+    @mock.patch.object(clients.OpenStackClients, 'url_for')
+    def test_clients_glance_cached(self, mock_url, mock_call):
         con = mock.MagicMock()
         con.tenant = "b363706f891f48019483f8bd6503c54d"
         con.auth_token = "3bcc3d3a03f44e3d8377f9247b0ad155"
-        auth_url = mock.PropertyMock(name="auth_url",
-                                     return_value="keystone_url")
-        type(con).auth_url = auth_url
-        con.get_url_for = mock.Mock(name="get_url_for")
-        con.get_url_for.return_value = "url_from_keystone"
+        mock_url.return_value = "url_from_keystone"
         obj = clients.OpenStackClients(con)
         obj._glance = None
         glance = obj.glance()
@@ -70,15 +70,13 @@ class ClientsTest(base.BaseTestCase):
         self.assertEqual(glance, glance_cached)
 
     @mock.patch.object(heatclient, 'Client')
-    def test_clients_heat(self, mock_call):
+    @mock.patch.object(clients.OpenStackClients, 'url_for')
+    def test_clients_heat(self, mock_url, mock_call):
         con = mock.MagicMock()
         con.tenant = "b363706f891f48019483f8bd6503c54b"
         con.auth_token = "3bcc3d3a03f44e3d8377f9247b0ad155"
-        auth_url = mock.PropertyMock(name="auth_url",
-                                     return_value="keystone_url")
-        type(con).auth_url = auth_url
-        con.get_url_for = mock.Mock(name="get_url_for")
-        con.get_url_for.return_value = "url_from_keystone"
+        con.auth_url = "keystone_url"
+        mock_url.return_value = "url_from_keystone"
         obj = clients.OpenStackClients(con)
         obj._heat = None
         obj.heat()
@@ -87,6 +85,8 @@ class ClientsTest(base.BaseTestCase):
             cert_file=None, token='3bcc3d3a03f44e3d8377f9247b0ad155',
             auth_url='keystone_url', ca_file=None, key_file=None,
             password=None, insecure=False)
+        mock_url.assert_called_once_with(service_type='orchestration',
+                                         endpoint_type='publicURL')
 
     def test_clients_heat_noauth(self):
         con = mock.MagicMock()
@@ -101,15 +101,13 @@ class ClientsTest(base.BaseTestCase):
         obj._heat = None
         self.assertRaises(exception.AuthorizationFailure, obj.heat)
 
-    def test_clients_heat_cached(self):
+    @mock.patch.object(clients.OpenStackClients, 'url_for')
+    def test_clients_heat_cached(self, mock_url):
         con = mock.MagicMock()
         con.tenant = "b363706f891f48019483f8bd6503c54b"
         con.auth_token = "3bcc3d3a03f44e3d8377f9247b0ad155"
-        auth_url = mock.PropertyMock(name="auth_url",
-                                     return_value="keystone_url")
-        type(con).auth_url = auth_url
-        con.get_url_for = mock.Mock(name="get_url_for")
-        con.get_url_for.return_value = "url_from_keystone"
+        con.auth_url = "keystone_url"
+        mock_url.return_value = "url_from_keystone"
         obj = clients.OpenStackClients(con)
         obj._heat = None
         heat = obj.heat()
@@ -117,15 +115,12 @@ class ClientsTest(base.BaseTestCase):
         self.assertEqual(heat, heat_cached)
 
     @mock.patch.object(swiftclient, 'Connection')
-    def test_clients_swift(self, mock_call):
+    @mock.patch.object(clients.OpenStackClients, 'url_for')
+    def test_clients_swift(self, mock_url, mock_call):
         con = mock.MagicMock()
         con.tenant = "b363706f891f48019483f8bd6503c54b"
         con.auth_token = "3bcc3d3a03f44e3d8377f9247b0ad155"
-        auth_url = mock.PropertyMock(name="auth_url",
-                                     return_value="keystone_url")
-        type(con).auth_url = auth_url
-        con.get_url_for = mock.Mock(name="get_url_for")
-        con.get_url_for.return_value = "url_from_keystone"
+        mock_url.return_value = "url_from_keystone"
         obj = clients.OpenStackClients(con)
         obj._swift = None
         obj.swift()
@@ -147,15 +142,12 @@ class ClientsTest(base.BaseTestCase):
         obj._swift = None
         self.assertRaises(exception.AuthorizationFailure, obj.swift)
 
-    def test_clients_swift_cached(self):
+    @mock.patch.object(clients.OpenStackClients, 'url_for')
+    def test_clients_swift_cached(self, mock_url):
         con = mock.MagicMock()
         con.tenant = "b363706f891f48019483f8bd6503c54b"
         con.auth_token = "3bcc3d3a03f44e3d8377f9247b0ad155"
-        auth_url = mock.PropertyMock(name="auth_url",
-                                     return_value="keystone_url")
-        type(con).auth_url = auth_url
-        con.get_url_for = mock.Mock(name="get_url_for")
-        con.get_url_for.return_value = "url_from_keystone"
+        mock_url.return_value = "url_from_keystone"
         obj = clients.OpenStackClients(con)
         obj._swift = None
         swift = obj.swift()
@@ -163,15 +155,13 @@ class ClientsTest(base.BaseTestCase):
         self.assertEqual(swift, swift_cached)
 
     @mock.patch.object(neutronclient, 'Client')
-    def test_clients_neutron(self, mock_call):
+    @mock.patch.object(clients.OpenStackClients, 'url_for')
+    def test_clients_neutron(self, mock_url, mock_call):
         con = mock.MagicMock()
         con.tenant = "b363706f891f48019483f8bd6503c54b"
         con.auth_token = "3bcc3d3a03f44e3d8377f9247b0ad155"
-        auth_url = mock.PropertyMock(name="auth_url",
-                                     return_value="keystone_url")
-        type(con).auth_url = auth_url
-        con.get_url_for = mock.Mock(name="get_url_for")
-        con.get_url_for.return_value = "url_from_keystone"
+        con.auth_url = "keystone_url"
+        mock_url.return_value = "url_from_keystone"
         obj = clients.OpenStackClients(con)
         obj._neutron = None
         obj.neutron()
@@ -193,15 +183,12 @@ class ClientsTest(base.BaseTestCase):
         obj._neutron = None
         self.assertRaises(exception.AuthorizationFailure, obj.neutron)
 
-    def test_clients_neutron_cached(self):
+    @mock.patch.object(clients.OpenStackClients, 'url_for')
+    def test_clients_neutron_cached(self, mock_url):
         con = mock.MagicMock()
         con.tenant = "b363706f891f48019483f8bd6503c54b"
         con.auth_token = "3bcc3d3a03f44e3d8377f9247b0ad155"
-        auth_url = mock.PropertyMock(name="auth_url",
-                                     return_value="keystone_url")
-        type(con).auth_url = auth_url
-        con.get_url_for = mock.Mock(name="get_url_for")
-        con.get_url_for.return_value = "url_from_keystone"
+        mock_url.return_value = "url_from_keystone"
         obj = clients.OpenStackClients(con)
         obj._neutron = None
         neutron = obj.neutron()
