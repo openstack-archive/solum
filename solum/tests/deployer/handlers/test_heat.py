@@ -15,10 +15,15 @@
 import json
 import mock
 
+from oslo.config import cfg
 from solum.deployer.handlers import heat as heat_handler
+from solum.objects import assembly
 from solum.tests import base
 from solum.tests import fakes
 from solum.tests import utils
+
+
+STATES = assembly.States
 
 
 class HandlerTest(base.BaseTestCase):
@@ -152,3 +157,59 @@ class HandlerTest(base.BaseTestCase):
         mock_clients.heat.stacks.get.return_value = stack
         id = handler._find_id_if_stack_exists(mock_clients, 'test')
         self.assertEqual(id, '123')
+
+    @mock.patch('solum.objects.registry')
+    @mock.patch('solum.common.clients.OpenStackClients')
+    def test_delete_heat_stack_success(self, mock_client, mock_registry):
+        fake_assem = fakes.FakeAssembly()
+        mock_registry.Assembly.get_by_id.return_value = fake_assem
+
+        handler = heat_handler.Handler()
+        handler._find_id_if_stack_exists = mock.MagicMock(side_effect=
+                                                          self._s_efct)
+
+        cfg.CONF.deployer.max_attempts = 1
+        cfg.CONF.deployer.wait_interval = 0
+        cfg.CONF.deployer.growth_factor = 1.2
+
+        handler.delete_heat_stack(self.ctx, fake_assem.id)
+
+        mock_client.heat.stacks.delete.assert_called_once()
+        fake_assem.destroy.assert_called_once()
+
+    def _s_efct(*args):
+        def second_call(*args):
+            return None
+        return mock.MagicMock(side_effect=second_call)
+
+    @mock.patch('solum.objects.registry')
+    @mock.patch('solum.common.clients.OpenStackClients')
+    def test_delete_heat_stack_error(self, mock_client, mock_registry):
+        fake_assem = fakes.FakeAssembly()
+        mock_registry.Assembly.get_by_id.return_value = fake_assem
+
+        handler = heat_handler.Handler()
+        handler._find_id_if_stack_exists = mock.MagicMock(return_value='42')
+
+        cfg.CONF.deployer.max_attempts = 1
+        cfg.CONF.deployer.wait_interval = 0
+        cfg.CONF.deployer.growth_factor = 1.2
+
+        handler.delete_heat_stack(self.ctx, fake_assem.id)
+
+        mock_client.heat.stacks.delete.assert_called_once()
+        fake_assem.save.assert_called_once_with(self.ctx)
+        self.assertEqual(STATES.ERROR_STACK_DELETE_FAILED, fake_assem.status)
+
+    @mock.patch('solum.objects.registry')
+    @mock.patch('solum.common.clients.OpenStackClients')
+    def test_delete_heat_stack_absent(self, mock_client, mock_registry):
+        fake_assem = fakes.FakeAssembly()
+        mock_registry.Assembly.get_by_id.return_value = fake_assem
+
+        handler = heat_handler.Handler()
+        handler._find_id_if_stack_exists = mock.MagicMock(return_value=None)
+        handler.delete_heat_stack(self.ctx, fake_assem.id)
+
+        assert not mock_client.heat.stacks.delete.called
+        fake_assem.destroy.assert_called_once()

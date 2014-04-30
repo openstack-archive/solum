@@ -84,6 +84,32 @@ class Handler(object):
                 params['private_subnet'] = tenant_network['subnets'][0]
         return params
 
+    def delete_heat_stack(self, ctxt, assem_id):
+        osc = clients.OpenStackClients(ctxt)
+        assem = objects.registry.Assembly.get_by_id(ctxt, assem_id)
+        stack_id = self._find_id_if_stack_exists(osc, assem.name)
+
+        if stack_id is not None:
+            osc.heat().stacks.delete(stack_id)
+
+            wait_interval = cfg.CONF.deployer.wait_interval
+            growth_factor = cfg.CONF.deployer.growth_factor
+
+            for count in range(cfg.CONF.deployer.max_attempts):
+                stack_id = self._find_id_if_stack_exists(osc, assem.name)
+                if stack_id is None:
+                    break
+                time.sleep(wait_interval)
+                wait_interval *= growth_factor
+
+        if stack_id is None:
+            assem.destroy(ctxt)
+            return
+
+        if stack_id is not None:
+            assem.status = STATES.ERROR_STACK_DELETE_FAILED
+            assem.save(ctxt)
+
     def deploy(self, ctxt, assembly_id, image_id):
         osc = clients.OpenStackClients(ctxt)
 

@@ -19,7 +19,9 @@ from solum.api.handlers import handler
 from solum.common import context
 from solum.common import exception
 from solum.common import solum_keystoneclient
+from solum.deployer import api as deploy_api
 from solum import objects
+from solum.objects import assembly
 from solum.objects import image
 from solum.openstack.common import log as logging
 from solum.worker import api
@@ -38,6 +40,7 @@ opt_group = cfg.OptGroup(name='api',
 CONF.register_group(opt_group)
 CONF.register_opts(API_SERVICE_OPTS, opt_group)
 
+ASSEMBLY_STATES = assembly.States
 IMAGE_STATES = image.States
 
 
@@ -88,7 +91,11 @@ class AssemblyHandler(handler.Handler):
         ksc = solum_keystoneclient.KeystoneClientV3(self.context)
         ksc.delete_trust(db_obj.trust_id)
 
-        db_obj.destroy(self.context)
+        deploy_api.API(context=self.context).delete_heat_stack(
+            assem_id=db_obj.id)
+
+        db_obj.status = ASSEMBLY_STATES.DELETING
+        db_obj.save(self.context)
 
     def create(self, data):
         """Create a new resource."""

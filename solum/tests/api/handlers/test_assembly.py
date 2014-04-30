@@ -15,9 +15,13 @@
 import mock
 
 from solum.api.handlers import assembly_handler
+from solum.objects import assembly
 from solum.tests import base
 from solum.tests import fakes
 from solum.tests import utils
+
+
+STATES = assembly.States
 
 
 @mock.patch('solum.objects.registry')
@@ -91,16 +95,19 @@ class TestAssemblyHandler(base.BaseTestCase):
         mock_kc.return_value.create_trust_context.assert_called_once_with()
 
     @mock.patch('solum.common.solum_keystoneclient.KeystoneClientV3')
-    def test_delete(self, mock_kc, mock_registry):
+    @mock.patch('solum.deployer.api.API.delete_heat_stack')
+    def test_delete(self, mock_deploy, mock_kc, mock_registry):
         db_obj = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_uuid.return_value = db_obj
         handler = assembly_handler.AssemblyHandler(self.ctx)
         handler.delete('test_id')
-        db_obj.destroy.assert_called_once_with(self.ctx)
+        db_obj.save.assert_called_once_with(self.ctx)
         mock_registry.Assembly.get_by_uuid.assert_called_once_with(self.ctx,
                                                                    'test_id')
         mock_kc.return_value.delete_trust.assert_called_once_with(
             'trust_worthy')
+        mock_deploy.assert_called_once_with(assem_id=db_obj.id)
+        self.assertEqual(STATES.DELETING, db_obj.status)
 
     def test_trigger_workflow(self, mock_registry):
         trigger_id = 1

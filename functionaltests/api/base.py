@@ -14,6 +14,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import time
+
+from tempest import auth
 from tempest import clients
 from tempest.common import rest_client
 from tempest import config
@@ -29,13 +32,40 @@ class SolumClient(rest_client.RestClient):
         self.service = 'application_deployment'
         self.endpoint_url = 'publicURL'
 
+    def assembly_delete_done(self, assembly_uuid):
+        wait_interval = 1
+        growth_factor = 1.2
+        max_attempts = 5
+
+        for count in range(max_attempts):
+            try:
+                resp, body = self.get('v1/assemblies/%s' % assembly_uuid)
+            except Exception:
+                return True
+            time.sleep(wait_interval)
+            wait_interval *= growth_factor
+
+        return False
+
 
 class TestCase(testtools.TestCase):
     def setUp(self):
         super(TestCase, self).setUp()
-        username = CONF.identity.username
-        password = CONF.identity.password
-        tenant_name = CONF.identity.tenant_name
-        mgr = clients.Manager(username, password, tenant_name)
-        auth_provider = mgr.get_auth_provider(mgr.get_default_credentials())
+
+        credentials = SolumCredentials()
+
+        mgr = clients.Manager()
+        auth_provider = mgr.get_auth_provider(credentials)
         self.client = SolumClient(auth_provider)
+
+
+class SolumCredentials(auth.KeystoneV2Credentials):
+
+    def __init__(self):
+        creds = dict(
+            username=CONF.identity.username,
+            password=CONF.identity.password,
+            tenant_name=CONF.identity.tenant_name
+        )
+
+        super(SolumCredentials, self).__init__(**creds)

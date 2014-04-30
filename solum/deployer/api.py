@@ -27,3 +27,6 @@ class API(service.API):
 
     def deploy(self, assembly_id, image_id):
         self._cast('deploy', assembly_id=assembly_id, image_id=image_id)
+
+    def delete_heat_stack(self, assem_id):
+        self._cast('delete_heat_stack', assem_id=assem_id)

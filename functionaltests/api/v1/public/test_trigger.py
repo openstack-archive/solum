@@ -14,6 +14,7 @@ import json
 import requests
 
 from functionaltests.api import base
+from tempest import exceptions as tempest_exceptions
 
 assembly_data = {'name': 'test_assembly',
                  'description': 'desc assembly'}
@@ -59,7 +60,11 @@ class TestTriggerController(base.TestCase):
     def _delete_assembly(self, assembly_uuid, plan_uuid):
         resp, body = self.client.delete('v1/assemblies/%s' % assembly_uuid)
         self.assertEqual(resp.status, 204)
-        self._delete_plan(plan_uuid)
+
+        if self.client.assembly_delete_done(assembly_uuid):
+            self._delete_plan(plan_uuid)
+        else:
+            self.assertRaises(tempest_exceptions.TimeoutException)
 
     def _delete_plan(self, plan_uuid):
         resp, body = self.client.delete('v1/plans/%s' % plan_uuid)
