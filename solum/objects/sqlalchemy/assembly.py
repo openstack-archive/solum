@@ -72,6 +72,14 @@ class Assembly(sql.Base, abstract.Assembly):
         return session.query(component.Component).filter_by(
             assembly_id=self.id).all()
 
+    def destroy(self, context):
+        session = sql.Base.get_session()
+        with session.begin():
+            session.query(component.Component).filter_by(
+                assembly_id=self.id).delete()
+            session.query(self.__class__).filter_by(
+                id=self.id).delete()
+
 
 class AssemblyList(abstract.AssemblyList):
     """Represent a list of assemblies in sqlalchemy."""

@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import uuid
+
+from solum.common import exception
 from solum.objects import registry
 from solum.objects.sqlalchemy import assembly
 from solum.tests import base
@@ -54,3 +57,19 @@ class TestAssembly(base.BaseTestCase):
             'trigger_id'])
         for key, value in self.data[0].items():
             self.assertEqual(value, getattr(ta, key))
+
+    def test_del_assem_with_comps(self):
+        ta = registry.Assembly().get_by_id(self.ctx, self.data[0]['id'])
+        comp = registry.Component()
+        comp.uuid = str(uuid.uuid4())
+        comp.name = 't'
+        comp.assembly_id = ta.id
+        comp.create(self.ctx)
+        comp_id = comp.id
+        ta.destroy(self.ctx)
+
+        self.assertRaises(exception.ResourceNotFound,
+                          registry.Assembly().get_by_id,
+                          self.ctx, self.data[0]['id'])
+        self.assertRaises(exception.ResourceNotFound,
+                          registry.Component().get_by_id, self.ctx, comp_id)
