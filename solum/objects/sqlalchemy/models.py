@@ -128,9 +128,8 @@ class SolumBase(models.TimestampMixin, models.ModelBase):
     def destroy(self, context):
         session = SolumBase.get_session()
         with session.begin():
-            session.query(self.__class__).\
-                filter_by(id=self.id).\
-                delete()
+            session.query(self.__class__).filter_by(
+                id=self.id).delete()
 
     @classmethod
     def _raise_not_found(cls, item_id):
