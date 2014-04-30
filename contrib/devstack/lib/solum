@@ -111,7 +111,7 @@ function configure_solum() {
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken auth_port $KEYSTONE_AUTH_PORT
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken auth_protocol $KEYSTONE_AUTH_PROTOCOL
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken cafile $KEYSTONE_SSL_CA
-    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken auth_uri $KEYSTONE_SERVICE_PROTOCOL://$KEYSTONE_SERVICE_HOST:$KEYSTONE_SERVICE_PORT/
+    configure_API_version $SOLUM_CONF_DIR/$SOLUM_CONF_FILE $IDENTITY_API_VERSION
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken admin_tenant_name service
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken admin_user $SOLUM_USER
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken admin_password $ADMIN_PASSWORD

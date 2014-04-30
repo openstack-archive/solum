@@ -63,8 +63,8 @@ class TestAuth(base.BaseTestCase):
                          fakes.fakeAuthTokenHeaders['X-User-Id'])
         self.assertEqual(ctx.roles,
                          [u'admin', u'ResellerAdmin', u'_member_'])
-        self.assertEqual(ctx.service_catalog,
-                         fakes.fakeAuthTokenHeaders['X-Service-Catalog'])
+        self.assertEqual(ctx.auth_url,
+                         fakes.fakeAuthTokenHeaders['X-Auth-Url'])
         self.assertEqual(ctx.user_name,
                          fakes.fakeAuthTokenHeaders['X-User-Name'])
         self.assertEqual(ctx.domain,

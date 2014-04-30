@@ -103,16 +103,7 @@ class AuthInformationHook(hooks.PecanHook):
         except ValueError:
             LOG.debug("No auth token found in the request.")
             raise Exception('Not authorized')
-
-        service_catalog = None
-        if headers.get('X-Service-Catalog') is not None:
-            try:
-                # We will not parse service catalog here
-                # service_catalog will contain json formatted string
-                service_catalog = headers.get('X-Service-Catalog')
-            except ValueError:
-                raise Exception(
-                    _('Invalid service catalog json.'))
+        auth_url = headers.get('X-Auth-Url')
         identity_status = headers.get('X-Identity-Status')
         if identity_status == 'Confirmed':
             ctx = context.RequestContext(auth_token=recv_auth_token,
@@ -123,7 +114,7 @@ class AuthInformationHook(hooks.PecanHook):
                                          project_domain=project_domain_id,
                                          user_name=user_name,
                                          roles=roles,
-                                         service_catalog=service_catalog)
+                                         auth_url=auth_url)
             state.request.security_context = ctx
         else:
             LOG.debug("The provided identity is not confirmed.")
