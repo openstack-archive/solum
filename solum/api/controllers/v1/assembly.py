@@ -77,7 +77,8 @@ class AssembliesController(rest.RestController):
             plan_uri = data.plan_uri
             if plan_uri.startswith(pecan.request.host_url):
                 pl_uuid = plan_uri.split('/')[-1]
-                pl = objects.registry.Plan.get_by_uuid(None, pl_uuid)
+                pl = objects.registry.Plan.get_by_uuid(
+                    pecan.request.security_context, pl_uuid)
                 js_data['plan_id'] = pl.id
             else:
                 # TODO(asalkeld) we are not hosting the plan so
