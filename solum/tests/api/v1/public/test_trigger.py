@@ -15,6 +15,7 @@
 import mock
 
 from solum.api.controllers.v1.pub import trigger
+from solum.common import exception
 from solum.tests import base
 from solum.tests import fakes
 
@@ -27,6 +28,15 @@ class TestTriggerController(base.BaseTestCase):
     def test_trigger_post(self, handler_mock, resp_mock, request_mock):
         obj = trigger.TriggerController()
         obj.post('test_id')
-        self.assertEqual(200, resp_mock.status)
+        self.assertEqual(202, resp_mock.status)
+        handler_mock.return_value.trigger_workflow.\
+            assert_called_once_with('test_id')
+
+    def test_trigger_post_error(self, handler_mock, resp_mock, request_mock):
+        obj = trigger.TriggerController()
+        handler_mock.return_value.trigger_workflow.side_effect = (
+            exception.ResourceNotFound(name='trigger', id='test_id'))
+        obj.post('test_id')
+        self.assertEqual(404, resp_mock.status)
         handler_mock.return_value.trigger_workflow.\
             assert_called_once_with('test_id')

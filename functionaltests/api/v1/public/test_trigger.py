@@ -52,7 +52,7 @@ class TestTriggerController(base.TestCase):
         assembly_uuid, plan_uuid, trigger_uri = self._create_assembly()
         #Using requests instead of self.client to test unauthenticated request
         resp = requests.post(trigger_uri)
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 202)
 
         self._delete_assembly(assembly_uuid, plan_uuid)
 
