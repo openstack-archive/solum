@@ -55,3 +55,37 @@ class HandlerTest(base.BaseTestCase):
                               None, 44),
                     mock.call(5, 'ERROR', 'image not created', None, 44)]
         self.assertEqual(expected, mock_updater.call_args_list)
+
+
+class TestBuildCommand(base.BaseTestCase):
+    scenarios = [
+        ('docker',
+         dict(source_format='heroku', image_format='docker',
+              base_image_id='auto',
+              expect='lp-cedarish/docker/build-app')),
+        ('vmslug',
+         dict(source_format='heroku', image_format='qcow2',
+              base_image_id='auto',
+              expect='lp-cedarish/vm-slug/build-app')),
+        ('dib',
+         dict(source_format='dib', image_format='qcow2',
+              base_image_id='xyz',
+              expect='diskimage-builder/vm-slug/build-app'))]
+
+    def test_build_cmd(self):
+        ctx = utils.dummy_context()
+        handler = shell_handler.Handler()
+        cmd = handler._get_build_command(ctx,
+                                         'http://example.com/a.git',
+                                         'testa',
+                                         self.base_image_id,
+                                         self.source_format,
+                                         self.image_format)
+        self.assertIn(self.expect, cmd[0])
+        self.assertEqual('http://example.com/a.git', cmd[1])
+        self.assertEqual('testa', cmd[2])
+        self.assertEqual(ctx.tenant, cmd[3])
+        if self.base_image_id == 'auto' and self.image_format == 'qcow2':
+            self.assertEqual('cedarish', cmd[4])
+        else:
+            self.assertEqual(self.base_image_id, cmd[4])

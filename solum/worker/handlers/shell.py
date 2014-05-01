@@ -53,14 +53,8 @@ class Handler(object):
     def echo(self, ctxt, message):
         LOG.debug(_("%s") % message)
 
-    def build(self, ctxt, build_id, source_uri, name, base_image_id,
-              source_format, image_format, assembly_id):
-
-        update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.BUILDING)
-
-        solum.TLS.trace.clear()
-        solum.TLS.trace.import_context(ctxt)
-
+    def _get_build_command(self, ctxt, source_uri, name, base_image_id,
+                           source_format, image_format):
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..'))
         # map the input formats to script paths.
@@ -76,6 +70,19 @@ class Handler(object):
                                  pathm.get(image_format, 'vm-slug'),
                                  'build-app')
         build_cmd = [build_app, source_uri, name, ctxt.tenant, base_image_id]
+        return build_cmd
+
+    def build(self, ctxt, build_id, source_uri, name, base_image_id,
+              source_format, image_format, assembly_id):
+
+        update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.BUILDING)
+
+        solum.TLS.trace.clear()
+        solum.TLS.trace.import_context(ctxt)
+
+        build_cmd = self._get_build_command(ctxt, source_uri, name,
+                                            base_image_id,
+                                            source_format, image_format)
         solum.TLS.trace.support_info(build_cmd=' '.join(build_cmd),
                                      assembly_id=assembly_id)
         job_update_notification(ctxt, build_id, IMAGE_STATES.BUILDING,
