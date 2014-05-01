@@ -21,6 +21,7 @@ from pecan import hooks
 
 from solum.common import context
 from solum.openstack.common.gettextutils import _
+from solum.openstack.common import importutils
 from solum.openstack.common import log as logging
 
 
@@ -104,6 +105,10 @@ class AuthInformationHook(hooks.PecanHook):
             LOG.debug("No auth token found in the request.")
             raise Exception('Not authorized')
         auth_url = headers.get('X-Auth-Url')
+        if auth_url is None:
+            importutils.import_module('keystoneclient.middleware.auth_token')
+            auth_url = cfg.CONF.keystone_authtoken.auth_uri
+
         identity_status = headers.get('X-Identity-Status')
         if identity_status == 'Confirmed':
             ctx = context.RequestContext(auth_token=recv_auth_token,
