@@ -23,7 +23,8 @@ class TestContext(base.BaseTestCase):
                                      '_domain_', '_user_domain_',
                                      '_project_domain_', False, False,
                                      '_request_id_', '_user_name_',
-                                     ['admin', 'member'], 'fake_auth_url')
+                                     ['admin', 'member'], 'fake_auth_url',
+                                     trust_id='fake_trust_id')
         ctx_dict = ctx.to_dict()
         self.assertEqual(ctx_dict['auth_token'], '_token_')
         self.assertEqual(ctx_dict['user'], '_user_')
@@ -39,3 +40,4 @@ class TestContext(base.BaseTestCase):
         self.assertEqual(ctx_dict['user_name'], '_user_name_')
         self.assertEqual(ctx_dict['roles'], ['admin', 'member'])
         self.assertEqual(ctx_dict['auth_url'], 'fake_auth_url')
+        self.assertEqual(ctx_dict['trust_id'], 'fake_trust_id')
