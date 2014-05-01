@@ -69,9 +69,11 @@ class Handler(object):
                  'dib': 'diskimage-builder',
                  'docker': 'docker',
                  'qcow2': 'vm-slug'}
+        if base_image_id == 'auto' and image_format == 'qcow2':
+            base_image_id = 'cedarish'
         build_app = os.path.join(proj_dir, 'contrib',
-                                 pathm.get(source_format, 'heroku'),
-                                 pathm.get(image_format, 'qcow2'),
+                                 pathm.get(source_format, 'lp-cedarish'),
+                                 pathm.get(image_format, 'vm-slug'),
                                  'build-app')
         build_cmd = [build_app, source_uri, name, ctxt.tenant, base_image_id]
         solum.TLS.trace.support_info(build_cmd=' '.join(build_cmd),
