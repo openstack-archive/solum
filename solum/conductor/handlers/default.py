@@ -33,11 +33,11 @@ class Handler(object):
     def echo(self, ctxt, message):
         LOG.debug(_("%s") % message)
 
-    def build_job_update(self, ctxt, build_id, status, reason,
+    def build_job_update(self, ctxt, build_id, state, description,
                          created_image_id, assembly_id):
         image = objects.registry.Image.get_by_id(ctxt, build_id)
-        image.status = status
-        image.reason = reason
+        image.state = state
+        image.description = description
         image.created_image_id = created_image_id
         image.save(ctxt)
 
