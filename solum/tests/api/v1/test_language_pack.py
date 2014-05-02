@@ -14,7 +14,6 @@
 
 import json
 import mock
-import testscenarios
 
 import wsme
 
@@ -25,8 +24,6 @@ from solum import objects
 from solum.tests import base
 from solum.tests import fakes
 
-
-load_tests = testscenarios.load_tests_apply_scenarios
 
 image_sample = {"status": "active",
                 "name": "nodeus",
