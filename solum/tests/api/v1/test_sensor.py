@@ -79,9 +79,17 @@ class TestSensorController(base.BaseTestCase):
 
     def test_sensor_get(self, handler_mock, resp_mock, request_mock):
         handler_get = handler_mock.return_value.get
-        handler_get.return_value = fakes.FakeSensor()
+        fake_sensor = fakes.FakeSensor()
+        handler_get.return_value = fake_sensor
         obj = controller.SensorController('test_id')
         result = obj.get()
+        self.assertIsNotNone(result)
+        self.assertEqual(fake_sensor.name, result['result'].name)
+        self.assertEqual(fake_sensor.documentation,
+                         result['result'].documentation)
+        self.assertEqual(fake_sensor.description, result['result'].description)
+        self.assertEqual(fake_sensor.project_id, result['result'].project_id)
+        self.assertEqual(fake_sensor.uuid, result['result'].uuid)
         self.assertEqual(200, resp_mock.status)
         self.assertIsNotNone(result)
         handler_get.assert_called_once_with('test_id')

@@ -37,9 +37,15 @@ class TestPlanController(base.BaseTestCase):
 
     def test_plan_get(self, PlanHandler, resp_mock, request_mock):
         hand_get = PlanHandler.return_value.get
-        hand_get.return_value = fakes.FakePlan()
+        fake_plan = fakes.FakePlan()
+        hand_get.return_value = fake_plan
         cont = plan.PlanController('test_id')
-        cont.get()
+        resp = cont.get()
+        self.assertIsNotNone(resp)
+        self.assertEqual(fake_plan.name, resp['result'].name)
+        self.assertEqual(fake_plan.project_id,
+                         resp['result'].project_id)
+        self.assertEqual(fake_plan.uuid, resp['result'].uuid)
         hand_get.assert_called_with('test_id')
         self.assertEqual(200, resp_mock.status)
 

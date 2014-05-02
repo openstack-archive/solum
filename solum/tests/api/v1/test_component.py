@@ -37,9 +37,14 @@ class TestComponentController(base.BaseTestCase):
 
     def test_component_get(self, ComponentHandler, resp_mock, request_mock):
         hand_get = ComponentHandler.return_value.get
-        hand_get.return_value = fakes.FakeComponent()
+        fake_component = fakes.FakeComponent()
+        hand_get.return_value = fake_component
         obj = component.ComponentController('test_id')
-        obj.get()
+        resp = obj.get()
+        self.assertIsNotNone(resp)
+        self.assertEqual(fake_component.name, resp['result'].name)
+        self.assertEqual(fake_component.description,
+                         resp['result'].description)
         hand_get.assert_called_with('test_id')
         self.assertEqual(200, resp_mock.status)
 
