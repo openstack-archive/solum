@@ -220,6 +220,15 @@
 
 
 #
+# Options defined in solum.common.solum_keystoneclient
+#
+
+# Subset of trustor roles to be delegated to solum. (list
+# value)
+#trusts_delegated_roles=solum_assembly_update
+
+
+#
 # Options defined in solum.openstack.common.db.sqlalchemy.session
 #
 

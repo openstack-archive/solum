@@ -14,14 +14,13 @@
 
 from glanceclient import client as glanceclient
 from heatclient import client as heatclient
-from keystoneclient.v3 import client as ksclient
 from neutronclient.neutron import client as neutronclient
 from oslo.config import cfg
 from swiftclient import client as swiftclient
 
 from solum.common import exception
+from solum.common import solum_keystoneclient
 from solum.openstack.common.gettextutils import _
-from solum.openstack.common import importutils
 from solum.openstack.common import log as logging
 
 
@@ -87,8 +86,6 @@ cfg.CONF.register_opts(glance_client_opts, group='glance_client')
 cfg.CONF.register_opts(heat_client_opts, group='heat_client')
 cfg.CONF.register_opts(neutron_client_opts, group='neutron_client')
 cfg.CONF.register_opts(swift_client_opts, group='swift_client')
-cfg.CONF.import_opt('auth_uri', 'keystoneclient.middleware.auth_token',
-                    group='keystone_authtoken')
 
 
 class OpenStackClients(object):
@@ -101,16 +98,13 @@ class OpenStackClients(object):
         self._heat = None
         self._neutron = None
         self._swift = None
-        if self.context.auth_url:
-            self.auth_url = self.context.auth_url.replace('v2.0', 'v3')
-        else:
-            # Import auth_token to have keystone_authtoken settings setup.
-            importutils.import_module('keystoneclient.middleware.auth_token')
-            self.auth_url = cfg.CONF.keystone_authtoken.auth_uri.replace(
-                'v2.0', 'v3')
 
     def url_for(self, **kwargs):
-        return self.keystone().service_catalog.url_for(**kwargs)
+        return self.keystone().client.service_catalog.url_for(**kwargs)
+
+    @property
+    def auth_url(self):
+        return self.keystone().v3_endpoint
 
     @property
     def auth_token(self):
@@ -120,13 +114,7 @@ class OpenStackClients(object):
         if self._keystone:
             return self._keystone
 
-        args = {
-            'auth_url': self.auth_url,
-            'token': self.context.auth_token,
-            'username': None,
-            'password': None
-        }
-        self._keystone = ksclient.Client(**args)
+        self._keystone = solum_keystoneclient.KeystoneClientV3(self.context)
         return self._keystone
 
     @exception.wrap_keystone_exception
