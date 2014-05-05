@@ -34,9 +34,16 @@ class TestServiceController(base.BaseTestCase):
 
     def test_service_get(self, ServiceHandler, resp_mock, request_mock):
         hand_get = ServiceHandler.return_value.get
-        hand_get.return_value = fakes.FakeService()
+        fake_service = fakes.FakeService()
+        hand_get.return_value = fake_service
         cont = service.ServiceController('test_id')
-        cont.get()
+        resp = cont.get()
+        self.assertIsNotNone(resp)
+        self.assertEqual(fake_service.name, resp['result'].name)
+        self.assertEqual(fake_service.description,
+                         resp['result'].description)
+        self.assertEqual(fake_service.project_id, resp['result'].project_id)
+        self.assertEqual(fake_service.uuid, resp['result'].uuid)
         hand_get.assert_called_with('test_id')
         self.assertEqual(200, resp_mock.status)
 

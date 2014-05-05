@@ -35,9 +35,18 @@ class TestOperationController(base.BaseTestCase):
 
     def test_operation_get(self, OperationHandler, resp_mock, request_mock):
         hand_get = OperationHandler.return_value.get
-        hand_get.return_value = fakes.FakeOperation()
+        fake_operation = fakes.FakeOperation()
+        hand_get.return_value = fake_operation
         cont = operation.OperationController('test_id')
-        cont.get()
+        resp = cont.get()
+        self.assertIsNotNone(resp)
+        self.assertEqual(fake_operation.name, resp['result'].name)
+        self.assertEqual(fake_operation.documentation,
+                         resp['result'].documentation)
+        self.assertEqual(fake_operation.description,
+                         resp['result'].description)
+        self.assertEqual(fake_operation.project_id, resp['result'].project_id)
+        self.assertEqual(fake_operation.uuid, resp['result'].uuid)
         hand_get.assert_called_with('test_id')
         self.assertEqual(200, resp_mock.status)
 
