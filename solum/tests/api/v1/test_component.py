@@ -112,9 +112,16 @@ class TestComponentsController(base.BaseTestCase):
         objects.load()
 
     def test_components_get_all(self, handler_mock, resp_mock, request_mock):
+        hand_get_all = handler_mock.return_value.get_all
+        fake_component = fakes.FakeComponent()
+        hand_get_all.return_value = [fake_component]
         obj = component.ComponentsController()
         resp = obj.get_all()
+        hand_get_all.assert_called_with()
         self.assertIsNotNone(resp)
+        self.assertEqual(fake_component.name, resp['result'][0].name)
+        self.assertEqual(fake_component.description,
+                         resp['result'][0].description)
         self.assertEqual(200, resp_mock.status)
 
     def test_components_post(self, handler_mock, resp_mock, request_mock):

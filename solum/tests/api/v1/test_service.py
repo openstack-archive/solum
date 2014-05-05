@@ -110,9 +110,18 @@ class TestServicesController(base.BaseTestCase):
         objects.load()
 
     def test_services_get_all(self, handler_mock, resp_mock, request_mock):
+        hand_get_all = handler_mock.return_value.get_all
+        fake_service = fakes.FakeService()
+        hand_get_all.return_value = [fake_service]
         obj = service.ServicesController()
         resp = obj.get_all()
         self.assertIsNotNone(resp)
+        self.assertEqual(fake_service.name, resp['result'][0].name)
+        self.assertEqual(fake_service.description,
+                         resp['result'][0].description)
+        self.assertEqual(fake_service.project_id, resp['result'][0].project_id)
+        self.assertEqual(fake_service.uuid, resp['result'][0].uuid)
+        hand_get_all.assert_called_with()
         self.assertEqual(200, resp_mock.status)
 
     def test_services_post(self, handler_mock, resp_mock, request_mock):
