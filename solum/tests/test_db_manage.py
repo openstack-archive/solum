@@ -14,13 +14,9 @@
 import sys
 
 import mock
-import testscenarios
 
 from solum.cmd import db_manage as cli
 from solum.tests import base
-
-
-load_tests = testscenarios.load_tests_apply_scenarios
 
 
 class TestCli(base.BaseTestCase):

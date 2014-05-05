@@ -14,16 +14,12 @@
 
 import json
 import mock
-import testscenarios
 
 from solum.builder.controllers.v1 import image
 from solum.common import exception
 from solum import objects
 from solum.tests import base
 from solum.tests import fakes
-
-
-load_tests = testscenarios.load_tests_apply_scenarios
 
 
 @mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)

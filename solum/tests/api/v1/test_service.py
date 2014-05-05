@@ -15,7 +15,6 @@
 import json
 
 import mock
-import testscenarios
 
 from solum.api.controllers.v1.datamodel import service as servicemodel
 from solum.api.controllers.v1 import service
@@ -23,9 +22,6 @@ from solum.common import exception
 from solum import objects
 from solum.tests import base
 from solum.tests import fakes
-
-
-load_tests = testscenarios.load_tests_apply_scenarios
 
 
 @mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
