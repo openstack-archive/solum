@@ -13,10 +13,9 @@ function check_docker () {
 
 
 function check_os_credentials () {
-  if [[ -z "$OS_USERNAME" ]]; then
-    echo "OpenStack credentials not passed via ENV. Hunting for openrc."
-    [[ -f ./openrc ]] && source ./openrc
-    [[ -f ~/devstack/openrc ]] && source ~/devstack/openrc
+  if [[ -z "$OS_AUTH_TOKEN" ]]; then
+    echo "OpenStack credentials not passed via ENV."
+    exit 1
   fi
 }
 

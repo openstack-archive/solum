@@ -18,6 +18,8 @@ import os
 import subprocess
 
 import solum
+
+from solum.common import solum_keystoneclient
 from solum.conductor import api as conductor_api
 from solum.objects import assembly
 from solum.objects import image
@@ -53,6 +55,22 @@ class Handler(object):
     def echo(self, ctxt, message):
         LOG.debug(_("%s") % message)
 
+    def _get_environment(self, ctxt):
+        kc = solum_keystoneclient.KeystoneClientV3(ctxt)
+        image_url = kc.client.service_catalog.url_for(
+            service_type='image',
+            endpoint_type='publicURL')
+
+        # create a minimal environment
+        user_env = {}
+        for var in ['PATH', 'LOGNAME', 'LANG', 'HOME', 'USER', 'TERM']:
+            if var in os.environ:
+                user_env[var] = os.environ[var]
+        user_env['OS_AUTH_TOKEN'] = ctxt.auth_token
+        user_env['OS_AUTH_URL'] = ctxt.auth_url
+        user_env['OS_IMAGE_URL'] = image_url
+        return user_env
+
     def _get_build_command(self, ctxt, source_uri, name, base_image_id,
                            source_format, image_format):
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
@@ -85,11 +103,16 @@ class Handler(object):
                                             source_format, image_format)
         solum.TLS.trace.support_info(build_cmd=' '.join(build_cmd),
                                      assembly_id=assembly_id)
+
+        user_env = self._get_environment(ctxt)
+        solum.TLS.trace.support_info(environment=user_env)
+
         job_update_notification(ctxt, build_id, IMAGE_STATES.BUILDING,
                                 reason='Starting the image build',
                                 assembly_id=assembly_id)
         try:
             out = subprocess.Popen(build_cmd,
+                                   env=user_env,
                                    stdout=subprocess.PIPE).communicate()[0]
         except OSError as subex:
             LOG.exception(subex)

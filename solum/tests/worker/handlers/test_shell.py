@@ -32,15 +32,19 @@ class HandlerTest(base.BaseTestCase):
         shell_handler.Handler().echo({}, 'foo')
         fake_LOG.debug.assert_called_once_with(_('%s') % 'foo')
 
+    @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.conductor.api.API.build_job_update')
     @mock.patch('subprocess.Popen')
-    def test_build(self, mock_popen, mock_updater, mock_registry):
+    def test_build(self, mock_popen, mock_updater, mock_registry,
+                   mock_get_env):
         handler = shell_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
         handler._update_assembly_status = mock.MagicMock()
         mock_popen.communicate.return_value = 'glance_id=1-2-34'
+        test_env = {'PATH': '/bin'}
+        mock_get_env.return_value = test_env
         handler.build(self.ctx, 5, 'git://example.com/foo', 'new_app',
                       '1-2-3-4', 'heroku',
                       'docker', 44)
@@ -50,7 +54,7 @@ class HandlerTest(base.BaseTestCase):
         script = os.path.join(proj_dir, 'contrib/lp-cedarish/docker/build-app')
         mock_popen.assert_called_once_with([script, 'git://example.com/foo',
                                             'new_app', self.ctx.tenant,
-                                           '1-2-3-4'], stdout=-1)
+                                           '1-2-3-4'], env=test_env, stdout=-1)
         expected = [mock.call(5, 'BUILDING', 'Starting the image build',
                               None, 44),
                     mock.call(5, 'ERROR', 'image not created', None, 44)]
