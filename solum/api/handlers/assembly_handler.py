@@ -16,8 +16,12 @@ import uuid
 
 from oslo.config import cfg
 from solum.api.handlers import handler
+from solum.common import context
+from solum.common import exception
+from solum.common import solum_keystoneclient
 from solum import objects
 from solum.objects import image
+from solum.openstack.common import log as logging
 from solum.worker import api
 
 # Register options for the service
@@ -27,6 +31,7 @@ API_SERVICE_OPTS = [
                help='The format of the image to output'),
 ]
 
+LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 opt_group = cfg.OptGroup(name='api',
                          title='Options for the solum-api service')
@@ -43,14 +48,27 @@ class AssemblyHandler(handler.Handler):
         """Return an assembly."""
         return objects.registry.Assembly.get_by_uuid(self.context, id)
 
+    def _context_from_trust_id(self, trust_id):
+        cntx = context.RequestContext(trust_id=trust_id)
+        kc = solum_keystoneclient.KeystoneClientV3(cntx)
+        return kc.context
+
     def trigger_workflow(self, trigger_id):
         """Get trigger by trigger id and start git worflow associated."""
         # Note: self.context will be None at this point as this is a
         # non-authenticated request.
-        db_obj = objects.registry.Assembly.get_by_trigger_id(self.context,
+        db_obj = objects.registry.Assembly.get_by_trigger_id(None,
                                                              trigger_id)
+        # get the trust context and authenticate it.
+        try:
+            self.context = self._context_from_trust_id(db_obj.trust_id)
+        except exception.AuthorizationFailure as auth_ex:
+            LOG.warn(auth_ex)
+            return
+
         plan_obj = objects.registry.Plan.get_by_id(self.context,
                                                    db_obj.plan_id)
+
         artifacts = plan_obj.raw_content.get('artifacts', [])
         for arti in artifacts:
             self._build_artifact(db_obj, arti)
@@ -65,6 +83,11 @@ class AssemblyHandler(handler.Handler):
     def delete(self, id):
         """Delete a resource."""
         db_obj = objects.registry.Assembly.get_by_uuid(self.context, id)
+
+        # delete the trust.
+        ksc = solum_keystoneclient.KeystoneClientV3(self.context)
+        ksc.delete_trust(db_obj.trust_id)
+
         db_obj.destroy(self.context)
 
     def create(self, data):
@@ -75,7 +98,14 @@ class AssemblyHandler(handler.Handler):
         db_obj.user_id = self.context.user
         db_obj.project_id = self.context.tenant
         db_obj.trigger_id = str(uuid.uuid4())
+
+        # create the trust_id and store it.
+        ksc = solum_keystoneclient.KeystoneClientV3(self.context)
+        trust_context = ksc.create_trust_context()
+        db_obj.trust_id = trust_context.trust_id
+
         db_obj.create(self.context)
+
         plan_obj = objects.registry.Plan.get_by_id(self.context,
                                                    db_obj.plan_id)
         artifacts = plan_obj.raw_content.get('artifacts', [])

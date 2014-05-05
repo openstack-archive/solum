@@ -60,6 +60,15 @@ fi
 
 # create_solum_service_and_endpoint() - Set up required solum service and endpoint
 function create_solum_service_and_endpoint() {
+    SOLUM_UPDATE_ROLE=$(openstack role create \
+        solum_assembly_update \
+        | grep " id " | get_field 2)
+
+    # Give the role to the demo and admin users so they can use git push
+    # in either of the projects created by devstack
+    openstack role add $SOLUM_UPDATE_ROLE --project demo --user demo
+    openstack role add $SOLUM_UPDATE_ROLE --project demo --user admin
+    openstack role add $SOLUM_UPDATE_ROLE --project admin --user admin
 
     if [[ "$KEYSTONE_CATALOG_BACKEND" = 'sql' ]]; then
         SOLUM_SERVICE=$(keystone service-create \

@@ -125,6 +125,7 @@ def upgrade():
                   nullable=False),
         sa.Column('status', sa.String(length=36)),
         sa.Column('trigger_id', sa.String(length=36)),
+        sa.Column('trust_id', sa.String(length=255)),
         sa.Column('application_uri', sa.String(length=1024)),
     )
 

@@ -57,7 +57,8 @@ class TestAssemblyHandler(base.BaseTestCase):
                                                                    'test_id')
 
     @mock.patch('solum.worker.api.API.build')
-    def test_create(self, mock_build, mock_registry):
+    @mock.patch('solum.common.solum_keystoneclient.KeystoneClientV3')
+    def test_create(self, mock_kc, mock_build, mock_registry):
         data = {'user_id': 'new_user_id',
                 'uuid': 'input_uuid',
                 'plan_uuid': 'input_plan_uuid'}
@@ -74,6 +75,9 @@ class TestAssemblyHandler(base.BaseTestCase):
                                'href': 'https://example.com/ex.git'},
                            'language_pack': 'auto'}]}
         mock_registry.Image.return_value = fakes.FakeImage()
+        trust_ctx = utils.dummy_context()
+        trust_ctx.trust_id = '12345'
+        mock_kc.return_value.create_trust_context.return_value = trust_ctx
 
         handler = assembly_handler.AssemblyHandler(self.ctx)
         res = handler.create(data)
@@ -84,8 +88,10 @@ class TestAssemblyHandler(base.BaseTestCase):
             build_id=8, name='nodeus', assembly_id=8,
             source_uri='https://example.com/ex.git',
             base_image_id='auto', source_format='heroku', image_format='qcow2')
+        mock_kc.return_value.create_trust_context.assert_called_once_with()
 
-    def test_delete(self, mock_registry):
+    @mock.patch('solum.common.solum_keystoneclient.KeystoneClientV3')
+    def test_delete(self, mock_kc, mock_registry):
         db_obj = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_uuid.return_value = db_obj
         handler = assembly_handler.AssemblyHandler(self.ctx)
@@ -93,6 +99,8 @@ class TestAssemblyHandler(base.BaseTestCase):
         db_obj.destroy.assert_called_once_with(self.ctx)
         mock_registry.Assembly.get_by_uuid.assert_called_once_with(self.ctx,
                                                                    'test_id')
+        mock_kc.return_value.delete_trust.assert_called_once_with(
+            'trust_worthy')
 
     def test_trigger_workflow(self, mock_registry):
         trigger_id = 1
@@ -107,9 +115,11 @@ class TestAssemblyHandler(base.BaseTestCase):
         plan_obj.raw_content = {"artifacts": artifacts}
         handler = assembly_handler.AssemblyHandler(self.ctx)
         handler._build_artifact = mock.MagicMock()
+        handler._context_from_trust_id = mock.MagicMock(return_value=self.ctx)
         handler.trigger_workflow(trigger_id)
         handler._build_artifact.assert_called_once_with(db_obj, artifacts[0])
+        handler._context_from_trust_id.assert_called_once_with('trust_worthy')
         mock_registry.Assembly.get_by_trigger_id.assert_called_once_with(
-            self.ctx, trigger_id)
+            None, trigger_id)
         mock_registry.Plan.get_by_id.assert_called_once_with(self.ctx,
                                                              db_obj.plan_id)

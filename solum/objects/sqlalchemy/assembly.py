@@ -33,6 +33,7 @@ class Assembly(sql.Base, abstract.Assembly):
     project_id = sa.Column(sa.String(36))
     user_id = sa.Column(sa.String(36))
     trigger_id = sa.Column(sa.String(36))
+    trust_id = sa.Column(sa.String(255))
     name = sa.Column(sa.String(100))
     description = sa.Column(sa.String(255))
     tags = sa.Column(sa.Text)
