@@ -22,8 +22,8 @@ sample_data = {"version": "1",
                "name": "test_plan",
                "description": "A test to create plan",
                "artifacts": [{
-                   "name": "No_deus",
-                   "artifact_type": "application.heroku",
+                   "name": "No deus",
+                   "artifact_type": "heroku",
                    "content": {
                        "href": "https://example.com/git/a.git"
                    },

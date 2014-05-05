@@ -79,7 +79,7 @@ def upgrade():
         sa.Column('base_image_id', sa.String(length=36)),
         sa.Column('created_image_id', sa.String(length=36)),
         sa.Column('image_format', sa.String(length=12)),
-        sa.Column('source_format', sa.String(length=12)),
+        sa.Column('source_format', sa.String(length=36)),
     )
 
     op.create_table(

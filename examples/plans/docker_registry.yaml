@@ -1,0 +1,8 @@
+name: docker_registry
+description: docker registry
+artifacts:
+- name: docker_registry
+  artifact_type: dockerfile
+  content:
+    href: https://github.com/dotcloud/docker-registry.git
+  language_pack: docker

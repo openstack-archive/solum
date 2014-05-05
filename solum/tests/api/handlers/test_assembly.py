@@ -74,7 +74,7 @@ class TestAssemblyHandler(base.BaseTestCase):
         fp.raw_content = {
             'name': 'theplan',
             'artifacts': [{'name': 'nodeus',
-                           'artifact_type': 'application.heroku',
+                           'artifact_type': 'heroku',
                            'content': {
                                'href': 'https://example.com/ex.git'},
                            'language_pack': 'auto'}]}
@@ -91,7 +91,8 @@ class TestAssemblyHandler(base.BaseTestCase):
         mock_build.assert_called_once_with(
             build_id=8, name='nodeus', assembly_id=8,
             source_uri='https://example.com/ex.git',
-            base_image_id='auto', source_format='heroku', image_format='qcow2')
+            base_image_id='auto', source_format='heroku',
+            image_format='qcow2')
         mock_kc.return_value.create_trust_context.assert_called_once_with()
 
     @mock.patch('solum.common.solum_keystoneclient.KeystoneClientV3')
@@ -112,7 +113,7 @@ class TestAssemblyHandler(base.BaseTestCase):
     def test_trigger_workflow(self, mock_registry):
         trigger_id = 1
         artifacts = [{"name": "Test",
-                      "artifact_type": "application.heroku",
+                      "artifact_type": "heroku",
                       "content": {"href": "https://github.com/some/project"},
                       "language_pack": "auto"}]
         db_obj = fakes.FakeAssembly()

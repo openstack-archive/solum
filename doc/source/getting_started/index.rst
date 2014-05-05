@@ -36,7 +36,7 @@ We provide an example planfile at :code:`examples/plans/ex1.yaml`
   description: Nodejs express.
   artifacts:
   - name: nodeus
-    artifact_type: application.heroku
+    artifact_type: heroku
     content:
       href: https://github.com/paulczar/example-nodejs-express.git
     language_pack: auto

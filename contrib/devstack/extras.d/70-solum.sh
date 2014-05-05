@@ -8,6 +8,9 @@ if is_service_enabled solum; then
         if [[ "$SOLUM_INSTALL_CEDARISH" == "True" ]]; then
             install_lp-cedarish
         fi
+        if [[ "$SOLUM_INSTALL_DOCKERFILE" == "True" ]]; then
+            install_lp-dockerfile
+        fi
     elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
         echo_summary "Configuring Solum"
         add_solum_user
