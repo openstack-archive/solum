@@ -150,7 +150,9 @@ function configure_solum() {
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE wait_interval $SOLUM_WAIT_INTERVAL
 
     # Hack around https://bugs.launchpad.net/solum/+bug/1316585
-    iniset $SWIFT_CONF_DIR/swift.conf swift-constraints max_header_size 16384
+    if [[ $SWIFT_CONF_DIR ]]; then
+        iniset $SWIFT_CONF_DIR/swift.conf swift-constraints max_header_size 16384
+    fi
 }
 
 #register solum user in Keystone
