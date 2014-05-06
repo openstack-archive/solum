@@ -32,13 +32,14 @@ ASSEMBLY_STATES = assembly.States
 IMAGE_STATES = image.States
 
 
-def job_update_notification(ctxt, build_id, status=None, reason=None,
+def job_update_notification(ctxt, build_id, state=None, description=None,
                             created_image_id=None, assembly_id=None):
     """send a status update to the conductor."""
-    LOG.debug('build id:%s %s (%s) %s %s' % (build_id, status, reason,
+    LOG.debug('build id:%s %s (%s) %s %s' % (build_id, state, description,
                                              created_image_id, assembly_id),
               context=solum.TLS.trace)
-    conductor_api.API(context=ctxt).build_job_update(build_id, status, reason,
+    conductor_api.API(context=ctxt).build_job_update(build_id, state,
+                                                     description,
                                                      created_image_id,
                                                      assembly_id)
 
@@ -108,7 +109,7 @@ class Handler(object):
         solum.TLS.trace.support_info(environment=user_env)
 
         job_update_notification(ctxt, build_id, IMAGE_STATES.BUILDING,
-                                reason='Starting the image build',
+                                description='Starting the image build',
                                 assembly_id=assembly_id)
         try:
             out = subprocess.Popen(build_cmd,
@@ -117,7 +118,7 @@ class Handler(object):
         except OSError as subex:
             LOG.exception(subex)
             job_update_notification(ctxt, build_id, IMAGE_STATES.ERROR,
-                                    reason=subex, assembly_id=assembly_id)
+                                    description=subex, assembly_id=assembly_id)
             return
         # we expect one line in the output that looks like:
         # created_image_id=<the glance_id>
@@ -128,10 +129,10 @@ class Handler(object):
                 created_image_id = line.split('=')[-1].strip()
         if created_image_id is None:
             job_update_notification(ctxt, build_id, IMAGE_STATES.ERROR,
-                                    reason='image not created',
+                                    description='image not created',
                                     assembly_id=assembly_id)
             return
         job_update_notification(ctxt, build_id, IMAGE_STATES.COMPLETE,
-                                reason='built successfully',
+                                description='built successfully',
                                 created_image_id=created_image_id,
                                 assembly_id=assembly_id)
