@@ -21,6 +21,7 @@ from solum.api.controllers.v1.datamodel import assembly
 from solum.api.handlers import assembly_handler
 from solum.common import exception
 from solum import objects
+from solum.openstack.common.gettextutils import _
 
 
 class AssemblyController(rest.RestController):
@@ -83,7 +84,12 @@ class AssembliesController(rest.RestController):
             else:
                 # TODO(asalkeld) we are not hosting the plan so
                 # download the plan and insert it into our db.
-                pass
+                raise exception.BadRequest(reason=_(
+                    'The plan was not hosted in solum'))
+
+        if js_data.get('plan_id') is None:
+            raise exception.BadRequest(reason=_(
+                'The plan was not given or could not be found'))
 
         handler = assembly_handler.AssemblyHandler(
             pecan.request.security_context)

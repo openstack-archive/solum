@@ -161,15 +161,50 @@ class TestAssembliesController(base.BaseTestCase):
         self.assertEqual(200, resp_mock.status)
         self.assertIsNotNone(resp)
 
-    def test_assemblies_post(self, AssemblyHandler, resp_mock, request_mock):
+    @mock.patch('solum.objects.registry.Plan')
+    def test_assemblies_post(self, mock_Plan, AssemblyHandler,
+                             resp_mock, request_mock):
+        json_create = {'name': 'foo',
+                       'plan_uri': 'http://test_url:8080/test/911'}
+        request_mock.body = json.dumps(json_create)
+        request_mock.content_type = 'application/json'
+        request_mock.security_context = None
+        mock_Plan.get_by_uuid.return_value = fakes.FakePlan()
+
+        hand_create = AssemblyHandler.return_value.create
+        hand_create.return_value = fakes.FakeAssembly()
+        assembly.AssembliesController().post()
+        hand_create.assert_called_with({'name': 'foo',
+                                        'plan_id': 8})
+        mock_Plan.get_by_uuid.assert_called_with(None, '911')
+        self.assertEqual(201, resp_mock.status)
+
+    def test_assemblies_post_no_plan(self, AssemblyHandler, resp_mock,
+                                     request_mock):
         json_create = {'name': 'foo'}
         request_mock.body = json.dumps(json_create)
         request_mock.content_type = 'application/json'
         hand_create = AssemblyHandler.return_value.create
         hand_create.return_value = fakes.FakeAssembly()
         assembly.AssembliesController().post()
-        hand_create.assert_called_with(json_create)
-        self.assertEqual(201, resp_mock.status)
+        ret_val = assembly.AssembliesController().post()
+        faultstring = str(ret_val['faultstring'])
+        self.assertIn('The plan was not given or could not be found',
+                      faultstring)
+        self.assertEqual(400, resp_mock.status)
+
+    def test_assemblies_post_not_hosted(self, AssemblyHandler, resp_mock,
+                                        request_mock):
+        json_create = {'name': 'foo',
+                       'plan_uri': 'http://example.com/a.git'}
+        request_mock.body = json.dumps(json_create)
+        request_mock.content_type = 'application/json'
+        hand_create = AssemblyHandler.return_value.create
+        hand_create.return_value = fakes.FakeAssembly()
+        ret_val = assembly.AssembliesController().post()
+        faultstring = str(ret_val['faultstring'])
+        self.assertIn('The plan was not hosted in solum', faultstring)
+        self.assertEqual(400, resp_mock.status)
 
     def test_assem_post_nodata(self, AssemblyHandler, resp_mock, request_mock):
         request_mock.body = ''
