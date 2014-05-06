@@ -16,6 +16,9 @@ Plans
 .. rest-controller:: solum.api.controllers.v1.plan:PlansController
    :webprefix: /v1/plans
 
+.. rest-controller:: solum.api.controllers.v1.plan:PlanController
+   :webprefix: /v1/plans
+
 .. autotype:: solum.api.controllers.v1.datamodel.plan.Plan
    :members:
 
@@ -23,6 +26,9 @@ Assemblies
 ----------
 
 .. rest-controller:: solum.api.controllers.v1.assembly:AssembliesController
+   :webprefix: /v1/assemblies
+
+.. rest-controller:: solum.api.controllers.v1.assembly:AssemblyController
    :webprefix: /v1/assemblies
 
 .. autotype:: solum.api.controllers.v1.datamodel.assembly.Assembly
@@ -34,6 +40,9 @@ Services
 .. rest-controller:: solum.api.controllers.v1.service:ServicesController
    :webprefix: /v1/services
 
+.. rest-controller:: solum.api.controllers.v1.service:ServiceController
+   :webprefix: /v1/services
+
 .. autotype:: solum.api.controllers.v1.datamodel.service.Service
    :members:
 
@@ -41,6 +50,9 @@ Operations
 ----------
 
 .. rest-controller:: solum.api.controllers.v1.operation:OperationsController
+   :webprefix: /v1/operations
+
+.. rest-controller:: solum.api.controllers.v1.operation:OperationController
    :webprefix: /v1/operations
 
 .. autotype:: solum.api.controllers.v1.datamodel.operation.Operation
@@ -52,6 +64,9 @@ Sensors
 .. rest-controller:: solum.api.controllers.v1.sensor:SensorsController
    :webprefix: /v1/sensors
 
+.. rest-controller:: solum.api.controllers.v1.sensor:SensorController
+   :webprefix: /v1/sensors
+
 .. autotype:: solum.api.controllers.v1.datamodel.sensor.Sensor
    :members:
 
@@ -59,6 +74,9 @@ Components
 ----------
 
 .. rest-controller:: solum.api.controllers.v1.component:ComponentsController
+   :webprefix: /v1/components
+
+.. rest-controller:: solum.api.controllers.v1.component:ComponentController
    :webprefix: /v1/components
 
 .. autotype:: solum.api.controllers.v1.datamodel.component.Component
@@ -69,6 +87,9 @@ Extensions
 ----------
 
 .. rest-controller:: solum.api.controllers.v1.extension:ExtensionsController
+   :webprefix: /v1/extensions
+
+.. rest-controller:: solum.api.controllers.v1.extension:ExtensionController
    :webprefix: /v1/extensions
 
 .. autotype:: solum.api.controllers.v1.datamodel.extension.Extension
