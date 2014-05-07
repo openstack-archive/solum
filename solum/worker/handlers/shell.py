@@ -107,7 +107,10 @@ class Handler(object):
                                      assembly_id=assembly_id)
 
         user_env = self._get_environment(ctxt)
-        solum.TLS.trace.support_info(environment=user_env)
+        log_env = user_env.copy()
+        if 'OS_AUTH_TOKEN' in log_env:
+            del log_env['OS_AUTH_TOKEN']
+        solum.TLS.trace.support_info(environment=log_env)
 
         job_update_notification(ctxt, build_id, IMAGE_STATES.BUILDING,
                                 description='Starting the image build',
