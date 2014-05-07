@@ -12,10 +12,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import string
 import wsme
 from wsme import types as wtypes
 
 from solum.api.controllers import common_types
+from solum.openstack.common.gettextutils import _
 
 
 class Base(wtypes.Base):
@@ -27,7 +29,17 @@ class Base(wtypes.Base):
     uuid = wtypes.text
     "Unique Identifier of the resource"
 
-    name = wsme.wsattr(wtypes.text, mandatory=True)
+    def get_name(self):
+        return self.__name
+
+    def set_name(self, value):
+        allowed_chars = string.letters + string.digits + '-_'
+        for ch in value:
+            if ch not in allowed_chars:
+                raise ValueError(_('Names must only contain a-z,A-Z,0-9,-,_'))
+        self.__name = value
+
+    name = wtypes.wsproperty(str, get_name, set_name, mandatory=True)
     "Name of the resource."
 
     type = wtypes.text
@@ -44,6 +56,10 @@ class Base(wtypes.Base):
 
     user_id = wtypes.text
     "The user that owns this resource."
+
+    def __init__(self, **kwds):
+        self.__name = wsme.Unset
+        super(Base, self).__init__(**kwds)
 
     @classmethod
     def from_db_model(cls, m, host_url):

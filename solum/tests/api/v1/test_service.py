@@ -162,7 +162,7 @@ class TestServiceAsDict(base.BaseTestCase):
         ('none', dict(data=None)),
         ('one', dict(data={'name': 'foo'})),
         ('full', dict(data={'uri': 'http://example.com/v1/services/x1',
-                            'name': 'Example service',
+                            'name': 'Example-service',
                             'type': 'service',
                             'tags': ['small'],
                             'project_id': '1dae5a09ef2b4d8cbf3594b0eb4f6b94',

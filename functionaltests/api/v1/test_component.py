@@ -122,7 +122,7 @@ class TestComponentController(base.TestCase):
 
     def test_components_put(self):
         uuid, assembly_uuid, plan_uuid = self._create_component()
-        updated_data = {'name': 'test_service updated',
+        updated_data = {'name': 'test_service_updated',
                         'description': 'desc updated',
                         'plan_uri': "%s/v1/plans/%s" % (self.client.base_url,
                                                         plan_uuid),
@@ -135,7 +135,7 @@ class TestComponentController(base.TestCase):
         self._delete_component(uuid, assembly_uuid, plan_uuid)
 
     def test_components_put_not_found(self):
-        updated_data = {'name': 'test_service updated',
+        updated_data = {'name': 'test_service_updated',
                         'description': 'desc updated',
                         'plan_uri': "%s/v1/plans/%s" % (self.client.base_url,
                                                         'not_found'),

@@ -120,7 +120,7 @@ class TestLanguagePackController(base.TestCase):
         self.skipTest("Tags update not implemented yet in python-glanceclient")
         # See http://goo.gl/vg9h6G
         uuid = self._create_language_pack()
-        updated_data = {"name": "test_language_pack updated",
+        updated_data = {"name": "test_language_pack_updated",
                         "description": "A test to create language_pack update",
                         "language_pack_type": "python",
                         "language_implementation": "py",
@@ -145,7 +145,7 @@ class TestLanguagePackController(base.TestCase):
         self._delete_language_pack(uuid)
 
     def test_language_packs_put_not_found(self):
-        updated_data = {"name": "test_language_pack updated",
+        updated_data = {"name": "test_language_pack_updated",
                         "description": "A test to create language_pack update",
                         "language_pack_type": "python",
                         "language_implementation": "py",

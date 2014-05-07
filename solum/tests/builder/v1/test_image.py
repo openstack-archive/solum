@@ -54,7 +54,7 @@ class TestImageAsDict(base.BaseTestCase):
         ('none', dict(data=None)),
         ('one', dict(data={'name': 'foo'})),
         ('full', dict(data={'uri': 'http://example.com/v1/images/x1',
-                            'name': 'Example image',
+                            'name': 'Example-Image',
                             'type': 'image',
                             'tags': ['small'],
                             'project_id': '1dae5a09ef2b4d8cbf3594b0eb4f6b94',
