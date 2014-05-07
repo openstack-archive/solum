@@ -25,6 +25,7 @@ from solum.objects import assembly
 from solum.objects import image
 from solum.openstack.common.gettextutils import _
 from solum.openstack.common import log as logging
+from solum.openstack.common import uuidutils
 
 LOG = logging.getLogger(__name__)
 
@@ -127,7 +128,7 @@ class Handler(object):
             if 'created_image_id' in line:
                 solum.TLS.trace.support_info(build_out_line=line)
                 created_image_id = line.split('=')[-1].strip()
-        if created_image_id is None:
+        if not uuidutils.is_uuid_like(created_image_id):
             job_update_notification(ctxt, build_id, IMAGE_STATES.ERROR,
                                     description='image not created',
                                     assembly_id=assembly_id)
