@@ -14,6 +14,7 @@
 
 import mock
 import os.path
+import uuid
 
 from solum.openstack.common.gettextutils import _
 from solum.tests import base
@@ -40,9 +41,42 @@ class HandlerTest(base.BaseTestCase):
                    mock_get_env):
         handler = shell_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
+        fake_glance_id = str(uuid.uuid4())
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
         handler._update_assembly_status = mock.MagicMock()
-        mock_popen.communicate.return_value = 'glance_id=1-2-34'
+        mock_popen.return_value.communicate.return_value = [
+            'foo\ncreated_image_id=%s' % fake_glance_id, None]
+        test_env = {'PATH': '/bin'}
+        mock_get_env.return_value = test_env
+        handler.build(self.ctx, 5, 'git://example.com/foo', 'new_app',
+                      '1-2-3-4', 'heroku',
+                      'docker', 44)
+
+        proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                '..', '..', '..', '..'))
+        script = os.path.join(proj_dir, 'contrib/lp-cedarish/docker/build-app')
+        mock_popen.assert_called_once_with([script, 'git://example.com/foo',
+                                            'new_app', self.ctx.tenant,
+                                           '1-2-3-4'], env=test_env, stdout=-1)
+        expected = [mock.call(5, 'BUILDING', 'Starting the image build',
+                              None, 44),
+                    mock.call(5, 'COMPLETE', 'built successfully',
+                              fake_glance_id, 44)]
+
+        self.assertEqual(expected, mock_updater.call_args_list)
+
+    @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
+    @mock.patch('solum.objects.registry')
+    @mock.patch('solum.conductor.api.API.build_job_update')
+    @mock.patch('subprocess.Popen')
+    def test_build_fail(self, mock_popen, mock_updater, mock_registry,
+                        mock_get_env):
+        handler = shell_handler.Handler()
+        fake_assembly = fakes.FakeAssembly()
+        mock_registry.Assembly.get_by_id.return_value = fake_assembly
+        handler._update_assembly_status = mock.MagicMock()
+        mock_popen.return_value.communicate.return_value = [
+            'foo\ncreated_image_id= \n', None]
         test_env = {'PATH': '/bin'}
         mock_get_env.return_value = test_env
         handler.build(self.ctx, 5, 'git://example.com/foo', 'new_app',
@@ -58,6 +92,7 @@ class HandlerTest(base.BaseTestCase):
         expected = [mock.call(5, 'BUILDING', 'Starting the image build',
                               None, 44),
                     mock.call(5, 'ERROR', 'image not created', None, 44)]
+
         self.assertEqual(expected, mock_updater.call_args_list)
 
 
