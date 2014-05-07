@@ -73,3 +73,33 @@ class TestTypes(base.BaseTestCase):
         obj = objects.registry.Component(**data)
         c = component_api.Component.from_db_model(obj, 'http://test_host')
         self.assertEqual(assembly_data['uuid'], c.assembly_uuid)
+
+
+class TestTypeNames(base.BaseTestCase):
+
+    scenarios = [
+        ('punct', dict(
+            in_value='.,', expect_ok=False)),
+        ('-', dict(
+            in_value='a-b', expect_ok=True)),
+        ('_', dict(
+            in_value='a_b', expect_ok=True)),
+        ('spaces', dict(
+            in_value='look a space', expect_ok=False)),
+        ('special', dict(
+            in_value='$-&', expect_ok=False)),
+        ('upper', dict(
+            in_value='ALLGOOD', expect_ok=True)),
+        ('lower', dict(
+            in_value='evenbetter', expect_ok=True)),
+        ('numbers', dict(
+            in_value='12345', expect_ok=True)),
+    ]
+
+    def test_name(self):
+        if self.expect_ok:
+            s = component_api.Component(name=self.in_value)
+            self.assertEqual(self.in_value, s.name)
+        else:
+            self.assertRaises(ValueError, component_api.Component,
+                              name=self.in_value)

@@ -24,7 +24,7 @@ sample_data = {"name": "test_plan",
                "user_id": "user_id",
                "type": "plan",
                "artifacts": [{
-                   "name": "No deus",
+                   "name": "No_deus",
                    "artifact_type": "application.heroku",
                    "content": {
                        "href": "https://example.com/git/a.git"
@@ -98,7 +98,7 @@ class TestPlanController(base.TestCase):
 
     def test_plans_put(self):
         uuid = self._create_plan()
-        updated_data = {"name": "test_plan updated",
+        updated_data = {"name": "test_plan_updated",
                         "description": "A test to create plan updated",
                         "type": "plan",
                         "artifacts": []}
@@ -110,7 +110,7 @@ class TestPlanController(base.TestCase):
         self._delete_plan(uuid)
 
     def test_plans_put_not_found(self):
-        updated_data = {"name": "test_plan updated",
+        updated_data = {"name": "test_plan_updated",
                         "description": "A test to create plan updated",
                         "type": "plan",
                         "artifacts": []}

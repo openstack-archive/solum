@@ -110,7 +110,7 @@ class TestAssemblyController(base.TestCase):
     def test_assemblies_put(self):
         uuid, plan_uuid = self._create_assembly()
         uri = "%s/v1/plans/%s" % (self.client.base_url, plan_uuid)
-        updated_data = {"name": "test_assembly updated",
+        updated_data = {"name": "test_assembly_updated",
                         "description": "A test to create assembly updated",
                         "plan_uri": uri,
                         "project_id": "project_id updated",
@@ -125,7 +125,7 @@ class TestAssemblyController(base.TestCase):
         self._delete_assembly(uuid, plan_uuid)
 
     def test_assemblies_put_not_found(self):
-        updated_data = {"name": "test_assembly updated",
+        updated_data = {"name": "test_assembly_updated",
                         "description": "A test to create assembly updated",
                         "plan_uri": 'fake_uri',
                         "project_id": "project_id updated",

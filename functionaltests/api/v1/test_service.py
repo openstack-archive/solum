@@ -94,7 +94,7 @@ class TestServiceController(base.TestCase):
 
     def test_services_put(self):
         uuid = self._create_service()
-        updated_data = {"name": "test_service updated",
+        updated_data = {"name": "test_service_updated",
                         "description": "A test to create service updated",
                         "project_id": "project_id updated",
                         "user_id": "user_id updated",
@@ -108,7 +108,7 @@ class TestServiceController(base.TestCase):
         self._delete_service(uuid)
 
     def test_services_put_not_found(self):
-        updated_data = {"name": "test_service updated",
+        updated_data = {"name": "test_service_updated",
                         "description": "A test to create service updated",
                         "project_id": "project_id updated",
                         "user_id": "user_id updated",

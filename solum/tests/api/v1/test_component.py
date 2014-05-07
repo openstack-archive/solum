@@ -161,7 +161,7 @@ class TestComponentAsDict(base.BaseTestCase):
         ('none', dict(data=None)),
         ('one', dict(data={'name': 'foo'})),
         ('full', dict(data={'uri': 'http://example.com/v1/components/x1',
-                            'name': 'Example component',
+                            'name': 'Example-component',
                             'type': 'component',
                             'tags': ['small'],
                             'project_id': '1dae5a09ef2b4d8cbf3594b0eb4f6b94',

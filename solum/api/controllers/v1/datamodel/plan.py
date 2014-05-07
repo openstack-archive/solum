@@ -96,11 +96,11 @@ class Plan(api_types.Base):
     @classmethod
     def sample(cls):
         return cls(uri='http://example.com/v1/plans/x1',
-                   name='Example plan',
+                   name='Example-plan',
                    type='plan',
                    tags=['small'],
                    artifacts=[{
-                       'name': 'My python app',
+                       'name': 'My-python-app',
                        'artifact_type': 'git_pull',
                        'content': {'href': 'git://example.com/project.git'},
                        'language_pack': str(uuid.uuid4()),
@@ -108,7 +108,7 @@ class Plan(api_types.Base):
                            'requirement_type': 'git_pull',
                            'fulfillment': 'id:build'}]}],
                    services=[{
-                       'name': 'Build Service',
+                       'name': 'Build-Service',
                        'id': 'build',
                        'characteristics': ['python_build_service']}],
                    project_id='1dae5a09ef2b4d8cbf3594b0eb4f6b94',
