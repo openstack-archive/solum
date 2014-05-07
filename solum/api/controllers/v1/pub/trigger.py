@@ -10,9 +10,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import pecan
 from pecan import rest
-from wsme import types as wtypes
-import wsmeext.pecan as wsme_pecan
 
 from solum.api.handlers import assembly_handler
 from solum.common import exception
@@ -21,9 +20,14 @@ from solum.common import exception
 class TriggerController(rest.RestController):
     """Manages triggers."""
 
-    @exception.wrap_controller_exception
-    @wsme_pecan.wsexpose(None, wtypes.text, status_code=200)
+    @pecan.expose()
     def post(self, trigger_id):
         """Trigger a new event on Solum."""
         handler = assembly_handler.AssemblyHandler(None)
-        handler.trigger_workflow(trigger_id)
+        try:
+            handler.trigger_workflow(trigger_id)
+        except exception.ResourceNotFound as excp:
+            pecan.response.status = excp.code
+            pecan.response.text = excp.message
+            return
+        pecan.response.status = 202
