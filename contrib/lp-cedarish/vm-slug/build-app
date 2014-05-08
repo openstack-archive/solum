@@ -19,10 +19,10 @@ function check_os_credentials () {
   fi
 }
 
-function check_nova_access () {
-  nova list 2> /dev/null > /dev/null
+function check_glance_access () {
+  glance index 2> /dev/null > /dev/null
   if [ $? != 0 ]; then
-    echo "Cannot talk to Nova. Check your OpenStack credentials." >&2
+    echo "Cannot talk to Glance. Check your OpenStack credentials." >&2
     exit 1
   fi
 }
@@ -108,7 +108,7 @@ function main () {
 
   check_docker
   check_os_credentials
-  check_nova_access
+  check_glance_access
   build_app $GIT_URL $APP_DIR
   inject_app_into_image $APP_DIR
   upload_image_to_glance $APP $APP_DIR
