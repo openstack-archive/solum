@@ -36,8 +36,9 @@ class HandlerTest(base.BaseTestCase):
     @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.conductor.api.API.build_job_update')
+    @mock.patch('solum.deployer.api.API.deploy')
     @mock.patch('subprocess.Popen')
-    def test_build(self, mock_popen, mock_updater, mock_registry,
+    def test_build(self, mock_popen, mock_deploy, mock_updater, mock_registry,
                    mock_get_env):
         handler = shell_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
@@ -64,6 +65,9 @@ class HandlerTest(base.BaseTestCase):
                               fake_glance_id, 44)]
 
         self.assertEqual(expected, mock_updater.call_args_list)
+
+        expected = [mock.call(assembly_id=44, image_id=fake_glance_id)]
+        self.assertEqual(expected, mock_deploy.call_args_list)
 
     @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
     @mock.patch('solum.objects.registry')

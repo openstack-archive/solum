@@ -21,6 +21,7 @@ import solum
 
 from solum.common import solum_keystoneclient
 from solum.conductor import api as conductor_api
+from solum.deployer import api as deployer_api
 from solum.objects import assembly
 from solum.objects import image
 from solum.openstack.common.gettextutils import _
@@ -140,3 +141,5 @@ class Handler(object):
                                 description='built successfully',
                                 created_image_id=created_image_id,
                                 assembly_id=assembly_id)
+        deployer_api.API(context=ctxt).deploy(assembly_id=assembly_id,
+                                              image_id=created_image_id)

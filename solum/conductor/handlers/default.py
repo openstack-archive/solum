@@ -14,7 +14,6 @@
 
 """Solum Conductor default handler."""
 
-from solum.deployer import api
 from solum import objects
 from solum.objects import image
 from solum.openstack.common.gettextutils import _
@@ -51,6 +50,3 @@ class Handler(object):
                                                              'Image Build',
                                                              'Image Build job',
                                                              created_image_id)
-            if image.state == IMAGE_STATES.COMPLETE:
-                api.API(context=ctxt).deploy(assembly_id=assem.id,
-                                             image_id=image.created_image_id)
