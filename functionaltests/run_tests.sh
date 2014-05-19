@@ -14,11 +14,36 @@
 
 # How many seconds to wait for the API to be responding before giving up
 API_RESPONDING_TIMEOUT=20
+SERVICES=("solum-api" "solum-builder-api" "solum-worker" "solum-conductor" "solum-deployer")
+SOLUM_CONFIG="/etc/solum/solum.conf"
+declare -A CONFIG_SECTIONS=(["api"]=9777 ["builder"]=9778)
 
-if ! timeout ${API_RESPONDING_TIMEOUT} sh -c "while ! curl -s -o /dev/null http://127.0.0.1:9777 ; do sleep 1; done"; then
-    echo "API failed to respond within ${API_RESPONDING_TIMEOUT} seconds"
-    exit 1
-fi
+function check_api {
+    local port=$1
+    if ! timeout ${API_RESPONDING_TIMEOUT} sh -c "while ! curl -s -o /dev/null http://127.0.0.1:$port ; do sleep 1; done"; then
+        echo "Failed to connect to API port $port within ${API_RESPONDING_TIMEOUT} seconds"
+        exit 1
+    fi
+}
+
+# Check if solum services are running
+for s in ${SERVICES[*]}
+do
+    if [ ! `pgrep -f $s` ]; then
+        echo "$s is not running"
+        exit 1
+    fi
+done
+
+for sec in ${!CONFIG_SECTIONS[*]}
+do
+    pt=${CONFIG_SECTIONS[$sec]}
+    line=$(sed -ne "/^\[$sec\]/,/^\[.*\]/ { /^port[ \t]*=/ p; }" $SOLUM_CONFIG)
+    if [ ! -z "${line#*=}" ]; then
+        pt=${line#*=}
+    fi
+    check_api $pt
+done
 
 # Where tempest code lives
 TEMPEST_DIR=${TEMPEST_DIR:-/opt/stack/new/tempest}
