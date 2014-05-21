@@ -120,13 +120,9 @@ class Handler(object):
 
         # TODO(asalkeld) support template flavors (maybe an autoscaling one)
         #                this could also be stored in glance.
-        if cfg.CONF.api.image_format == 'qcow2':
-            parameters.update(self._get_network_parameters(osc))
-            template_flavor = 'basic'
-        else:
-            #Docker does not support floating IP right now, so we use a
-            # template without neutron
-            template_flavor = 'basic_for_docker'
+
+        parameters.update(self._get_network_parameters(osc))
+        template_flavor = 'basic'
 
         template = self._get_template(template_flavor)
 
