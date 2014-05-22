@@ -39,6 +39,6 @@ if [ ! -d /opt/solum/buildpacks ]; then
     git clone --depth 1 https://github.com/heroku/heroku-buildpack-scala
     git clone --depth 1 https://github.com/igrigorik/heroku-buildpack-dart.git
     git clone --depth 1 https://github.com/miyagawa/heroku-buildpack-perl.git
-    git clone --depth 1 https://github.com/friism/heroku-buildpack-mono.git
+    git clone --depth 1 https://github.com/paulczar/heroku-buildpack-mono.git
     popd
 fi
