@@ -21,11 +21,11 @@ Includes decorator for re-raising Solum-type exceptions.
 import functools
 import pecan
 import sys
-import wsme
 
 from keystoneclient import exceptions as keystone_exceptions
 from oslo.config import cfg
 import six
+import wsme
 
 from solum.common import safe_utils
 from solum.openstack.common import excutils
@@ -38,7 +38,7 @@ LOG = logging.getLogger(__name__)
 exc_log_opts = [
     cfg.BoolOpt('fatal_exception_format_errors',
                 default=False,
-                help='make exception message format errors fatal'),
+                help='make exception message format errors fatal')
 ]
 
 CONF = cfg.CONF
