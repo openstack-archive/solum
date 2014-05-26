@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from solum import objects
 from solum.objects import registry
 from solum.objects.sqlalchemy import image
 from solum.tests import base
@@ -42,3 +43,14 @@ class TestImage(base.BaseTestCase):
         test_srvc = image.Image().get_by_id(self.ctx, self.data[0]['id'])
         for key, value in self.data[0].items():
             self.assertEqual(value, getattr(test_srvc, key))
+
+
+class TestStates(base.BaseTestCase):
+    def test_as_dict(self):
+        self.assertEqual(objects.image.States.as_dict(),
+                         {'BUILDING': 'BUILDING', 'COMPLETE': 'COMPLETE',
+                          'ERROR': 'ERROR', 'PENDING': 'PENDING'})
+
+    def test_values(self):
+        self.assertEqual(objects.image.States.values(),
+                         ['BUILDING', 'COMPLETE', 'PENDING', 'ERROR'])
