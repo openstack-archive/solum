@@ -22,7 +22,7 @@ from solum.builder.handlers import image_handler
 from solum.common import exception
 from solum import objects
 
-STATE_KIND = wtypes.Enum(str, 'BUILDING', 'ERROR', 'COMPLETE')
+STATE_KIND = wtypes.Enum(str, *objects.image.States.values())
 IMAGE_KIND = wtypes.Enum(str, 'auto', 'qcow2', 'docker')
 SOURCE_KIND = wtypes.Enum(str, 'auto', 'heroku', 'dib')
 

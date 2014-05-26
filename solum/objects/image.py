@@ -29,3 +29,12 @@ class States(object):
     BUILDING = 'BUILDING'
     ERROR = 'ERROR'
     COMPLETE = 'COMPLETE'
+
+    @classmethod
+    def as_dict(cls):
+        return dict((k, v) for k, v in cls.__dict__.iteritems()
+                    if k[:2] != '__' and k not in ('values', 'as_dict'))
+
+    @classmethod
+    def values(cls):
+        return cls.as_dict().values()
