@@ -100,6 +100,30 @@ class HandlerTest(base.BaseTestCase):
         self.assertEqual(expected, mock_updater.call_args_list)
 
 
+class TestNotifications(base.BaseTestCase):
+    def setUp(self):
+        super(TestNotifications, self).setUp()
+        self.ctx = utils.dummy_context()
+        self.db = self.useFixture(utils.Database())
+
+    @mock.patch('solum.objects.registry')
+    def test_update_assembly_status(self, mock_registry):
+        mock_assembly = mock.MagicMock()
+        mock_registry.Assembly.get_by_id.return_value = mock_assembly
+        shell_handler.update_assembly_status(self.ctx, '1234',
+                                             'BUILDING')
+        mock_registry.Assembly.get_by_id.assert_called_once_with(self.ctx,
+                                                                 '1234')
+        mock_assembly.save.assert_called_once_with(self.ctx)
+        self.assertEqual(mock_assembly.status, 'BUILDING')
+
+    @mock.patch('solum.objects.registry')
+    def test_update_assembly_status_pass(self, mock_registry):
+        shell_handler.update_assembly_status(self.ctx, None,
+                                             'BUILDING')
+        self.assertEqual(mock_registry.call_count, 0)
+
+
 class TestBuildCommand(base.BaseTestCase):
     scenarios = [
         ('docker',

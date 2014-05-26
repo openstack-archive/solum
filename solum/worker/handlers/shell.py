@@ -48,6 +48,8 @@ def job_update_notification(ctxt, build_id, state=None, description=None,
 
 def update_assembly_status(ctxt, assembly_id, status):
     #TODO(datsun180b): use conductor to update assembly status
+    if assembly_id is None:
+        return
     assem = solum.objects.registry.Assembly.get_by_id(ctxt,
                                                       assembly_id)
     assem.status = status
@@ -141,5 +143,6 @@ class Handler(object):
                                 description='built successfully',
                                 created_image_id=created_image_id,
                                 assembly_id=assembly_id)
-        deployer_api.API(context=ctxt).deploy(assembly_id=assembly_id,
-                                              image_id=created_image_id)
+        if assembly_id is not None:
+            deployer_api.API(context=ctxt).deploy(assembly_id=assembly_id,
+                                                  image_id=created_image_id)
