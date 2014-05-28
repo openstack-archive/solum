@@ -150,11 +150,10 @@ class TestAssemblyController(base.TestCase):
         resp, body = self.client.delete('v1/assemblies/%s' % uuid)
         self.assertEqual(resp.status, 204)
         self.assertEqual(body, '')
-
         if self.client.assembly_delete_done(uuid):
             self._delete_plan(plan_uuid)
         else:
-            self.assertRaises(tempest_exceptions.TimeoutException)
+            self.fail("Assembly couldn't be deleted.")
 
     def test_assemblies_delete_not_found(self):
         self.assertRaises(tempest_exceptions.NotFound,
