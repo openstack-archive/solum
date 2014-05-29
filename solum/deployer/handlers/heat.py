@@ -84,10 +84,17 @@ class Handler(object):
                 params['private_subnet'] = tenant_network['subnets'][0]
         return params
 
+    def _get_stack_name(self, assembly, prefix_len=100):
+        assem_name = assembly.name
+        # heat stack name has a max allowable length of 255
+        return ''.join([assem_name[:min(len(assem_name), prefix_len)], '-',
+                        assembly.uuid])
+
     def delete_heat_stack(self, ctxt, assem_id):
         osc = clients.OpenStackClients(ctxt)
         assem = objects.registry.Assembly.get_by_id(ctxt, assem_id)
-        stack_id = self._find_id_if_stack_exists(osc, assem.name)
+        stack_name = self._get_stack_name(assem)
+        stack_id = self._find_id_if_stack_exists(osc, stack_name)
 
         if stack_id is not None:
             osc.heat().stacks.delete(stack_id)
@@ -96,7 +103,7 @@ class Handler(object):
             growth_factor = cfg.CONF.deployer.growth_factor
 
             for count in range(cfg.CONF.deployer.max_attempts):
-                stack_id = self._find_id_if_stack_exists(osc, assem.name)
+                stack_id = self._find_id_if_stack_exists(osc, stack_name)
                 if stack_id is None:
                     break
                 time.sleep(wait_interval)
@@ -126,14 +133,16 @@ class Handler(object):
 
         template = self._get_template(template_flavor)
 
-        stack_id = self._find_id_if_stack_exists(osc, assem.name)
+        stack_name = self._get_stack_name(assem)
+        stack_id = self._find_id_if_stack_exists(osc, stack_name)
+
         if stack_id is not None:
             osc.heat().stacks.update(stack_id,
-                                     stack_name=assem.name,
+                                     stack_name=stack_name,
                                      template=template,
                                      parameters=parameters)
         else:
-            created_stack = osc.heat().stacks.create(stack_name=assem.name,
+            created_stack = osc.heat().stacks.create(stack_name=stack_name,
                                                      template=template,
                                                      parameters=parameters)
             stack_id = created_stack['stack']['id']
