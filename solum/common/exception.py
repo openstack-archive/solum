@@ -19,8 +19,8 @@ Includes decorator for re-raising Solum-type exceptions.
 """
 
 import functools
-import pecan
 import sys
+import uuid
 
 from keystoneclient import exceptions as keystone_exceptions
 from oslo.config import cfg
@@ -85,17 +85,47 @@ def wrap_exception(notifier=None, publisher_id=None, event_type=None,
     return inner
 
 
+OBFUSCATED_MSG = _('Your request could not be handled '
+                   'because of a problem in the server. '
+                   'Error Correlation id is: %s')
+
+
 def wrap_controller_exception(func):
-    """This decorator wraps controllers method to manage wsme exceptions:
-    a wsme ClientSideError is raised if a SolumException is thrown.
+    """This decorator wraps controllers methods to handle exceptions:
+
+    - if an unhandled Exception or a SolumException with an error code >=500
+    is catched, raise a http 5xx ClientSideError and correlates it with a log
+    message
+
+    - if a SolumException is catched and its error code is <500, raise a http
+    4xx and logs the excp in debug mode
+
     """
     @functools.wraps(func)
     def wrapped(*args, **kw):
         try:
             return func(*args, **kw)
-        except SolumException as excp:
-            pecan.response.translatable_error = excp
-            raise wsme.exc.ClientSideError(six.text_type(excp), excp.code)
+        except Exception as excp:
+            if isinstance(excp, SolumException):
+                http_error_code = excp.code
+            else:
+                http_error_code = 500
+
+            if http_error_code >= 500:
+                # log the error message with its associated
+                # correlation id
+                log_correlation_id = str(uuid.uuid4())
+                LOG.error("%s:%s", log_correlation_id, str(excp))
+                # raise a client error with an obfuscated message
+                raise wsme.exc.ClientSideError(
+                    six.text_type(OBFUSCATED_MSG % log_correlation_id),
+                    http_error_code)
+            else:
+                # raise a client error the original message
+                LOG.debug(excp)
+                raise wsme.exc.ClientSideError(
+                    six.text_type(excp), http_error_code)
+
     return wrapped
 
 

@@ -14,8 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import uuid
+
+import mock
 from oslo.config import cfg
 import six
+import wsme
 
 from solum.common import exception
 from solum.tests import base
@@ -65,3 +69,59 @@ class ExceptionTestCase(base.BaseTestCase):
         self.assertIn("The requested operation is not implemented.",
                       six.text_type(exc))
         self.assertEqual(exc.code, 501)
+
+    def test_wrap_controller_exception_with_server_error(self):
+        exception.LOG.error = mock.Mock()
+
+        def error_func():
+            raise exception.NotImplemented()
+
+        correlation_id = None
+        try:
+            exception.wrap_controller_exception(error_func)()
+        except wsme.exc.ClientSideError as e:
+            correlation_id = e.message.split(":")[1].strip()
+
+        self.assertIsNotNone(correlation_id)
+        self.assertIsInstance(uuid.UUID(correlation_id), uuid.UUID)
+        self.assertTrue(exception.LOG.error.called)
+
+        (args, kargs) = exception.LOG.error.call_args
+
+        self.assertTrue(correlation_id in args)
+        self.assertTrue(correlation_id in str(args[0] % args[1:]))
+
+    def test_wrap_controller_exception_with_client_error(self):
+        error_args = dict(reason="foo")
+        expected_error_msg = six.text_type(
+            exception.BadRequest.msg_fmt % error_args)
+
+        def error_func():
+            raise exception.BadRequest(**error_args)
+
+        try:
+            exception.wrap_controller_exception(error_func)()
+            self.assertTrue(False)
+        except wsme.exc.ClientSideError as e:
+            self.assertEqual(e.msg, expected_error_msg)
+
+    def test_wrap_controller_exception_with_uncatched_error(self):
+        exception.LOG.error = mock.Mock()
+
+        def error_func():
+            raise ValueError('Hey!')
+
+        correlation_id = None
+        try:
+            exception.wrap_controller_exception(error_func)()
+        except wsme.exc.ClientSideError as e:
+            correlation_id = e.message.split(":")[1].strip()
+
+        self.assertIsNotNone(correlation_id)
+        self.assertIsInstance(uuid.UUID(correlation_id), uuid.UUID)
+        self.assertTrue(exception.LOG.error.called)
+
+        (args, kargs) = exception.LOG.error.call_args
+
+        self.assertTrue(correlation_id in args)
+        self.assertTrue(correlation_id in str(args[0] % args[1:]))
