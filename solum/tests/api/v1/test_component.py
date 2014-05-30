@@ -164,6 +164,7 @@ class TestComponentAsDict(base.BaseTestCase):
         ('full', dict(data={'uri': 'http://example.com/v1/components/x1',
                             'name': 'Example-component',
                             'type': 'component',
+                            'component_type': 'heat_stack',
                             'tags': ['small'],
                             'project_id': '1dae5a09ef2b4d8cbf3594b0eb4f6b94',
                             'user_id': '55f41cf46df74320b9486a35f5d28a11',
