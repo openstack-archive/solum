@@ -71,7 +71,7 @@ class ImageController(rest.RestController):
         super(ImageController, self).__init__()
         self._id = image_id
 
-    @exception.wrap_controller_exception
+    @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(Image)
     def get(self):
         """Return this image."""

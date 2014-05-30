@@ -19,6 +19,7 @@ Includes decorator for re-raising Solum-type exceptions.
 """
 
 import functools
+import pecan
 import sys
 import uuid
 
@@ -90,7 +91,7 @@ OBFUSCATED_MSG = _('Your request could not be handled '
                    'Error Correlation id is: %s')
 
 
-def wrap_controller_exception(func):
+def wrap_controller_exception(func, func_server_error, func_client_error):
     """This decorator wraps controllers methods to handle exceptions:
 
     - if an unhandled Exception or a SolumException with an error code >=500
@@ -117,16 +118,42 @@ def wrap_controller_exception(func):
                 log_correlation_id = str(uuid.uuid4())
                 LOG.error("%s:%s", log_correlation_id, str(excp))
                 # raise a client error with an obfuscated message
-                raise wsme.exc.ClientSideError(
-                    six.text_type(OBFUSCATED_MSG % log_correlation_id),
-                    http_error_code)
+                func_server_error(log_correlation_id, http_error_code)
             else:
                 # raise a client error the original message
                 LOG.debug(excp)
-                raise wsme.exc.ClientSideError(
-                    six.text_type(excp), http_error_code)
-
+                func_client_error(excp, http_error_code)
     return wrapped
+
+
+def wrap_wsme_controller_exception(func):
+    """This decorator wraps wsme controllers to handle exceptions."""
+    def _func_server_error(log_correlation_id, status_code):
+        raise wsme.exc.ClientSideError(
+            six.text_type(OBFUSCATED_MSG % log_correlation_id), status_code)
+
+    def _func_client_error(excp, status_code):
+        raise wsme.exc.ClientSideError(six.text_type(excp), status_code)
+
+    return wrap_controller_exception(func,
+                                     _func_server_error,
+                                     _func_client_error)
+
+
+def wrap_pecan_controller_exception(func):
+    """This decorator wraps pecan controllers to handle exceptions."""
+    def _func_server_error(log_correlation_id, status_code):
+        pecan.response.status = status_code
+        pecan.response.body = six.text_type(OBFUSCATED_MSG %
+                                            log_correlation_id)
+
+    def _func_client_error(excp, status_code):
+        pecan.response.status = status_code
+        pecan.response.body = six.text_type(excp)
+
+    return wrap_controller_exception(func,
+                                     _func_server_error,
+                                     _func_client_error)
 
 
 def wrap_keystone_exception(func):

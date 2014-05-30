@@ -91,7 +91,7 @@ class Controller(object):
     language_packs = language_pack.LanguagePacksController()
     public = public.PublicController()
 
-    @exception.wrap_controller_exception
+    @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(Platform)
     def index(self):
         host_url = '%s/%s' % (pecan.request.host_url, 'v1')

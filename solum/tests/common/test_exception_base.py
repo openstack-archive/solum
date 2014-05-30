@@ -78,7 +78,7 @@ class ExceptionTestCase(base.BaseTestCase):
 
         correlation_id = None
         try:
-            exception.wrap_controller_exception(error_func)()
+            exception.wrap_wsme_controller_exception(error_func)()
         except wsme.exc.ClientSideError as e:
             correlation_id = e.message.split(":")[1].strip()
 
@@ -100,7 +100,7 @@ class ExceptionTestCase(base.BaseTestCase):
             raise exception.BadRequest(**error_args)
 
         try:
-            exception.wrap_controller_exception(error_func)()
+            exception.wrap_wsme_controller_exception(error_func)()
             self.assertTrue(False)
         except wsme.exc.ClientSideError as e:
             self.assertEqual(e.msg, expected_error_msg)
@@ -113,7 +113,7 @@ class ExceptionTestCase(base.BaseTestCase):
 
         correlation_id = None
         try:
-            exception.wrap_controller_exception(error_func)()
+            exception.wrap_wsme_controller_exception(error_func)()
         except wsme.exc.ClientSideError as e:
             correlation_id = e.message.split(":")[1].strip()
 

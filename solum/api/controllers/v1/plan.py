@@ -29,7 +29,7 @@ class PlanController(rest.RestController):
         super(PlanController, self).__init__()
         self._id = plan_id
 
-    @exception.wrap_controller_exception
+    @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(plan.Plan)
     def get(self):
         """Return this plan."""
@@ -37,7 +37,7 @@ class PlanController(rest.RestController):
         return plan.Plan.from_db_model(handler.get(self._id),
                                        pecan.request.host_url)
 
-    @exception.wrap_controller_exception
+    @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(plan.Plan, body=plan.Plan)
     def put(self, data):
         """Modify this plan."""
@@ -46,7 +46,7 @@ class PlanController(rest.RestController):
                              data.as_dict(objects.registry.Plan))
         return plan.Plan.from_db_model(res, pecan.request.host_url)
 
-    @exception.wrap_controller_exception
+    @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(status_code=204)
     def delete(self):
         """Delete this plan."""
@@ -63,7 +63,7 @@ class PlansController(rest.RestController):
             remainder = remainder[:-1]
         return PlanController(plan_id), remainder
 
-    @exception.wrap_controller_exception
+    @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(plan.Plan, body=plan.Plan, status_code=201)
     def post(self, data):
         """Create a new plan."""
@@ -72,7 +72,7 @@ class PlansController(rest.RestController):
             handler.create(data.as_dict(objects.registry.Plan)),
             pecan.request.host_url)
 
-    @exception.wrap_controller_exception
+    @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose([plan.Plan])
     def get_all(self):
         """Return all plans, based on the query provided."""

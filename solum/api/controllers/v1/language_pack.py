@@ -28,7 +28,7 @@ class LanguagePackController(rest.RestController):
         super(LanguagePackController, self).__init__()
         self._id = language_pack_id
 
-    @exception.wrap_controller_exception
+    @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(lp.LanguagePack)
     def get(self):
         """Return a language_pack."""
@@ -37,7 +37,7 @@ class LanguagePackController(rest.RestController):
         return lp.LanguagePack.from_image(
             handler.get(self._id), pecan.request.host_url)
 
-    @exception.wrap_controller_exception
+    @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(lp.LanguagePack, body=lp.LanguagePack)
     def put(self, data):
         """Modify this language_pack."""
@@ -46,7 +46,7 @@ class LanguagePackController(rest.RestController):
         res = handler.update(self._id, data.as_image_dict())
         return lp.LanguagePack.from_image(res, pecan.request.host_url)
 
-    @exception.wrap_controller_exception
+    @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(status_code=204)
     def delete(self):
         """Delete this language_pack."""
@@ -64,7 +64,7 @@ class LanguagePacksController(rest.RestController):
             remainder = remainder[:-1]
         return LanguagePackController(language_pack_id), remainder
 
-    @exception.wrap_controller_exception
+    @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(lp.LanguagePack, body=lp.LanguagePack,
                          status_code=201)
     def post(self, data):
@@ -74,7 +74,7 @@ class LanguagePacksController(rest.RestController):
         return lp.LanguagePack.from_image(handler.create(data.as_image_dict()),
                                           pecan.request.host_url)
 
-    @exception.wrap_controller_exception
+    @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose([lp.LanguagePack])
     def get_all(self):
         """Return all language_packs, based on the query provided."""
