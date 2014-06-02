@@ -6,3 +6,4 @@ API Complete Reference
 
    version
    v1
+   builder_v1
