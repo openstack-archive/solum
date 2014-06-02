@@ -32,8 +32,7 @@ class SensorController(rest.RestController):
     @wsme_pecan.wsexpose(sensor.Sensor, wtypes.text)
     def get(self):
         """Return this sensor."""
-        handler = sensor_handler.SensorHandler(
-            pecan.request.security_context)
+        handler = sensor_handler.SensorHandler(pecan.request.security_context)
         return sensor.Sensor.from_db_model(handler.get(self._id),
                                            pecan.request.host_url)
 
@@ -41,8 +40,7 @@ class SensorController(rest.RestController):
     @wsme_pecan.wsexpose(sensor.Sensor, wtypes.text, body=sensor.Sensor)
     def put(self, data):
         """Modify this sensor."""
-        handler = sensor_handler.SensorHandler(
-            pecan.request.security_context)
+        handler = sensor_handler.SensorHandler(pecan.request.security_context)
         obj = handler.update(self._id,
                              data.as_dict(objects.registry.Sensor))
         return sensor.Sensor.from_db_model(obj, pecan.request.host_url)
@@ -51,8 +49,7 @@ class SensorController(rest.RestController):
     @wsme_pecan.wsexpose(None, wtypes.text, status_code=204)
     def delete(self):
         """Delete this sensor."""
-        handler = sensor_handler.SensorHandler(
-            pecan.request.security_context)
+        handler = sensor_handler.SensorHandler(pecan.request.security_context)
         handler.delete(self._id)
 
 
@@ -70,8 +67,7 @@ class SensorsController(rest.RestController):
                          body=sensor.Sensor, status_code=201)
     def post(self, data):
         """Create a new sensor."""
-        handler = sensor_handler.SensorHandler(
-            pecan.request.security_context)
+        handler = sensor_handler.SensorHandler(pecan.request.security_context)
         obj = handler.create(data.as_dict(objects.registry.Sensor))
         return sensor.Sensor.from_db_model(obj, pecan.request.host_url)
 
@@ -79,7 +75,6 @@ class SensorsController(rest.RestController):
     @wsme_pecan.wsexpose([sensor.Sensor])
     def get_all(self):
         """Return all sensors, based on the query provided."""
-        handler = sensor_handler.SensorHandler(
-            pecan.request.security_context)
+        handler = sensor_handler.SensorHandler(pecan.request.security_context)
         return [sensor.Sensor.from_db_model(obj, pecan.request.host_url)
                 for obj in handler.get_all()]

@@ -33,8 +33,7 @@ class PlanController(rest.RestController):
     @wsme_pecan.wsexpose(plan.Plan)
     def get(self):
         """Return this plan."""
-        handler = plan_handler.PlanHandler(
-            pecan.request.security_context)
+        handler = plan_handler.PlanHandler(pecan.request.security_context)
         return plan.Plan.from_db_model(handler.get(self._id),
                                        pecan.request.host_url)
 
@@ -42,8 +41,7 @@ class PlanController(rest.RestController):
     @wsme_pecan.wsexpose(plan.Plan, body=plan.Plan)
     def put(self, data):
         """Modify this plan."""
-        handler = plan_handler.PlanHandler(
-            pecan.request.security_context)
+        handler = plan_handler.PlanHandler(pecan.request.security_context)
         res = handler.update(self._id,
                              data.as_dict(objects.registry.Plan))
         return plan.Plan.from_db_model(res, pecan.request.host_url)
@@ -52,8 +50,7 @@ class PlanController(rest.RestController):
     @wsme_pecan.wsexpose(status_code=204)
     def delete(self):
         """Delete this plan."""
-        handler = plan_handler.PlanHandler(
-            pecan.request.security_context)
+        handler = plan_handler.PlanHandler(pecan.request.security_context)
         return handler.delete(self._id)
 
 
@@ -70,8 +67,7 @@ class PlansController(rest.RestController):
     @wsme_pecan.wsexpose(plan.Plan, body=plan.Plan, status_code=201)
     def post(self, data):
         """Create a new plan."""
-        handler = plan_handler.PlanHandler(
-            pecan.request.security_context)
+        handler = plan_handler.PlanHandler(pecan.request.security_context)
         return plan.Plan.from_db_model(
             handler.create(data.as_dict(objects.registry.Plan)),
             pecan.request.host_url)
@@ -80,7 +76,6 @@ class PlansController(rest.RestController):
     @wsme_pecan.wsexpose([plan.Plan])
     def get_all(self):
         """Return all plans, based on the query provided."""
-        handler = plan_handler.PlanHandler(
-            pecan.request.security_context)
+        handler = plan_handler.PlanHandler(pecan.request.security_context)
         return [plan.Plan.from_db_model(obj, pecan.request.host_url)
                 for obj in handler.get_all()]
