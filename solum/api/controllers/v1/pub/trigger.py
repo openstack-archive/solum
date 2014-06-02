@@ -26,8 +26,7 @@ class TriggerController(rest.RestController):
         handler = assembly_handler.AssemblyHandler(None)
         try:
             handler.trigger_workflow(trigger_id)
+            pecan.response.status = 202
         except exception.ResourceNotFound as excp:
             pecan.response.status = excp.code
-            pecan.response.text = excp.message
-            return
-        pecan.response.status = 202
+            pecan.response.body = excp.message
