@@ -28,7 +28,7 @@ class OperationController(rest.RestController):
         super(OperationController, self).__init__()
         self._id = operation_id
 
-    @exception.wrap_controller_exception
+    @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(operation.Operation, wtypes.text)
     def get(self):
         """Return this operation."""
@@ -37,7 +37,7 @@ class OperationController(rest.RestController):
         return operation.Operation.from_db_model(handler.get(self._id),
                                                  pecan.request.host_url)
 
-    @exception.wrap_controller_exception
+    @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(operation.Operation, wtypes.text,
                          body=operation.Operation)
     def put(self, data):
@@ -48,7 +48,7 @@ class OperationController(rest.RestController):
                              data.as_dict(objects.registry.Operation))
         return operation.Operation.from_db_model(res, pecan.request.host_url)
 
-    @exception.wrap_controller_exception
+    @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(status_code=204)
     def delete(self):
         """Delete this operation."""
@@ -66,7 +66,7 @@ class OperationsController(rest.RestController):
             remainder = remainder[:-1]
         return OperationController(operation_id), remainder
 
-    @exception.wrap_controller_exception
+    @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(operation.Operation, body=operation.Operation,
                          status_code=201)
     def post(self, data):
@@ -76,7 +76,7 @@ class OperationsController(rest.RestController):
         return operation.Operation.from_db_model(handler.create(
             data.as_dict(objects.registry.Operation)), pecan.request.host_url)
 
-    @exception.wrap_controller_exception
+    @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose([operation.Operation])
     def get_all(self):
         """Return all operations, based on the query provided."""

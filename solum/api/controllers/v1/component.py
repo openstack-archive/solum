@@ -27,7 +27,7 @@ class ComponentController(rest.RestController):
         super(ComponentController, self).__init__()
         self._id = component_id
 
-    @exception.wrap_controller_exception
+    @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(component.Component)
     def get(self):
         """Return this component."""
@@ -36,7 +36,7 @@ class ComponentController(rest.RestController):
         return component.Component.from_db_model(handler.get(self._id),
                                                  pecan.request.host_url)
 
-    @exception.wrap_controller_exception
+    @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(component.Component, body=component.Component)
     def put(self, data):
         """Modify this component."""
@@ -46,7 +46,7 @@ class ComponentController(rest.RestController):
                              data.as_dict(objects.registry.Component))
         return component.Component.from_db_model(res, pecan.request.host_url)
 
-    @exception.wrap_controller_exception
+    @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(None, status_code=204)
     def delete(self):
         """Delete this component."""
@@ -64,7 +64,7 @@ class ComponentsController(rest.RestController):
             remainder = remainder[:-1]
         return ComponentController(component_id), remainder
 
-    @exception.wrap_controller_exception
+    @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(component.Component, body=component.Component,
                          status_code=201)
     def post(self, data):
@@ -75,7 +75,7 @@ class ComponentsController(rest.RestController):
             handler.create(data.as_dict(objects.registry.Component)),
             pecan.request.host_url)
 
-    @exception.wrap_controller_exception
+    @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose([component.Component])
     def get_all(self):
         """Return all components, based on the query provided."""
