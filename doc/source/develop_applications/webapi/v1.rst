@@ -94,3 +94,15 @@ Extensions
 
 .. autotype:: solum.api.controllers.v1.datamodel.extension.Extension
    :members:
+
+LanguagePacks
+----------
+
+.. rest-controller:: solum.api.controllers.v1.language_pack:LanguagePacksController
+   :webprefix: /v1/language_packs
+
+.. rest-controller:: solum.api.controllers.v1.language_pack:LanguagePackController
+   :webprefix: /v1/language_packs
+
+.. autotype:: solum.api.controllers.v1.datamodel.language_pack.LanguagePack
+   :members:
