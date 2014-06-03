@@ -18,6 +18,7 @@ SQLAlchemy models for application data.
 
 import json
 import six
+import yaml
 
 from oslo.config import cfg
 from sqlalchemy.ext import declarative
@@ -156,4 +157,20 @@ class JSONEncodedDict(types.TypeDecorator):
     def process_result_value(self, value, dialect):
         if value is not None:
             value = json.loads(value)
+        return value
+
+
+class YAMLEncodedDict(types.TypeDecorator):
+    """Represents an immutable structure as a yaml-encoded string."""
+
+    impl = types.VARCHAR
+
+    def process_bind_param(self, value, dialect):
+        if value is not None:
+            value = yaml.dump(value)
+        return value
+
+    def process_result_value(self, value, dialect):
+        if value is not None:
+            value = yaml.load(value)
         return value
