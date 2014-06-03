@@ -1,0 +1,76 @@
+heat_template_version: 2013-05-23
+description: >
+  Build farm for Solum.
+parameters:
+  image:
+    type: string
+    description: glance_id of the server to start
+  key:
+    type: string
+    description: SSH key to connect to the servers
+    default: ''
+  flavor:
+    type: string
+    description: Flavor to use for servers
+    default: m1.small
+  min_size:
+    type: string
+    description: Minimum number of servers that belongs to the farm
+    default: 1
+  max_size:
+    type: string
+    description: Maximum number of servers that belongs to the farm
+    default: 5
+
+resources:
+  infra_group:
+    type: OS::Heat::AutoScalingGroup
+    properties:
+      min_size: {get_param: min_size}
+      max_size: {get_param: max_size}
+      resource:
+        type: OS::Nova::Server
+        properties:
+          image: {get_param: image}
+          flavor: {get_param: flavor}
+          key_name: {get_param: key}
+  scale_up_policy:
+    type: OS::Heat::ScalingPolicy
+    properties:
+      adjustment_type: change_in_capacity
+      auto_scaling_group_id: {get_resource: infra_group}
+      cooldown: 60
+      scaling_adjustment: 1
+  scale_down_policy:
+    type: OS::Heat::ScalingPolicy
+    properties:
+      adjustment_type: change_in_capacity
+      auto_scaling_group_id: {get_resource: infra_group}
+      cooldown: 60
+      scaling_adjustment: -1
+  cpu_alarm_high:
+    type: OS::Ceilometer::Alarm
+    properties:
+      description: Scale-up if the average CPU > 70% for 5 minutes
+      meter_name: cpu_util
+      statistic: avg
+      period: 60
+      evaluation_periods: 5
+      threshold: 70
+      alarm_actions:
+        - {get_attr: [scale_up_policy, alarm_url]}
+      matching_metadata: {'metadata.user_metadata.stack': {get_param: "OS::stack_id"}}
+      comparison_operator: gt
+  cpu_alarm_low:
+    type: OS::Ceilometer::Alarm
+    properties:
+      description: Scale-down if the average CPU < 15% for 5 minutes
+      meter_name: cpu_util
+      statistic: avg
+      period: 60
+      evaluation_periods: 5
+      threshold: 15
+      alarm_actions:
+        - {get_attr: [scale_down_policy, alarm_url]}
+      matching_metadata: {'metadata.user_metadata.stack': {get_param: "OS::stack_id"}}
+      comparison_operator: lt
