@@ -4,7 +4,7 @@ Configure and run Solum
 Configuration Reference
 -----------------------
 
-To alter the default compute flavor edit /etc/solum/templates/*.yaml
+To alter the default compute flavor edit /etc/solum/templates/\*.yaml
 ::
 
   flavor:
