@@ -105,7 +105,7 @@ def upgrade():
         sa.Column('updated_at', sa.DateTime, onupdate=timeutils.utcnow),
         sa.Column('project_id', sa.String(length=36)),
         sa.Column('user_id', sa.String(length=36)),
-        sa.Column('raw_content', models.JSONEncodedDict(2048)),
+        sa.Column('raw_content', models.YAMLEncodedDict(2048)),
         sa.Column('description', sa.String(length=255)),
         sa.Column('name', sa.String(255)),
     )

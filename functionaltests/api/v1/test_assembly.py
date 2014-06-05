@@ -15,6 +15,7 @@
 # under the License.
 
 import json
+import yaml
 
 from functionaltests.api import base
 from tempest import exceptions as tempest_exceptions
@@ -52,7 +53,9 @@ class TestAssemblyController(base.TestCase):
             self.assertRaises(tempest_exceptions.TimeoutException)
 
     def _delete_plan(self, plan_uuid):
-        resp, _ = self.client.delete('v1/plans/%s' % plan_uuid)
+        resp, _ = self.client.delete(
+            'v1/plans/%s' % plan_uuid,
+            headers={'content-type': 'application/x-yaml'})
         self.assertEqual(resp.status, 204)
 
     def _create_assembly(self):
@@ -68,10 +71,12 @@ class TestAssemblyController(base.TestCase):
         return uuid, p_uuid
 
     def _create_plan(self):
-        jsondata = json.dumps(plan_sample_data)
-        resp, body = self.client.post('v1/plans', jsondata)
+        yaml_data = yaml.dump(plan_sample_data)
+        resp, body = self.client.post(
+            'v1/plans', yaml_data,
+            headers={'content-type': 'application/x-yaml'})
         self.assertEqual(resp.status, 201)
-        out_data = json.loads(body)
+        out_data = yaml.load(body)
         uuid = out_data['uuid']
         self.assertIsNotNone(uuid)
         return uuid

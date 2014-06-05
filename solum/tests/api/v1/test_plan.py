@@ -12,8 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import json
 import mock
+import yaml
 
 from solum.api.controllers.v1.datamodel import plan as planmodel
 from solum.api.controllers.v1 import plan
@@ -38,49 +38,46 @@ class TestPlanController(base.BaseTestCase):
         cont = plan.PlanController('test_id')
         resp = cont.get()
         self.assertIsNotNone(resp)
-        self.assertEqual(fake_plan.name, resp['result'].name)
-        self.assertEqual(fake_plan.project_id,
-                         resp['result'].project_id)
-        self.assertEqual(fake_plan.uuid, resp['result'].uuid)
+        resp_yml = yaml.load(resp)
+        self.assertEqual(fake_plan.raw_content['name'], resp_yml['name'])
         hand_get.assert_called_with('test_id')
         self.assertEqual(200, resp_mock.status)
 
     def test_plan_get_not_found(self, PlanHandler, resp_mock, request_mock):
         hand_get = PlanHandler.return_value.get
-        hand_get.side_effect = exception.ResourceNotFound(
-            name='plan', plan_id='test_id')
-        cont = plan.PlanController('test_id')
-        cont.get()
+        hand_get.side_effect = exception.ResourceNotFound(name='plan',
+                                                          id='test_id')
+        plan.PlanController('test_id').get()
         hand_get.assert_called_with('test_id')
         self.assertEqual(404, resp_mock.status)
 
     def test_plan_put_none(self, PlanHandler, resp_mock, request_mock):
-        request_mock.body = None
-        request_mock.content_type = 'application/json'
-        hand_put = PlanHandler.return_value.put
-        hand_put.return_value = fakes.FakePlan()
+        request_mock.content_type = 'application/x-yaml'
+        request_mock.body = ''
+        hand_update = PlanHandler.return_value.update
+        hand_update.return_value = fakes.FakePlan()
         plan.PlanController('test_id').put()
         self.assertEqual(400, resp_mock.status)
 
     def test_plan_put_not_found(self, PlanHandler, resp_mock, request_mock):
-        json_update = {'name': 'foo'}
-        request_mock.body = json.dumps(json_update)
-        request_mock.content_type = 'application/json'
+        data = 'name: ex_plan1\ndescription: yaml plan1.'
+        request_mock.body = data
+        request_mock.content_type = 'application/x-yaml'
         hand_update = PlanHandler.return_value.update
         hand_update.side_effect = exception.ResourceNotFound(
             name='plan', plan_id='test_id')
         plan.PlanController('test_id').put()
-        hand_update.assert_called_with('test_id', json_update)
+        hand_update.assert_called_with('test_id', yaml.load(data))
         self.assertEqual(404, resp_mock.status)
 
     def test_plan_put_ok(self, PlanHandler, resp_mock, request_mock):
-        json_update = {'name': 'foo'}
-        request_mock.body = json.dumps(json_update)
-        request_mock.content_type = 'application/json'
+        data = 'name: ex_plan1\ndescription: yaml plan1.'
+        request_mock.body = data
+        request_mock.content_type = 'application/x-yaml'
         hand_update = PlanHandler.return_value.update
         hand_update.return_value = fakes.FakePlan()
         plan.PlanController('test_id').put()
-        hand_update.assert_called_with('test_id', json_update)
+        hand_update.assert_called_with('test_id', yaml.load(data))
         self.assertEqual(200, resp_mock.status)
 
     def test_plan_delete_not_found(self, PlanHandler, resp_mock, request_mock):
@@ -115,21 +112,19 @@ class TestPlansController(base.BaseTestCase):
         hand_get.return_value = [fake_plan]
         resp = plan.PlansController().get_all()
         self.assertIsNotNone(resp)
-        self.assertEqual(fake_plan.name, resp['result'][0].name)
-        self.assertEqual(fake_plan.project_id,
-                         resp['result'][0].project_id)
-        self.assertEqual(fake_plan.uuid, resp['result'][0].uuid)
+        resp_yml = yaml.load(resp)
+        self.assertEqual(fake_plan.raw_content['name'], resp_yml[0]['name'])
         self.assertEqual(200, resp_mock.status)
         hand_get.assert_called_with()
 
     def test_plans_post(self, PlanHandler, resp_mock, request_mock):
-        json_update = {'name': 'foo'}
-        request_mock.body = json.dumps(json_update)
-        request_mock.content_type = 'application/json'
+        request_mock.body = 'name: ex_plan1\ndescription: yaml plan1.'
+        request_mock.content_type = 'application/x-yaml'
         hand_create = PlanHandler.return_value.create
         hand_create.return_value = fakes.FakePlan()
         plan.PlansController().post()
-        hand_create.assert_called_with(json_update)
+        hand_create.assert_called_with({'name': 'ex_plan1',
+                                        'description': 'yaml plan1.'})
         self.assertEqual(201, resp_mock.status)
 
     def test_plans_post_nodata(self, handler_mock, resp_mock, request_mock):
@@ -137,9 +132,7 @@ class TestPlansController(base.BaseTestCase):
         request_mock.content_type = 'application/json'
         handler_create = handler_mock.return_value.create
         handler_create.return_value = fakes.FakePlan()
-        ret_val = plan.PlansController().post()
-        self.assertEqual("Missing argument: \"data\"",
-                         str(ret_val['faultstring']))
+        plan.PlansController().post()
         self.assertEqual(400, resp_mock.status)
 
 
@@ -150,9 +143,7 @@ class TestPlanAsDict(base.BaseTestCase):
         ('one', dict(data={'name': 'foo'})),
         ('full', dict(data={'uri': 'http://example.com/v1/plans/x1',
                             'name': 'Example-plan',
-                            'type': 'plan',
-                            'project_id': '1dae5a09ef2b4d8cbf3594b0eb4f6b94',
-                            'user_id': '55f41cf46df74320b9486a35f5d28a11'}))
+                            'type': 'plan'}))
     ]
 
     def test_as_dict(self):

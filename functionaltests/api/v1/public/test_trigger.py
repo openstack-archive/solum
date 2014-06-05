@@ -12,6 +12,7 @@
 
 import json
 import requests
+import yaml
 
 from functionaltests.api import base
 
@@ -39,10 +40,12 @@ class TestTriggerController(base.TestCase):
         return uuid, plan_uuid, trigger_uri
 
     def _create_plan(self):
-        data = json.dumps(plan_data)
-        resp, body = self.client.post('v1/plans', data)
+        data = yaml.dump(plan_data)
+        resp, body = self.client.post(
+            'v1/plans', data,
+            headers={'content-type': 'application/x-yaml'})
         self.assertEqual(resp.status, 201)
-        out_data = json.loads(body)
+        out_data = yaml.load(body)
         uuid = out_data['uuid']
         self.assertIsNotNone(uuid)
         return uuid
@@ -65,5 +68,7 @@ class TestTriggerController(base.TestCase):
             self.fail("Assembly couldn't be deleted.")
 
     def _delete_plan(self, plan_uuid):
-        resp, body = self.client.delete('v1/plans/%s' % plan_uuid)
+        resp, body = self.client.delete(
+            'v1/plans/%s' % plan_uuid,
+            headers={'content-type': 'application/x-yaml'})
         self.assertEqual(resp.status, 204)

@@ -177,7 +177,7 @@ class FakePlan(mock.Mock):
         super(FakePlan, self).__init__(**kwargs)
         self.__tablename__ = 'plan'
         self.__resource__ = 'plans'
-        self.raw_content = {'artifacts': []}
+        self.raw_content = {'name': 'faker', 'artifacts': []}
         self.user_id = 'fake user id'
         self.project_id = 'fake project id'
         self.uuid = 'test_uuid'
@@ -191,6 +191,11 @@ class FakePlan(mock.Mock):
                     uuid=self.uuid,
                     id=self.id,
                     name=self.name)
+
+    def refined_content(self):
+        if self.raw_content and self.uuid:
+            self.raw_content['uuid'] = self.uuid
+        return self.raw_content
 
 
 class FakeImage(mock.Mock):

@@ -150,6 +150,7 @@ def wrap_pecan_controller_exception(func):
     def _func_client_error(excp, status_code):
         pecan.response.status = status_code
         pecan.response.body = six.text_type(excp)
+        pecan.response.content_type = None
 
     return wrap_controller_exception(func,
                                      _func_server_error,

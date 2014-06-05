@@ -52,7 +52,6 @@ class TestPlanHandler(base.BaseTestCase):
         self.assertEqual(db_obj.name, res.name)
         self.assertEqual(db_obj.project_id, res.project_id)
         self.assertEqual(db_obj.uuid, res.uuid)
-        db_obj.update.assert_called_once_with(data)
         db_obj.save.assert_called_once_with(self.ctx)
         mock_registry.Plan.get_by_uuid.assert_called_once_with(self.ctx,
                                                                'test_id')
@@ -64,7 +63,6 @@ class TestPlanHandler(base.BaseTestCase):
         mock_registry.Plan.return_value = db_obj
         handler = plan_handler.PlanHandler(self.ctx)
         res = handler.create(data)
-        db_obj.update.assert_called_once_with(data)
         db_obj.create.assert_called_once_with(self.ctx)
         self.assertEqual(db_obj, res)
 
