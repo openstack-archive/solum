@@ -23,6 +23,7 @@ from solum.api.controllers.v1.datamodel import types as api_types
 from solum.api.controllers.v1 import extension
 from solum.api.controllers.v1 import language_pack
 from solum.api.controllers.v1 import operation
+from solum.api.controllers.v1 import pipeline
 from solum.api.controllers.v1 import plan
 from solum.api.controllers.v1 import public
 from solum.api.controllers.v1 import sensor
@@ -89,6 +90,7 @@ class Controller(object):
     operations = operation.OperationsController()
     sensors = sensor.SensorsController()
     language_packs = language_pack.LanguagePacksController()
+    pipelines = pipeline.PipelinesController()
     public = public.PublicController()
 
     @exception.wrap_wsme_controller_exception

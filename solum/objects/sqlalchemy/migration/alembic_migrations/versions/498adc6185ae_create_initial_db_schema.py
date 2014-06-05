@@ -130,6 +130,22 @@ def upgrade():
     )
 
     op.create_table(
+        'pipeline',
+        sa.Column('id', sa.Integer, primary_key=True, nullable=False),
+        sa.Column('uuid', sa.String(length=36), nullable=False),
+        sa.Column('created_at', sa.DateTime, default=timeutils.utcnow),
+        sa.Column('updated_at', sa.DateTime, onupdate=timeutils.utcnow),
+        sa.Column('name', sa.String(100)),
+        sa.Column('description', sa.String(255)),
+        sa.Column('project_id', sa.String(36)),
+        sa.Column('user_id', sa.String(36)),
+        sa.Column('tags', sa.Text),
+        sa.Column('plan_id', sa.Integer, sa.ForeignKey('plan.id'),
+                  nullable=False),
+        sa.Column('workbook_name', sa.String(length=255)),
+    )
+
+    op.create_table(
         'component',
         sa.Column('id', sa.Integer, primary_key=True, nullable=False),
         sa.Column('uuid', sa.String(length=36), nullable=False),
