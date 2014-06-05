@@ -21,6 +21,7 @@ from solum.api.controllers.v1 import assembly
 from solum.api.controllers.v1 import component
 from solum.api.controllers.v1.datamodel import types as api_types
 from solum.api.controllers.v1 import extension
+from solum.api.controllers.v1 import infrastructure
 from solum.api.controllers.v1 import language_pack
 from solum.api.controllers.v1 import operation
 from solum.api.controllers.v1 import pipeline
@@ -92,6 +93,7 @@ class Controller(object):
     language_packs = language_pack.LanguagePacksController()
     pipelines = pipeline.PipelinesController()
     public = public.PublicController()
+    infrastructure = infrastructure.InfrastructureController()
 
     @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(Platform)

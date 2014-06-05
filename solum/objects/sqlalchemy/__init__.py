@@ -17,6 +17,7 @@ from solum.objects import assembly as abstract_assembly
 from solum.objects import component as abstract_component
 from solum.objects import extension as abstract_extension
 from solum.objects import image as abstract_image
+from solum.objects import infrastructure_stack as abstract_infra_stack
 from solum.objects import operation as abstract_operation
 from solum.objects import pipeline as abstract_pipeline
 from solum.objects import plan as abstract_plan
@@ -26,6 +27,7 @@ from solum.objects.sqlalchemy import assembly
 from solum.objects.sqlalchemy import component
 from solum.objects.sqlalchemy import extension
 from solum.objects.sqlalchemy import image
+from solum.objects.sqlalchemy import infrastructure_stack
 from solum.objects.sqlalchemy import operation
 from solum.objects.sqlalchemy import pipeline
 from solum.objects.sqlalchemy import plan
@@ -37,6 +39,10 @@ def load():
     """Activate the sqlalchemy backend."""
     objects.registry.add(abstract_assembly.Assembly, assembly.Assembly)
     objects.registry.add(abstract_assembly.AssemblyList, assembly.AssemblyList)
+    objects.registry.add(abstract_infra_stack.InfrastructureStack,
+                         infrastructure_stack.InfrastructureStack)
+    objects.registry.add(abstract_infra_stack.InfrastructureStackList,
+                         infrastructure_stack.InfrastructureStackList)
     objects.registry.add(abstract_component.Component, component.Component)
     objects.registry.add(abstract_component.ComponentList,
                          component.ComponentList)
