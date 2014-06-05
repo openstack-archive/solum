@@ -26,7 +26,8 @@ sample_data = {'name': 'test_service',
 assembly_sample_data = {'name': 'test_assembly',
                         'description': 'desc assembly'}
 
-plan_sample_data = {'name': 'test_plan',
+plan_sample_data = {'version': '1',
+                    'name': 'test_plan',
                     'description': 'A test to create plan'}
 
 

@@ -60,25 +60,37 @@ class TestPlanController(base.BaseTestCase):
         self.assertEqual(400, resp_mock.status)
 
     def test_plan_put_not_found(self, PlanHandler, resp_mock, request_mock):
-        data = 'name: ex_plan1\ndescription: yaml plan1.'
+        data = 'version: 1\nname: ex_plan1\ndescription: dsc1.'
         request_mock.body = data
         request_mock.content_type = 'application/x-yaml'
         hand_update = PlanHandler.return_value.update
         hand_update.side_effect = exception.ResourceNotFound(
             name='plan', plan_id='test_id')
         plan.PlanController('test_id').put()
-        hand_update.assert_called_with('test_id', yaml.load(data))
+        hand_update.assert_called_with('test_id', {'name': 'ex_plan1',
+                                                   'description': u'dsc1.'})
         self.assertEqual(404, resp_mock.status)
 
     def test_plan_put_ok(self, PlanHandler, resp_mock, request_mock):
-        data = 'name: ex_plan1\ndescription: yaml plan1.'
+        data = 'version: 1\nname: ex_plan1\ndescription: dsc1.'
         request_mock.body = data
         request_mock.content_type = 'application/x-yaml'
         hand_update = PlanHandler.return_value.update
         hand_update.return_value = fakes.FakePlan()
         plan.PlanController('test_id').put()
-        hand_update.assert_called_with('test_id', yaml.load(data))
+        hand_update.assert_called_with('test_id', {'name': 'ex_plan1',
+                                                   'description': u'dsc1.'})
         self.assertEqual(200, resp_mock.status)
+
+    def test_plan_put_version_not_found(self, PlanHandler,
+                                        resp_mock, request_mock):
+        data = 'name: ex_plan1\ndescription: yaml plan1.\nversion: 2'
+        request_mock.body = data
+        request_mock.content_type = 'application/x-yaml'
+        hand_update = PlanHandler.return_value.update
+        hand_update.return_value = fakes.FakePlan()
+        plan.PlanController('test_id').put()
+        self.assertEqual(400, resp_mock.status)
 
     def test_plan_delete_not_found(self, PlanHandler, resp_mock, request_mock):
         hand_delete = PlanHandler.return_value.delete
@@ -118,14 +130,23 @@ class TestPlansController(base.BaseTestCase):
         hand_get.assert_called_with()
 
     def test_plans_post(self, PlanHandler, resp_mock, request_mock):
-        request_mock.body = 'name: ex_plan1\ndescription: yaml plan1.'
+        request_mock.body = 'version: 1\nname: ex_plan1\ndescription: dsc1.'
         request_mock.content_type = 'application/x-yaml'
         hand_create = PlanHandler.return_value.create
         hand_create.return_value = fakes.FakePlan()
         plan.PlansController().post()
         hand_create.assert_called_with({'name': 'ex_plan1',
-                                        'description': 'yaml plan1.'})
+                                        'description': 'dsc1.'})
         self.assertEqual(201, resp_mock.status)
+
+    def test_plans_post_version_not_found(self, PlanHandler,
+                                          resp_mock, request_mock):
+        request_mock.body = 'version: 2\nname: ex_plan1\ndescription: dsc1.'
+        request_mock.content_type = 'application/x-yaml'
+        hand_create = PlanHandler.return_value.create
+        hand_create.return_value = fakes.FakePlan()
+        plan.PlansController().post()
+        self.assertEqual(400, resp_mock.status)
 
     def test_plans_post_nodata(self, handler_mock, resp_mock, request_mock):
         request_mock.body = ''

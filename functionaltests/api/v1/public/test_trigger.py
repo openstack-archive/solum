@@ -19,7 +19,8 @@ from functionaltests.api import base
 assembly_data = {'name': 'test_assembly',
                  'description': 'desc assembly'}
 
-plan_data = {'name': 'test_plan',
+plan_data = {'version': '1',
+             'name': 'test_plan',
              'description': 'A test to create plan'}
 
 
