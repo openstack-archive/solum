@@ -13,10 +13,10 @@
 
 import requests
 from requests import exceptions
+from six import moves
 
 from solum.openstack.common.gettextutils import _
 from solum.openstack.common import log as logging
-from solum.openstack.common.py3kcompat import urlutils
 
 LOG = logging.getLogger(__name__)
 
@@ -35,7 +35,7 @@ def get(url, max_size, chunk_size=None, allowed_schemes=('http', 'https')):
 
     LOG.info(_('Fetching data from %s') % url)
 
-    components = urlutils.urlparse(url)
+    components = moves.urllib.parse.urlparse(url)
 
     if components.scheme not in allowed_schemes:
         raise IOError(_('Invalid URL scheme %s') % components.scheme)
@@ -49,8 +49,8 @@ def get(url, max_size, chunk_size=None, allowed_schemes=('http', 'https')):
 
     if components.scheme == 'file':
         try:
-            return urlutils.urlopen(url).read()
-        except urlutils.URLError as uex:
+            return moves.urllib.request.urlopen(url).read()
+        except moves.urllib.error.URLError as uex:
             raise IOError(_('Failed to read file: %s') % str(uex))
 
     try:

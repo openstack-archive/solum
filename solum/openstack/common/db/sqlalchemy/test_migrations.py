@@ -26,7 +26,6 @@ import sqlalchemy.exc
 from solum.openstack.common.db.sqlalchemy import utils
 from solum.openstack.common.gettextutils import _
 from solum.openstack.common import log as logging
-from solum.openstack.common.py3kcompat import urlutils
 from solum.openstack.common import test
 
 LOG = logging.getLogger(__name__)
@@ -147,7 +146,7 @@ class BaseMigrationTestCase(test.BaseTestCase):
     def _reset_databases(self):
         for key, engine in self.engines.items():
             conn_string = self.test_databases[key]
-            conn_pieces = urlutils.urlparse(conn_string)
+            conn_pieces = moves.urllib.parse.urlparse(conn_string)
             engine.dispose()
             if conn_string.startswith('sqlite'):
                 # We can just delete the SQLite database, which is

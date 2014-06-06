@@ -21,6 +21,7 @@ import six
 import yaml
 
 from oslo.config import cfg
+from six import moves
 from sqlalchemy.ext import declarative
 from sqlalchemy.orm import exc
 from sqlalchemy import types
@@ -30,11 +31,11 @@ from solum import objects
 from solum.openstack.common.db import exception as db_exc
 from solum.openstack.common.db.sqlalchemy import models
 from solum.openstack.common.db.sqlalchemy import session as db_session
-from solum.openstack.common.py3kcompat import urlutils
 
 
 def table_args():
-    engine_name = urlutils.urlparse(cfg.CONF.database.connection).scheme
+    engine_name = moves.urllib.parse.urlparse(
+        cfg.CONF.database.connection).scheme
     if engine_name == 'mysql':
         return {'mysql_engine': 'InnoDB',
                 'mysql_charset': "utf8"}
