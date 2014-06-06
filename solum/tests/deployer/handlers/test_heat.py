@@ -66,7 +66,7 @@ class HandlerTest(base.BaseTestCase):
                       'public_net': 'public_net_id',
                       'private_subnet': 'private_subnet_id'}
         mock_clients.return_value.heat.return_value.stacks.create.\
-            assert_called_once_with(stack_name='faker',
+            assert_called_once_with(stack_name='faker-test_uuid',
                                     template=fake_template,
                                     parameters=parameters)
         mock_clients.return_value.neutron.return_value.list_networks.\
@@ -100,7 +100,7 @@ class HandlerTest(base.BaseTestCase):
         parameters = {'image': 'created_image_id',
                       'app_name': 'faker'}
         mock_clients.return_value.heat.return_value.stacks.create.\
-            assert_called_once_with(stack_name='faker',
+            assert_called_once_with(stack_name='faker-test_uuid',
                                     template=fake_template,
                                     parameters=parameters)
         assign_and_create_mock = mock_registry.Component.assign_and_create
