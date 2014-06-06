@@ -96,7 +96,7 @@ Extensions
    :members:
 
 LanguagePacks
-----------
+-------------
 
 .. rest-controller:: solum.api.controllers.v1.language_pack:LanguagePacksController
    :webprefix: /v1/language_packs
