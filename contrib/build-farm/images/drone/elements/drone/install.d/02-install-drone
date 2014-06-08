@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# This script is specific to ubuntu, since drone has been tested only for it
+# http://drone.readthedocs.org/en/latest/install.html#requirements
+
+# Install drone
+wget http://downloads.drone.io/latest/drone.deb
+dpkg -i drone.deb
