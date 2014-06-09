@@ -24,13 +24,16 @@ class Handler(object):
         LOG.debug("%s" % message)
 
     def build(self, ctxt, build_id, source_uri, name, base_image_id,
-              source_format, image_format, assembly_id, test_cmd):
-        message = ("Build %s %s %s %s %s %s %s %s" %
+              source_format, image_format, assembly_id,
+              test_cmd, source_creds_ref=None):
+        message = ("Build %s %s %s %s %s %s %s %s %s" %
                    (build_id, source_uri, name, base_image_id, source_format,
-                    image_format, assembly_id, test_cmd))
+                    image_format, assembly_id,
+                    test_cmd, (source_creds_ref or '')))
         LOG.debug("%s" % message)
 
-    def unittest(self, ctxt, assembly_id, git_info, test_cmd):
-        message = ("Unittest %s %s %s" %
-                   (assembly_id, git_info, test_cmd))
+    def unittest(self, ctxt, assembly_id, git_info, test_cmd,
+                 source_creds_ref=None):
+        message = ("Unittest %s %s %s %s" %
+                   (assembly_id, git_info, test_cmd, (source_creds_ref or '')))
         LOG.debug("%s" % message)

@@ -10,8 +10,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import six
+from wsme import types as wtypes
 
 from solum.api.controllers.v1.datamodel import component as component_api
+from solum.api.controllers.v1.datamodel import types as api_types
 from solum import objects
 from solum.objects.sqlalchemy import component as component_model
 from solum.tests import base
@@ -72,6 +75,29 @@ class TestTypes(base.BaseTestCase):
         obj = objects.registry.Component(**data)
         c = component_api.Component.from_db_model(obj, 'http://test_host')
         self.assertEqual(assembly_data['uuid'], c.assembly_uuid)
+
+
+class TestMultiType(base.BaseTestCase):
+
+    def test_valid_values(self):
+        vt = api_types.MultiType(wtypes.text, six.types.BooleanType)
+        value = vt.validate("somestring")
+        self.assertEqual("somestring", value)
+        value = vt.validate(True)
+        self.assertEqual(True, value)
+
+    def test_invalid_values(self):
+        vt = api_types.MultiType(wtypes.text, six.types.BooleanType)
+        self.assertRaises(ValueError, vt.validate, 10)
+        self.assertRaises(ValueError, vt.validate, 0.10)
+        self.assertRaises(ValueError, vt.validate, object())
+
+    def test_multitype_tostring(self):
+        vt = api_types.MultiType(wtypes.text, six.types.BooleanType)
+        vts = str(vt)
+        self.assertIn(str(wtypes.text), vts)
+        self.assertIn(str(six.types.BooleanType), vts)
+        self.assertNotIn(str(six.integer_types[0]), vts)
 
 
 class TestTypeNames(base.BaseTestCase):

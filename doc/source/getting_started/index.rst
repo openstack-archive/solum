@@ -25,7 +25,7 @@ __ https://wiki.openstack.org/wiki/Solum/Demo
 Create your app
 ---------------
 
-Solum clones code from the user's public Git repository. Before you begin, push your code to a public Git repo. From within your devstack host, you can now run solum commands to build and deploy your application.
+Solum clones code from the user's public Git repository or user's public/private GitHub repository. Before you begin, push your code to a Git repo. From within your devstack host, you can now run solum commands to build and deploy your application.
 
 2. To register an app with Solum, you will need to write a planfile to describe it.
 We provide an example planfile at :code:`examples/plans/ex1.yaml`
@@ -166,12 +166,12 @@ At present it is a Stackforge project, and its repository is available on the Op
   $ cd Solum
   $ git clone git://git.openstack.org/stackforge/solum
 
-In addition to Solum, your environment will also need Devstack to configure and run the requisite Openstack components, including Keystone, Glance, Nova, Neutron, and Heat.
+In addition to Solum, your environment will also need Devstack to configure and run the requisite OpenStack components, including Keystone, Glance, Nova, Neutron, and Heat.
 
 Vagrant Dev Environment (optional, for developers)
 --------------------------------------------------
 
-2. We have provided a Vagrant environment to deploy Solum and its required Openstack components via Devstack. We recommend using this approach if you are planning to contribute to Solum. This takes about the same amount of time as setting up Devstack manually, but it automates the setup for you.
+2. We have provided a Vagrant environment to deploy Solum and its required OpenStack components via Devstack. We recommend using this approach if you are planning to contribute to Solum. This takes about the same amount of time as setting up Devstack manually, but it automates the setup for you.
 By default, it uses virtualbox as its provisioner. We have tested this with Vagrant 1.5.4.
 The environment will need to know where your Solum code is, via the environment variable :code:`SOLUM`.
 

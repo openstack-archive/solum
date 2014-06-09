@@ -108,6 +108,7 @@ def upgrade():
         sa.Column('raw_content', models.YAMLEncodedDict(2048)),
         sa.Column('description', sa.String(length=255)),
         sa.Column('name', sa.String(255)),
+        sa.Column('deploy_keys_uri', sa.String(length=1024)),
     )
 
     op.create_table(

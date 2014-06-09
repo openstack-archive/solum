@@ -248,6 +248,7 @@ class FakePlan(mock.Mock):
         self.uuid = 'test_uuid'
         self.id = 8
         self.name = 'faker'
+        self.deploy_keys_uri = None
 
     def as_dict(self):
         return dict(raw_content=self.raw_content,

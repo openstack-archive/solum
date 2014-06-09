@@ -59,7 +59,7 @@ class HandlerTest(base.BaseTestCase):
         handler.build(self.ctx, build_id=5, git_info=git_info, name='new_app',
                       base_image_id='1-2-3-4', source_format='heroku',
                       image_format='docker', assembly_id=44,
-                      test_cmd='faketests')
+                      test_cmd='faketests', source_creds_ref=None)
 
         expected = [
             mock.call(status_url, 'POST',
@@ -70,6 +70,7 @@ class HandlerTest(base.BaseTestCase):
                       headers=test_shell.mock_request_hdr(status_token),
                       body=test_shell.mock_req_success_body(
                           'https://log.com/commit/SHA'))]
+
         self.assertEqual(expected, mock_req.call_args_list)
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
@@ -79,7 +80,8 @@ class HandlerTest(base.BaseTestCase):
 
         expected = [
             mock.call([u_script, 'git://example.com/foo', 'master',
-                       self.ctx.tenant, 'faketests'], env=test_env, stdout=-1)]
+                       self.ctx.tenant, '', 'faketests'], env=test_env,
+                      stdout=-1)]
         self.assertEqual(expected, mock_popen.call_args_list)
 
         # The UNIT_TESTING update happens from shell...
@@ -112,7 +114,8 @@ class HandlerTest(base.BaseTestCase):
         handler.build(self.ctx, build_id=5, git_info=git_info,
                       name='new_app', base_image_id='1-2-3-4',
                       source_format='heroku', image_format='docker',
-                      assembly_id=44, test_cmd='faketests')
+                      assembly_id=44, test_cmd='faketests',
+                      source_creds_ref=None)
 
         expected = [
             mock.call(status_url, 'POST',
@@ -132,7 +135,8 @@ class HandlerTest(base.BaseTestCase):
 
         expected = [
             mock.call([u_script, 'git://example.com/foo', 'master',
-                       self.ctx.tenant, 'faketests'], env=test_env, stdout=-1)]
+                       self.ctx.tenant, '', 'faketests'], env=test_env,
+                      stdout=-1)]
         self.assertEqual(expected, mock_popen.call_args_list)
 
         expected = [mock.call(self.ctx, 44, 'UNIT_TESTING'),

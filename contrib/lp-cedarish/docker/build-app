@@ -23,9 +23,9 @@ BUILD_ID=${BUILD_ID:-null}
 TASKNAME=build
 REUSE_IMAGES_IF_REPO_UNCHANGED=${REUSE_IMAGES_IF_REPO_UNCHANGED:="1"}
 
-# TLOG, PRUN, ENSURE_LOGFILE, and elapsed defined in app-common
+# TLOG, PRUN, etc. defined in common/utils
 HERE=$(dirname $0)
-source $HERE/app-common
+source $HERE/../../common/utils
 
 LOG_FILE=$(GET_LOGFILE)
 
@@ -37,14 +37,14 @@ function app_glance_id () {
 TLOG ===== Starting Build Script $0 $*
 
 # Make sure tenant auth credentials were passed in.
-if [[ -z $OS_AUTH_TOKEN ]]; then
-  TLOG openstack credentials not passed via ENV.
+if [[ -z "$OS_AUTH_TOKEN" ]]; then
+  TLOG OpenStack credentials not passed via ENV.
   exit 1
 fi
 
 # Check command line arguments
-if [ $# -ne 4 ]; then
-  TLOG Usage: $0 git_url appname project_id base_image
+if [ $# -lt 4 ]; then
+  TLOG Usage: $0 git_url appname project_id base_image [git_private_key]
   exit 1
 fi
 
@@ -64,11 +64,14 @@ TENANT=$1
 shift
 BASE_IMAGE=$1
 shift
+GIT_PRIVATE_KEY=$1
+shift
 
 BASE_DIR=/dev/shm
 GIT_CHECKSUM=$(echo $GIT | md5sum | awk '{print $1;}')
 APP_DIR=$BASE_DIR/apps/$TENANT/$GIT_CHECKSUM
 PRUN silent mkdir -p $APP_DIR
+add_ssh_creds "$GIT_PRIVATE_KEY" "$APP_DIR"
 
 if [ -d "$APP_DIR/build" ] ; then
   cd $APP_DIR/build
@@ -107,6 +110,7 @@ if [ ! -f "$APP_DIR/slug.tgz" ] ; then
   exit
 fi
 PRUN sudo docker rm $BUILD_ID
+remove_ssh_creds "$GIT_PRIVATE_KEY"
 
 # Build the application image by injecting slug into runner
 # and push to docker-registry ( which is tied to glance )
@@ -124,7 +128,7 @@ EOF
 
 cd $APP_DIR
 PRUN sudo docker build -t $APP .
-sudo docker save "$APP" | glance image-create --container-format=docker --disk-format=raw --name "$APP"
+PRUN silent sudo docker save "$APP" | glance image-create --container-format=docker --disk-format=raw --name "$APP"
 
 image_id=$(app_glance_id $APP)
 

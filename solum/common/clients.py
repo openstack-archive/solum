@@ -21,6 +21,7 @@ from swiftclient import client as swiftclient
 from zaqarclient.queues.v1 import client as zaqarclient
 
 from solum.common import exception
+from solum.common import solum_barbicanclient
 from solum.common import solum_keystoneclient
 from solum.openstack.common.gettextutils import _
 from solum.openstack.common import log as logging
@@ -28,6 +29,12 @@ from solum.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
 
+
+barbican_client_opts = [
+    cfg.BoolOpt('insecure',
+                default=False,
+                help=_("If set, then the server's certificate for barbican "
+                       "will not be verified."))]
 
 # Note: this config is duplicated in many projects that use OpenStack
 # clients. This should really be in the client.
@@ -109,6 +116,7 @@ mistral_client_opts = [
                 help=_("If set the server certificate will not be verified "
                        "while using Mistral."))]
 
+cfg.CONF.register_opts(barbican_client_opts, group='barbican_client')
 cfg.CONF.register_opts(glance_client_opts, group='glance_client')
 cfg.CONF.register_opts(heat_client_opts, group='heat_client')
 cfg.CONF.register_opts(zaqar_client_opts, group='zaqar_client')
@@ -122,6 +130,7 @@ class OpenStackClients(object):
 
     def __init__(self, context):
         self.context = context
+        self._barbican = None
         self._keystone = None
         self._glance = None
         self._heat = None
@@ -140,6 +149,15 @@ class OpenStackClients(object):
     @property
     def auth_token(self):
         return self.context.auth_token or self.keystone().auth_token
+
+    @exception.wrap_keystone_exception
+    def barbican(self):
+        if self._barbican:
+            return self._barbican
+
+        insecure = self._get_client_option('barbican', 'insecure')
+        self._barbican = solum_barbicanclient.BarbicanClient(insecure)
+        return self._barbican
 
     def keystone(self):
         if self._keystone:

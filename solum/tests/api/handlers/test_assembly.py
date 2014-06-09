@@ -75,9 +75,10 @@ class TestAssemblyHandler(base.BaseTestCase):
             'name': 'theplan',
             'artifacts': [{'name': 'nodeus',
                            'artifact_type': 'heroku',
-                           'content': {
-                               'href': 'https://example.com/ex.git'},
+                           'content': {'private': False,
+                                       'href': 'https://example.com/ex.git'},
                            'language_pack': 'auto'}]}
+
         mock_registry.Image.return_value = fakes.FakeImage()
         trust_ctx = utils.dummy_context()
         trust_ctx.trust_id = '12345'
@@ -97,7 +98,54 @@ class TestAssemblyHandler(base.BaseTestCase):
         mock_build.assert_called_once_with(
             build_id=8, name='nodeus', assembly_id=8,
             git_info=git_info, test_cmd=None,
-            base_image_id='auto', source_format='heroku', image_format='qcow2')
+            base_image_id='auto', source_format='heroku',
+            source_creds_ref=None, image_format='qcow2')
+
+        mock_kc.return_value.create_trust_context.assert_called_once_with()
+
+    @mock.patch('solum.worker.api.API.build')
+    @mock.patch('solum.common.solum_keystoneclient.KeystoneClientV3')
+    def test_create_with_private_github_repo(self, mock_kc, mock_build,
+                                             mock_registry):
+        data = {'user_id': 'new_user_id',
+                'uuid': 'input_uuid',
+                'plan_uuid': 'input_plan_uuid'}
+
+        db_obj = fakes.FakeAssembly()
+        mock_registry.Assembly.return_value = db_obj
+        fp = fakes.FakePlan()
+        mock_registry.Plan.get_by_id.return_value = fp
+        fp.raw_content = {
+            'name': 'theplan',
+            'artifacts': [{'name': 'nodeus',
+                           'artifact_type': 'heroku',
+                           'content': {'private': True,
+                                       'href': 'https://example.com/ex.git',
+                                       'public_key': 'ssh-rsa abc'},
+                           'language_pack': 'auto'}]}
+        fp.deploy_keys_uri = 'secret_ref_uri'
+        mock_registry.Image.return_value = fakes.FakeImage()
+        trust_ctx = utils.dummy_context()
+        trust_ctx.trust_id = '12345'
+        mock_kc.return_value.create_trust_context.return_value = trust_ctx
+
+        handler = assembly_handler.AssemblyHandler(self.ctx)
+        res = handler.create(data)
+        db_obj.update.assert_called_once_with(data)
+        db_obj.create.assert_called_once_with(self.ctx)
+        self.assertEqual(db_obj, res)
+        git_info = {
+            'source_url': "https://example.com/ex.git",
+            'branch_name': 'master',
+            'status_token': None,
+            'status_url': None,
+        }
+        mock_build.assert_called_once_with(
+            build_id=8, name='nodeus', assembly_id=8,
+            git_info=git_info,
+            test_cmd=None, base_image_id='auto', source_format='heroku',
+            source_creds_ref='secret_ref_uri', image_format='qcow2')
+
         mock_kc.return_value.create_trust_context.assert_called_once_with()
 
     @mock.patch('solum.common.solum_keystoneclient.KeystoneClientV3')
@@ -130,8 +178,10 @@ class TestAssemblyHandler(base.BaseTestCase):
         handler._build_artifact = mock.MagicMock()
         handler._context_from_trust_id = mock.MagicMock(return_value=self.ctx)
         handler.trigger_workflow(trigger_id)
-        handler._build_artifact.assert_called_once_with(db_obj, artifacts[0],
-                                                        'master', None)
+        handler._build_artifact.assert_called_once_with(assem=db_obj,
+                                                        artifact=artifacts[0],
+                                                        branch_name='master',
+                                                        status_url=None)
         handler._context_from_trust_id.assert_called_once_with('trust_worthy')
         mock_registry.Assembly.get_by_trigger_id.assert_called_once_with(
             None, trigger_id)

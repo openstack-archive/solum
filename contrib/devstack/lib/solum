@@ -109,6 +109,15 @@ function configure_solum() {
     fi
     sudo chown $STACK_USER $SOLUM_CONF_DIR
 
+    # To support private github repos, do not perform host key check for github.com
+    # Need this change on solum-worker instances
+    STACK_USER_SSH_DIR=/home/$STACK_USER/.ssh
+    if [[ ! -d $STACK_USER_SSH_DIR ]]; then
+        sudo mkdir -p $STACK_USER_SSH_DIR
+    fi
+    sudo chown $STACK_USER $STACK_USER_SSH_DIR
+    echo -e "Host github.com\n\tStrictHostKeyChecking no\n" > $STACK_USER_SSH_DIR/config
+
     # Copy over solum configuration file and configure common parameters.
     cp $SOLUM_DIR/etc/solum/solum.conf.sample $SOLUM_CONF_DIR/$SOLUM_CONF_FILE
 
@@ -200,6 +209,9 @@ function install_solumclient {
 
 # install_solum() - Collect source and prepare
 function install_solum() {
+    # Install package requirements
+    install_package expect
+
     git_clone $SOLUM_REPO $SOLUM_DIR $SOLUM_BRANCH
     # When solum is re-listed in openstack/requirements/projects.txt we
     # should change setup_package back to setup_develop.

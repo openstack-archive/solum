@@ -16,6 +16,7 @@
 
 import copy
 import json
+import os
 import time
 
 from tempest import auth
@@ -45,6 +46,7 @@ plan_sample_data = {"version": "1",
                         "artifact_type": "heroku",
                         "content": {
                             "href": "https://example.com/git/a.git",
+                            "private": False
                         },
                         "language_pack": "auto",
                         }]}
@@ -92,10 +94,8 @@ class SolumClient(rest_client.RestClient):
             self.created_assemblies.append(uuid)
         return assembly_resp
 
-    def create_plan(self, data=None, private_github_repo=False):
+    def create_plan(self, data=None):
         plan_data = copy.deepcopy(data or plan_sample_data)
-        if private_github_repo:
-            plan_data['artifacts'][0]['content']['private'] = True
         yaml_data = yaml.dump(plan_data)
         resp, body = self.post('v1/plans', yaml_data,
                                headers={'content-type': 'application/x-yaml'})
@@ -172,3 +172,9 @@ class SolumCredentials(auth.KeystoneV2Credentials):
         )
 
         super(SolumCredentials, self).__init__(**creds)
+
+
+def is_fedora():
+    if os.path.exists("/etc/redhat-release"):
+        return True
+    return False

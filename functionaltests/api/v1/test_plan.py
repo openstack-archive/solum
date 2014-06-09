@@ -25,10 +25,24 @@ sample_data = {"version": "1",
                    "name": "No deus",
                    "artifact_type": "heroku",
                    "content": {
-                       "href": "https://example.com/git/a.git"
+                       "href": "https://example.com/git/a.git",
+                       "private": False,
                    },
                    "language_pack": "auto",
                }]}
+
+sample_data_private = {"version": "1",
+                       "name": "test_plan",
+                       "description": "A test to create plan",
+                       "artifacts": [{
+                           "name": "No deus",
+                           "artifact_type": "heroku",
+                           "content": {
+                               "href": "https://example.com/git/a.git",
+                               "private": True,
+                           },
+                           "language_pack": "auto",
+                       }]}
 
 
 class TestPlanController(base.TestCase):
@@ -63,6 +77,14 @@ class TestPlanController(base.TestCase):
         self.assertEqual(resp.status, 201)
         self._assert_output_expected(resp.data, sample_data)
 
+    def test_plans_create_with_private_github_repo(self):
+        # FIXME(ravips): remove this when bug #1371252 is fixed
+        if base.is_fedora():
+            self.skipTest("Fails on Fedora 20, bug: #1371252")
+        resp = self.client.create_plan(data=sample_data_private)
+        self.assertEqual(resp.status, 201)
+        self._assert_output_expected(resp.data, sample_data)
+
     def test_plans_create_empty_yaml(self):
         # NOTE(stannie): tempest rest_client raises InvalidContentType and not
         # BadRequest because yaml content-type is not supported in their
@@ -87,11 +109,29 @@ class TestPlanController(base.TestCase):
         create_resp = self.client.create_plan(data=sample_data)
         self.assertEqual(create_resp.status, 201)
         uuid = create_resp.uuid
+
         resp, body = self.client.get(
             'v1/plans/%s' % uuid,
             headers={'content-type': 'application/x-yaml'})
         self.assertEqual(resp.status, 200)
         yaml_data = yaml.load(body)
+        self._assert_output_expected(yaml_data, sample_data)
+
+    def test_plans_get_with_private_github_repo(self):
+        # FIXME(ravips): remove this when bug #1371252 is fixed
+        if base.is_fedora():
+            self.skipTest("Fails on Fedora 20, bug: #1371252")
+        create_resp = self.client.create_plan(data=sample_data_private)
+        self.assertEqual(create_resp.status, 201)
+        uuid = create_resp.uuid
+
+        resp, body = self.client.get(
+            'v1/plans/%s' % uuid,
+            headers={'content-type': 'application/x-yaml'})
+        self.assertEqual(resp.status, 200)
+        yaml_data = yaml.load(body)
+        public_key = yaml_data['artifacts'][0]['content']['public_key']
+        self.assertNotEqual(None, public_key)
         self._assert_output_expected(yaml_data, sample_data)
 
     def test_plans_get_not_found(self):

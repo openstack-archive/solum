@@ -98,3 +98,33 @@ function PRUN () {
 
   return $EXIT_STATUS
 }
+
+# Register ssh private key with ssh-agent.
+# SSH_AUTH_SOCK env variable will be unique to this process and
+# it restricts other apps to access current ssh credentials.
+function add_ssh_creds () {
+  local SSH_PRIVATE_KEY=$1
+  local APP_DIR=$2
+
+  if [ -n "$SSH_PRIVATE_KEY" ]; then
+    eval `ssh-agent -s`
+    SSH_PRIVATE_KEY_FILE=$APP_DIR/.creds
+    echo "$SSH_PRIVATE_KEY" > $SSH_PRIVATE_KEY_FILE
+    chmod 600 $SSH_PRIVATE_KEY_FILE
+    ssh-add $SSH_PRIVATE_KEY_FILE ; EXIT_STATUS=$?
+    rm -f $SSH_PRIVATE_KEY_FILE
+    if [ "$EXIT_STATUS" != "0" ] ; then
+      TLOG "FAILED: ssh key register with ssh-agent (EXIT_STATUS=$EXIT_STATUS)"
+      exit 1
+    fi
+  fi
+}
+
+# De-register ssh private key with ssh-agent.
+function remove_ssh_creds () {
+  local SSH_PRIVATE_KEY=$1
+
+  if [ -n "$SSH_PRIVATE_KEY" ]; then
+    ssh-agent -k
+  fi
+}

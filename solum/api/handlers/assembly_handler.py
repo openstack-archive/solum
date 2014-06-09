@@ -79,7 +79,9 @@ class AssemblyHandler(handler.Handler):
 
         artifacts = plan_obj.raw_content.get('artifacts', [])
         for arti in artifacts:
-            self._build_artifact(db_obj, arti, branch_name, status_url)
+            self._build_artifact(assem=db_obj, artifact=arti,
+                                 branch_name=branch_name,
+                                 status_url=status_url)
 
     def update(self, id, data):
         """Modify a resource."""
@@ -123,11 +125,13 @@ class AssemblyHandler(handler.Handler):
 
         artifacts = plan_obj.raw_content.get('artifacts', [])
         for arti in artifacts:
-            self._build_artifact(db_obj, arti)
+            self._build_artifact(assem=db_obj, artifact=arti,
+                                 deploy_keys_ref=plan_obj.deploy_keys_uri)
         return db_obj
 
     def _unittest_artifact(self, assem, artifact, branch_name='master',
-                           status_url=None):
+                           status_url=None, deploy_keys_ref=None):
+
         test_cmd = artifact.get('unittest_cmd')
         status_token = artifact.get('status_token')
         git_info = {
@@ -140,10 +144,12 @@ class AssemblyHandler(handler.Handler):
         api.API(context=self.context).unittest(
             assembly_id=assem.id,
             git_info=git_info,
-            test_cmd=test_cmd)
+            test_cmd=test_cmd,
+            source_creds_ref=deploy_keys_ref)
 
     def _build_artifact(self, assem, artifact, branch_name='master',
-                        status_url=None):
+                        status_url=None, deploy_keys_ref=None):
+
         # This is a tempory hack so we don't need the build client
         # in the requirments.
         image = objects.registry.Image()
@@ -165,7 +171,7 @@ class AssemblyHandler(handler.Handler):
             'source_url': image.source_uri,
             'branch_name': branch_name,
             'status_token': status_token,
-            'status_url': status_url,
+            'status_url': status_url
         }
 
         api.API(context=self.context).build(
@@ -176,7 +182,8 @@ class AssemblyHandler(handler.Handler):
             source_format=image.source_format,
             image_format=image.image_format,
             assembly_id=assem.id,
-            test_cmd=test_cmd)
+            test_cmd=test_cmd,
+            source_creds_ref=deploy_keys_ref)
 
     def get_all(self):
         """Return all assemblies, based on the query provided."""

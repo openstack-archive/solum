@@ -14,6 +14,7 @@
 
 """Solum Worker shell handler."""
 
+import ast
 import json
 import os
 import subprocess
@@ -22,6 +23,7 @@ import httplib2
 from oslo.config import cfg
 
 import solum
+from solum.common import clients
 from solum.common import exception
 from solum.common import solum_keystoneclient
 from solum.conductor import api as conductor_api
@@ -97,7 +99,7 @@ class Handler(object):
                                             '..', '..', '..'))
 
     def _get_build_command(self, ctxt, source_uri, name, base_image_id,
-                           source_format, image_format):
+                           source_format, image_format, source_creds_ref=None):
         # map the input formats to script paths.
         # TODO(asalkeld) we need an "auto".
         pathm = {'heroku': 'lp-cedarish',
@@ -111,8 +113,10 @@ class Handler(object):
                                  pathm.get(source_format, 'lp-cedarish'),
                                  pathm.get(image_format, 'vm-slug'),
                                  'build-app')
-
-        return [build_app, source_uri, name, ctxt.tenant, base_image_id]
+        source_private_key = self._get_private_key(source_creds_ref,
+                                                   source_uri)
+        return [build_app, source_uri, name, ctxt.tenant,
+                base_image_id, source_private_key]
 
     def _send_status(self, test_result, status_url, status_token,
                      pending=False):
@@ -148,11 +152,13 @@ class Handler(object):
             LOG.debug("No url or token available to send back status")
 
     def build(self, ctxt, build_id, git_info, name, base_image_id,
-              source_format, image_format, assembly_id, test_cmd):
+              source_format, image_format, assembly_id,
+              test_cmd, source_creds_ref=None):
 
         # TODO(datsun180b): This is only temporary, until Mistral becomes our
         # workflow engine.
-        if self._run_unittest(ctxt, assembly_id, git_info, test_cmd) != 0:
+        if self._run_unittest(ctxt, assembly_id, git_info, test_cmd,
+                              source_creds_ref) != 0:
             return
 
         update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.BUILDING)
@@ -162,8 +168,9 @@ class Handler(object):
 
         source_uri = git_info['source_url']
         build_cmd = self._get_build_command(ctxt, source_uri, name,
-                                            base_image_id, source_format,
-                                            image_format)
+                                            base_image_id,
+                                            source_format, image_format,
+                                            source_creds_ref)
         solum.TLS.trace.support_info(build_cmd=' '.join(build_cmd),
                                      assembly_id=assembly_id)
 
@@ -174,7 +181,6 @@ class Handler(object):
             job_update_notification(ctxt, build_id, IMAGE_STATES.ERROR,
                                     description=str(env_ex),
                                     assembly_id=assembly_id)
-            return
 
         log_env = user_env.copy()
         if 'OS_AUTH_TOKEN' in log_env:
@@ -218,7 +224,8 @@ class Handler(object):
             deployer_api.API(context=ctxt).deploy(assembly_id=assembly_id,
                                                   image_id=created_image_id)
 
-    def _run_unittest(self, ctxt, assembly_id, git_info, test_cmd):
+    def _run_unittest(self, ctxt, assembly_id, git_info, test_cmd,
+                      source_creds_ref=None):
         if test_cmd is None:
             LOG.debug("Unit test command is None; skipping unittests.")
             return 0
@@ -231,7 +238,9 @@ class Handler(object):
         test_app = os.path.join(self.proj_dir, 'contrib', 'lp-cedarish',
                                 'docker', 'unittest-app')
         git_url = git_info['source_url']
-        command = [test_app, git_url, git_branch, ctxt.tenant, test_cmd]
+        source_private_key = self._get_private_key(source_creds_ref, git_url)
+        command = [test_app, git_url, git_branch, ctxt.tenant,
+                   source_private_key, test_cmd]
 
         solum.TLS.trace.clear()
         solum.TLS.trace.import_context(ctxt)
@@ -262,5 +271,19 @@ class Handler(object):
 
         return returncode
 
-    def unittest(self, ctxt, assembly_id, git_info, test_cmd):
-        self._run_unittest(ctxt, assembly_id, git_info, test_cmd)
+    def unittest(self, ctxt, assembly_id, git_info, test_cmd,
+                 source_creds_ref=None):
+        self._run_unittest(ctxt, assembly_id, git_info, test_cmd,
+                           source_creds_ref)
+
+    def _get_private_key(self, source_creds_ref, source_url):
+        source_private_key = ''
+        if source_creds_ref:
+            barbican = clients.OpenStackClients(None).barbican().admin_client
+            secret = barbican.secrets.Secret(secret_ref=source_creds_ref)
+            deploy_keys_str = secret.payload
+            deploy_keys = ast.literal_eval(deploy_keys_str)
+            for dk in deploy_keys:
+                if source_url == dk['source_url']:
+                    source_private_key = dk['private_key']
+        return source_private_key

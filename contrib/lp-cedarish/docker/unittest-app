@@ -24,15 +24,16 @@ TASKNAME=unittest
 DOCKER_REGISTRY=${DOCKER_REGISTRY:-'127.0.0.1:5042'}
 
 # TLOG, PRUN, ENSURE_LOGFILE, and elapsed defined in app-common
-source $(dirname $0)/app-common
+HERE=$(dirname $0)
+source $HERE/../../common/utils
 
 LOG_FILE=$(GET_LOGFILE)
 
 TLOG ===== Starting Test Script $0 $*
 
 # Check command line arguments
-if [ $# -lt 4 ]; then
-  TLOG Usage: $0 git_url git_branch tenant unit_test_entry_point
+if [ $# -lt 5 ]; then
+  TLOG Usage: $0 git_url git_branch tenant git_private_key unit_test_entry_point
   exit 1
 fi
 
@@ -44,6 +45,8 @@ shift
 GIT_BRANCH=$1
 shift
 TENANT=$1
+shift
+GIT_PRIVATE_KEY=$1
 shift
 
 ENTRYPOINT="$@"
@@ -58,10 +61,12 @@ APP_DIR=$BASE_DIR/solum/$DIR_NAME
 rm -rf $APP_DIR
 PRUN mkdir -p $APP_DIR
 
+add_ssh_creds "$GIT_PRIVATE_KEY" "$APP_DIR"
 PRUN git clone $GIT --single-branch -b $GIT_BRANCH $APP_DIR/code
+
 cd $APP_DIR/code
 COMMIT_ID=$(git log -1 --pretty=%H)
-
+echo "$GIT_PRIVATE_KEY" > $APP_DIR/code/id_rsa
 # Test the application code
 TLOG "===>" Testing App
 
@@ -69,7 +74,7 @@ if [[ $(which drone) ]]; then
   TLOG "===>" Using Drone
   if [[ ! -e $APP_DIR/code/.drone.yml ]]; then
     TLOG "===>" Creating .drone.yml
-cat << EOF > $APP_DIR/code/.drone.yml
+    cat << EOF > $APP_DIR/code/.drone.yml
 image: $DOCKER_REGISTRY/slugtester
 script:
 - $ENTRYPOINT
@@ -80,10 +85,13 @@ EOF
   sudo /usr/local/bin/drone build $APP_DIR/code 2>&1 > >(while read LINE; do TLOG $LINE; done)
 else
   TLOG Creating Dockerfile
-cat << EOF > $APP_DIR/Dockerfile
+  cat << EOF > $APP_DIR/Dockerfile
 # SOLUM APP BUILDER
 FROM $DOCKER_REGISTRY/slugtester
 ADD code /code
+ADD code/id_rsa /root/.ssh/id_rsa
+RUN chmod 0600 /root/.ssh/id_rsa
+RUN echo "Host github.com\n\tStrictHostKeyChecking no\n\tUserKnownHostsFile=/dev/null" > /root/.ssh/config
 WORKDIR /code
 RUN ${ENTRYPOINT}
 EOF
@@ -93,7 +101,18 @@ EOF
 fi
 
 SUCCESS=$?
-TLOG Tests finished with status $SUCCESS.
+remove_ssh_creds "$GIT_PRIVATE_KEY"
+echo Docker finished with status $SUCCESS.
+
+if [[ $SUCCESS == 0 ]]; then
+TLOG ==== Status: SUCCESS
+else
+TLOG ==== Status: FAIL
+fi
+
+[[ $SUCCESS == 0 ]] && sudo docker rmi $DIR_NAME
+cd /tmp
+rm -rf $APP_DIR
 
 TOTAL_TIME=$(elapsed $SCRIPT_START_TIME)
 TLOG ===== Total elapsed time: $TOTAL_TIME sec

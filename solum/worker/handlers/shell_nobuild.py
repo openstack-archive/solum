@@ -28,7 +28,8 @@ update_assembly_status = shell_handler.update_assembly_status
 
 class Handler(shell_handler.Handler):
     def build(self, ctxt, build_id, git_info, name, base_image_id,
-              source_format, image_format, assembly_id, test_cmd):
+              source_format, image_format, assembly_id,
+              test_cmd, source_creds_ref=None):
 
         # TODO(datsun180b): This is only temporary, until Mistral becomes our
         # workflow engine.
@@ -37,7 +38,8 @@ class Handler(shell_handler.Handler):
         status_token = git_info.get('status_token')
 
         self._send_status(ret_code, status_url, status_token, pending=True)
-        ret_code = self._run_unittest(ctxt, assembly_id, git_info, test_cmd)
+        ret_code = self._run_unittest(ctxt, assembly_id, git_info, test_cmd,
+                                      source_creds_ref)
         self._send_status(ret_code, status_url, status_token)
 
         # Deployer is normally in charge of declaring an assembly READY.

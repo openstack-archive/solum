@@ -14,6 +14,7 @@
 
 import uuid
 
+import six
 import wsme
 from wsme.rest import json as wjson
 from wsme import types as wtypes
@@ -51,7 +52,8 @@ class Artifact(wtypes.Base):
     artifact_type = wtypes.text
     "Type of artifact."
 
-    content = {wtypes.text: wtypes.text}
+    content = {wtypes.text: api_types.MultiType(wtypes.text,
+                                                six.types.BooleanType)}
     "Type specific content as a flat dict."
 
     language_pack = wtypes.text
@@ -109,7 +111,8 @@ class Plan(api_types.Base):
                    artifacts=[{
                        'name': 'My-python-app',
                        'artifact_type': 'git_pull',
-                       'content': {'href': 'git://example.com/project.git'},
+                       'content': {'href': 'git://example.com/project.git',
+                                   'private': False},
                        'language_pack': str(uuid.uuid4()),
                        'requirements': [{
                            'requirement_type': 'git_pull',

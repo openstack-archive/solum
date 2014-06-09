@@ -12,9 +12,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import base64
 import uuid
 
+from Crypto.PublicKey import RSA
+
 from solum.api.handlers import handler
+from solum.common import clients
 from solum import objects
 
 
@@ -26,7 +30,7 @@ class PlanHandler(handler.Handler):
         return objects.registry.Plan.get_by_uuid(self.context, id)
 
     def update(self, id, data):
-        """Modify a resource."""
+        """Modify existing plan."""
         db_obj = objects.registry.Plan.get_by_uuid(self.context, id)
         if 'name' in data:
             db_obj.name = data['name']
@@ -35,19 +39,42 @@ class PlanHandler(handler.Handler):
         return db_obj
 
     def delete(self, id):
-        """Delete a resource."""
+        """Delete existing plan."""
         db_obj = objects.registry.Plan.get_by_uuid(self.context, id)
+        if db_obj.deploy_keys_uri:
+            barbican = clients.OpenStackClients(None).barbican().admin_client
+            barbican.secrets.delete(db_obj.deploy_keys_uri)
         db_obj.destroy(self.context)
 
     def create(self, data):
-        """Create a new resource."""
+        """Create a new plan."""
         db_obj = objects.registry.Plan()
         if 'name' in data:
             db_obj.name = data['name']
-        db_obj.raw_content = data
         db_obj.uuid = str(uuid.uuid4())
         db_obj.user_id = self.context.user
         db_obj.project_id = self.context.tenant
+        deploy_keys = []
+        for artifact in data.get('artifacts', []):
+            if (('content' not in artifact) or
+                    ('private' not in artifact['content']) or
+                    (not artifact['content']['private'])):
+                continue
+            new_key = RSA.generate(2048)
+            public_key = new_key.publickey().exportKey("OpenSSH")
+            private_key = new_key.exportKey("PEM")
+            artifact['content']['public_key'] = public_key
+            deploy_keys.append({'source_url': artifact['content']['href'],
+                                'private_key': private_key})
+        if deploy_keys:
+            barbican = clients.OpenStackClients(None).barbican().admin_client
+            encoded_payload = base64.b64encode(bytes(str(deploy_keys)))
+            db_obj.deploy_keys_uri = barbican.secrets.Secret(
+                name=db_obj.uuid,
+                payload=encoded_payload,
+                payload_content_type='application/octet-stream',
+                payload_content_encoding='base64').store()
+        db_obj.raw_content = data
         db_obj.create(self.context)
         return db_obj
 

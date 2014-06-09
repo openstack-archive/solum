@@ -31,6 +31,9 @@ cover
 nosetests.xml
 solum.sqlite
 
+# functional tests
+functionaltests/tempest.log
+
 # Translations
 *.mo
 

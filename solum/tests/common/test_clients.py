@@ -10,11 +10,15 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from barbicanclient import client as barbicanclient
+from barbicanclient.common import auth as barbicanauth
 from glanceclient import client as glanceclient
 from heatclient import client as heatclient
+from keystoneclient.openstack.common.apiclient import exceptions
 from mistralclient.api import client as mistralclient
 import mock
 from neutronclient.neutron import client as neutronclient
+from oslo.config import cfg
 from swiftclient import client as swiftclient
 from zaqarclient.queues.v1 import client as zaqarclient
 
@@ -33,6 +37,44 @@ class ClientsTest(base.BaseTestCase):
         mock_cat = mock_keystone.return_value.client.service_catalog
         mock_cat.url_for.assert_called_once_with(service_type='fake_service',
                                                  endpoint_type='fake_endpoint')
+
+    @mock.patch.object(barbicanclient, 'Client')
+    @mock.patch.object(barbicanauth, 'KeystoneAuthV2')
+    def test_clients_barbican(self, mock_auth, mock_call):
+        mock_auth.return_value = "keystone_auth_handle"
+        mock_call.return_value = "barbican_client_handle"
+        obj = clients.OpenStackClients(None)
+        self.assertEqual(None, obj._barbican)
+        obj.barbican().admin_client
+        self.assertNotEqual(None, obj._barbican)
+        mock_call.assert_called_once_with(auth_plugin='keystone_auth_handle',
+                                          insecure=False)
+
+    def test_clients_barbican_noauth(self):
+        dummy_url = 'http://server.test:5000/v2.0'
+        cfg.CONF.set_override('auth_uri', dummy_url,
+                              group='keystone_authtoken')
+        cfg.CONF.set_override('admin_user', 'solum',
+                              group='keystone_authtoken')
+        cfg.CONF.set_override('admin_password', 'verybadpass',
+                              group='keystone_authtoken')
+        cfg.CONF.set_override('admin_tenant_name', 'service',
+                              group='keystone_authtoken')
+        obj = clients.OpenStackClients(None)
+        self.assertRaises(exceptions.AuthorizationFailure,
+                          lambda: obj.barbican().admin_client)
+
+    @mock.patch.object(barbicanclient, 'Client')
+    @mock.patch.object(barbicanauth, 'KeystoneAuthV2')
+    def test_clients_barbican_cached(self, mock_auth, mock_call):
+        mock_auth.return_value = "keystone_auth_handle"
+        mock_call.return_value = "barbican_client_handle"
+        obj = clients.OpenStackClients(None)
+        barbican_admin = obj.barbican().admin_client
+        barbican_admin_cached = obj.barbican().admin_client
+        self.assertEqual(barbican_admin, barbican_admin_cached)
+        mock_call.assert_called_once_with(auth_plugin='keystone_auth_handle',
+                                          insecure=False)
 
     @mock.patch.object(glanceclient, 'Client')
     @mock.patch.object(clients.OpenStackClients, 'url_for')
