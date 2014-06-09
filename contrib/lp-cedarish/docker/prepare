@@ -15,6 +15,11 @@ echo Creating slugbuilder container
 docker pull solum/slugbuilder
 docker tag solum/slugbuilder $DOCKER_REGISTRY/slugbuilder
 
+# Slugtester runs unit tests against user code
+echo Creating slugtester container
+docker pull solum/slugtester
+docker tag solum/slugtester $DOCKER_REGISTRY/slugtester
+
 # Slugrunner runs the cedarish slug built
 # by slugbuilder.
 # We should own/customize this for solum

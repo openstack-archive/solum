@@ -119,10 +119,20 @@ class AssemblyHandler(handler.Handler):
 
         plan_obj = objects.registry.Plan.get_by_id(self.context,
                                                    db_obj.plan_id)
+
         artifacts = plan_obj.raw_content.get('artifacts', [])
         for arti in artifacts:
             self._build_artifact(db_obj, arti)
         return db_obj
+
+    def _unittest_artifact(self, assem, artifact):
+        git_url = artifact['content']['href']
+        test_cmd = artifact['content'].get('unittest_cmd')
+
+        api.API(context=self.context).unittest(
+            assembly_id=assem.id,
+            git_url=git_url,
+            test_cmd=test_cmd)
 
     def _build_artifact(self, assem, artifact):
         # This is a tempory hack so we don't need the build client
@@ -139,6 +149,7 @@ class AssemblyHandler(handler.Handler):
         image.project_id = self.context.tenant
         image.state = IMAGE_STATES.PENDING
         image.create(self.context)
+        test_cmd = artifact['content'].get('unittest_cmd', None)
 
         api.API(context=self.context).build(
             build_id=image.id,
@@ -147,7 +158,8 @@ class AssemblyHandler(handler.Handler):
             base_image_id=image.base_image_id,
             source_format=image.source_format,
             image_format=image.image_format,
-            assembly_id=assem.id)
+            assembly_id=assem.id,
+            test_cmd=test_cmd)
 
     def get_all(self):
         """Return all assemblies, based on the query provided."""

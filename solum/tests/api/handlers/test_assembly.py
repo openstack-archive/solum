@@ -91,8 +91,8 @@ class TestAssemblyHandler(base.BaseTestCase):
         mock_build.assert_called_once_with(
             build_id=8, name='nodeus', assembly_id=8,
             source_uri='https://example.com/ex.git',
-            base_image_id='auto', source_format='heroku',
-            image_format='qcow2')
+            test_cmd=None,
+            base_image_id='auto', source_format='heroku', image_format='qcow2')
         mock_kc.return_value.create_trust_context.assert_called_once_with()
 
     @mock.patch('solum.common.solum_keystoneclient.KeystoneClientV3')

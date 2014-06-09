@@ -27,8 +27,12 @@ class API(service.API):
                                   topic=cfg.CONF.worker.topic)
 
     def build(self, build_id, source_uri, name, base_image_id,
-              source_format, image_format, assembly_id=None):
+              source_format, image_format, assembly_id=None, test_cmd=None):
         self._cast('build', build_id=build_id, source_uri=source_uri,
                    name=name, base_image_id=base_image_id,
                    source_format=source_format, image_format=image_format,
-                   assembly_id=assembly_id)
+                   assembly_id=assembly_id, test_cmd=test_cmd)
+
+    def unittest(self, assembly_id, git_url, test_cmd):
+        self._cast('unittest', assembly_id=assembly_id, git_url=git_url,
+                   test_cmd=test_cmd)

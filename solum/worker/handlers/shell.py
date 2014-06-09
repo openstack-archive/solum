@@ -76,10 +76,13 @@ class Handler(object):
         user_env['OS_IMAGE_URL'] = image_url
         return user_env
 
+    @property
+    def proj_dir(self):
+        return os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                            '..', '..', '..'))
+
     def _get_build_command(self, ctxt, source_uri, name, base_image_id,
                            source_format, image_format):
-        proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                '..', '..', '..'))
         # map the input formats to script paths.
         # TODO(asalkeld) we need an "auto".
         pathm = {'heroku': 'lp-cedarish',
@@ -89,15 +92,19 @@ class Handler(object):
                  'qcow2': 'vm-slug'}
         if base_image_id == 'auto' and image_format == 'qcow2':
             base_image_id = 'cedarish'
-        build_app = os.path.join(proj_dir, 'contrib',
+        build_app = os.path.join(self.proj_dir, 'contrib',
                                  pathm.get(source_format, 'lp-cedarish'),
                                  pathm.get(image_format, 'vm-slug'),
                                  'build-app')
-        build_cmd = [build_app, source_uri, name, ctxt.tenant, base_image_id]
-        return build_cmd
+        return [build_app, source_uri, name, ctxt.tenant, base_image_id]
 
     def build(self, ctxt, build_id, source_uri, name, base_image_id,
-              source_format, image_format, assembly_id):
+              source_format, image_format, assembly_id, test_cmd):
+
+        # TODO(datsun180b): This is only temporary, until Mistral becomes our
+        # workflow engine.
+        if self._run_unittest(ctxt, assembly_id, source_uri, test_cmd) != 0:
+            return
 
         update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.BUILDING)
 
@@ -155,3 +162,42 @@ class Handler(object):
         if assembly_id is not None:
             deployer_api.API(context=ctxt).deploy(assembly_id=assembly_id,
                                                   image_id=created_image_id)
+
+    def _run_unittest(self, ctxt, assembly_id, git_url, test_cmd):
+        if test_cmd is None:
+            LOG.debug("Unit test command is None; skipping unittests.")
+            return 0
+
+        LOG.debug("Running unittests.")
+        update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.UNIT_TESTING)
+
+        test_app = os.path.join(self.proj_dir, 'contrib', 'lp-cedarish',
+                                'docker', 'unittest-app')
+        command = [test_app, git_url, ctxt.tenant, test_cmd]
+
+        solum.TLS.trace.clear()
+        solum.TLS.trace.import_context(ctxt)
+
+        user_env = self._get_environment(ctxt)
+        log_env = user_env.copy()
+        if 'OS_AUTH_TOKEN' in log_env:
+            del log_env['OS_AUTH_TOKEN']
+        solum.TLS.trace.support_info(environment=log_env)
+
+        returncode = -1
+        try:
+            runtest = subprocess.Popen(command, env=user_env)
+            returncode = runtest.wait()
+        except OSError as subex:
+            LOG.exception("Exception running unit tests:")
+            LOG.exception(subex)
+
+        if returncode != 0:
+            LOG.error("Unit tests failed. Return code is %r" % (returncode))
+            update_assembly_status(ctxt, assembly_id,
+                                   ASSEMBLY_STATES.UNIT_TESTING_FAILED)
+
+        return returncode
+
+    def unittest(self, ctxt, assembly_id, git_url, test_cmd):
+        self._run_unittest(ctxt, assembly_id, git_url, test_cmd)

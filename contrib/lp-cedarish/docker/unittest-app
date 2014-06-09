@@ -1,0 +1,93 @@
+#!/bin/bash
+# Solum App Unit Test Script for Docker
+
+SCRIPT_START=`date +'%s'`
+LOG=${SOLUM_UNITTEST_LOG:="/opt/stack/logs/solum_unittest.log"}
+EXIT_STATUS=0
+
+##############################################################################
+# tlog: Log text to stdout, and to the log file, with a datestamp
+##############################################################################
+function tlog () {
+  TAG=`date +"%Y-%m-%d %H:%M:%S.%3N |"`
+  echo "$TAG $1" | tee -a $LOG
+}
+
+##############################################################################
+# run_timed_command: run a command with profiling, and set $EXIT_STATUS
+##############################################################################
+function run_timed_command () {
+  if [ $EXIT_STATUS != "0" ] ; then
+    tlog "Previous command failed. Exiting."
+    exit 1
+  fi
+  START=`date +'%s'`
+  CMD=$1
+  tlog "Starting: $CMD"
+  if [ "$SILENT" -eq "1" ] ; then
+    $CMD 2>&1 >> /dev/null
+    SILENT=0
+  else
+    $CMD 2>&1 | tee -a $LOG
+  fi
+  EXIT_STATUS=$?
+  FINISH=`date +'%s'`
+  let "ELAPSED = $FINISH - $START"
+  if [ $EXIT_STATUS == "0" ] ; then
+    tlog "Finished: $CMD [Elapsed: $ELAPSED sec]"
+  else
+    tlog "FAILED: $CMD [Elapsed: $ELAPSED sec] (EXIT_STATUS=$EXIT_STATUS)"
+  fi
+}
+
+##############################################################################
+# print_end_timestamp: Print the elapsed time for the full script execution
+##############################################################################
+function print_end_timestamp () {
+  SCRIPT_FINISH=`date +'%s'`
+  let "ELAPSED = $SCRIPT_FINISH - $SCRIPT_START"
+  tlog "===== Total elapsed time: $ELAPSED sec"
+}
+
+##############################################################################
+# Script Logic Begins Here
+##############################################################################
+
+tlog "===== Starting Test Script $0 $*"
+
+# Make sure tenant auth credentials were passed in
+if [[ -z $OS_AUTH_TOKEN ]]; then
+  tlog 'openstack credentials not passed via ENV.'
+  exit 1
+fi
+
+# Check command line arguments
+if [[ -z $1 ]] || [[ -z $2 ]] || [[ -z $3 ]]; then
+  tlog "Usage: $0 git_url tenant unit_test_entry_point"
+  exit 1
+fi
+
+SILENT=1
+run_timed_command "docker ps"
+[[ $EXIT_STATUS != 0 ]] && tlog "cannot talk to docker." && exit 1
+
+GIT=$1
+shift
+TENANT=$1
+shift
+ENTRYPOINT="$@"
+shift
+
+echo "Executing test command $ENTRYPOINT"
+DOCKER_REGISTRY=${DOCKER_REGISTRY:-'127.0.0.1:5042'}
+
+# Test the application code
+tlog '===> Testing App'
+
+sudo docker run --rm -e "GIT_URL=$GIT" -e "TEST_CMD=$ENTRYPOINT" $DOCKER_REGISTRY/slugtester
+
+SUCCESS=$?
+echo Docker finished with status $SUCCESS.
+print_end_timestamp
+# Return 0 if the tests went well, or 1 otherwise.
+[[ $SUCCESS = 0 ]] && exit 0 || exit 1

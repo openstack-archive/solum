@@ -33,7 +33,14 @@ class HandlerTest(base.BaseTestCase):
     @mock.patch('solum.worker.handlers.noop.LOG')
     def test_build(self, fake_LOG):
         args = [5, 'git://example.com/foo', 'new_app',
-                '1-2-3-4', 'heroku', 'docker', 44]
+                '1-2-3-4', 'heroku', 'docker', 44, None]
         noop_handler.Handler().build(self.ctx, *args)
-        message = 'Build %s %s %s %s %s %s %s' % tuple(args)
+        message = 'Build %s %s %s %s %s %s %s %s' % tuple(args)
+        fake_LOG.debug.assert_called_once_with(_("%s") % message)
+
+    @mock.patch('solum.worker.handlers.noop.LOG')
+    def test_unittest(self, fake_LOG):
+        args = [5, 'git://example.com/foo', 'pep8']
+        noop_handler.Handler().unittest(self.ctx, *args)
+        message = 'Unittest %s %s %s' % tuple(args)
         fake_LOG.debug.assert_called_once_with(_("%s") % message)
