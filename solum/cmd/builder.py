@@ -40,7 +40,7 @@ def main():
     srv = simple_server.make_server(host, port, app)
 
     LOG.info(_('Starting server in PID %s') % os.getpid())
-    LOG.debug(_("Configuration:"))
+    LOG.debug("Configuration:")
     cfg.CONF.log_opt_values(LOG, std_logging.DEBUG)
 
     if host == '0.0.0.0':

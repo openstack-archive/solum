@@ -14,7 +14,6 @@
 
 """Solum Worker noop handler."""
 
-from solum.openstack.common.gettextutils import _
 from solum.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
@@ -22,11 +21,11 @@ LOG = logging.getLogger(__name__)
 
 class Handler(object):
     def echo(self, ctxt, message):
-        LOG.debug(_("%s") % message)
+        LOG.debug("%s" % message)
 
     def build(self, ctxt, build_id, source_uri, name, base_image_id,
               source_format, image_format, assembly_id):
         message = ("Build %s %s %s %s %s %s %s" %
                    (build_id, source_uri, name, base_image_id, source_format,
                     image_format, assembly_id))
-        LOG.debug(_("%s") % message)
+        LOG.debug("%s" % message)

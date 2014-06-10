@@ -37,7 +37,7 @@ def main():
     solum.TLS.trace = trace_data.TraceData()
 
     LOG.info(_('Starting server in PID %s') % os.getpid())
-    LOG.debug(_("Configuration:"))
+    LOG.debug("Configuration:")
     cfg.CONF.log_opt_values(LOG, std_logging.DEBUG)
 
     cfg.CONF.import_opt('topic', 'solum.worker.config', group='worker')

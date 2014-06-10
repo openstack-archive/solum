@@ -24,7 +24,6 @@ from solum.conductor import api as conductor_api
 from solum.deployer import api as deployer_api
 from solum.objects import assembly
 from solum.objects import image
-from solum.openstack.common.gettextutils import _
 from solum.openstack.common import log as logging
 from solum.openstack.common import uuidutils
 
@@ -58,7 +57,7 @@ def update_assembly_status(ctxt, assembly_id, status):
 
 class Handler(object):
     def echo(self, ctxt, message):
-        LOG.debug(_("%s") % message)
+        LOG.debug("%s" % message)
 
     def _get_environment(self, ctxt):
         kc = solum_keystoneclient.KeystoneClientV3(ctxt)

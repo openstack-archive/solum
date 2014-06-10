@@ -16,7 +16,6 @@
 
 from solum import objects
 from solum.objects import image
-from solum.openstack.common.gettextutils import _
 from solum.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
@@ -30,7 +29,7 @@ class Handler(object):
         objects.load()
 
     def echo(self, ctxt, message):
-        LOG.debug(_("%s") % message)
+        LOG.debug("%s" % message)
 
     def build_job_update(self, ctxt, build_id, state, description,
                          created_image_id, assembly_id):

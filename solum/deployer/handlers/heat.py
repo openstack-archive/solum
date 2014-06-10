@@ -23,7 +23,6 @@ from oslo.config import cfg
 from solum.common import clients
 from solum import objects
 from solum.objects import assembly
-from solum.openstack.common.gettextutils import _
 from solum.openstack.common import log as logging
 
 
@@ -61,7 +60,7 @@ class Handler(object):
         objects.load()
 
     def echo(self, ctxt, message):
-        LOG.debug(_("%s") % message)
+        LOG.debug("%s" % message)
 
     def _get_template(self, template_flavor):
         proj_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')

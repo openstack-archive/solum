@@ -33,7 +33,7 @@ def main():
     logging.setup('solum')
 
     LOG.info(_('Starting server in PID %s') % os.getpid())
-    LOG.debug(_("Configuration:"))
+    LOG.debug("Configuration:")
     cfg.CONF.log_opt_values(LOG, std_logging.DEBUG)
 
     cfg.CONF.import_opt('topic', 'solum.conductor.config', group='conductor')
