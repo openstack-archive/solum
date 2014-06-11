@@ -143,6 +143,8 @@ def upgrade():
         sa.Column('plan_id', sa.Integer, sa.ForeignKey('plan.id'),
                   nullable=False),
         sa.Column('workbook_name', sa.String(length=255)),
+        sa.Column('trigger_id', sa.String(length=36)),
+        sa.Column('trust_id', sa.String(length=255)),
     )
 
     op.create_table(

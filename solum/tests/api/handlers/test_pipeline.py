@@ -55,7 +55,8 @@ class TestPipelineHandler(base.BaseTestCase):
         mock_registry.Pipeline.get_by_uuid.assert_called_once_with(self.ctx,
                                                                    'test_id')
 
-    def test_create(self, mock_registry):
+    @mock.patch('solum.common.solum_keystoneclient.KeystoneClientV3')
+    def test_create(self, mock_kc, mock_registry):
         data = {'user_id': 'new_user_id',
                 'uuid': 'input_uuid',
                 'plan_uuid': 'input_plan_uuid'}
@@ -71,14 +72,19 @@ class TestPipelineHandler(base.BaseTestCase):
                            'content': {
                                'href': 'https://example.com/ex.git'},
                            'language_pack': 'auto'}]}
+        trust_ctx = utils.dummy_context()
+        trust_ctx.trust_id = '12345'
+        mock_kc.return_value.create_trust_context.return_value = trust_ctx
 
         handler = pipeline_handler.PipelineHandler(self.ctx)
         res = handler.create(data)
         db_obj.update.assert_called_once_with(data)
         db_obj.create.assert_called_once_with(self.ctx)
         self.assertEqual(db_obj, res)
+        mock_kc.return_value.create_trust_context.assert_called_once_with()
 
-    def test_delete(self, mock_registry):
+    @mock.patch('solum.common.solum_keystoneclient.KeystoneClientV3')
+    def test_delete(self, mock_kc, mock_registry):
         db_obj = fakes.FakePipeline()
         mock_registry.Pipeline.get_by_uuid.return_value = db_obj
         handler = pipeline_handler.PipelineHandler(self.ctx)
@@ -86,3 +92,20 @@ class TestPipelineHandler(base.BaseTestCase):
         db_obj.delete.assert_called_once_with(self.ctx)
         mock_registry.Pipeline.get_by_uuid.assert_called_once_with(self.ctx,
                                                                    'test_id')
+        mock_kc.return_value.delete_trust.assert_called_once_with(
+            'trust_worthy')
+
+    def test_trigger_workflow(self, mock_registry):
+        trigger_id = 1
+        db_obj = fakes.FakePipeline()
+        mock_registry.Pipeline.get_by_trigger_id.return_value = db_obj
+        plan_obj = fakes.FakePlan()
+        mock_registry.Plan.get_by_id.return_value = plan_obj
+        handler = pipeline_handler.PipelineHandler(self.ctx)
+        handler._execute_workbook = mock.MagicMock()
+        handler._context_from_trust_id = mock.MagicMock(return_value=self.ctx)
+        handler.trigger_workflow(trigger_id)
+        handler._execute_workbook.assert_called_once_with(db_obj)
+        handler._context_from_trust_id.assert_called_once_with('trust_worthy')
+        mock_registry.Pipeline.get_by_trigger_id.assert_called_once_with(
+            None, trigger_id)

@@ -183,6 +183,7 @@ class FakePipeline(mock.Mock):
         self.uuid = 'test_uuid'
         self.id = 8
         self.name = 'faker'
+        self.trust_id = 'trust_worthy'
 
     def as_dict(self):
         return dict(user_id=self.user_id,
