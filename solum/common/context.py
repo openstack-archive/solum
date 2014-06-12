@@ -21,7 +21,7 @@ class RequestContext(context.RequestContext):
     def __init__(self, auth_token=None, user=None, tenant=None, domain=None,
                  user_domain=None, project_domain=None, is_admin=False,
                  read_only=False, request_id=None, user_name=None, roles=None,
-                 auth_url=None, trust_id=None):
+                 auth_url=None, trust_id=None, auth_token_info=None):
         super(RequestContext, self).__init__(auth_token=auth_token,
                                              user=user, tenant=tenant,
                                              domain=domain,
@@ -35,11 +35,13 @@ class RequestContext(context.RequestContext):
         self.user_name = user_name
         self.auth_url = auth_url
         self.trust_id = trust_id
+        self.auth_token_info = auth_token_info
 
     def to_dict(self):
         data = super(RequestContext, self).to_dict()
         data.update(roles=self.roles, user_name=self.user_name,
                     auth_url=self.auth_url,
+                    auth_token_info=self.auth_token_info,
                     trust_id=self.trust_id)
         return data
 
