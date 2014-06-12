@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import copy
+
 import keystoneclient.exceptions as kc_exception
 from keystoneclient.v3 import client as kc_v3
 from oslo.config import cfg
@@ -99,6 +101,20 @@ class KeystoneClientV3(object):
             kwargs.update(self._service_admin_creds())
             kwargs['trust_id'] = self.context.trust_id
             kwargs.pop('project_name')
+        elif self.context.auth_token_info is not None:
+            # The auth_ref version must be set according to the token version
+            if 'access' in self.context.auth_token_info:
+                kwargs['auth_ref'] = copy.deepcopy(
+                    self.context.auth_token_info['access'])
+                kwargs['auth_ref']['version'] = 'v2.0'
+            elif 'token' in self.context.auth_token_info:
+                kwargs['auth_ref'] = copy.deepcopy(
+                    self.context.auth_token_info['token'])
+                kwargs['auth_ref']['version'] = 'v3'
+                kwargs['auth_ref']['auth_token'] = self.context.auth_token
+            else:
+                LOG.error("Unknown version in auth_token_info")
+                raise exception.AuthorizationFailure()
         elif self.context.auth_token is not None:
             kwargs['token'] = self.context.auth_token
             kwargs['project_id'] = self.context.tenant

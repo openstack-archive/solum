@@ -37,6 +37,7 @@ class KeystoneClientTest(base.BaseTestCase):
         self.ctx = utils.dummy_context()
         self.ctx.auth_url = dummy_url
         self.ctx.auth_token = 'abcd1234'
+        self.ctx.auth_token_info = None
 
         cfg.CONF.set_override('auth_uri', dummy_url,
                               group='keystone_authtoken')
@@ -64,6 +65,43 @@ class KeystoneClientTest(base.BaseTestCase):
         self.ctx.auth_token = None
         self.ctx.trust_id = None
         self.ctx.username = None
+        solum_ks_client = solum_keystoneclient.KeystoneClientV3(self.ctx)
+        self.assertRaises(exception.AuthorizationFailure,
+                          solum_ks_client._v3_client_init)
+
+    def test_init_trust_token_access(self, mock_ks):
+        """Test creating the client, token auth."""
+        self.ctx.tenant = None
+        self.ctx.trust_id = None
+        self.ctx.auth_token_info = {'access': {}}
+
+        solum_ks_client = solum_keystoneclient.KeystoneClientV3(self.ctx)
+        solum_ks_client.client
+        self.assertIsNotNone(solum_ks_client._client)
+        mock_ks.assert_called_once_with(auth_ref={'version': 'v2.0'},
+                                        endpoint='http://server.test:5000/v3',
+                                        auth_url='http://server.test:5000/v3')
+        mock_ks.return_value.authenticate.assert_called_once_with()
+
+    def test_init_trust_token_token(self, mock_ks):
+        self.ctx.tenant = None
+        self.ctx.trust_id = None
+        self.ctx.auth_token_info = {'token': {}}
+
+        solum_ks_client = solum_keystoneclient.KeystoneClientV3(self.ctx)
+        solum_ks_client.client
+        self.assertIsNotNone(solum_ks_client._client)
+        mock_ks.assert_called_once_with(auth_ref={'auth_token': 'abcd1234',
+                                                  'version': 'v3'},
+                                        endpoint='http://server.test:5000/v3',
+                                        auth_url='http://server.test:5000/v3')
+        mock_ks.return_value.authenticate.assert_called_once_with()
+
+    def test_init_trust_token_none(self, mock_ks):
+        self.ctx.tenant = None
+        self.ctx.trust_id = None
+        self.ctx.auth_token_info = {'not_this': 'urg'}
+
         solum_ks_client = solum_keystoneclient.KeystoneClientV3(self.ctx)
         self.assertRaises(exception.AuthorizationFailure,
                           solum_ks_client._v3_client_init)
