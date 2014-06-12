@@ -14,6 +14,7 @@
 
 import pecan
 from pecan import rest
+import sys
 import wsmeext.pecan as wsme_pecan
 import yaml
 
@@ -22,6 +23,25 @@ from solum.api.handlers import plan_handler
 from solum.common import exception
 from solum.common import yamlutils
 from solum import objects
+
+
+def init_plan_v1(yml_input_plan):
+    plan_handler_v1 = plan_handler.PlanHandler(
+        pecan.request.security_context)
+    plan_v1 = plan.Plan(**yml_input_plan)
+    return plan_handler_v1, plan_v1
+
+
+def init_plan_by_version(yml_input_plan):
+    version = yml_input_plan.get('version')
+    if version is None:
+        raise exception.BadRequest(
+            reason='Version attribute is missing in Plan')
+    mod = sys.modules[__name__]
+    if not hasattr(mod, 'init_plan_v%s' % version):
+        raise exception.BadRequest(reason='Plan version %s is invalid.'
+                                          % version)
+    return getattr(mod, 'init_plan_v%s' % version)(yml_input_plan)
 
 
 class PlanController(rest.RestController):
@@ -44,14 +64,13 @@ class PlanController(rest.RestController):
     @pecan.expose(content_type='application/x-yaml')
     def put(self):
         """Modify this plan."""
-        handler = plan_handler.PlanHandler(pecan.request.security_context)
         if not pecan.request.body or len(pecan.request.body) < 1:
             raise exception.BadRequest
         try:
             yml_input_plan = yamlutils.load(pecan.request.body)
         except ValueError as excp:
             raise exception.BadRequest('Plan is invalid. ' + excp.message)
-        data = plan.Plan(**yml_input_plan)
+        handler, data = init_plan_by_version(yml_input_plan)
         updated_plan_yml = yaml.dump(handler.update(
             self._id, data.as_dict(objects.registry.Plan)).refined_content())
         pecan.response.status = 200
@@ -78,14 +97,13 @@ class PlansController(rest.RestController):
     @pecan.expose(content_type='application/x-yaml')
     def post(self):
         """Create a new plan."""
-        handler = plan_handler.PlanHandler(pecan.request.security_context)
         if not pecan.request.body or len(pecan.request.body) < 1:
             raise exception.BadRequest
         try:
             yml_input_plan = yamlutils.load(pecan.request.body)
         except ValueError as excp:
             raise exception.BadRequest('Plan is invalid. ' + excp.message)
-        data = plan.Plan(**yml_input_plan)
+        handler, data = init_plan_by_version(yml_input_plan)
         create_plan_yml = yaml.dump(handler.create(
             data.as_dict(objects.registry.Plan)).refined_content())
         pecan.response.status = 201

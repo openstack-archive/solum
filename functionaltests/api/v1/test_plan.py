@@ -17,7 +17,8 @@ import yaml
 
 from functionaltests.api import base
 
-sample_data = {"name": "test_plan",
+sample_data = {"version": "1",
+               "name": "test_plan",
                "description": "A test to create plan",
                "artifacts": [{
                    "name": "No_deus",
@@ -110,7 +111,8 @@ class TestPlanController(base.TestCase):
 
     def test_plans_put(self):
         uuid = self._create_plan()
-        updated_data = {"name": "test_plan_updated",
+        updated_data = {"version": "1",
+                        "name": "test_plan_updated",
                         "description": "A test to create plan updated",
                         "type": "plan",
                         "artifacts": []}

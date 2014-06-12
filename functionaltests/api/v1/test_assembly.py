@@ -27,7 +27,8 @@ sample_data = {"name": "test_assembly",
                "status": "status",
                "application_uri": "http://localhost:5000"}
 
-plan_sample_data = {"name": "test_plan",
+plan_sample_data = {"version": "1",
+                    "name": "test_plan",
                     "description": "A test to create plan",
                     "project_id": "project_id",
                     "user_id": "user_id"}
