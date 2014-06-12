@@ -13,6 +13,7 @@
 # under the License.
 
 import json
+
 import mock
 
 from solum.api.controllers.v1 import assembly

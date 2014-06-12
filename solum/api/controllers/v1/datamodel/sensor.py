@@ -24,8 +24,9 @@ SENSOR_TYPE = wtypes.Enum(str, 'str', 'float', 'int')
 
 
 class Sensor(api_types.Base):
-    """A Sensor resource represents exactly one supported sensor on one or
-    more resources. Sensor resources represent dynamic data about resources,
+    """A Sensor resource represents exactly one supported sensor.
+
+    Sensor resources represent dynamic data about resources,
     such as metrics or state. Sensor resources are useful for exposing data
     that changes rapidly, or that may need to be fetched from a secondary
     system.

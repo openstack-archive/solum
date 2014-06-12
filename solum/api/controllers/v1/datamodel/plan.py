@@ -13,6 +13,7 @@
 # under the License.
 
 import uuid
+
 import wsme
 from wsme.rest import json as wjson
 from wsme import types as wtypes

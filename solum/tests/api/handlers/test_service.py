@@ -31,8 +31,8 @@ class TestServiceHandler(base.BaseTestCase):
         handler = service_handler.ServiceHandler(self.ctx)
         res = handler.get('test_id')
         self.assertIsNotNone(res)
-        mock_registry.Service.get_by_uuid.\
-            assert_called_once_with(self.ctx, 'test_id')
+        get_by_uuid = mock_registry.Service.get_by_uuid
+        get_by_uuid.assert_called_once_with(self.ctx, 'test_id')
 
     def test_get_all(self, mock_registry):
         mock_registry.ServiceList.get_all.return_value = {}

@@ -12,8 +12,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import sqlalchemy as sa
 import uuid
+
+import sqlalchemy as sa
 
 from solum import objects
 from solum.objects import component as abstract

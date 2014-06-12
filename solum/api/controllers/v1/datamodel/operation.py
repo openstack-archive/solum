@@ -15,8 +15,7 @@ from solum.api.controllers.v1.datamodel import types as api_types
 
 
 class Operation(api_types.Base):
-    """An Operation resource represents an operation or action available on a
-    target resource.
+    """An Operation resource represents an operation or action.
 
     This is for defining actions that may change the state of the resource they
     are related to. For example, the API already provides ways to register,

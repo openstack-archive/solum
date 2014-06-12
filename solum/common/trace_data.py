@@ -80,15 +80,15 @@ class TraceData(object):
         """
         if self._auto_clear is not True:
             return ({"request_id": self.request_id,
-                    "user_trace": self._user_data,
-                    "support_trace": self._support_data})
+                     "user_trace": self._user_data,
+                     "support_trace": self._support_data})
 
         user_data = self._user_data.copy()
         support_data = self._support_data.copy()
         self.clear()
         return ({"request_id": self.request_id,
-                "user_trace": user_data,
-                "support_trace": support_data})
+                 "user_trace": user_data,
+                 "support_trace": support_data})
 
     @property
     def auto_clear(self):

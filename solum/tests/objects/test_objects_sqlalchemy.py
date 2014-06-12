@@ -86,8 +86,8 @@ class TestObjectsSqlalchemy(tests.BaseTestCase):
         self.assertEqual(component.description, component2.description)
 
         # visible via direct query
-        query = utils.get_dummy_session().query(component.__class__)\
-            .filter_by(id=component.id)
+        dsession = utils.get_dummy_session()
+        query = dsession.query(component.__class__).filter_by(id=component.id)
         component3 = query.first()
         self.assertIsNotNone(component3)
         self.assertEqual(component3.id, component3.id)

@@ -18,7 +18,7 @@ from oslo.config import cfg
 cfg.CONF.import_group('keystone_authtoken',
                       'keystoneclient.middleware.auth_token')
 
-import keystoneclient.exceptions as kc_exception
+import keystoneclient.exceptions as kc_exception  # noqa
 
 from solum.common import exception
 from solum.common import solum_keystoneclient

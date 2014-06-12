@@ -17,14 +17,14 @@ SQLAlchemy models for application data.
 """
 
 import json
-import six
-import yaml
 
 from oslo.config import cfg
+import six
 from six import moves
 from sqlalchemy.ext import declarative
 from sqlalchemy.orm import exc
 from sqlalchemy import types
+import yaml
 
 from solum.common import exception
 from solum import objects

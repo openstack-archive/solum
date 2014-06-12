@@ -15,6 +15,7 @@
 import uuid
 
 from oslo.config import cfg
+
 from solum.api.handlers import handler
 from solum.common import context
 from solum.common import exception

@@ -25,17 +25,17 @@ class TestComponent(base.BaseTestCase):
         super(TestComponent, self).setUp()
         self.db = self.useFixture(utils.Database())
         self.ctx = utils.dummy_context()
-        self.data_assembly = \
-            [{'project_id': 'project_id_blah',
-              'uuid': 'ce43e347f0b0422825245b3e5f140a81cef6e65b',
-              'user_id': 'fred',
-              'name': 'assembly1',
-              'description': 'test assembly',
-              'trigger_id': 'trigger-uuid-1234',
-              'tags': 'assembly tags',
-              'plan_id': 'plan_id_1',
-              'status': 'Building',
-              'application_uri': 'http://192.168.78.21:5000'}]
+        self.data_assembly = [
+            {'project_id': 'project_id_blah',
+             'uuid': 'ce43e347f0b0422825245b3e5f140a81cef6e65b',
+             'user_id': 'fred',
+             'name': 'assembly1',
+             'description': 'test assembly',
+             'trigger_id': 'trigger-uuid-1234',
+             'tags': 'assembly tags',
+             'plan_id': 'plan_id_1',
+             'status': 'Building',
+             'application_uri': 'http://192.168.78.21:5000'}]
         utils.create_models_from_data(assembly.Assembly, self.data_assembly,
                                       self.ctx)
 

@@ -18,7 +18,6 @@ import os
 import subprocess
 
 import solum
-
 from solum.common import solum_keystoneclient
 from solum.conductor import api as conductor_api
 from solum.deployer import api as deployer_api
@@ -46,7 +45,7 @@ def job_update_notification(ctxt, build_id, state=None, description=None,
 
 
 def update_assembly_status(ctxt, assembly_id, status):
-    #TODO(datsun180b): use conductor to update assembly status
+    # TODO(datsun180b): use conductor to update assembly status
     if assembly_id is None:
         return
     assem = solum.objects.registry.Assembly.get_by_id(ctxt,

@@ -31,8 +31,8 @@ class TestImageHandler(base.BaseTestCase):
         handler = image_handler.ImageHandler(self.ctx)
         res = handler.get('test_id')
         self.assertIsNotNone(res)
-        mock_registry.Image.get_by_uuid.\
-            assert_called_once_with(self.ctx, 'test_id')
+        mock_registry.Image.get_by_uuid.assert_called_once_with(
+            self.ctx, 'test_id')
 
     @mock.patch('solum.builder.handlers.image_handler.'
                 'ImageHandler._start_build')

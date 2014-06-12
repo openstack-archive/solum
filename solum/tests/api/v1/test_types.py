@@ -12,11 +12,10 @@
 
 
 from solum.api.controllers.v1.datamodel import component as component_api
+from solum import objects
 from solum.objects.sqlalchemy import component as component_model
 from solum.tests import base
 from solum.tests import utils
-
-from solum import objects
 
 
 class TestTypes(base.BaseTestCase):

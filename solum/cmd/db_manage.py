@@ -17,33 +17,32 @@ import os
 
 from oslo.config import cfg
 
-from solum.openstack.common.db.sqlalchemy.migration_cli \
-    import manager as migration_manager
+from solum.openstack.common.db.sqlalchemy.migration_cli import manager
 from solum.openstack.common.db.sqlalchemy import session
 
 
 CONF = cfg.CONF
 
 
-def do_version(manager):
-    print('Current DB revision is %s' % manager.version())
+def do_version(mgr):
+    print('Current DB revision is %s' % mgr.version())
 
 
-def do_upgrade(manager):
-    manager.upgrade(CONF.command.revision)
+def do_upgrade(mgr):
+    mgr.upgrade(CONF.command.revision)
 
 
-def do_downgrade(manager):
-    manager.downgrade(CONF.command.revision)
+def do_downgrade(mgr):
+    mgr.downgrade(CONF.command.revision)
 
 
-def do_stamp(manager):
-    manager.stamp(CONF.command.revision)
+def do_stamp(mgr):
+    mgr.stamp(CONF.command.revision)
 
 
-def do_revision(manager):
-    manager.revision(message=CONF.command.message,
-                     autogenerate=CONF.command.autogenerate)
+def do_revision(mgr):
+    mgr.revision(message=CONF.command.message,
+                 autogenerate=CONF.command.autogenerate)
 
 
 def add_command_parsers(subparsers):
@@ -84,7 +83,7 @@ def get_manager():
     migration_config = {'alembic_ini_path': alembic_path,
                         'migration_repo_path': migrate_path,
                         'alembic_repo_path': migrate_path}
-    return migration_manager.MigrationManager(migration_config)
+    return manager.MigrationManager(migration_config)
 
 
 def main():
