@@ -17,8 +17,8 @@ from solum.api.controllers.v1.datamodel import types as api_types
 
 
 class Extension(api_types.Base):
-    """The Extension resource represents changes that the Provider has added
-    onto a Platform in addition to the ones supplied by Solum by default.
+    """The Extension resource represents Provider modifications.
+
     This may include additional protocol semantics, resource types,
     application lifecycle states, resource attributes, etc. Anything may be
     added, as long as it does not contradict the base functionality offered

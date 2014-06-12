@@ -19,12 +19,12 @@ Includes decorator for re-raising Solum-type exceptions.
 """
 
 import functools
-import pecan
 import sys
 import uuid
 
 from keystoneclient import exceptions as keystone_exceptions
 from oslo.config import cfg
+import pecan
 import six
 import wsme
 
@@ -48,8 +48,9 @@ CONF.register_opts(exc_log_opts)
 
 def wrap_exception(notifier=None, publisher_id=None, event_type=None,
                    level=None):
-    """This decorator wraps a method to catch any exceptions that may
-    get thrown. It logs the exception as well as optionally sending
+    """This decorator wraps a method to catch any exceptions.
+
+    It logs the exception as well as optionally sending
     it to the notification system.
     """
     def inner(f):
@@ -158,9 +159,7 @@ def wrap_pecan_controller_exception(func):
 
 
 def wrap_keystone_exception(func):
-    """This decorator wraps keystone exception by throwing Solum specific
-    exceptions.
-    """
+    """Wrap keystone exceptions and throw Solum specific exceptions."""
     @functools.wraps(func)
     def wrapped(*args, **kw):
         try:
@@ -196,8 +195,8 @@ class SolumException(Exception):
         try:
             self.message = self.msg_fmt % kwargs
         except KeyError:
-            #kwargs doesn't match a variable in the message
-            #log the issue and the kwargs
+            # kwargs doesn't match a variable in the message
+            # log the issue and the kwargs
             LOG.exception(_('Exception in string format operation'),
                           extra=dict(
                               private=dict(

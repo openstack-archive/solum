@@ -13,9 +13,10 @@
 # under the License.
 
 import json
-import mock
 
+import mock
 from oslo.config import cfg
+
 from solum.deployer.handlers import heat as heat_handler
 from solum.objects import assembly
 from solum.tests import base
@@ -48,16 +49,18 @@ class HandlerTest(base.BaseTestCase):
         fake_template = json.dumps({'description': 'test'})
         mock_get_templ.return_value = fake_template
         handler._find_id_if_stack_exists = mock.MagicMock(return_value=(None))
-        mock_clients.return_value.heat.return_value.stacks.create.\
-            return_value = {"stack": {"id": "fake_id",
-                                      "links": [{"href": "http://fake.ref",
-                                                 "rel": "self"}]}}
-        mock_clients.return_value.neutron.return_value.list_networks.\
-            return_value = {"networks": [{"router:external": True,
-                                          "id": "public_net_id"},
-                                         {"router:external": False,
-                                          "id": "private_net_id",
-                                          "subnets": ["private_subnet_id"]}]}
+        stacks = mock_clients.return_value.heat.return_value.stacks
+        stacks.create.return_value = {"stack": {
+            "id": "fake_id",
+            "links": [{"href": "http://fake.ref",
+                       "rel": "self"}]}}
+        neutron = mock_clients.return_value.neutron
+        neutron.return_value.list_networks.return_value = {
+            "networks": [{"router:external": True,
+                          "id": "public_net_id"},
+                         {"router:external": False,
+                          "id": "private_net_id",
+                          "subnets": ["private_subnet_id"]}]}
         handler._update_assembly_status = mock.MagicMock()
         handler.deploy(self.ctx, 77, 'created_image_id')
         parameters = {'image': 'created_image_id',
@@ -65,12 +68,12 @@ class HandlerTest(base.BaseTestCase):
                       'private_net': 'private_net_id',
                       'public_net': 'public_net_id',
                       'private_subnet': 'private_subnet_id'}
-        mock_clients.return_value.heat.return_value.stacks.create.\
-            assert_called_once_with(stack_name='faker-test_uuid',
-                                    template=fake_template,
-                                    parameters=parameters)
-        mock_clients.return_value.neutron.return_value.list_networks.\
-            assert_called_once_with()
+        stacks = mock_clients.return_value.heat.return_value.stacks
+        stacks.create.assert_called_once_with(stack_name='faker-test_uuid',
+                                              template=fake_template,
+                                              parameters=parameters)
+        neutron = mock_clients.return_value.neutron
+        neutron.return_value.list_networks.assert_called_once_with()
         assign_and_create_mock = mock_registry.Component.assign_and_create
         assign_and_create_mock.assert_called_once_with(self.ctx,
                                                        fake_assembly,
@@ -91,18 +94,18 @@ class HandlerTest(base.BaseTestCase):
         fake_template = json.dumps({'description': 'test'})
         mock_get_templ.return_value = fake_template
         handler._find_id_if_stack_exists = mock.MagicMock(return_value=(None))
-        mock_clients.return_value.heat.return_value.stacks.create.\
-            return_value = {"stack": {"id": "fake_id",
-                                      "links": [{"href": "http://fake.ref",
-                                                 "rel": "self"}]}}
+        stacks = mock_clients.return_value.heat.return_value.stacks
+        stacks.create.return_value = {"stack": {
+            "id": "fake_id",
+            "links": [{"href": "http://fake.ref",
+                       "rel": "self"}]}}
         handler._update_assembly_status = mock.MagicMock()
         handler.deploy(self.ctx, 77, 'created_image_id')
         parameters = {'image': 'created_image_id',
                       'app_name': 'faker'}
-        mock_clients.return_value.heat.return_value.stacks.create.\
-            assert_called_once_with(stack_name='faker-test_uuid',
-                                    template=fake_template,
-                                    parameters=parameters)
+        stacks.create.assert_called_once_with(stack_name='faker-test_uuid',
+                                              template=fake_template,
+                                              parameters=parameters)
         assign_and_create_mock = mock_registry.Component.assign_and_create
         assign_and_create_mock.assert_called_once_with(self.ctx,
                                                        fake_assembly,
@@ -165,8 +168,8 @@ class HandlerTest(base.BaseTestCase):
         mock_registry.Assembly.get_by_id.return_value = fake_assem
 
         handler = heat_handler.Handler()
-        handler._find_id_if_stack_exists = mock.MagicMock(side_effect=
-                                                          self._s_efct)
+        handler._find_id_if_stack_exists = mock.MagicMock(
+            side_effect=self._s_efct)
 
         cfg.CONF.deployer.max_attempts = 1
         cfg.CONF.deployer.wait_interval = 0

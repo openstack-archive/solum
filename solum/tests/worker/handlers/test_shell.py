@@ -12,9 +12,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import mock
 import os.path
 import uuid
+
+import mock
 
 from solum.openstack.common.gettextutils import _
 from solum.tests import base

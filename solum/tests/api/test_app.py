@@ -15,7 +15,6 @@
 from solum.api import app as api_app
 from solum.api import auth
 from solum.api import config as api_config
-
 from solum.tests import base
 
 

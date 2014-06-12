@@ -13,6 +13,7 @@
 # under the License.
 
 import string
+
 import wsme
 from wsme import types as wtypes
 

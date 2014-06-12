@@ -16,10 +16,11 @@
 
 import os
 import time
-import yaml
 
 from heatclient import exc
 from oslo.config import cfg
+import yaml
+
 from solum.common import clients
 from solum import objects
 from solum.objects import assembly
@@ -71,7 +72,7 @@ class Handler(object):
         return template
 
     def _get_network_parameters(self, osc):
-        #TODO(julienvey) In the long term, we should have optional parameters
+        # TODO(julienvey) In the long term, we should have optional parameters
         # if the user wants to override this default behaviour
         params = {}
         tenant_networks = osc.neutron().list_networks()

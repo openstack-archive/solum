@@ -10,10 +10,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import mock
-
 from glanceclient import client as glanceclient
 from heatclient import client as heatclient
+import mock
 from neutronclient.neutron import client as neutronclient
 from swiftclient import client as swiftclient
 
@@ -28,9 +27,10 @@ class ClientsTest(base.BaseTestCase):
     def test_url_for(self, mock_keystone):
         obj = clients.OpenStackClients(None)
         obj.url_for(service_type='fake_service', endpoint_type='fake_endpoint')
-        mock_keystone.return_value.client.service_catalog.url_for.\
-            assert_called_once_with(service_type='fake_service',
-                                    endpoint_type='fake_endpoint')
+        service_catalog = mock_keystone.return_value.client.service_catalog
+        service_catalog.url_for.assert_called_once_with(
+            service_type='fake_service',
+            endpoint_type='fake_endpoint')
 
     @mock.patch.object(glanceclient, 'Client')
     @mock.patch.object(clients.OpenStackClients, 'url_for')

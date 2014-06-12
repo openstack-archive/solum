@@ -23,8 +23,9 @@ class TestPlan(base.BaseTestCase):
         super(TestPlan, self).setUp()
         self.db = self.useFixture(utils.Database())
         self.ctx = utils.dummy_context()
-        raw_content = {'artifacts': [{'content':
-                      {'href': 'http://github.com/some/project'}}]}
+        raw_content = {'artifacts': [
+            {'content':
+             {'href': 'http://github.com/some/project'}}]}
         self.data = [{'uuid': 'test-uuid-123',
                       'project_id': 'bla',
                       'user_id': 'fred',

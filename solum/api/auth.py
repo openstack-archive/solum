@@ -76,7 +76,7 @@ class AuthInformationHook(hooks.PecanHook):
     def before(self, state):
         if not CONF.get('enable_authentication'):
             return
-        #Do not proceed for triggers as they use non authenticated service
+        # Do not proceed for triggers as they use non authenticated service
         regexp = re.compile('^/v[0-9]+/public/')
         if regexp.match(state.request.path):
             return

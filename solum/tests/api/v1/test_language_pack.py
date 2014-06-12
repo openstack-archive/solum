@@ -13,8 +13,8 @@
 # under the License.
 
 import json
-import mock
 
+import mock
 import wsme
 
 from solum.api.controllers.v1.datamodel import language_pack as lp_model
@@ -60,7 +60,7 @@ lp_sample = {
         "version": "12.04"
     },
     "build_tool_chain": [lp_model.BuildTool(type="maven", version="3.0"),
-    lp_model.BuildTool(type="ant", version="2.1")],
+                         lp_model.BuildTool(type="ant", version="2.1")],
     "attributes": {
         "attr1key": "attr1value",
         "attr2key": "attr2value"

@@ -29,8 +29,8 @@ class TestTriggerController(base.BaseTestCase):
         obj = trigger.TriggerController()
         obj.post('test_id')
         self.assertEqual(202, resp_mock.status)
-        handler_mock.return_value.trigger_workflow.\
-            assert_called_once_with('test_id')
+        tw = handler_mock.return_value.trigger_workflow
+        tw.assert_called_once_with('test_id')
 
     def test_trigger_post_error(self, handler_mock, resp_mock, request_mock):
         obj = trigger.TriggerController()
@@ -38,5 +38,5 @@ class TestTriggerController(base.BaseTestCase):
             exception.ResourceNotFound(name='trigger', id='test_id'))
         obj.post('test_id')
         self.assertEqual(404, resp_mock.status)
-        handler_mock.return_value.trigger_workflow.\
-            assert_called_once_with('test_id')
+        tw = handler_mock.return_value.trigger_workflow
+        tw.assert_called_once_with('test_id')

@@ -23,8 +23,10 @@ __all__ = ['FunctionalTest']
 
 
 class FunctionalTest(base.BaseTestCase):
-    """Used for functional tests where you need to test your
-    literal application and its integration with the framework.
+    """Used for functional tests.
+
+    Where you need to test your literal application and its
+    integration with the framework.
     """
 
     def setUp(self):

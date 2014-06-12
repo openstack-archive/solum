@@ -176,7 +176,7 @@ class LanguagePack(api_types.Base):
                    runtime_versions=['1.4', '1.6', '1.7'],
                    language_implementation='Sun',
                    build_tool_chain=[BuildTool(type='ant', version='1.7'),
-                        BuildTool(type='maven', version='1.2')],
+                                     BuildTool(type='maven', version='1.2')],
                    os_platform={'OS': 'Ubuntu', 'version': '12.04'},
                    attributes={'optional_attr1': 'value',
                                'admin_email': 'someadmin@somewhere.com'},

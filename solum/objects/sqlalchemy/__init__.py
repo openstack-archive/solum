@@ -13,7 +13,6 @@
 # limitations under the License.
 
 from solum import objects
-
 from solum.objects import assembly as abstract_assembly
 from solum.objects import component as abstract_component
 from solum.objects import extension as abstract_extension
