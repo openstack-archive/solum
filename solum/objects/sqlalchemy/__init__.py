@@ -19,6 +19,7 @@ from solum.objects import component as abstract_component
 from solum.objects import extension as abstract_extension
 from solum.objects import image as abstract_image
 from solum.objects import operation as abstract_operation
+from solum.objects import pipeline as abstract_pipeline
 from solum.objects import plan as abstract_plan
 from solum.objects import sensor as abstract_sensor
 from solum.objects import service as abstract_srvc
@@ -27,6 +28,7 @@ from solum.objects.sqlalchemy import component
 from solum.objects.sqlalchemy import extension
 from solum.objects.sqlalchemy import image
 from solum.objects.sqlalchemy import operation
+from solum.objects.sqlalchemy import pipeline
 from solum.objects.sqlalchemy import plan
 from solum.objects.sqlalchemy import sensor
 from solum.objects.sqlalchemy import service
@@ -41,6 +43,8 @@ def load():
                          component.ComponentList)
     objects.registry.add(abstract_plan.Plan, plan.Plan)
     objects.registry.add(abstract_plan.PlanList, plan.PlanList)
+    objects.registry.add(abstract_pipeline.Pipeline, pipeline.Pipeline)
+    objects.registry.add(abstract_pipeline.PipelineList, pipeline.PipelineList)
     objects.registry.add(abstract_srvc.Service, service.Service)
     objects.registry.add(abstract_srvc.ServiceList, service.ServiceList)
     objects.registry.add(abstract_operation.Operation, operation.Operation)

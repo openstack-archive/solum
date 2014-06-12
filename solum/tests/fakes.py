@@ -172,6 +172,26 @@ class FakeAssembly(mock.Mock):
                     status=self.status)
 
 
+class FakePipeline(mock.Mock):
+    def __init__(self, **kwargs):
+        super(FakePipeline, self).__init__(**kwargs)
+        self.__tablename__ = 'pipeline'
+        self.__resource__ = 'pipelines'
+        self.user_id = 'fake user id'
+        self.project_id = 'fake project id'
+        self.plan_uuid = 'fake plan uuid'
+        self.uuid = 'test_uuid'
+        self.id = 8
+        self.name = 'faker'
+
+    def as_dict(self):
+        return dict(user_id=self.user_id,
+                    project_id=self.project_id,
+                    uuid=self.uuid,
+                    id=self.id,
+                    name=self.name)
+
+
 class FakePlan(mock.Mock):
     def __init__(self, **kwargs):
         super(FakePlan, self).__init__(**kwargs)

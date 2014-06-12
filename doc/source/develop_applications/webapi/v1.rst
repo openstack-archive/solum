@@ -22,6 +22,18 @@ Plans
 .. autotype:: solum.api.controllers.v1.datamodel.plan.Plan
    :members:
 
+Pipelines
+---------
+
+.. rest-controller:: solum.api.controllers.v1.pipeline:PipelinesController
+   :webprefix: /v1/pipelines
+
+.. rest-controller:: solum.api.controllers.v1.pipeline:PipelineController
+   :webprefix: /v1/pipelines
+
+.. autotype:: solum.api.controllers.v1.datamodel.pipeline.Pipeline
+   :members:
+
 Assemblies
 ----------
 
