@@ -14,6 +14,7 @@
 
 import sqlalchemy
 
+from solum.common import exception
 from solum import objects
 from solum.objects import pipeline as abstract
 from solum.objects.sqlalchemy import models as sql
@@ -38,6 +39,8 @@ class Pipeline(sql.Base, abstract.Pipeline):
     plan_id = sqlalchemy.Column(sqlalchemy.Integer,
                                 sqlalchemy.ForeignKey('plan.id'),
                                 nullable=False)
+    trigger_id = sqlalchemy.Column(sqlalchemy.String(36))
+    trust_id = sqlalchemy.Column(sqlalchemy.String(255))
 
     @property
     def plan_uuid(self):
@@ -51,6 +54,14 @@ class Pipeline(sql.Base, abstract.Pipeline):
     @property
     def _extra_keys(self):
         return ['plan_uuid']
+
+    @classmethod
+    def get_by_trigger_id(cls, context, trigger_id):
+        try:
+            session = sql.Base.get_session()
+            return session.query(cls).filter_by(trigger_id=trigger_id).one()
+        except sqlalchemy.orm.exc.NoResultFound:
+            raise exception.ResourceNotFound(id=trigger_id, name='trigger')
 
 
 class PipelineList(abstract.PipelineList):

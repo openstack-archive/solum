@@ -16,6 +16,9 @@ import uuid
 
 from oslo.config import cfg
 from solum.api.handlers import handler
+from solum.common import context
+from solum.common import exception
+from solum.common import solum_keystoneclient
 from solum import objects
 from solum.openstack.common import log as logging
 
@@ -30,6 +33,30 @@ class PipelineHandler(handler.Handler):
         """Return an pipeline."""
         return objects.registry.Pipeline.get_by_uuid(self.context, id)
 
+    def _context_from_trust_id(self, trust_id):
+        cntx = context.RequestContext(trust_id=trust_id)
+        kc = solum_keystoneclient.KeystoneClientV3(cntx)
+        return kc.context
+
+    def trigger_workflow(self, trigger_id):
+        """Get trigger by trigger id and execute the associated workbook."""
+        # Note: self.context will be None at this point as this is a
+        # non-authenticated request.
+        db_obj = objects.registry.Pipeline.get_by_trigger_id(None,
+                                                             trigger_id)
+        # get the trust context and authenticate it.
+        try:
+            self.context = self._context_from_trust_id(db_obj.trust_id)
+        except exception.AuthorizationFailure as auth_ex:
+            LOG.warn(auth_ex)
+            return
+
+        self._execute_workbook(db_obj)
+
+    def _execute_workbook(self, pipeline):
+        # TODO(asalkeld) execute the mistral workbook.
+        pass
+
     def update(self, id, data):
         """Modify a resource."""
         db_obj = objects.registry.Pipeline.get_by_uuid(self.context, id)
@@ -40,6 +67,10 @@ class PipelineHandler(handler.Handler):
     def delete(self, id):
         """Delete a resource."""
         db_obj = objects.registry.Pipeline.get_by_uuid(self.context, id)
+
+        # delete the trust.
+        ksc = solum_keystoneclient.KeystoneClientV3(self.context)
+        ksc.delete_trust(db_obj.trust_id)
         db_obj.delete(self.context)
 
     def create(self, data):
@@ -50,7 +81,16 @@ class PipelineHandler(handler.Handler):
         db_obj.user_id = self.context.user
         db_obj.project_id = self.context.tenant
         db_obj.trigger_id = str(uuid.uuid4())
+
+        # create the trust_id and store it.
+        ksc = solum_keystoneclient.KeystoneClientV3(self.context)
+        trust_context = ksc.create_trust_context()
+        db_obj.trust_id = trust_context.trust_id
+
         db_obj.create(self.context)
+
+        self._execute_workbook(db_obj)
+
         return db_obj
 
     def get_all(self):

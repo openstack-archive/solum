@@ -29,6 +29,7 @@ class TestPipeline(base.BaseTestCase):
                       'user_id': 'fred',
                       'name': 'pipeline1',
                       'description': 'test pipeline',
+                      'trigger_id': 'trigger-uuid-1234',
                       'tags': 'pipeline tags',
                       'plan_id': 'plan_id_1'}]
         utils.create_models_from_data(pipeline.Pipeline, self.data, self.ctx)
@@ -43,5 +44,11 @@ class TestPipeline(base.BaseTestCase):
 
     def test_check_data(self):
         ta = pipeline.Pipeline().get_by_id(self.ctx, self.data[0]['id'])
+        for key, value in self.data[0].items():
+            self.assertEqual(value, getattr(ta, key))
+
+    def test_check_data_by_trigger_id(self):
+        ta = pipeline.Pipeline().get_by_trigger_id(self.ctx, self.data[0][
+            'trigger_id'])
         for key, value in self.data[0].items():
             self.assertEqual(value, getattr(ta, key))

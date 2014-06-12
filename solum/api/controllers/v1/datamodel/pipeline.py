@@ -30,10 +30,14 @@ class Pipeline(api_types.Base):
     workbook_name = wtypes.text
     """Name of the workbook in Mistral to use."""
 
+    trigger_uri = wtypes.text
+    """The trigger uri used to trigger the pipeline."""
+
     @classmethod
     def from_db_model(cls, m, host_url):
         obj = super(Pipeline, cls).from_db_model(m, host_url)
         obj.plan_uri = '%s/v1/plans/%s' % (host_url, m.plan_uuid)
+        obj.trigger_uri = '%s/v1/public/triggers/%s' % (host_url, m.trigger_id)
         return obj
 
     @classmethod
@@ -42,6 +46,7 @@ class Pipeline(api_types.Base):
                    type='pipeline',
                    name='Example-pipeline',
                    description='A pipeline for my app',
+                   trigger_uri='http://example.com/v1/public/triggers/1abc234',
                    tags=['small'],
                    project_id='1dae5a09ef2b4d8cbf3594b0eb4f6b94',
                    user_id='55f41cf46df74320b9486a35f5d28a11',
