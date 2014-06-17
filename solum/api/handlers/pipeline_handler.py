@@ -71,7 +71,7 @@ class PipelineHandler(handler.Handler):
         # delete the trust.
         ksc = solum_keystoneclient.KeystoneClientV3(self.context)
         ksc.delete_trust(db_obj.trust_id)
-        db_obj.delete(self.context)
+        db_obj.destroy(self.context)
 
     def create(self, data):
         """Create a new resource."""
