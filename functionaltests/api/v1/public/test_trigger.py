@@ -11,6 +11,7 @@
 # under the License.
 
 import json
+
 import requests
 import yaml
 
@@ -54,7 +55,7 @@ class TestTriggerController(base.TestCase):
     def test_trigger_post(self):
 
         assembly_uuid, plan_uuid, trigger_uri = self._create_assembly()
-        #Using requests instead of self.client to test unauthenticated request
+        # Using requests instead of self.client to test unauthenticated request
         resp = requests.post(trigger_uri)
         self.assertEqual(resp.status_code, 202)
 

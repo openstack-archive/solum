@@ -15,10 +15,11 @@
 # under the License.
 
 import json
+
+from tempest import exceptions as tempest_exceptions
 import yaml
 
 from functionaltests.api import base
-from tempest import exceptions as tempest_exceptions
 
 sample_data = {"name": "test_assembly",
                "description": "A test to create assembly",

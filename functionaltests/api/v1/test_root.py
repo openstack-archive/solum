@@ -16,9 +16,8 @@
 
 import json
 
-from solum import version
-
 from functionaltests.api import base
+from solum import version
 
 
 class TestRootController(base.TestCase):

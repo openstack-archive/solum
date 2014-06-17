@@ -12,9 +12,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import sys
+
 import pecan
 from pecan import rest
-import sys
 import wsmeext.pecan as wsme_pecan
 import yaml
 

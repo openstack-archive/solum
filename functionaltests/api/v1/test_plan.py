@@ -84,10 +84,10 @@ class TestPlanController(base.TestCase):
 
     def test_plans_create_none(self):
         pass
-        #TODO(stannie): Add yaml parse checks in API since yaml.load('{}')
+        # TODO(stannie): Add yaml parse checks in API since yaml.load('{}')
         # doesnt except any exception.
-        #self.assertRaises(tempest_exceptions.BadRequest,
-        #                  self.client.post, 'v1/plans', "{}")
+        # self.assertRaises(tempest_exceptions.BadRequest,
+        #                   self.client.post, 'v1/plans', "{}")
 
     def test_plans_get(self):
         uuid = self._create_plan()
@@ -101,13 +101,13 @@ class TestPlanController(base.TestCase):
 
     def test_plans_get_not_found(self):
         pass
-        #TODO(stannie): if content-type isn't set, API/Pecan controllers
-        #yields "A Content-type is required" (even if the controller is
+        # TODO(stannie): if content-type isn't set, API/Pecan controllers
+        # yields "A Content-type is required" (even if the controller is
         # exposed without content-type)
         # If a Content-type specified, tempest.rest_client yields
         # "Invalid content type provided"
-        #self.assertRaises(tempest_exceptions.NotFound,
-        #                  self.client.get, 'v1/plans/not_found')
+        # self.assertRaises(tempest_exceptions.NotFound,
+        #                   self.client.get, 'v1/plans/not_found')
 
     def test_plans_put(self):
         uuid = self._create_plan()
@@ -127,21 +127,21 @@ class TestPlanController(base.TestCase):
 
     def test_plans_put_not_found(self):
         pass
-        #TODO(stannie): see test_plans_get_not_found
-        #updated_data = {"name": "test_plan updated",
+        # TODO(stannie): see test_plans_get_not_found
+        # updated_data = {"name": "test_plan updated",
         #                "description": "A test to create plan updated",
         #                "type": "plan",
         #                "artifacts": []}
-        #updated_yaml = yaml.dump(updated_data)
-        #self.assertRaises(tempest_exceptions.NotFound,
+        # updated_yaml = yaml.dump(updated_data)
+        # self.assertRaises(tempest_exceptions.NotFound,
         #                  self.client.put, 'v1/plans/not_found', updated_yaml)
 
     def test_plans_put_none(self):
         pass
-        #TODO(stannie): see test_plans_create_none
-        #self.assertRaises(tempest_exceptions.BadRequest,
-        #                  self.client.put, 'v1/plans/any', '{}',
-        #                  headers={'content-type': 'application/x-yaml'})
+        # TODO(stannie): see test_plans_create_none
+        # self.assertRaises(tempest_exceptions.BadRequest,
+        #                   self.client.put, 'v1/plans/any', '{}',
+        #                   headers={'content-type': 'application/x-yaml'})
 
     def test_plans_delete(self):
         uuid = self._create_plan()
@@ -151,6 +151,6 @@ class TestPlanController(base.TestCase):
 
     def test_plans_delete_not_found(self):
         pass
-        #TODO(stannie): see test_plans_get_not_found
-        #self.assertRaises(tempest_exceptions.NotFound,
-        #                  self.client.delete, 'v1/plans/not_found')
+        # TODO(stannie): see test_plans_get_not_found
+        # self.assertRaises(tempest_exceptions.NotFound,
+        #                   self.client.delete, 'v1/plans/not_found')
