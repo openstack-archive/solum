@@ -89,7 +89,7 @@ class TestPipelineHandler(base.BaseTestCase):
         mock_registry.Pipeline.get_by_uuid.return_value = db_obj
         handler = pipeline_handler.PipelineHandler(self.ctx)
         handler.delete('test_id')
-        db_obj.delete.assert_called_once_with(self.ctx)
+        db_obj.destroy.assert_called_once_with(self.ctx)
         mock_registry.Pipeline.get_by_uuid.assert_called_once_with(self.ctx,
                                                                    'test_id')
         mock_kc.return_value.delete_trust.assert_called_once_with(
