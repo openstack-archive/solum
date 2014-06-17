@@ -63,10 +63,10 @@ class PipelinesController(rest.RestController):
     """Manages operations on the pipeline collection."""
 
     @pecan.expose()
-    def _lookup(self, _id, *remainder):
+    def _lookup(self, pipeline_id, *remainder):
         if remainder and not remainder[-1]:
             remainder = remainder[:-1]
-        return PipelineController(_id), remainder
+        return PipelineController(pipeline_id), remainder
 
     @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(pipeline.Pipeline,
