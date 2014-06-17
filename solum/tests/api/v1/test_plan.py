@@ -13,6 +13,7 @@
 # under the License.
 
 import mock
+import pecan
 import yaml
 
 from solum.api.controllers.v1.datamodel import plan as planmodel
@@ -30,6 +31,12 @@ class TestPlanController(base.BaseTestCase):
     def setUp(self):
         super(TestPlanController, self).setUp()
         objects.load()
+
+    def test_yaml_content(self, PlanHandler, resp_mock, request_mock):
+        m = fakes.FakePlan()
+        ref_content = plan.yaml_content(m)
+        self.assertEqual(ref_content['uri'], '%s/v1/plans/%s' %
+                                             (pecan.request.host_url, m.uuid))
 
     def test_plan_get(self, PlanHandler, resp_mock, request_mock):
         hand_get = PlanHandler.return_value.get
