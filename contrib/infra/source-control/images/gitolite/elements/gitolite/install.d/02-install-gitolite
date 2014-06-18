@@ -1,0 +1,14 @@
+#!/bin/bash
+
+GIT_DIR=/opt/git
+
+mkdir -p $GIT_DIR/admin_keys
+mkdir -p $GIT_DIR/bin
+
+git clone git://github.com/sitaramc/gitolite $GIT_DIR/source
+cd $GIT_DIR
+source/install -to $GIT_DIR/bin
+bin/gitolite setup -pk $GIT_DIR/admin_keys/admin.pub
+
+
+$GIT_DIR/bin/gitolite setup --hooks-only
