@@ -18,10 +18,49 @@ import yaml
 
 from solum.api.controllers.v1.datamodel import plan as planmodel
 from solum.api.controllers.v1 import plan
+from solum.api.handlers import plan_handler
 from solum.common import exception
 from solum import objects
 from solum.tests import base
 from solum.tests import fakes
+
+
+class TestPlanModuleFunctions(base.BaseTestCase):
+
+    @mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
+    def test_yaml_content(self, mock_req):
+        m = fakes.FakePlan()
+        ref_content = plan.yaml_content(m)
+        self.assertEqual(ref_content['uri'], '%s/v1/plans/%s' %
+                                             (pecan.request.host_url, m.uuid))
+
+    @mock.patch('solum.api.controllers.v1.plan.init_plan_v1')
+    def test_init_plan_by_version(self, init_plan_v1):
+        yml_input_plan = {'version': 1, 'name': 'plan1', 'description': 'dsc'}
+        plan.init_plan_by_version(yml_input_plan)
+        init_plan_v1.assert_called_once()
+
+    @mock.patch('solum.api.controllers.v1.plan.init_plan_v1')
+    def test_init_plan_by_version_missing(self, init_plan_v1):
+        yml_input_plan = {'name': 'plan1', 'description': 'dsc'}
+        self.assertRaises(exception.BadRequest, plan.init_plan_by_version,
+                          yml_input_plan)
+        init_plan_v1.assert_called_once()
+
+    @mock.patch('solum.api.controllers.v1.plan.init_plan_v1')
+    def test_init_plan_by_version_not_existing(self, init_plan_v1):
+        yml_input_plan = {'version': 424242424242424242, 'name': 'plan1',
+                          'description': 'dsc'}
+        self.assertRaises(exception.BadRequest, plan.init_plan_by_version,
+                          yml_input_plan)
+        init_plan_v1.assert_called_once()
+
+    @mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
+    def test_init_plan_v1(self, mock_req):
+        yml_input_plan = {'version': 1, 'name': 'plan1', 'description': 'dsc'}
+        hand_v1, plan_v1 = plan.init_plan_v1(yml_input_plan)
+        self.assertIsInstance(hand_v1, plan_handler.PlanHandler)
+        self.assertIsInstance(plan_v1, planmodel.Plan)
 
 
 @mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
@@ -31,12 +70,6 @@ class TestPlanController(base.BaseTestCase):
     def setUp(self):
         super(TestPlanController, self).setUp()
         objects.load()
-
-    def test_yaml_content(self, PlanHandler, resp_mock, request_mock):
-        m = fakes.FakePlan()
-        ref_content = plan.yaml_content(m)
-        self.assertEqual(ref_content['uri'], '%s/v1/plans/%s' %
-                                             (pecan.request.host_url, m.uuid))
 
     def test_plan_get(self, PlanHandler, resp_mock, request_mock):
         hand_get = PlanHandler.return_value.get
