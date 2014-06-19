@@ -19,6 +19,12 @@ else:
     yaml_loader = yaml.SafeLoader
 
 
+if hasattr(yaml, 'CSafeDumper'):
+    yaml_dumper = yaml.CSafeDumper
+else:
+    yaml_dumper = yaml.SafeDumper
+
+
 def load(s):
     try:
         yml_dict = yaml.load(s, yaml_loader)
@@ -33,3 +39,7 @@ def load(s):
     if len(yml_dict) < 1:
         raise ValueError('Could not find any element in your YAML mapping.')
     return yml_dict
+
+
+def dump(s):
+    return yaml.dump(s, Dumper=yaml_dumper)
