@@ -18,6 +18,7 @@ import os
 import subprocess
 
 import solum
+from solum.common import exception
 from solum.common import solum_keystoneclient
 from solum.conductor import api as conductor_api
 from solum.deployer import api as deployer_api
@@ -58,6 +59,7 @@ class Handler(object):
     def echo(self, ctxt, message):
         LOG.debug("%s" % message)
 
+    @exception.wrap_keystone_exception
     def _get_environment(self, ctxt):
         kc = solum_keystoneclient.KeystoneClientV3(ctxt)
         image_url = kc.client.service_catalog.url_for(
@@ -107,7 +109,15 @@ class Handler(object):
         solum.TLS.trace.support_info(build_cmd=' '.join(build_cmd),
                                      assembly_id=assembly_id)
 
-        user_env = self._get_environment(ctxt)
+        try:
+            user_env = self._get_environment(ctxt)
+        except exception.SolumException as env_ex:
+            LOG.exception(env_ex)
+            job_update_notification(ctxt, build_id, IMAGE_STATES.ERROR,
+                                    description=str(env_ex),
+                                    assembly_id=assembly_id)
+            return
+
         log_env = user_env.copy()
         if 'OS_AUTH_TOKEN' in log_env:
             del log_env['OS_AUTH_TOKEN']
