@@ -66,6 +66,22 @@ class TestPlanController(base.BaseTestCase):
         plan.PlanController('test_id').put()
         self.assertEqual(400, resp_mock.status)
 
+    def test_plan_put_invalid_yaml(self, PlanHandler, resp_mock, request_mock):
+        request_mock.content_type = 'application/x-yaml'
+        request_mock.body = 'invalid yaml file'
+        hand_update = PlanHandler.return_value.update
+        hand_update.return_value = fakes.FakePlan()
+        plan.PlanController('test_id').put()
+        self.assertEqual(400, resp_mock.status)
+
+    def test_plan_put_empty_yaml(self, PlanHandler, resp_mock, request_mock):
+        request_mock.content_type = 'application/x-yaml'
+        request_mock.body = '{}'
+        hand_update = PlanHandler.return_value.update
+        hand_update.return_value = fakes.FakePlan()
+        plan.PlanController('test_id').put()
+        self.assertEqual(400, resp_mock.status)
+
     def test_plan_put_not_found(self, PlanHandler, resp_mock, request_mock):
         data = 'version: 1\nname: ex_plan1\ndescription: dsc1.'
         request_mock.body = data
@@ -157,6 +173,24 @@ class TestPlansController(base.BaseTestCase):
 
     def test_plans_post_nodata(self, handler_mock, resp_mock, request_mock):
         request_mock.body = ''
+        request_mock.content_type = 'application/json'
+        handler_create = handler_mock.return_value.create
+        handler_create.return_value = fakes.FakePlan()
+        plan.PlansController().post()
+        self.assertEqual(400, resp_mock.status)
+
+    def test_plans_post_invalid_yaml(self, handler_mock,
+                                     resp_mock, request_mock):
+        request_mock.body = 'invalid yaml file'
+        request_mock.content_type = 'application/json'
+        handler_create = handler_mock.return_value.create
+        handler_create.return_value = fakes.FakePlan()
+        plan.PlansController().post()
+        self.assertEqual(400, resp_mock.status)
+
+    def test_plans_post_empty_yaml(self, handler_mock,
+                                   resp_mock, request_mock):
+        request_mock.body = '{}'
         request_mock.content_type = 'application/json'
         handler_create = handler_mock.return_value.create
         handler_create.return_value = fakes.FakePlan()

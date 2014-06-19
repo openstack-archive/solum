@@ -13,12 +13,23 @@
 import yaml
 
 
+if hasattr(yaml, 'CSafeLoader'):
+    yaml_loader = yaml.CSafeLoader
+else:
+    yaml_loader = yaml.SafeLoader
+
+
 def load(s):
     try:
-        return yaml.load(s)
+        yml_dict = yaml.load(s, yaml_loader)
     except yaml.YAMLError as exc:
         msg = 'An error occurred during YAML parsing.'
         if hasattr(exc, 'problem_mark'):
             msg += ' Error position: (%s:%s)' % (exc.problem_mark.line + 1,
                                                  exc.problem_mark.column + 1)
         raise ValueError(msg)
+    if not isinstance(yml_dict, dict):
+        raise ValueError('The source is not a YAML mapping.')
+    if len(yml_dict) < 1:
+        raise ValueError('Could not find any element in your YAML mapping.')
+    return yml_dict
