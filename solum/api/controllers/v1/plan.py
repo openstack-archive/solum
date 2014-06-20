@@ -77,7 +77,8 @@ class PlanController(rest.RestController):
         try:
             yml_input_plan = yamlutils.load(pecan.request.body)
         except ValueError as excp:
-            raise exception.BadRequest('Plan is invalid. ' + excp.message)
+            raise exception.BadRequest(reason='Plan is invalid. '
+                                              + excp.message)
         handler, data = init_plan_by_version(yml_input_plan)
         updated_plan_yml = yaml.dump(yaml_content(handler.update(
             self._id, data.as_dict(objects.registry.Plan))))
@@ -110,7 +111,8 @@ class PlansController(rest.RestController):
         try:
             yml_input_plan = yamlutils.load(pecan.request.body)
         except ValueError as excp:
-            raise exception.BadRequest('Plan is invalid. ' + excp.message)
+            raise exception.BadRequest(reason='Plan is invalid. '
+                                              + excp.message)
         handler, data = init_plan_by_version(yml_input_plan)
         create_plan_yml = yaml.dump(yaml_content(handler.create(
             data.as_dict(objects.registry.Plan))))

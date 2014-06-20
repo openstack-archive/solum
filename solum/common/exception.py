@@ -145,12 +145,12 @@ def wrap_pecan_controller_exception(func):
     """This decorator wraps pecan controllers to handle exceptions."""
     def _func_server_error(log_correlation_id, status_code):
         pecan.response.status = status_code
-        pecan.response.body = six.text_type(OBFUSCATED_MSG %
+        pecan.response.text = six.text_type(OBFUSCATED_MSG %
                                             log_correlation_id)
 
     def _func_client_error(excp, status_code):
         pecan.response.status = status_code
-        pecan.response.body = six.text_type(excp)
+        pecan.response.text = six.text_type(excp)
         pecan.response.content_type = None
 
     return wrap_controller_exception(func,

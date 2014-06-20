@@ -13,6 +13,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from tempest import exceptions as tempest_exceptions
 import yaml
 
 from functionaltests.api import base
@@ -82,12 +83,25 @@ class TestPlanController(base.TestCase):
         self._assert_output_expected(yaml_data, sample_data)
         self._delete_plan(yaml_data['uuid'])
 
-    def test_plans_create_none(self):
-        pass
-        # TODO(stannie): Add yaml parse checks in API since yaml.load('{}')
-        # doesnt except any exception.
-        # self.assertRaises(tempest_exceptions.BadRequest,
-        #                   self.client.post, 'v1/plans', "{}")
+    def test_plans_create_empty_yaml(self):
+        # NOTE(stannie): tempest rest_client raises InvalidContentType and not
+        # BadRequest because yaml content-type is not supported in their
+        # _error_checker method.
+        self.assertRaises(tempest_exceptions.InvalidContentType,
+                          self.client.post, 'v1/plans', '{}',
+                          headers={'content-type': 'application/x-yaml'})
+
+    def test_plans_create_invalid_yaml_type(self):
+        # NOTE(stannie): see test_plans_create_empty_yaml note
+        self.assertRaises(tempest_exceptions.InvalidContentType,
+                          self.client.post, 'v1/plans', 'invalid type',
+                          headers={'content-type': 'application/x-yaml'})
+
+    def test_plans_create_invalid_yaml_syntax(self):
+        # NOTE(stannie): see test_plans_create_empty_yaml note
+        self.assertRaises(tempest_exceptions.InvalidContentType,
+                          self.client.post, 'v1/plans', "}invalid: y'm'l3!",
+                          headers={'content-type': 'application/x-yaml'})
 
     def test_plans_get(self):
         uuid = self._create_plan()
@@ -100,14 +114,12 @@ class TestPlanController(base.TestCase):
         self._delete_plan(uuid)
 
     def test_plans_get_not_found(self):
-        pass
-        # TODO(stannie): if content-type isn't set, API/Pecan controllers
-        # yields "A Content-type is required" (even if the controller is
-        # exposed without content-type)
-        # If a Content-type specified, tempest.rest_client yields
-        # "Invalid content type provided"
-        # self.assertRaises(tempest_exceptions.NotFound,
-        #                   self.client.get, 'v1/plans/not_found')
+        # NOTE(stannie): tempest rest_client raises InvalidContentType and not
+        # NotFound because yaml content-type is not supported in their
+        # _error_checker method.
+        self.assertRaises(tempest_exceptions.InvalidContentType,
+                          self.client.get, 'v1/plans/not_found',
+                          headers={'content-type': 'application/x-yaml'})
 
     def test_plans_put(self):
         uuid = self._create_plan()
@@ -126,22 +138,32 @@ class TestPlanController(base.TestCase):
         self._delete_plan(uuid)
 
     def test_plans_put_not_found(self):
-        pass
-        # TODO(stannie): see test_plans_get_not_found
-        # updated_data = {"name": "test_plan updated",
-        #                "description": "A test to create plan updated",
-        #                "type": "plan",
-        #                "artifacts": []}
-        # updated_yaml = yaml.dump(updated_data)
-        # self.assertRaises(tempest_exceptions.NotFound,
-        #                  self.client.put, 'v1/plans/not_found', updated_yaml)
+        # NOTE(stannie): see test_plans_get_not_found note
+        updated_data = {"name": "test_plan updated",
+                        "description": "A test to create plan updated",
+                        "type": "plan",
+                        "artifacts": []}
+        updated_yaml = yaml.dump(updated_data)
+        self.assertRaises(tempest_exceptions.InvalidContentType,
+                          self.client.put, 'v1/plans/not_found', updated_yaml,
+                          headers={'content-type': 'application/x-yaml'})
 
-    def test_plans_put_none(self):
-        pass
-        # TODO(stannie): see test_plans_create_none
-        # self.assertRaises(tempest_exceptions.BadRequest,
-        #                   self.client.put, 'v1/plans/any', '{}',
-        #                   headers={'content-type': 'application/x-yaml'})
+    def test_plans_put_empty_yaml(self):
+        # NOTE(stannie): see test_plans_create_empty_yaml note
+        self.assertRaises(tempest_exceptions.InvalidContentType,
+                          self.client.put, 'v1/plans/any', '{}',
+                          headers={'content-type': 'application/x-yaml'})
+
+    def test_plans_put_invalid_yaml_type(self):
+        # NOTE(stannie): see test_plans_create_empty_yaml note
+        self.assertRaises(tempest_exceptions.InvalidContentType,
+                          self.client.put, 'v1/plans/any', 'invalid type',
+                          headers={'content-type': 'application/x-yaml'})
+
+    def test_plans_put_invalid_yaml_syntax(self):
+        self.assertRaises(tempest_exceptions.InvalidContentType,
+                          self.client.put, 'v1/plans/any', "}invalid: y'm'l3!",
+                          headers={'content-type': 'application/x-yaml'})
 
     def test_plans_delete(self):
         uuid = self._create_plan()
@@ -150,7 +172,5 @@ class TestPlanController(base.TestCase):
         self.assertEqual(body, '')
 
     def test_plans_delete_not_found(self):
-        pass
-        # TODO(stannie): see test_plans_get_not_found
-        # self.assertRaises(tempest_exceptions.NotFound,
-        #                   self.client.delete, 'v1/plans/not_found')
+        self.assertRaises(tempest_exceptions.NotFound,
+                          self.client.delete, 'v1/plans/not_found')
