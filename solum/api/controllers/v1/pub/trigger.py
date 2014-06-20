@@ -20,13 +20,10 @@ from solum.common import exception
 class TriggerController(rest.RestController):
     """Manages triggers."""
 
+    @exception.wrap_pecan_controller_exception
     @pecan.expose()
     def post(self, trigger_id):
         """Trigger a new event on Solum."""
         handler = assembly_handler.AssemblyHandler(None)
-        try:
-            handler.trigger_workflow(trigger_id)
-            pecan.response.status = 202
-        except exception.ResourceNotFound as excp:
-            pecan.response.status = excp.code
-            pecan.response.body = excp.message
+        handler.trigger_workflow(trigger_id)
+        pecan.response.status = 202
