@@ -64,7 +64,7 @@ class PlanController(rest.RestController):
     def get(self):
         """Return this plan."""
         handler = plan_handler.PlanHandler(pecan.request.security_context)
-        plan_yml = yaml.dump(yaml_content(handler.get(self._id)))
+        plan_yml = yamlutils.dump(yaml_content(handler.get(self._id)))
         pecan.response.status = 200
         return plan_yml
 
@@ -80,7 +80,7 @@ class PlanController(rest.RestController):
             raise exception.BadRequest(reason='Plan is invalid. '
                                               + excp.message)
         handler, data = init_plan_by_version(yml_input_plan)
-        updated_plan_yml = yaml.dump(yaml_content(handler.update(
+        updated_plan_yml = yamlutils.dump(yaml_content(handler.update(
             self._id, data.as_dict(objects.registry.Plan))))
         pecan.response.status = 200
         return updated_plan_yml
@@ -124,8 +124,8 @@ class PlansController(rest.RestController):
     def get_all(self):
         """Return all plans, based on the query provided."""
         handler = plan_handler.PlanHandler(pecan.request.security_context)
-        plan_yml = yaml.dump([yaml_content(obj)
-                              for obj in handler.get_all()
-                              if obj and obj.raw_content])
+        plan_yml = yamlutils.dump([yaml_content(obj)
+                                   for obj in handler.get_all()
+                                   if obj and obj.raw_content])
         pecan.response.status = 200
         return plan_yml

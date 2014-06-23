@@ -10,6 +10,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import mock
+import yaml
+
 from solum.common import yamlutils
 from solum.tests import base
 
@@ -30,3 +33,12 @@ class TestYamlUtils(base.BaseTestCase):
 
     def test_load_invalid_yaml_type(self):
         self.assertRaises(ValueError, yamlutils.load, 'invalid yaml type')
+
+    @mock.patch('solum.common.yamlutils.yaml.dump')
+    def test_dump_yaml(self, dump):
+        if hasattr(yaml, 'CSafeDumper'):
+            yaml_dumper = yaml.CSafeDumper
+        else:
+            yaml_dumper = yaml.SafeDumper
+        yamlutils.dump('version: 1')
+        dump.assert_called_with('version: 1', Dumper=yaml_dumper)
