@@ -14,14 +14,15 @@
 
 """Solum Deployer Heat handler."""
 
-import os
 import time
 
 from heatclient import exc
 from oslo.config import cfg
 import yaml
 
+from solum.common import catalog
 from solum.common import clients
+from solum.common import exception
 from solum import objects
 from solum.objects import assembly
 from solum.openstack.common import log as logging
@@ -62,14 +63,6 @@ class Handler(object):
 
     def echo(self, ctxt, message):
         LOG.debug("%s" % message)
-
-    def _get_template(self, template_flavor):
-        proj_dir = os.path.join(os.path.dirname(__file__), '..', '..', '..')
-        templ = os.path.join(proj_dir, 'etc', 'solum', 'templates',
-                             '%s.yaml' % template_flavor)
-        with open(templ) as templ_file:
-            template = templ_file.read()
-        return template
 
     def _get_network_parameters(self, osc):
         # TODO(julienvey) In the long term, we should have optional parameters
@@ -125,13 +118,18 @@ class Handler(object):
         parameters = {'app_name': assem.name,
                       'image': image_id}
 
+        parameters.update(self._get_network_parameters(osc))
+
         # TODO(asalkeld) support template flavors (maybe an autoscaling one)
         #                this could also be stored in glance.
-
-        parameters.update(self._get_network_parameters(osc))
         template_flavor = 'basic'
-
-        template = self._get_template(template_flavor)
+        try:
+            template = catalog.get('templates', template_flavor)
+        except exception.ObjectNotFound as onf_ex:
+            LOG.excepion(onf_ex)
+            assem.status = STATES.ERROR
+            assem.save(ctxt)
+            return
 
         stack_name = self._get_stack_name(assem)
         stack_id = self._find_id_if_stack_exists(osc, stack_name)

@@ -38,7 +38,7 @@ class HandlerTest(base.BaseTestCase):
         handler.echo({}, 'foo')
         handler.echo.assert_called_once_with({}, 'foo')
 
-    @mock.patch('solum.deployer.handlers.heat.Handler._get_template')
+    @mock.patch('solum.common.catalog.get')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.common.clients.OpenStackClients')
     def test_deploy(self, mock_clients, mock_registry, mock_get_templ):
@@ -81,7 +81,7 @@ class HandlerTest(base.BaseTestCase):
                                                        'Heat Stack test',
                                                        'http://fake.ref')
 
-    @mock.patch('solum.deployer.handlers.heat.Handler._get_template')
+    @mock.patch('solum.common.catalog.get')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.common.clients.OpenStackClients')
     @mock.patch('solum.deployer.handlers.heat.cfg.CONF.api.image_format')
