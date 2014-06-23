@@ -26,6 +26,23 @@ from solum.tests import fakes
 
 @mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
 @mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
+class TestInfrastructureController(base.BaseTestCase):
+
+    def test_stack_get(self, resp_mock, request_mock):
+        cont = infrastructure.InfrastructureController()
+        res = cont.index()
+        self.assertIsNotNone(res)
+        self.assertEqual(res['result'].uri, "http://test_url:8080/test/v1")
+        self.assertEqual(res['result'].name, "solum")
+        self.assertEqual(res['result'].type, "infrastructure")
+        self.assertEqual(res['result'].description,
+                         "solum infrastructure endpoint")
+        self.assertEqual(res['result'].stacks_uri,
+                         "http://test_url:8080/test/v1/infrastructure/stacks")
+
+
+@mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
+@mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
 @mock.patch('solum.api.handlers.infrastructure_handler.'
             'InfrastructureStackHandler')
 class TestInfrastructureStackController(base.BaseTestCase):
