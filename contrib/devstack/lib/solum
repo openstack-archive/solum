@@ -130,9 +130,11 @@ function configure_solum() {
     # configure the database.
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE database connection `database_connection_url solum`
 
-    # configure the api servers to listen on 0.0.0.0
-    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE api host 0.0.0.0
-    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE builder host 0.0.0.0
+    # configure the api servers to listen on
+    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE api host $SOLUM_SERVICE_HOST
+    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE api port $SOLUM_SERVICE_PORT
+    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE builder host $SOLUM_SERVICE_HOST
+    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE builder port $SOLUM_BUILDER_SERVICE_PORT
 
     # configure assembly handler to create appropriate image format
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE api image_format $SOLUM_IMAGE_FORMAT

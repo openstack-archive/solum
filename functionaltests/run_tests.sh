@@ -19,9 +19,10 @@ SOLUM_CONFIG="/etc/solum/solum.conf"
 declare -A CONFIG_SECTIONS=(["api"]=9777 ["builder"]=9778)
 
 function check_api {
-    local port=$1
-    if ! timeout ${API_RESPONDING_TIMEOUT} sh -c "while ! curl -s -o /dev/null http://127.0.0.1:$port ; do sleep 1; done"; then
-        echo "Failed to connect to API port $port within ${API_RESPONDING_TIMEOUT} seconds"
+    local host=$1
+    local port=$2
+    if ! timeout ${API_RESPONDING_TIMEOUT} sh -c "while ! curl -s -o /dev/null http://$host:$port ; do sleep 1; done"; then
+        echo "Failed to connect to API $host:$port within ${API_RESPONDING_TIMEOUT} seconds"
         exit 1
     fi
 }
@@ -42,7 +43,13 @@ do
     if [ ! -z "${line#*=}" ]; then
         pt=${line#*=}
     fi
-    check_api $pt
+    hst="127.0.0.1"
+    line=$(sed -ne "/^\[$sec\]/,/^\[.*\]/ { /^host[ \t]*=/ p; }" $SOLUM_CONFIG)
+    if [ ! -z "${line#*=}" ]; then
+        hst=${line#*=}
+    fi
+
+    check_api $hst $pt
 done
 
 # Where tempest code lives
