@@ -107,6 +107,7 @@ class KeystoneClientV3(object):
                 kwargs['auth_ref'] = copy.deepcopy(
                     self.context.auth_token_info['access'])
                 kwargs['auth_ref']['version'] = 'v2.0'
+                kwargs['auth_ref']['token']['id'] = self.context.auth_token
             elif 'token' in self.context.auth_token_info:
                 kwargs['auth_ref'] = copy.deepcopy(
                     self.context.auth_token_info['token'])
@@ -123,7 +124,8 @@ class KeystoneClientV3(object):
                         "trust or auth_token!"))
             raise exception.AuthorizationFailure()
         client = kc_v3.Client(**kwargs)
-        client.authenticate()
+        if 'auth_ref' not in kwargs:
+            client.authenticate()
         # If we are authenticating with a trust set the context auth_token
         # with the trust scoped token
         if 'trust_id' in kwargs:

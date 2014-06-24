@@ -50,6 +50,7 @@ class ClientsTest(base.BaseTestCase):
     def test_clients_glance_noauth(self):
         con = mock.MagicMock()
         con.auth_token = None
+        con.auth_token_info = None
         con.tenant = "b363706f891f48019483f8bd6503c54d"
         obj = clients.OpenStackClients(con)
         obj._glance = None
@@ -92,6 +93,7 @@ class ClientsTest(base.BaseTestCase):
     def test_clients_heat_noauth(self):
         con = mock.MagicMock()
         con.auth_token = None
+        con.auth_token_info = None
         con.tenant = "b363706f891f48019483f8bd6503c54b"
         auth_url = mock.PropertyMock(name="auth_url",
                                      return_value="keystone_url")
@@ -135,6 +137,7 @@ class ClientsTest(base.BaseTestCase):
     def test_clients_swift_noauth(self):
         con = mock.MagicMock()
         con.auth_token = None
+        con.auth_token_info = None
         con.tenant = "b363706f891f48019483f8bd6503c54b"
         auth_url = mock.PropertyMock(name="auth_url",
                                      return_value="keystone_url")
@@ -180,6 +183,7 @@ class ClientsTest(base.BaseTestCase):
     def test_clients_neutron_noauth(self):
         con = mock.MagicMock()
         con.auth_token = None
+        con.auth_token_info = None
         con.tenant = "b363706f891f48019483f8bd6503c54b"
         auth_url = mock.PropertyMock(name="auth_url",
                                      return_value="keystone_url")

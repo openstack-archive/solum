@@ -71,17 +71,18 @@ class KeystoneClientTest(base.BaseTestCase):
 
     def test_init_trust_token_access(self, mock_ks):
         """Test creating the client, token auth."""
-        self.ctx.tenant = None
+        self.ctx.tenant = 'abcd1234'
         self.ctx.trust_id = None
-        self.ctx.auth_token_info = {'access': {}}
+        self.ctx.auth_token_info = {'access': {'token': {'id': 'placeholder'}}}
 
         solum_ks_client = solum_keystoneclient.KeystoneClientV3(self.ctx)
         solum_ks_client.client
         self.assertIsNotNone(solum_ks_client._client)
-        mock_ks.assert_called_once_with(auth_ref={'version': 'v2.0'},
+        mock_ks.assert_called_once_with(auth_ref={'version': 'v2.0',
+                                                  'token': {
+                                                      'id': 'abcd1234'}},
                                         endpoint='http://server.test:5000/v3',
                                         auth_url='http://server.test:5000/v3')
-        mock_ks.return_value.authenticate.assert_called_once_with()
 
     def test_init_trust_token_token(self, mock_ks):
         self.ctx.tenant = None
@@ -95,7 +96,6 @@ class KeystoneClientTest(base.BaseTestCase):
                                                   'version': 'v3'},
                                         endpoint='http://server.test:5000/v3',
                                         auth_url='http://server.test:5000/v3')
-        mock_ks.return_value.authenticate.assert_called_once_with()
 
     def test_init_trust_token_none(self, mock_ks):
         self.ctx.tenant = None

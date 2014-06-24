@@ -41,6 +41,7 @@ class FakePecanRequest(mock.Mock):
         self.params = {}
         self.path = '/v1/services'
         self.headers = fakeAuthTokenHeaders
+        self.environ = {}
 
     def __setitem__(self, index, value):
         setattr(self, index, value)
