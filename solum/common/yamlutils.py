@@ -34,9 +34,9 @@ def load(s):
             msg += ' Error position: (%s:%s)' % (exc.problem_mark.line + 1,
                                                  exc.problem_mark.column + 1)
         raise ValueError(msg)
-    if not isinstance(yml_dict, dict):
-        raise ValueError('The source is not a YAML mapping.')
-    if len(yml_dict) < 1:
+    if not isinstance(yml_dict, dict) and not isinstance(yml_dict, list):
+        raise ValueError('The source is not a YAML mapping or list.')
+    if isinstance(yml_dict, dict) and len(yml_dict) < 1:
         raise ValueError('Could not find any element in your YAML mapping.')
     return yml_dict
 
