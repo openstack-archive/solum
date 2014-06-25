@@ -1,4 +1,5 @@
 #!/bin/bash
+# Copyright 2014 - Rackspace Hosting
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -12,10 +13,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-# This script is executed inside pre_test_hook function in devstack gate.
+# This script is executed inside gate_hook function in devstack gate.
 
-# Install solum devstack integration
-SOLUM_BASE=/opt/stack/new/solum/contrib/devstack
-DEVSTACK_BASE=/opt/stack/new/devstack
-cp $SOLUM_BASE/lib/* $DEVSTACK_BASE/lib
-cp $SOLUM_BASE/extras.d/* $DEVSTACK_BASE/extras.d
+export KEEP_LOCALRC=1
+
+$BASE/new/devstack-gate/devstack-vm-gate.sh
