@@ -109,9 +109,11 @@ class AuthInformationHook(hooks.PecanHook):
             importutils.import_module('keystoneclient.middleware.auth_token')
             auth_url = cfg.CONF.keystone_authtoken.auth_uri
 
+        auth_token_info = state.request.environ.get('keystone.token_info')
         identity_status = headers.get('X-Identity-Status')
         if identity_status == 'Confirmed':
             ctx = context.RequestContext(auth_token=recv_auth_token,
+                                         auth_token_info=auth_token_info,
                                          user=user_id,
                                          tenant=project_id,
                                          domain=domain,
