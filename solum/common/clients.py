@@ -14,6 +14,7 @@
 
 from glanceclient import client as glanceclient
 from heatclient import client as heatclient
+from marconiclient.queues.v1 import client as marconiclient
 from mistralclient.api import client as mistralclient
 from neutronclient.neutron import client as neutronclient
 from oslo.config import cfg
@@ -58,6 +59,17 @@ heat_client_opts = [
                 help=_("If set, then the server's certificate will not "
                        "be verified."))]
 
+marconi_client_opts = [
+    cfg.StrOpt('endpoint_type',
+               default='publicURL',
+               help=_(
+                   'Type of endpoint in Queue service catalog to use '
+                   'for communication with the Marconi service.')),
+    cfg.BoolOpt('insecure',
+                default=False,
+                help=_("If set, then the server's certificate for marconi "
+                       "will not be verified."))]
+
 neutron_client_opts = [
     cfg.StrOpt('endpoint_type',
                default='publicURL',
@@ -97,6 +109,7 @@ mistral_client_opts = [
 
 cfg.CONF.register_opts(glance_client_opts, group='glance_client')
 cfg.CONF.register_opts(heat_client_opts, group='heat_client')
+cfg.CONF.register_opts(marconi_client_opts, group='marconi_client')
 cfg.CONF.register_opts(neutron_client_opts, group='neutron_client')
 cfg.CONF.register_opts(swift_client_opts, group='swift_client')
 cfg.CONF.register_opts(mistral_client_opts, group='mistral_client')
@@ -112,6 +125,7 @@ class OpenStackClients(object):
         self._heat = None
         self._neutron = None
         self._swift = None
+        self._marconi = None
         self._mistral = None
 
     def url_for(self, **kwargs):
@@ -131,6 +145,25 @@ class OpenStackClients(object):
 
         self._keystone = solum_keystoneclient.KeystoneClientV3(self.context)
         return self._keystone
+
+    @exception.wrap_keystone_exception
+    def marconi(self):
+        if self._marconi:
+            return self._marconi
+
+        endpoint_type = self._get_client_option('marconi', 'endpoint_type')
+        endpoint_url = self.url_for(service_type='queuing',
+                                    endpoint_type=endpoint_type)
+        conf = {'auth_opts':
+                {'backend': 'keystone',
+                 'options': {'os_auth_token': self.auth_token,
+                             'os_auth_url': self.auth_url,
+                             'insecure': self._get_client_option(
+                                 'marconi', 'insecure')}
+                 }
+                }
+        self._marconi = marconiclient.Client(endpoint_url, conf=conf)
+        return self._marconi
 
     @exception.wrap_keystone_exception
     def neutron(self):
