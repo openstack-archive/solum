@@ -24,9 +24,9 @@ from six import moves
 from sqlalchemy.ext import declarative
 from sqlalchemy.orm import exc
 from sqlalchemy import types
-import yaml
 
 from solum.common import exception
+from solum.common import yamlutils
 from solum import objects
 from solum.openstack.common.db import exception as db_exc
 from solum.openstack.common.db.sqlalchemy import models
@@ -168,10 +168,10 @@ class YAMLEncodedDict(types.TypeDecorator):
 
     def process_bind_param(self, value, dialect):
         if value is not None:
-            value = yaml.dump(value)
+            value = yamlutils.dump(value)
         return value
 
     def process_result_value(self, value, dialect):
         if value is not None:
-            value = yaml.load(value)
+            value = yamlutils.load(value)
         return value

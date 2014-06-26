@@ -64,10 +64,8 @@ class TestTriggerController(base.TestCase):
     def _delete_assembly(self, assembly_uuid, plan_uuid):
         resp, body = self.client.delete('v1/assemblies/%s' % assembly_uuid)
         self.assertEqual(resp.status, 204)
-        if self.client.assembly_delete_done(assembly_uuid):
-            self._delete_plan(plan_uuid)
-        else:
-            self.fail("Assembly couldn't be deleted.")
+        self.assertTrue(self.client.assembly_delete_done(assembly_uuid))
+        self._delete_plan(plan_uuid)
 
     def _delete_plan(self, plan_uuid):
         resp, body = self.client.delete(

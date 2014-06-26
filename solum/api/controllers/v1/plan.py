@@ -17,7 +17,6 @@ import sys
 import pecan
 from pecan import rest
 import wsmeext.pecan as wsme_pecan
-import yaml
 
 from solum.api.controllers.v1.datamodel import plan
 from solum.api.handlers import plan_handler
@@ -114,7 +113,7 @@ class PlansController(rest.RestController):
             raise exception.BadRequest(reason='Plan is invalid. '
                                               + excp.message)
         handler, data = init_plan_by_version(yml_input_plan)
-        create_plan_yml = yaml.dump(yaml_content(handler.create(
+        create_plan_yml = yamlutils.dump(yaml_content(handler.create(
             data.as_dict(objects.registry.Plan))))
         pecan.response.status = 201
         return create_plan_yml
