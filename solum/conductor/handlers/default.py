@@ -45,7 +45,7 @@ class Handler(object):
                                                         assembly_id)
             if not any([comp for comp in assem.components
                         if 'Image_Build' in comp.description]):
-                comp_name = 'Heat_Stack_for_%s' % assem.name
+                comp_name = "Heat_Stack_for_%s" % assem.name
                 stack_id = None
                 if assem.heat_stack_component is not None:
                     stack_id = assem.heat_stack_component.heat_stack_id

@@ -1,18 +1,60 @@
 #!/bin/bash
+# Copyright 2014 - Rackspace Hosting
+#
+#    Licensed under the Apache License, Version 2.0 (the "License");
+#    you may not use this file except in compliance with the License.
+#    You may obtain a copy of the License at
+#
+#        http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#    See the License for the specific language governing permissions and
+#    limitations under the License.
+
+
 # Common functions for build-app and unittest-app
 
 # Add a timestamp, and log a message to STDOUT and to $LOG.
 function TLOG () {
   local MESSAGE="$*"
-  local LOGFILE=${LOG:-/dev/null}
-  local TIMESTAMP=`date +"%Y-%m-%d %H:%M:%S.%3N"`
-  echo "$TIMESTAMP | $MESSAGE" | tee -a $LOGFILE
+  if [ ! -z "$MESSAGE" ]; then
+    local LOGFILE=${LOG_FILE:-/dev/null}
+    local TIMESTAMP=$(date +"%Y-%m-%d %H:%M:%S.%3N")
+    echo "$TIMESTAMP | $MESSAGE"
+    cat << EOF >> $LOGFILE
+{ "@timestamp": "$TIMESTAMP",
+  "project_id": "$PROJECT_ID",
+  "build_id": "$BUILD_ID",
+  "task": "$TASKNAME",
+  "message": "$MESSAGE",
+}
+EOF
+  fi
+}
+
+# Build the logfile name, and ensure it exists.
+function GET_LOGFILE () {
+  local LOG_DIR=${SOLUM_TASK_DIR:-/dev/null}
+  if [ "$LOG_DIR" != "/dev/null" ]; then
+    sudo mkdir -p "$LOG_DIR"
+    sudo chmod a+w "$LOG_DIR"
+  fi
+
+  local LOG_FILE=/dev/null
+  if [ "$LOG_DIR" != "/dev/null" ]; then
+    LOG_FILE="$LOG_DIR/$BUILD_ID.log"
+    touch $LOG_FILE
+  fi
+
+  echo $LOG_FILE
 }
 
 # Get time elapsed since $1.
 function elapsed () {
   local START=$1
-  local NOW=`date +'%s'`
+  local NOW=$(date +"%s")
   expr $NOW - $START
 }
 
@@ -25,7 +67,7 @@ function PRUN () {
     shift
   fi
 
-  local CMD="$@"
+  local CMD="$*"
   local LOGFILE=${LOG:-/dev/null}
 
   if $SILENT; then
@@ -36,12 +78,13 @@ function PRUN () {
     TLOG Starting: $CMD
   fi
   local EXIT_STATUS
-  local START=`date +'%s'`
+  local START=$(date +"%s")
   if $SILENT; then
     $CMD 2>&1 >> /dev/null; test ${PIPESTATUS[0]} -eq 0
     EXIT_STATUS=$?
   else
-    $CMD 2>&1 | tee -a $LOGFILE; test ${PIPESTATUS[0]} -eq 0
+    TLOG Starting: $CMD
+    $CMD 2>&1 > >(while read LINE; do TLOG $LINE; done)
     EXIT_STATUS=$?
   fi
 

@@ -60,6 +60,9 @@ class Artifact(wtypes.Base):
     requirements = [Requirement]
     "List of requirements for the artifact."
 
+    unittest_cmd = wtypes.text
+    "Optional unit test command for the artifact."
+
     def __init__(self, **kwargs):
         if 'requirements' in kwargs:
             kwargs['requirements'] = [Requirement(**re)

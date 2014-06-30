@@ -24,6 +24,15 @@ from solum.tests import utils
 from solum.worker.handlers import shell as shell_handler
 
 
+def mock_environment():
+    return {
+        'PATH': '/bin',
+        'SOLUM_TASK_DIR': '/dev/null',
+        'BUILD_ID': 'abcd',
+        'PROJECT_ID': 1,
+    }
+
+
 class HandlerTest(base.BaseTestCase):
     def setUp(self):
         super(HandlerTest, self).setUp()
@@ -48,7 +57,7 @@ class HandlerTest(base.BaseTestCase):
         handler._update_assembly_status = mock.MagicMock()
         mock_popen.return_value.communicate.return_value = [
             'foo\ncreated_image_id=%s' % fake_glance_id, None]
-        test_env = {'PATH': '/bin'}
+        test_env = mock_environment()
         mock_get_env.return_value = test_env
         handler.build(self.ctx, 5, 'git://example.com/foo', 'new_app',
                       '1-2-3-4', 'heroku',
@@ -82,7 +91,7 @@ class HandlerTest(base.BaseTestCase):
         handler._update_assembly_status = mock.MagicMock()
         mock_popen.return_value.communicate.return_value = [
             'foo\ncreated_image_id= \n', None]
-        test_env = {'PATH': '/bin'}
+        test_env = mock_environment()
         mock_get_env.return_value = test_env
         handler.build(self.ctx, 5, 'git://example.com/foo', 'new_app',
                       '1-2-3-4', 'heroku',
@@ -109,7 +118,7 @@ class HandlerTest(base.BaseTestCase):
         handler = shell_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
-        test_env = {'PATH': '/bin'}
+        test_env = mock_environment()
         mock_get_env.return_value = test_env
         mock_popen.return_value.wait.return_value = 0
         handler.unittest(self.ctx, fake_assembly.id,
@@ -121,7 +130,7 @@ class HandlerTest(base.BaseTestCase):
                               'contrib/lp-cedarish/docker/unittest-app')
         mock_popen.assert_called_once_with([script, 'git://example.com/foo',
                                             'master', self.ctx.tenant, 'tox'],
-                                           env=test_env)
+                                           env=test_env, stdout=-1)
         expected = [mock.call(self.ctx, 8, 'UNIT_TESTING')]
 
         self.assertEqual(expected, mock_a_update.call_args_list)
@@ -135,7 +144,7 @@ class HandlerTest(base.BaseTestCase):
         handler = shell_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
-        test_env = {'PATH': '/bin'}
+        test_env = mock_environment()
         mock_get_env.return_value = test_env
         mock_popen.return_value.wait.return_value = 1
         handler.unittest(self.ctx, fake_assembly.id,
@@ -147,7 +156,7 @@ class HandlerTest(base.BaseTestCase):
                               'contrib/lp-cedarish/docker/unittest-app')
         mock_popen.assert_called_once_with([script, 'git://example.com/foo',
                                             'master', self.ctx.tenant, 'tox'],
-                                           env=test_env)
+                                           env=test_env, stdout=-1)
         expected = [mock.call(self.ctx, 8, 'UNIT_TESTING'),
                     mock.call(self.ctx, 8, 'UNIT_TESTING_FAILED')]
 
@@ -171,7 +180,7 @@ class HandlerTest(base.BaseTestCase):
         mock_popen.return_value.wait.return_value = 0
         mock_popen.return_value.communicate.return_value = [
             'foo\ncreated_image_id=%s' % fake_glance_id, None]
-        test_env = {'PATH': '/bin'}
+        test_env = mock_environment()
         mock_get_env.return_value = test_env
 
         handler.build(self.ctx, 5, 'git://example.com/foo', 'new_app',
@@ -186,9 +195,9 @@ class HandlerTest(base.BaseTestCase):
 
         expected = [
             mock.call([u_script, 'git://example.com/foo', 'master',
-                       self.ctx.tenant, 'faketests'], env=test_env),
+                       self.ctx.tenant, 'faketests'], env=test_env, stdout=-1),
             mock.call([b_script, 'git://example.com/foo', 'new_app',
-                       self.ctx.tenant, '1-2-3-4'], stdout=-1, env=test_env)]
+                       self.ctx.tenant, '1-2-3-4'], env=test_env, stdout=-1)]
         self.assertEqual(expected, mock_popen.call_args_list)
 
         expected = [mock.call(5, 'BUILDING', 'Starting the image build',
@@ -211,7 +220,7 @@ class HandlerTest(base.BaseTestCase):
         handler = shell_handler.Handler()
         handler._update_assembly_status = mock.MagicMock()
         mock_popen.return_value.wait.return_value = 1
-        test_env = {'PATH': '/bin'}
+        test_env = mock_environment()
         mock_get_env.return_value = test_env
 
         handler.build(self.ctx, 5, 'git://example.com/foo', 'new_app',
@@ -225,7 +234,7 @@ class HandlerTest(base.BaseTestCase):
 
         expected = [
             mock.call([u_script, 'git://example.com/foo', 'master',
-                       self.ctx.tenant, 'faketests'], env=test_env)]
+                       self.ctx.tenant, 'faketests'], env=test_env, stdout=-1)]
         self.assertEqual(expected, mock_popen.call_args_list)
 
         expected = [mock.call(self.ctx, 44, 'UNIT_TESTING'),

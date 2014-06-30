@@ -27,6 +27,9 @@ SERVICE_OPTS = [
     cfg.StrOpt('handler',
                default='shell',
                help='The worker endpoint to employ'),
+    cfg.StrOpt('task_log_dir',
+               default='/var/log/solum/worker',
+               help='The directory containing task log output.'),
 ]
 
 opt_group = cfg.OptGroup(

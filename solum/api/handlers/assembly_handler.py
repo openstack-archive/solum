@@ -127,7 +127,7 @@ class AssemblyHandler(handler.Handler):
 
     def _unittest_artifact(self, assem, artifact):
         git_url = artifact['content']['href']
-        test_cmd = artifact['content'].get('unittest_cmd')
+        test_cmd = artifact.get('unittest_cmd')
 
         api.API(context=self.context).unittest(
             assembly_id=assem.id,
@@ -149,7 +149,7 @@ class AssemblyHandler(handler.Handler):
         image.project_id = self.context.tenant
         image.state = IMAGE_STATES.PENDING
         image.create(self.context)
-        test_cmd = artifact['content'].get('unittest_cmd', None)
+        test_cmd = artifact.get('unittest_cmd')
 
         api.API(context=self.context).build(
             build_id=image.id,

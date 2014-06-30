@@ -808,4 +808,7 @@
 # The worker endpoint to employ (string value)
 #handler=shell
 
+# The directory containing task log output. (string value)
+#task_log_dir=/var/log/solum/worker
+
 

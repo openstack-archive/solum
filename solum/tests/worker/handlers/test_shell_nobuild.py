@@ -20,6 +20,7 @@ import mock
 from solum.tests import base
 from solum.tests import fakes
 from solum.tests import utils
+from solum.tests.worker.handlers import test_shell
 from solum.worker.handlers import shell_nobuild as shell_handler
 
 
@@ -46,7 +47,7 @@ class HandlerTest(base.BaseTestCase):
         mock_popen.return_value.wait.return_value = 0
         mock_popen.return_value.communicate.return_value = [
             'foo\ncreated_image_id=%s' % fake_glance_id, None]
-        test_env = {'PATH': '/bin'}
+        test_env = test_shell.mock_environment()
         mock_get_env.return_value = test_env
 
         handler.build(self.ctx, 5, 'git://example.com/foo', 'new_app',
@@ -60,7 +61,7 @@ class HandlerTest(base.BaseTestCase):
 
         expected = [
             mock.call([u_script, 'git://example.com/foo', 'master',
-                       self.ctx.tenant, 'faketests'], env=test_env)]
+                       self.ctx.tenant, 'faketests'], env=test_env, stdout=-1)]
         self.assertEqual(expected, mock_popen.call_args_list)
 
         # The UNIT_TESTING update happens from shell...
@@ -84,7 +85,7 @@ class HandlerTest(base.BaseTestCase):
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
 
         mock_popen.return_value.wait.return_value = 1
-        test_env = {'PATH': '/bin'}
+        test_env = test_shell.mock_environment()
         mock_get_env.return_value = test_env
 
         handler.build(self.ctx, 5, 'git://example.com/foo', 'new_app',
@@ -98,7 +99,7 @@ class HandlerTest(base.BaseTestCase):
 
         expected = [
             mock.call([u_script, 'git://example.com/foo', 'master',
-                       self.ctx.tenant, 'faketests'], env=test_env)]
+                       self.ctx.tenant, 'faketests'], env=test_env, stdout=-1)]
         self.assertEqual(expected, mock_popen.call_args_list)
 
         expected = [mock.call(self.ctx, 44, 'UNIT_TESTING'),

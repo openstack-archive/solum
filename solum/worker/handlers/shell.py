@@ -17,6 +17,8 @@
 import os
 import subprocess
 
+from oslo.config import cfg
+
 import solum
 from solum.common import exception
 from solum.common import solum_keystoneclient
@@ -31,6 +33,8 @@ LOG = logging.getLogger(__name__)
 
 ASSEMBLY_STATES = assembly.States
 IMAGE_STATES = image.States
+
+cfg.CONF.import_opt('task_log_dir', 'solum.worker.config', group='worker')
 
 
 def job_update_notification(ctxt, build_id, state=None, description=None,
@@ -74,6 +78,11 @@ class Handler(object):
         user_env['OS_AUTH_TOKEN'] = ctxt.auth_token
         user_env['OS_AUTH_URL'] = ctxt.auth_url
         user_env['OS_IMAGE_URL'] = image_url
+
+        user_env['PROJECT_ID'] = ctxt.tenant
+
+        user_env['BUILD_ID'] = uuidutils.generate_uuid()
+        user_env['SOLUM_TASK_DIR'] = cfg.CONF.worker.task_log_dir
         return user_env
 
     @property
@@ -134,6 +143,10 @@ class Handler(object):
         job_update_notification(ctxt, build_id, IMAGE_STATES.BUILDING,
                                 description='Starting the image build',
                                 assembly_id=assembly_id)
+        # TODO(datsun180b): Associate log with assembly properly
+        logpath = "%s/%s.log" % (user_env['SOLUM_TASK_DIR'],
+                                 user_env['BUILD_ID'])
+        LOG.debug("Build logs stored at %s" % logpath)
         try:
             out = subprocess.Popen(build_cmd,
                                    env=user_env,
@@ -143,6 +156,7 @@ class Handler(object):
             job_update_notification(ctxt, build_id, IMAGE_STATES.ERROR,
                                     description=subex, assembly_id=assembly_id)
             return
+
         # we expect one line in the output that looks like:
         # created_image_id=<the glance_id>
         created_image_id = None
@@ -159,7 +173,7 @@ class Handler(object):
                                 description='built successfully',
                                 created_image_id=created_image_id,
                                 assembly_id=assembly_id)
-        if assembly_id is not None:
+        if created_image_id is not None:
             deployer_api.API(context=ctxt).deploy(assembly_id=assembly_id,
                                                   image_id=created_image_id)
 
@@ -186,9 +200,14 @@ class Handler(object):
             del log_env['OS_AUTH_TOKEN']
         solum.TLS.trace.support_info(environment=log_env)
 
+        logpath = "%s/%s.log" % (user_env['SOLUM_TASK_DIR'],
+                                 user_env['BUILD_ID'])
+        LOG.debug("Unittest logs stored at %s" % logpath)
+
         returncode = -1
         try:
-            runtest = subprocess.Popen(command, env=user_env)
+            runtest = subprocess.Popen(command, env=user_env,
+                                       stdout=subprocess.PIPE)
             returncode = runtest.wait()
         except OSError as subex:
             LOG.exception("Exception running unit tests:")
