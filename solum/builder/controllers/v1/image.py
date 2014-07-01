@@ -24,7 +24,8 @@ from solum import objects
 
 STATE_KIND = wtypes.Enum(str, *objects.image.States.values())
 IMAGE_KIND = wtypes.Enum(str, 'auto', 'qcow2', 'docker')
-SOURCE_KIND = wtypes.Enum(str, 'auto', 'heroku', 'dib')
+SOURCE_KIND = wtypes.Enum(str, 'auto', 'heroku',
+                          'dib', 'dockerfile')
 
 
 class Image(api_types.Base):

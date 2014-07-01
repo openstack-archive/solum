@@ -32,6 +32,9 @@ API_SERVICE_OPTS = [
     cfg.StrOpt('image_format',
                default='qcow2',
                help='The format of the image to output'),
+    cfg.StrOpt('source_format',
+               default='heroku',
+               help='The format of source repository'),
 ]
 
 LOG = logging.getLogger(__name__)
@@ -128,7 +131,8 @@ class AssemblyHandler(handler.Handler):
         image.name = artifact['name']
         image.source_uri = artifact['content']['href']
         image.base_image_id = artifact.get('language_pack', 'auto')
-        image.source_format = 'heroku'
+        image.source_format = artifact.get('artifact_type',
+                                           CONF.api.source_format)
         image.image_format = CONF.api.image_format
         image.uuid = str(uuid.uuid4())
         image.user_id = self.context.user

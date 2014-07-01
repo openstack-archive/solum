@@ -1,0 +1,8 @@
+name: mysql_server
+description: mysql server
+artifacts:
+- name: mysql_server
+  artifact_type: dockerfile
+  content:
+    href: https://github.com/paulczar/docker-mysql.git
+  language_pack: docker

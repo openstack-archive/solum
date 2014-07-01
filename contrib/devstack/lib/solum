@@ -209,6 +209,16 @@ function install_lp-cedarish() {
     fi
 }
 
+# install_lp-dockerfile() - Install tooling to support dockerfile LP
+function install_lp-dockerfile() {
+    if [[ $SOLUM_IMAGE_FORMAT == 'docker' ]]; then
+        $SOLUM_DIR/contrib/lp-dockerfile/docker/prepare
+    else
+        echo does not support VMs
+        exit 1
+    fi
+}
+
 # start_solum() - Start running processes, including screen
 function start_solum() {
     screen_it solum-api "cd $SOLUM_DIR && $SOLUM_BIN_DIR/solum-api --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE"

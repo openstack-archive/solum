@@ -3,7 +3,7 @@ name: ghost
 description: ghost blogging platform
 artifacts:
 - name: ghost
-  artifact_type: application.heroku
+  artifact_type: heroku
   content:
     href: https://github.com/paulczar/solum-example-app-ghost.git
   language_pack: auto

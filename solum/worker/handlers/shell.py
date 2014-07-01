@@ -84,6 +84,7 @@ class Handler(object):
         # TODO(asalkeld) we need an "auto".
         pathm = {'heroku': 'lp-cedarish',
                  'dib': 'diskimage-builder',
+                 'dockerfile': 'lp-dockerfile',
                  'docker': 'docker',
                  'qcow2': 'vm-slug'}
         if base_image_id == 'auto' and image_format == 'qcow2':
