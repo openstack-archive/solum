@@ -9,7 +9,7 @@ Overview
 ::
 
   $ solum app create <plan_file>
-  $ solum assembly create <plan_uri> --assembly=<assembly_name>
+  $ solum assembly create <assembly_name> <plan_uri> --description=<description>
   $ solum assembly get <assembly_uuid>
   $ curl <application_uri>
 
@@ -80,14 +80,15 @@ Use that URI from above to create an assembly for your app.
 ::
 
   $ solum assembly create \
+    ex1 \
     <your_plan_uri_here> \
-    --assembly=ex1
+    --description="test assembly"
 
   +-----------------+--------------------------------------------------------------------------+
   | Property        | Value                                                                    |
   +-----------------+--------------------------------------------------------------------------+
   | status          | None                                                                     |
-  | description     | None                                                                     |
+  | description     | test assembly                                                            |
   | application_uri | None                                                                     |
   | name            | ex1                                                                      |
   | trigger_uri     | http://10.0.2.15:9777/v1/public/triggers/ad74f96e-7769-4462-ad90-e31b94f |
