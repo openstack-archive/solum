@@ -56,16 +56,24 @@ class Component(api_types.Base):
     resource_uri = common_types.Uri
     """Remote resource URI of the component."""
 
+    component_type = wtypes.text
+    """Type of component e.g. heat_stack."""
+
+    heat_stack_id = wtypes.text
+    """Unique identifier of the Heat Stack."""
+
     @classmethod
     def sample(cls):
         return cls(uri='http://example.com/v1/components/php-web-app',
                    name='php-web-app',
                    type='component',
+                   component_type='heat_stack',
                    description='A php web application component',
                    tags=['group_xyz'],
                    project_id='1dae5a09ef2b4d8cbf3594b0eb4f6b94',
                    user_id='55f41cf46df74320b9486a35f5d28a11',
                    assembly_id='b3e0d79c698ea7b1561075bcfbbd2206a23d19b9',
+                   heat_stack_id='4c712026-dcd5-4664-90b8-0915494c1332',
                    abbreviated=True,
                    components_ids=[],
                    services=[],

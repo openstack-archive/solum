@@ -43,18 +43,22 @@ class TestComponent(base.BaseTestCase):
                       'user_id': 'fred',
                       'uuid': 'ce43e347f0b0422825245b3e5f140a81cef6e65b',
                       'name': 'component_no_assembly',
+                      'component_type': 'xyz',
                       'description': 'test component',
                       'parent_component_id': '87d98s',
-                      'tags': 'component tags'},
+                      'tags': 'component tags',
+                      'heat_stack_id': '4c712026-dcd5-4664-90b8-0915494c1332'},
                      {'project_id': 'project_id_dep',
                       'user_id': 'fred',
                       'uuid': '70763488-72e0-44ac-a612-e94bf5488555',
                       'name': 'component_assembly',
+                      'component_type': 'xyz',
                       'description': 'test component',
                       'assembly_uuid': 'ce43e347f0b042282524'
                                        '5b3e5f140a81cef6e65b',
                       'parent_component_id': '87d98s',
-                      'tags': 'component tags'}]
+                      'tags': 'component tags',
+                      'heat_stack_id': '4c712026-dcd5-4664-90b8-0915494c1332'}]
         utils.create_models_from_data(component.Component, self.data, self.ctx)
 
     def test_objects_registered(self):

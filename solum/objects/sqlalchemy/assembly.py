@@ -81,6 +81,12 @@ class Assembly(sql.Base, abstract.Assembly):
             session.query(self.__class__).filter_by(
                 id=self.id).delete()
 
+    @property
+    def heat_stack_component(self):
+        session = sql.Base.get_session()
+        return session.query(component.Component).filter_by(
+            assembly_id=self.id, component_type='heat_stack').first()
+
 
 class AssemblyList(abstract.AssemblyList):
     """Represent a list of assemblies in sqlalchemy."""

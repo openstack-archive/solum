@@ -154,6 +154,7 @@ def upgrade():
         sa.Column('created_at', sa.DateTime, default=timeutils.utcnow),
         sa.Column('updated_at', sa.DateTime, onupdate=timeutils.utcnow),
         sa.Column('name', sa.String(100)),
+        sa.Column('component_type', sa.String(100)),
         sa.Column('description', sa.String(255)),
         sa.Column('project_id', sa.String(36)),
         sa.Column('user_id', sa.String(36)),
@@ -162,6 +163,7 @@ def upgrade():
         sa.Column('parent_component_id', sa.Integer,
                   sa.ForeignKey('component.id')),
         sa.Column('resource_uri', sa.String(length=1024)),
+        sa.Column('heat_stack_id', sa.String(36)),
     )
 
     op.create_table(

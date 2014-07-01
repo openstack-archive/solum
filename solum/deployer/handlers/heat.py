@@ -86,17 +86,16 @@ class Handler(object):
     def delete_heat_stack(self, ctxt, assem_id):
         osc = clients.OpenStackClients(ctxt)
         assem = objects.registry.Assembly.get_by_id(ctxt, assem_id)
-        stack_name = self._get_stack_name(assem)
-        stack_id = self._find_id_if_stack_exists(osc, stack_name)
+        stack_id = self._find_id_if_stack_exists(osc, assem)
 
         if stack_id is not None:
             osc.heat().stacks.delete(stack_id)
 
             wait_interval = cfg.CONF.deployer.wait_interval
             growth_factor = cfg.CONF.deployer.growth_factor
-
+            stack_name = self._get_stack_name(assem)
             for count in range(cfg.CONF.deployer.max_attempts):
-                stack_id = self._find_id_if_stack_exists(osc, stack_name)
+                stack_id = self._get_stack_id_from_heat(osc, stack_name)
                 if stack_id is None:
                     break
                 time.sleep(wait_interval)
@@ -132,7 +131,8 @@ class Handler(object):
             return
 
         stack_name = self._get_stack_name(assem)
-        stack_id = self._find_id_if_stack_exists(osc, stack_name)
+
+        stack_id = self._find_id_if_stack_exists(osc, assem)
 
         if stack_id is not None:
             osc.heat().stacks.update(stack_id,
@@ -145,13 +145,16 @@ class Handler(object):
                                                      parameters=parameters)
             stack_id = created_stack['stack']['id']
 
+            comp_name = 'Heat Stack for %s' % assem.name
             comp_description = 'Heat Stack %s' % (
                 yaml.load(template).get('description'))
             objects.registry.Component.assign_and_create(ctxt, assem,
+                                                         comp_name,
                                                          'Heat Stack',
                                                          comp_description,
                                                          created_stack['stack']
-                                                         ['links'][0]['href'])
+                                                         ['links'][0]['href'],
+                                                         stack_id)
         assem.status = STATES.DEPLOYING
         assem.save(ctxt)
 
@@ -192,7 +195,12 @@ class Handler(object):
             return heat_output._info['outputs'][1]['output_value']
         return None
 
-    def _find_id_if_stack_exists(self, osc, stack_name):
+    def _find_id_if_stack_exists(self, osc, assem):
+        if assem.heat_stack_component is not None:
+            return assem.heat_stack_component.heat_stack_id
+        return None
+
+    def _get_stack_id_from_heat(self, osc, stack_name):
         try:
             stack = osc.heat().stacks.get(stack_name)
             if stack is not None:

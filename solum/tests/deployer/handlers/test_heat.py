@@ -75,11 +75,14 @@ class HandlerTest(base.BaseTestCase):
         neutron = mock_clients.return_value.neutron
         neutron.return_value.list_networks.assert_called_once_with()
         assign_and_create_mock = mock_registry.Component.assign_and_create
+        comp_name = 'Heat Stack for %s' % fake_assembly.name
         assign_and_create_mock.assert_called_once_with(self.ctx,
                                                        fake_assembly,
+                                                       comp_name,
                                                        'Heat Stack',
                                                        'Heat Stack test',
-                                                       'http://fake.ref')
+                                                       'http://fake.ref',
+                                                       'fake_id')
 
     @mock.patch('solum.common.catalog.get')
     @mock.patch('solum.objects.registry')
@@ -107,11 +110,14 @@ class HandlerTest(base.BaseTestCase):
                                               template=fake_template,
                                               parameters=parameters)
         assign_and_create_mock = mock_registry.Component.assign_and_create
+        comp_name = 'Heat Stack for %s' % fake_assembly.name
         assign_and_create_mock.assert_called_once_with(self.ctx,
                                                        fake_assembly,
+                                                       comp_name,
                                                        'Heat Stack',
                                                        'Heat Stack test',
-                                                       'http://fake.ref')
+                                                       'http://fake.ref',
+                                                       'fake_id')
 
     @mock.patch('solum.common.clients.OpenStackClients')
     def test_update_assembly_status(self, mock_clients):
@@ -155,10 +161,10 @@ class HandlerTest(base.BaseTestCase):
     @mock.patch('solum.common.clients.OpenStackClients')
     def test_find_id_if_stack_exists(self, mock_clients):
         handler = heat_handler.Handler()
-        stack = mock.MagicMock
-        stack.identifier = 'test/123'
-        mock_clients.heat.stacks.get.return_value = stack
-        id = handler._find_id_if_stack_exists(mock_clients, 'test')
+        assem = mock.MagicMock
+        assem.heat_stack_component = mock.MagicMock
+        assem.heat_stack_component.heat_stack_id = '123'
+        id = handler._find_id_if_stack_exists(mock_clients, assem)
         self.assertEqual(id, '123')
 
     @mock.patch('solum.objects.registry')
@@ -168,8 +174,9 @@ class HandlerTest(base.BaseTestCase):
         mock_registry.Assembly.get_by_id.return_value = fake_assem
 
         handler = heat_handler.Handler()
-        handler._find_id_if_stack_exists = mock.MagicMock(
-            side_effect=self._s_efct)
+
+        handler._find_id_if_stack_exists = mock.MagicMock(return_value='42')
+        handler._get_stack_id_from_heat = mock.MagicMock(return_value=None)
 
         cfg.CONF.deployer.max_attempts = 1
         cfg.CONF.deployer.wait_interval = 0
@@ -179,11 +186,6 @@ class HandlerTest(base.BaseTestCase):
 
         mock_client.heat.stacks.delete.assert_called_once()
         fake_assem.destroy.assert_called_once()
-
-    def _s_efct(*args):
-        def second_call(*args):
-            return None
-        return mock.MagicMock(side_effect=second_call)
 
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.common.clients.OpenStackClients')
