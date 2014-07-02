@@ -77,8 +77,10 @@ class TestPipelineHandler(base.BaseTestCase):
         mock_kc.return_value.create_trust_context.return_value = trust_ctx
 
         handler = pipeline_handler.PipelineHandler(self.ctx)
+        handler._execute_workbook = mock.MagicMock()
         res = handler.create(data)
         db_obj.update.assert_called_once_with(data)
+        handler._execute_workbook.assert_called_once_with(db_obj)
         db_obj.create.assert_called_once_with(self.ctx)
         self.assertEqual(db_obj, res)
         mock_kc.return_value.create_trust_context.assert_called_once_with()
@@ -109,3 +111,25 @@ class TestPipelineHandler(base.BaseTestCase):
         handler._context_from_trust_id.assert_called_once_with('trust_worthy')
         mock_registry.Pipeline.get_by_trigger_id.assert_called_once_with(
             None, trigger_id)
+
+    @mock.patch('solum.common.solum_keystoneclient.KeystoneClientV3')
+    def test_build_execution_context_first_run(self, mock_ks, mock_registry):
+        fpipe = fakes.FakePipeline()
+        fpipe.last_execution.return_value = None
+        fplan = fakes.FakePlan()
+        mock_registry.Plan.get_by_id.return_value = fplan
+        fplan.raw_content = {
+            'name': 'theplan',
+            'artifacts': [{'name': 'nodeus',
+                           'artifact_type': 'heroku',
+                           'content': {
+                               'href': 'https://example.com/ex.git'},
+                           'language_pack': '1-2-3-4'}]}
+
+        handler = pipeline_handler.PipelineHandler(self.ctx)
+        url_for = mock_ks.return_value.client.service_catalog.url_for
+        url_for.return_value = 'url-for'
+        ex_ctx = handler._build_execution_context(fpipe)
+        self.assertEqual('url-for', ex_ctx['build_service_url'])
+        self.assertEqual('1-2-3-4', ex_ctx['base_image_id'])
+        self.assertEqual('heroku', ex_ctx['source_format'])

@@ -17,6 +17,8 @@ import uuid
 from oslo.config import cfg
 
 from solum.api.handlers import handler
+from solum.common import catalog
+from solum.common import clients
 from solum.common import context
 from solum.common import exception
 from solum.common import solum_keystoneclient
@@ -29,7 +31,6 @@ CONF = cfg.CONF
 
 class PipelineHandler(handler.Handler):
     """Fulfills a request on the pipeline resource."""
-
     def get(self, id):
         """Return an pipeline."""
         return objects.registry.Pipeline.get_by_uuid(self.context, id)
@@ -54,9 +55,51 @@ class PipelineHandler(handler.Handler):
 
         self._execute_workbook(db_obj)
 
+    def _build_execution_context(self, pipeline):
+
+        # first try and read previous execution context
+        # mistral exection-get build id
+        # if that exists use that, else create one.
+
+        ctx = {}
+        # service urls.
+        kc = solum_keystoneclient.KeystoneClientV3(self.context)
+        ctx['heat_service_url'] = kc.client.service_catalog.url_for(
+            service_type='orchestration',
+            endpoint_type='publicURL')
+        ctx['build_service_url'] = kc.client.service_catalog.url_for(
+            service_type='image_builder',
+            endpoint_type='publicURL')
+
+        # extract context from the plan
+        # TODO(asalkeld) this should be versioned.
+        plan_obj = objects.registry.Plan.get_by_id(self.context,
+                                                   pipeline.plan_id)
+        ctx['name'] = plan_obj.name
+
+        artifacts = plan_obj.raw_content.get('artifacts', [])
+        for arti in artifacts:
+            ctx['source_uri'] = arti['content']['href']
+            ctx['base_image_id'] = arti.get('language_pack', 'auto')
+            ctx['source_format'] = arti.get('artifact_type', 'heroku')
+            ctx['template'] = catalog.get('templates',
+                                          arti.get('heat_template', 'basic'))
+            ctx['image_format'] = arti.get('image_format',
+                                           CONF.api.image_format)
+            ctx['parameters'] = arti.get('heat_parameters', {})
+
+        # TODO(asalkeld) integrate the Environment into the context.
+        return ctx
+
     def _execute_workbook(self, pipeline):
-        # TODO(asalkeld) execute the mistral workbook.
-        pass
+        execution_ctx = self._build_execution_context(pipeline)
+
+        osc = clients.OpenStackClients(self.context)
+        resp = osc.mistral().executions.create(pipeline.workbook_name,
+                                               'start',
+                                               execution_ctx)
+        # TODO(asalkeld) store the execution_uuid
+        LOG.info(resp)
 
     def update(self, id, data):
         """Modify a resource."""
