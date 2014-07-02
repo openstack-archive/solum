@@ -25,6 +25,7 @@ def get(entity, name, content_type='yaml'):
     proj_dir = os.path.join(os.path.dirname(__file__), '..', '..')
     file_path = os.path.join(proj_dir, 'etc', 'solum', entity,
                              '%s.%s' % (name, content_type))
+    file_path = os.path.realpath(file_path)
     try:
         with open(file_path) as fd:
             return fd.read()
