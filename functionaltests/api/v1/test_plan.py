@@ -90,22 +90,17 @@ class TestPlanController(base.TestCase):
         self._assert_output_expected(resp.data, sample_data)
 
     def test_plans_create_empty_yaml(self):
-        # NOTE(stannie): tempest rest_client raises InvalidContentType and not
-        # BadRequest because yaml content-type is not supported in their
-        # _error_checker method.
-        self.assertRaises(tempest_exceptions.InvalidContentType,
+        self.assertRaises(tempest_exceptions.BadRequest,
                           self.client.post, 'v1/plans', '{}',
                           headers={'content-type': 'application/x-yaml'})
 
     def test_plans_create_invalid_yaml_type(self):
-        # NOTE(stannie): see test_plans_create_empty_yaml note
-        self.assertRaises(tempest_exceptions.InvalidContentType,
+        self.assertRaises(tempest_exceptions.BadRequest,
                           self.client.post, 'v1/plans', 'invalid type',
                           headers={'content-type': 'application/x-yaml'})
 
     def test_plans_create_invalid_yaml_syntax(self):
-        # NOTE(stannie): see test_plans_create_empty_yaml note
-        self.assertRaises(tempest_exceptions.InvalidContentType,
+        self.assertRaises(tempest_exceptions.BadRequest,
                           self.client.post, 'v1/plans', "}invalid: y'm'l3!",
                           headers={'content-type': 'application/x-yaml'})
 

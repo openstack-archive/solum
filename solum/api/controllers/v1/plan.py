@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import json
 import sys
 
 from oslo.db import exception as db_exc
@@ -28,15 +29,15 @@ from solum.common import yamlutils
 from solum import objects
 
 
-def init_plan_v1(yml_input_plan):
+def init_plan_v1(input_plan):
     plan_handler_v1 = plan_handler.PlanHandler(
         pecan.request.security_context)
-    plan_v1 = plan.Plan(**yml_input_plan)
+    plan_v1 = plan.Plan(**input_plan)
     return plan_handler_v1, plan_v1
 
 
-def init_plan_by_version(yml_input_plan):
-    version = yml_input_plan.get('version')
+def init_plan_by_version(input_plan):
+    version = input_plan.get('version')
     if version is None:
         raise exception.BadRequest(
             reason='Version attribute is missing in Plan')
@@ -44,7 +45,25 @@ def init_plan_by_version(yml_input_plan):
     if not hasattr(mod, 'init_plan_v%s' % version):
         raise exception.BadRequest(reason='Plan version %s is invalid.'
                                           % version)
-    return getattr(mod, 'init_plan_v%s' % version)(yml_input_plan)
+    return getattr(mod, 'init_plan_v%s' % version)(input_plan)
+
+
+def init_yml_plan_by_version():
+    try:
+        yml_input_plan = yamlutils.load(pecan.request.body)
+    except ValueError as excp:
+        raise exception.BadRequest(reason='Plan is invalid. '
+                                          + excp.message)
+    return init_plan_by_version(yml_input_plan)
+
+
+def init_json_plan_by_version():
+    try:
+        json_input_plan = json.loads(pecan.request.body)
+    except ValueError as excp:
+        raise exception.BadRequest(reason='Plan is invalid. '
+                                          + excp.message)
+    return init_plan_by_version(json_input_plan)
 
 
 def yaml_content(m):
@@ -117,21 +136,23 @@ class PlansController(rest.RestController):
         return PlanController(plan_id), remainder
 
     @exception.wrap_pecan_controller_exception
-    @pecan.expose(content_type='application/x-yaml')
+    @pecan.expose()
     def post(self):
         """Create a new plan."""
         if not pecan.request.body or len(pecan.request.body) < 1:
-            raise exception.BadRequest
-        try:
-            yml_input_plan = yamlutils.load(pecan.request.body)
-        except ValueError as excp:
-            raise exception.BadRequest(reason='Plan is invalid. '
-                                              + excp.message)
-        handler, data = init_plan_by_version(yml_input_plan)
-        create_plan_yml = yamlutils.dump(yaml_content(handler.create(
-            data.as_dict(objects.registry.Plan))))
+                raise exception.BadRequest
+        if (pecan.request.content_type is not None and
+                'yaml' in pecan.request.content_type):
+            handler, data = init_yml_plan_by_version()
+            created_plan = yamlutils.dump(yaml_content(handler.create(
+                data.as_dict(objects.registry.Plan))))
+        else:
+            handler, data = init_json_plan_by_version()
+            plan_wsme = plan.Plan.from_db_model(handler.create(
+                data.as_dict(objects.registry.Plan)), pecan.request.host_url)
+            created_plan = wsme_json.encode_result(plan_wsme, plan.Plan)
         pecan.response.status = 201
-        return create_plan_yml
+        return created_plan
 
     @exception.wrap_pecan_controller_exception
     @pecan.expose()
