@@ -157,7 +157,7 @@ class TestPlanController(base.BaseTestCase):
                                                    'description': u'dsc1.'})
         self.assertEqual(404, resp_mock.status)
 
-    def test_plan_put_ok(self, PlanHandler, resp_mock, request_mock):
+    def test_plan_put_ok_yaml(self, PlanHandler, resp_mock, request_mock):
         data = 'version: 1\nname: ex_plan1\ndescription: dsc1.'
         request_mock.body = data
         request_mock.content_type = 'application/x-yaml'
@@ -168,11 +168,51 @@ class TestPlanController(base.BaseTestCase):
                                                    'description': u'dsc1.'})
         self.assertEqual(200, resp_mock.status)
 
-    def test_plan_put_version_not_found(self, PlanHandler,
-                                        resp_mock, request_mock):
-        data = 'name: ex_plan1\ndescription: yaml plan1.\nversion: 2'
+    def test_plan_put_ok_json(self, PlanHandler, resp_mock, request_mock):
+        data = {'name': 'foo', 'version': '1'}
+        request_mock.body = json.dumps(data)
+        request_mock.content_type = 'application/json'
+        hand_update = PlanHandler.return_value.update
+        hand_update.return_value = fakes.FakePlan()
+        plan.PlanController('test_id').put()
+        hand_update.assert_called_with('test_id', {'name': 'foo'})
+        self.assertEqual(200, resp_mock.status)
+
+    def test_plan_put_wrong_version_yaml(self, PlanHandler,
+                                         resp_mock, request_mock):
+        data = 'name: ex_plan1\ndescription: yaml plan1.\nversion: 42'
         request_mock.body = data
         request_mock.content_type = 'application/x-yaml'
+        hand_update = PlanHandler.return_value.update
+        hand_update.return_value = fakes.FakePlan()
+        plan.PlanController('test_id').put()
+        self.assertEqual(400, resp_mock.status)
+
+    def test_plan_put_version_not_found_yaml(self, PlanHandler,
+                                             resp_mock, request_mock):
+        data = 'name: ex_plan1\ndescription: yaml plan1.'
+        request_mock.body = data
+        request_mock.content_type = 'application/x-yaml'
+        hand_update = PlanHandler.return_value.update
+        hand_update.return_value = fakes.FakePlan()
+        plan.PlanController('test_id').put()
+        self.assertEqual(400, resp_mock.status)
+
+    def test_plan_put_wrong_version_json(self, PlanHandler,
+                                         resp_mock, request_mock):
+        data = {'name': 'foo', 'version': '42'}
+        request_mock.body = json.dumps(data)
+        request_mock.content_type = 'application/json'
+        hand_update = PlanHandler.return_value.update
+        hand_update.return_value = fakes.FakePlan()
+        plan.PlanController('test_id').put()
+        self.assertEqual(400, resp_mock.status)
+
+    def test_plan_put_version_not_found_json(self, PlanHandler,
+                                             resp_mock, request_mock):
+        data = {'name': 'foo'}
+        request_mock.body = json.dumps(data)
+        request_mock.content_type = 'application/json'
         hand_update = PlanHandler.return_value.update
         hand_update.return_value = fakes.FakePlan()
         plan.PlanController('test_id').put()
