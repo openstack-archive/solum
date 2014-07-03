@@ -1,0 +1,57 @@
+#!/bin/bash
+# Common functions for build-app and unittest-app
+
+# Add a timestamp, and log a message to STDOUT and to $LOG.
+function TLOG () {
+  local MESSAGE="$*"
+  local LOGFILE=${LOG:-/dev/null}
+  local TIMESTAMP=`date +"%Y-%m-%d %H:%M:%S.%3N"`
+  echo "$TIMESTAMP | $MESSAGE" | tee -a $LOGFILE
+}
+
+# Get time elapsed since $1.
+function elapsed () {
+  local START=$1
+  local NOW=`date +'%s'`
+  expr $NOW - $START
+}
+
+# Profile and run a command, and return its exit code.
+function PRUN () {
+  # If the first argument is "silent", then set a flag and shift.
+  local SILENT=false
+  if [ "$1" == "silent" ]; then
+    SILENT=true
+    shift
+  fi
+
+  local CMD="$@"
+  local LOGFILE=${LOG:-/dev/null}
+
+  if $SILENT; then
+    LOGFILE=/dev/null
+  fi
+
+  if ! $SILENT; then
+    TLOG Starting: $CMD
+  fi
+  local EXIT_STATUS
+  local START=`date +'%s'`
+  if $SILENT; then
+    $CMD 2>&1 >> /dev/null; test ${PIPESTATUS[0]} -eq 0
+    EXIT_STATUS=$?
+  else
+    $CMD 2>&1 | tee -a $LOGFILE; test ${PIPESTATUS[0]} -eq 0
+    EXIT_STATUS=$?
+  fi
+
+  local ELAPSED=$(elapsed $START)
+  local SUCCESS
+  [ $EXIT_STATUS -eq 0 ] && SUCCESS="Finished" || SUCCESS="FAILED"
+
+  if ! $SILENT; then
+    TLOG $SUCCESS: $CMD "[Elapsed: $ELAPSED sec] (EXIT_STATUS=$EXIT_STATUS)"
+  fi
+
+  return $EXIT_STATUS
+}
