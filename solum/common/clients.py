@@ -14,6 +14,7 @@
 
 from glanceclient import client as glanceclient
 from heatclient import client as heatclient
+from mistralclient.api import client as mistralclient
 from neutronclient.neutron import client as neutronclient
 from oslo.config import cfg
 from swiftclient import client as swiftclient
@@ -82,10 +83,23 @@ swift_client_opts = [
                 default=False,
                 help=_("If set the server certificate will not be verified."))]
 
+mistral_client_opts = [
+    cfg.StrOpt('endpoint_type',
+               default='publicURL',
+               help=_(
+                   'Type of endpoint in Identity service catalog to use '
+                   'for communication with the mistral service.')),
+    cfg.StrOpt('cacert',
+               help=_('Optional CA cert file to use in SSL connections.')),
+    cfg.BoolOpt('insecure',
+                default=False,
+                help=_("If set the server certificate will not be verified."))]
+
 cfg.CONF.register_opts(glance_client_opts, group='glance_client')
 cfg.CONF.register_opts(heat_client_opts, group='heat_client')
 cfg.CONF.register_opts(neutron_client_opts, group='neutron_client')
 cfg.CONF.register_opts(swift_client_opts, group='swift_client')
+cfg.CONF.register_opts(mistral_client_opts, group='mistral_client')
 
 
 class OpenStackClients(object):
@@ -98,6 +112,7 @@ class OpenStackClients(object):
         self._heat = None
         self._neutron = None
         self._swift = None
+        self._mistral = None
 
     def url_for(self, **kwargs):
         return self.keystone().client.service_catalog.url_for(**kwargs)
@@ -154,6 +169,21 @@ class OpenStackClients(object):
         self._glance = glanceclient.Client('2', endpoint, **args)
 
         return self._glance
+
+    @exception.wrap_keystone_exception
+    def mistral(self):
+        if self._mistral:
+            return self._mistral
+
+        args = {
+            'auth_token': self.auth_token,
+        }
+        endpoint_type = self._get_client_option('mistral', 'endpoint_type')
+        endpoint = self.url_for(service_type='workflow_service',
+                                endpoint_type=endpoint_type)
+        self._mistral = mistralclient.Client(mistral_url=endpoint, **args)
+
+        return self._mistral
 
     @exception.wrap_keystone_exception
     def heat(self):

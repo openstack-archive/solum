@@ -12,6 +12,7 @@
 
 from glanceclient import client as glanceclient
 from heatclient import client as heatclient
+from mistralclient.api import client as mistralclient
 import mock
 from neutronclient.neutron import client as neutronclient
 from swiftclient import client as swiftclient
@@ -27,10 +28,10 @@ class ClientsTest(base.BaseTestCase):
     def test_url_for(self, mock_keystone):
         obj = clients.OpenStackClients(None)
         obj.url_for(service_type='fake_service', endpoint_type='fake_endpoint')
-        service_catalog = mock_keystone.return_value.client.service_catalog
-        service_catalog.url_for.assert_called_once_with(
-            service_type='fake_service',
-            endpoint_type='fake_endpoint')
+
+        mock_cat = mock_keystone.return_value.client.service_catalog
+        mock_cat.url_for.assert_called_once_with(service_type='fake_service',
+                                                 endpoint_type='fake_endpoint')
 
     @mock.patch.object(glanceclient, 'Client')
     @mock.patch.object(clients.OpenStackClients, 'url_for')
@@ -207,3 +208,41 @@ class ClientsTest(base.BaseTestCase):
         neutron = obj.neutron()
         neutron_cached = obj.neutron()
         self.assertEqual(neutron, neutron_cached)
+
+    @mock.patch.object(mistralclient, 'Client')
+    @mock.patch.object(clients.OpenStackClients, 'url_for')
+    def test_clients_mistral(self, mock_url, mock_call):
+        con = mock.MagicMock()
+        con.tenant = "b363706f891f48019483f8bd6503c54d"
+        con.auth_token = "3bcc3d3a03f44e3d8377f9247b0ad155"
+        mock_url.return_value = "url_from_keystone"
+        obj = clients.OpenStackClients(con)
+        obj._mistral = None
+        obj.mistral()
+        mock_call.assert_called_once_with(
+            mistral_url='url_from_keystone',
+            auth_token='3bcc3d3a03f44e3d8377f9247b0ad155')
+        mock_url.assert_called_once_with(service_type='workflow_service',
+                                         endpoint_type='publicURL')
+
+    def test_clients_mistral_noauth(self):
+        con = mock.MagicMock()
+        con.auth_token = None
+        con.auth_token_info = None
+        con.tenant = "b363706f891f48019483f8bd6503c54d"
+        obj = clients.OpenStackClients(con)
+        obj._mistral = None
+        self.assertRaises(exception.AuthorizationFailure, obj.mistral)
+
+    @mock.patch.object(mistralclient, 'Client')
+    @mock.patch.object(clients.OpenStackClients, 'url_for')
+    def test_clients_mistral_cached(self, mock_url, mock_call):
+        con = mock.MagicMock()
+        con.tenant = "b363706f891f48019483f8bd6503c54d"
+        con.auth_token = "3bcc3d3a03f44e3d8377f9247b0ad155"
+        mock_url.return_value = "url_from_keystone"
+        obj = clients.OpenStackClients(con)
+        obj._mistral = None
+        mistral = obj.mistral()
+        mistral_cached = obj.mistral()
+        self.assertEqual(mistral, mistral_cached)
