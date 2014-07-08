@@ -12,6 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import os.path
+
 import mock
 
 from solum.common import catalog
@@ -20,14 +22,21 @@ from solum.tests import base
 
 
 class TestCatalog(base.BaseTestCase):
+    def setUp(self):
+        super(TestCatalog, self).setUp()
+        self.proj_dir = os.path.realpath(
+            os.path.join(os.path.dirname(__file__),
+                         '..', '..', '..'))
+
     def test_get_default(self):
         with mock.patch('solum.common.catalog.open',
                         mock.mock_open(read_data='test content'),
                         create=True) as m_open:
             val = catalog.get('test', 'test_data')
             self.assertEqual('test content', val)
-            m_open.assert_called_with(
-                'solum/common/../../etc/solum/test/test_data.yaml')
+            expect = os.path.join(self.proj_dir,
+                                  'etc/solum/test/test_data.yaml')
+            m_open.assert_called_with(expect)
 
     def test_get_content_type(self):
         with mock.patch('solum.common.catalog.open',
@@ -35,8 +44,9 @@ class TestCatalog(base.BaseTestCase):
                         create=True) as m_open:
             val = catalog.get('test', 'test_data', content_type='fake')
             self.assertEqual('test content', val)
-            m_open.assert_called_with(
-                'solum/common/../../etc/solum/test/test_data.fake')
+            expect = os.path.join(self.proj_dir,
+                                  'etc/solum/test/test_data.fake')
+            m_open.assert_called_with(expect)
 
     def test_get_fail(self):
         with mock.patch('solum.common.catalog.open',
