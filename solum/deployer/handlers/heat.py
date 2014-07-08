@@ -145,7 +145,7 @@ class Handler(object):
                                                      parameters=parameters)
             stack_id = created_stack['stack']['id']
 
-            comp_name = 'Heat Stack for %s' % assem.name
+            comp_name = 'Heat_Stack_for_%s' % assem.name
             comp_description = 'Heat Stack %s' % (
                 yaml.load(template).get('description'))
             objects.registry.Component.assign_and_create(ctxt, assem,

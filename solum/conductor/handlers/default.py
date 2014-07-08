@@ -46,6 +46,6 @@ class Handler(object):
             if not any([comp for comp in assem.components
                         if 'Image Build' in comp.description]):
                 objects.registry.Component.assign_and_create(ctxt, assem,
-                                                             'Image Build',
+                                                             'Image_Build',
                                                              'Image Build job',
                                                              created_image_id)

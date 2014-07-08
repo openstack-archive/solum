@@ -75,7 +75,7 @@ class HandlerTest(base.BaseTestCase):
         neutron = mock_clients.return_value.neutron
         neutron.return_value.list_networks.assert_called_once_with()
         assign_and_create_mock = mock_registry.Component.assign_and_create
-        comp_name = 'Heat Stack for %s' % fake_assembly.name
+        comp_name = 'Heat_Stack_for_%s' % fake_assembly.name
         assign_and_create_mock.assert_called_once_with(self.ctx,
                                                        fake_assembly,
                                                        comp_name,
@@ -83,6 +83,31 @@ class HandlerTest(base.BaseTestCase):
                                                        'Heat Stack test',
                                                        'http://fake.ref',
                                                        'fake_id')
+
+    @mock.patch('solum.common.catalog.get')
+    @mock.patch('solum.objects.registry')
+    @mock.patch('solum.common.clients.OpenStackClients')
+    def test_comp_name_error(self, mock_clients, mock_registry,
+                             mock_get_templ):
+        handler = heat_handler.Handler()
+
+        fake_assembly = fakes.FakeAssembly()
+        mock_registry.Assembly.get_by_id.return_value = fake_assembly
+        fake_template = json.dumps({'description': 'test'})
+        mock_get_templ.return_value = fake_template
+        handler._find_id_if_stack_exists = mock.MagicMock(return_value=(None))
+        stacks = mock_clients.return_value.heat.return_value.stacks
+        stacks.create.return_value = {"stack": {
+            "id": "fake_id",
+            "links": [{"href": "http://fake.ref",
+                       "rel": "self"}]}}
+        handler._update_assembly_status = mock.MagicMock()
+        handler.deploy(self.ctx, 77, 'created_image_id')
+        assign_and_create_mock = mock_registry.Component.assign_and_create
+        comp_name = 'Heat Stack for %s' % fake_assembly.name
+        self.assertRaises(AssertionError,
+                          assign_and_create_mock.assert_called_once_with,
+                          comp_name)
 
     @mock.patch('solum.common.catalog.get')
     @mock.patch('solum.objects.registry')
@@ -110,7 +135,7 @@ class HandlerTest(base.BaseTestCase):
                                               template=fake_template,
                                               parameters=parameters)
         assign_and_create_mock = mock_registry.Component.assign_and_create
-        comp_name = 'Heat Stack for %s' % fake_assembly.name
+        comp_name = 'Heat_Stack_for_%s' % fake_assembly.name
         assign_and_create_mock.assert_called_once_with(self.ctx,
                                                        fake_assembly,
                                                        comp_name,
