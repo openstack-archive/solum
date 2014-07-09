@@ -90,10 +90,12 @@ mistral_client_opts = [
                    'Type of endpoint in Identity service catalog to use '
                    'for communication with the mistral service.')),
     cfg.StrOpt('cacert',
-               help=_('Optional CA cert file to use in SSL connections.')),
+               help=_('Optional CA cert file to use in SSL connections '
+                      'with Mistral.')),
     cfg.BoolOpt('insecure',
                 default=False,
-                help=_("If set the server certificate will not be verified."))]
+                help=_("If set the server certificate will not be verified "
+                       "while using Mistral."))]
 
 cfg.CONF.register_opts(glance_client_opts, group='glance_client')
 cfg.CONF.register_opts(heat_client_opts, group='heat_client')

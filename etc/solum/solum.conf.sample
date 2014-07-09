@@ -729,20 +729,12 @@
 # communication with the mistral service. (string value)
 #endpoint_type=publicURL
 
-# Optional CA cert file to use in SSL connections. (string
-# value)
+# Optional CA cert file to use in SSL connections with
+# Mistral. (string value)
 #cacert=<None>
 
-# If set the server certificate will not be verified. (boolean
-# value)
-#insecure=false
-
-# Optional CA cert file to use in SSL connections. (string
-# value)
-#cacert=<None>
-
-# If set the server certificate will not be verified. (boolean
-# value)
+# If set the server certificate will not be verified while
+# using Mistral. (boolean value)
 #insecure=false
 
 
@@ -774,6 +766,14 @@
 # Type of endpoint in Identity service catalog to use for
 # communication with the Swift service. (string value)
 #endpoint_type=publicURL
+
+# Optional CA cert file to use in SSL connections. (string
+# value)
+#cacert=<None>
+
+# If set the server certificate will not be verified. (boolean
+# value)
+#insecure=false
 
 
 [worker]
