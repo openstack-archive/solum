@@ -15,6 +15,8 @@
 import uuid
 
 from solum.api.handlers import handler
+from solum.common import catalog
+from solum.common import clients
 from solum import objects
 from solum.openstack.common import log as logging
 
@@ -51,8 +53,23 @@ class InfrastructureStackHandler(handler.Handler):
         db_obj.uuid = str(uuid.uuid4())
         db_obj.user_id = self.context.user
         db_obj.project_id = self.context.tenant
+
+        db_obj.heat_stack_id = self._deploy_infra(data.get('image_id'))
+
         db_obj.create(self.context)
         return db_obj
+
+    def _deploy_infra(self, image_id):
+        osc = clients.OpenStackClients(self.context)
+
+        parameters = {'image': image_id}
+
+        template = catalog.get('templates', 'infra')
+
+        created_stack = osc.heat().stacks.create(stack_name='infra',
+                                                 template=template,
+                                                 parameters=parameters)
+        return created_stack['stack']['id']
 
     def get_all(self):
         """Return all stacks, based on the query provided."""

@@ -12,6 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import json
+
 import mock
 
 from solum.api.handlers import infrastructure_handler as infra
@@ -57,17 +59,28 @@ class TestInfrastructureStackHandler(base.BaseTestCase):
         mock_registry.InfrastructureStack.get_by_uuid.assert_called_once_with(
             self.ctx, 'test_id')
 
-    def test_create(self, mock_registry):
+    @mock.patch('solum.common.clients.OpenStackClients')
+    @mock.patch('solum.common.catalog.get')
+    def test_create(self, mock_get, mock_clients, mock_registry):
         data = {'user_id': 'new_user_id',
-                'image_id': 'new_image_id',
-                'heat_stack_id': 'new_stack_id'}
+                'image_id': 'new_image_id'}
         db_obj = fakes.FakeInfrastructureStack()
+        fake_template = json.dumps({'description': 'test'})
+        mock_get.return_value = fake_template
+        parameters = {'image': 'new_image_id'}
         mock_registry.InfrastructureStack.return_value = db_obj
+        mock_create = mock_clients.return_value.heat.return_value.stacks.create
+        mock_create.return_value = {"stack": {"id": "fake_id",
+                                    "links": [{"href": "http://fake.ref",
+                                               "rel": "self"}]}}
         handler = infra.InfrastructureStackHandler(self.ctx)
         res = handler.create(data)
         db_obj.update.assert_called_once_with(data)
         db_obj.create.assert_called_once_with(self.ctx)
         self.assertEqual(db_obj, res)
+        mock_create.assert_called_once_with(stack_name='infra',
+                                            template=fake_template,
+                                            parameters=parameters)
 
     def test_delete(self, mock_registry):
         db_obj = fakes.FakeInfrastructureStack()
