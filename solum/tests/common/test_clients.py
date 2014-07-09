@@ -223,7 +223,7 @@ class ClientsTest(base.BaseTestCase):
         mock_call.assert_called_once_with(
             mistral_url='url_from_keystone',
             auth_token='3bcc3d3a03f44e3d8377f9247b0ad155')
-        mock_url.assert_called_once_with(service_type='workflow_service',
+        mock_url.assert_called_once_with(service_type='workflow',
                                          endpoint_type='publicURL')
 
     def test_clients_mistral_noauth(self):
