@@ -147,6 +147,31 @@ class FakeExtension(mock.Mock):
                     description=self.description)
 
 
+class FakeInfrastructureStack(mock.Mock):
+    def __init__(self, **kwargs):
+        super(FakeInfrastructureStack, self).__init__(**kwargs)
+        self.__tablename__ = 'build_farm'
+        self.__resource__ = 'build_farms'
+        self.user_id = 'user_id'
+        self.project_id = 'test_id'
+        self.uuid = 'ceda0408-c93d-4772-abb2-18f65189d440'
+        self.description = 'test_desc'
+        self.id = 'test_id'
+        self.name = 'test_name'
+        self.image_id = '1234'
+        self.heat_stack_id = '5678'
+
+    def as_dict(self):
+        return dict(name=self.name,
+                    user_id=self.user_id,
+                    project_id=self.project_id,
+                    uuid=self.uuid,
+                    id=self.id,
+                    image_id=self.image_id,
+                    heat_stack_id=self.heat_stack_id,
+                    description=self.description)
+
+
 class FakeAssembly(mock.Mock):
     def __init__(self, **kwargs):
         super(FakeAssembly, self).__init__(**kwargs)
