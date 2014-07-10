@@ -12,6 +12,7 @@
 
 from glanceclient import client as glanceclient
 from heatclient import client as heatclient
+from marconiclient.queues.v1 import client as marconiclient
 from mistralclient.api import client as mistralclient
 import mock
 from neutronclient.neutron import client as neutronclient
@@ -246,3 +247,54 @@ class ClientsTest(base.BaseTestCase):
         mistral = obj.mistral()
         mistral_cached = obj.mistral()
         self.assertEqual(mistral, mistral_cached)
+
+    @mock.patch.object(marconiclient, 'Client')
+    @mock.patch.object(clients.OpenStackClients, 'url_for')
+    @mock.patch.object(clients.OpenStackClients, 'auth_url')
+    def test_clients_marconi(self, mock_auth, mock_url, mock_call):
+        mock_auth.__get__ = mock.Mock(return_value="keystone_url")
+        con = mock.MagicMock()
+        con.tenant = "b363706f891f48019483f8bd6503c54b"
+        con.auth_token = "3bcc3d3a03f44e3d8377f9247b0ad155"
+        con.auth_url = "keystone_url"
+        mock_url.return_value = "url_from_keystone"
+        obj = clients.OpenStackClients(con)
+        obj._marconi = None
+        obj.marconi()
+        conf = {'auth_opts':
+                {'backend': 'keystone',
+                 'options':
+                    {'os_auth_token': '3bcc3d3a03f44e3d8377f9247b0ad155',
+                     'os_auth_url': 'keystone_url',
+                     'insecure': False}
+                 }
+                }
+        mock_call.assert_called_once_with('url_from_keystone', conf=conf)
+
+    def test_clients_marconi_noauth(self):
+        con = mock.MagicMock()
+        con.auth_token = None
+        con.auth_token_info = None
+        con.tenant = "b363706f891f48019483f8bd6503c54b"
+        auth_url = mock.PropertyMock(name="auth_url",
+                                     return_value="keystone_url")
+        type(con).auth_url = auth_url
+        con.get_url_for = mock.Mock(name="get_url_for")
+        con.get_url_for.return_value = "url_from_keystone"
+        obj = clients.OpenStackClients(con)
+        obj._marconi = None
+        self.assertRaises(exception.AuthorizationFailure, obj.marconi)
+
+    @mock.patch.object(clients.OpenStackClients, 'url_for')
+    @mock.patch.object(clients.OpenStackClients, 'auth_url')
+    def test_clients_marconi_cached(self, mock_auth, mock_url):
+        mock_auth.__get__ = mock.Mock(return_value="keystone_url")
+        con = mock.MagicMock()
+        con.tenant = "b363706f891f48019483f8bd6503c54b"
+        con.auth_token = "3bcc3d3a03f44e3d8377f9247b0ad155"
+        mock_url.return_value = "url_from_keystone"
+        obj = clients.OpenStackClients(con)
+        obj._marconi = None
+        marconi = obj.marconi()
+        marconi_cached = obj.marconi()
+        self.assertEqual(marconi, marconi_cached)
