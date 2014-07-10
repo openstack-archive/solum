@@ -14,7 +14,26 @@
 
 from wsme import types as wtypes
 
+from solum.api.controllers import common_types
 from solum.api.controllers.v1.datamodel import types as api_types
+
+
+class Infrastructure(api_types.Base):
+    """Description of an Infrastructure."""
+
+    stacks_uri = common_types.Uri
+    "URI to services."
+
+    @classmethod
+    def sample(cls):
+        return cls(uri='http://example.com/v1/infrastructure',
+                   name='infrastructure',
+                   type='infrastructure',
+                   stacks_uri='http://example.com/v1/infrastructure/stacks',
+                   tags=['small'],
+                   project_id='1dae5a09ef2b4d8cbf3594b0eb4f6b94',
+                   user_id='55f41cf46df74320b9486a35f5d28a11',
+                   description='Solum Infrastructure endpoint')
 
 
 class InfrastructureStack(api_types.Base):

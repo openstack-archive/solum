@@ -95,3 +95,14 @@ class InfrastructureController(rest.RestController):
     """Infrastructure root controller."""
 
     stacks = InfrastructureStacksController()
+
+    @exception.wrap_wsme_controller_exception
+    @wsme_pecan.wsexpose(infrastructure.Infrastructure)
+    def index(self):
+        host_url = '%s/%s' % (pecan.request.host_url, 'v1')
+        return infrastructure.Infrastructure(
+            uri=host_url,
+            name='solum',
+            type='infrastructure',
+            description='solum infrastructure endpoint',
+            stacks_uri='%s/infrastructure/stacks' % host_url)
