@@ -11,6 +11,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import json
+import uuid
+
 import mock
 
 from solum.api.handlers import pipeline_handler
@@ -85,17 +88,55 @@ class TestPipelineHandler(base.BaseTestCase):
         self.assertEqual(db_obj, res)
         mock_kc.return_value.create_trust_context.assert_called_once_with()
 
-    @mock.patch('solum.common.solum_keystoneclient.KeystoneClientV3')
-    def test_delete(self, mock_kc, mock_registry):
+    @mock.patch('solum.common.clients.OpenStackClients')
+    @mock.patch('solum.common.catalog.get')
+    def test_empty_create_stack(self, mock_get, mock_clients, mock_registry):
         db_obj = fakes.FakePipeline()
+        test_name = str(uuid.uuid4())
+        test_id = str(uuid.uuid4())
+        db_obj.name = test_name
+        mock_registry.Pipeline.return_value = db_obj
+
+        fake_template = json.dumps({})
+        mock_get.return_value = fake_template
+
+        mock_create = mock_clients.return_value.heat.return_value.stacks.create
+        mock_create.return_value = {"stack": {"id": test_id,
+                                    "links": [{"href": "http://fake.ref",
+                                               "rel": "self"}]}}
+        handler = pipeline_handler.PipelineHandler(self.ctx)
+        res = handler._create_empty_stack(db_obj)
+        mock_create.assert_called_once_with(stack_name=test_name,
+                                            template=fake_template)
+        self.assertEqual(test_id, res)
+
+    @mock.patch('solum.common.clients.OpenStackClients')
+    def test_delete(self, mock_clients, mock_registry):
+        db_obj = fakes.FakePipeline()
+        mock_exec_obj = mock.MagicMock()
+        db_obj.last_execution.return_value = mock_exec_obj
+        mock_exec_obj.uuid = 'fake_execution'
+
+        mock_exec = mock.MagicMock()
+        mock_exec.context = {'stack_id': 'foo'}
+        mock_mistral = mock_clients.return_value.mistral.return_value
+        mock_mistral.executions.get.return_value = mock_exec
+        wb = {'Workflow': {'tasks': {'start':
+                                     {'parameters': {'stack_id': ''}}}}}
+        mock_mistral.workbooks.download_definition.return_value = wb
+
         mock_registry.Pipeline.get_by_uuid.return_value = db_obj
         handler = pipeline_handler.PipelineHandler(self.ctx)
         handler.delete('test_id')
         db_obj.destroy.assert_called_once_with(self.ctx)
         mock_registry.Pipeline.get_by_uuid.assert_called_once_with(self.ctx,
                                                                    'test_id')
-        mock_kc.return_value.delete_trust.assert_called_once_with(
-            'trust_worthy')
+
+        mock_heat = mock_clients.return_value.heat.return_value
+        mock_heat.stacks.delete.assert_called_once_with(stack_id='foo')
+
+        mock_kc = mock_clients.return_value.keystone.return_value
+        mock_kc.delete_trust.assert_called_once_with('trust_worthy')
 
     def test_trigger_workflow(self, mock_registry):
         trigger_id = 1
@@ -127,6 +168,7 @@ class TestPipelineHandler(base.BaseTestCase):
                            'language_pack': '1-2-3-4'}]}
 
         handler = pipeline_handler.PipelineHandler(self.ctx)
+        handler._create_empty_stack = mock.MagicMock(return_value='foo')
         url_for = mock_ks.return_value.client.service_catalog.url_for
         url_for.return_value = 'url-for'
         ex_ctx = handler._build_execution_context(fpipe)

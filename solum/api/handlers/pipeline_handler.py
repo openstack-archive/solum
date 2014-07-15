@@ -60,6 +60,16 @@ class PipelineHandler(handler.Handler):
 
         self._execute_workbook(db_obj)
 
+    def _get_context_from_last_execution(self, definition, execution):
+        tasks = definition['Workflow'].get('tasks', {})
+        inputs = set()
+        outputs = set()
+        for act in tasks:
+            inputs |= set(tasks[act].get('parameters', {}).keys())
+            outputs |= set(tasks[act].get('publish', {}).keys())
+        inputs -= outputs
+        return dict((inp, execution.context.get(inp)) for inp in inputs)
+
     def _build_execution_context(self, pipeline):
 
         # first try and read previous execution context
@@ -92,12 +102,38 @@ class PipelineHandler(handler.Handler):
             ctx['image_format'] = arti.get('image_format',
                                            CONF.api.image_format)
             ctx['parameters'] = arti.get('heat_parameters', {})
+        ctx['stack_id'] = self._create_empty_stack(pipeline)
 
         # TODO(asalkeld) integrate the Environment into the context.
         return ctx
 
+    def _create_empty_stack(self, pipeline):
+        osc = self._clients
+        template = catalog.get('templates', 'empty')
+        created_stack = osc.heat().stacks.create(stack_name=pipeline.name,
+                                                 template=template)
+        return created_stack['stack']['id']
+
+    def _delete_stack(self, pipeline):
+        last_execution = pipeline.last_execution()
+        if last_execution is not None:
+            osc = self._clients
+            try:
+                execution = osc.mistral().executions.get(
+                    pipeline.workbook_name, last_execution.uuid)
+                definition = osc.mistral().workbooks.download_definition(
+                    pipeline.workbook_name)
+            except Exception as missing_exc:
+                LOG.exception(missing_exc)
+                return
+            execution_ctx = self._get_context_from_last_execution(definition,
+                                                                  execution)
+            osc = self._clients
+            osc.heat().stacks.delete(stack_id=execution_ctx['stack_id'])
+
     def _execute_workbook(self, pipeline):
         execution_ctx = self._build_execution_context(pipeline)
+        execution_ctx['auth_token'] = self.context.auth_token
 
         osc = self._clients
         resp = osc.mistral().executions.create(pipeline.workbook_name,
@@ -116,6 +152,8 @@ class PipelineHandler(handler.Handler):
     def delete(self, id):
         """Delete a resource."""
         db_obj = objects.registry.Pipeline.get_by_uuid(self.context, id)
+
+        self._delete_stack(db_obj)
 
         # delete the trust.
         self._clients.keystone().delete_trust(db_obj.trust_id)
