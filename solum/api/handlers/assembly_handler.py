@@ -95,11 +95,11 @@ class AssemblyHandler(handler.Handler):
         ksc = solum_keystoneclient.KeystoneClientV3(self.context)
         ksc.delete_trust(db_obj.trust_id)
 
-        deploy_api.API(context=self.context).delete_heat_stack(
-            assem_id=db_obj.id)
-
         db_obj.status = ASSEMBLY_STATES.DELETING
         db_obj.save(self.context)
+
+        deploy_api.API(context=self.context).delete_heat_stack(
+            assem_id=db_obj.id)
 
     def create(self, data):
         """Create a new resource."""
