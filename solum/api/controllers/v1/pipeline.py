@@ -18,6 +18,7 @@ import wsme
 import wsmeext.pecan as wsme_pecan
 
 from solum.api.controllers.v1.datamodel import pipeline
+from solum.api.controllers.v1 import execution
 from solum.api.handlers import pipeline_handler
 from solum.common import exception
 from solum import objects
@@ -26,6 +27,8 @@ from solum.openstack.common.gettextutils import _
 
 class PipelineController(rest.RestController):
     """Manages operations on a single pipeline."""
+
+    executions = execution.ExecutionsController()
 
     def __init__(self, pipeline_id):
         super(PipelineController, self).__init__()

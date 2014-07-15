@@ -139,8 +139,10 @@ class PipelineHandler(handler.Handler):
         resp = osc.mistral().executions.create(pipeline.workbook_name,
                                                'start',
                                                execution_ctx)
-        # TODO(asalkeld) store the execution_uuid
-        LOG.info(resp)
+        ex_obj = objects.registry.Execution()
+        ex_obj.uuid = resp.id
+        ex_obj.pipeline_id = pipeline.id
+        ex_obj.create(self.context)
 
     def update(self, id, data):
         """Modify a resource."""

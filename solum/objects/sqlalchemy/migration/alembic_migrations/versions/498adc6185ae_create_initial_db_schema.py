@@ -148,6 +148,15 @@ def upgrade():
     )
 
     op.create_table(
+        'execution',
+        sa.Column('id', sa.Integer, primary_key=True, nullable=False),
+        sa.Column('uuid', sa.String(length=36), nullable=False),
+        sa.Column('pipeline_id', sa.Integer, sa.ForeignKey('pipeline.id')),
+        sa.Column('created_at', sa.DateTime, default=timeutils.utcnow),
+        sa.Column('updated_at', sa.DateTime, onupdate=timeutils.utcnow),
+    )
+
+    op.create_table(
         'infrastructure_stack',
         sa.Column('id', sa.Integer, primary_key=True, nullable=False),
         sa.Column('uuid', sa.String(length=36), nullable=False),

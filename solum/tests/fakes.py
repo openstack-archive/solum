@@ -147,6 +147,21 @@ class FakeExtension(mock.Mock):
                     description=self.description)
 
 
+class FakeExecution(mock.Mock):
+    def __init__(self, **kwargs):
+        super(FakeExtension, self).__init__(**kwargs)
+        self.__tablename__ = 'execution'
+        self.__resource__ = 'execution'
+        self.uuid = '44du3dx'
+        self.id = 'test_id'
+        self.pipeline_id = 'pipeline-1-2-3-4'
+
+    def as_dict(self):
+        return dict(pipeline_id=self.pipeline_id,
+                    uuid=self.uuid,
+                    id=self.id)
+
+
 class FakeInfrastructureStack(mock.Mock):
     def __init__(self, **kwargs):
         super(FakeInfrastructureStack, self).__init__(**kwargs)

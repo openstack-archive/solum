@@ -34,6 +34,15 @@ Pipelines
 .. autotype:: solum.api.controllers.v1.datamodel.pipeline.Pipeline
    :members:
 
+Executions
+----------
+
+.. rest-controller:: solum.api.controllers.v1.execution:ExecutionsController
+   :webprefix: /v1/pipelines/(pipeline_id)/executions
+
+.. autotype:: solum.api.controllers.v1.datamodel.execution.Execution
+   :members:
+
 Assemblies
 ----------
 

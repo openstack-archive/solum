@@ -17,6 +17,7 @@ import sqlalchemy
 from solum.common import exception
 from solum import objects
 from solum.objects import pipeline as abstract
+from solum.objects.sqlalchemy import execution
 from solum.objects.sqlalchemy import models as sql
 
 
@@ -62,6 +63,20 @@ class Pipeline(sql.Base, abstract.Pipeline):
             return session.query(cls).filter_by(trigger_id=trigger_id).one()
         except sqlalchemy.orm.exc.NoResultFound:
             raise exception.ResourceNotFound(id=trigger_id, name='trigger')
+
+    @property
+    def executions(self):
+        session = sql.Base.get_session()
+        return session.query(execution.Execution).filter_by(
+            pipeline_id=self.id).all()
+
+    def destroy(self, context):
+        session = sql.Base.get_session()
+        with session.begin():
+            session.query(execution.Execution).filter_by(
+                pipeline_id=self.id).delete()
+            session.query(self.__class__).filter_by(
+                id=self.id).delete()
 
 
 class PipelineList(abstract.PipelineList):
