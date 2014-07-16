@@ -21,7 +21,6 @@ from solum.common import catalog
 from solum.common import clients
 from solum.common import context
 from solum.common import exception
-from solum.common import solum_keystoneclient
 from solum import objects
 from solum.openstack.common import log as logging
 
@@ -31,14 +30,20 @@ CONF = cfg.CONF
 
 class PipelineHandler(handler.Handler):
     """Fulfills a request on the pipeline resource."""
+    def __init__(self, context):
+        super(PipelineHandler, self).__init__(context)
+        self._clients = None
+        if context is not None:
+            self._clients = clients.OpenStackClients(context)
+
     def get(self, id):
         """Return an pipeline."""
         return objects.registry.Pipeline.get_by_uuid(self.context, id)
 
     def _context_from_trust_id(self, trust_id):
         cntx = context.RequestContext(trust_id=trust_id)
-        kc = solum_keystoneclient.KeystoneClientV3(cntx)
-        return kc.context
+        self._clients = clients.OpenStackClients(cntx)
+        return self._clients.keystone().context
 
     def trigger_workflow(self, trigger_id):
         """Get trigger by trigger id and execute the associated workbook."""
@@ -63,7 +68,7 @@ class PipelineHandler(handler.Handler):
 
         ctx = {}
         # service urls.
-        kc = solum_keystoneclient.KeystoneClientV3(self.context)
+        kc = self._clients.keystone()
         ctx['heat_service_url'] = kc.client.service_catalog.url_for(
             service_type='orchestration',
             endpoint_type='publicURL')
@@ -94,7 +99,7 @@ class PipelineHandler(handler.Handler):
     def _execute_workbook(self, pipeline):
         execution_ctx = self._build_execution_context(pipeline)
 
-        osc = clients.OpenStackClients(self.context)
+        osc = self._clients
         resp = osc.mistral().executions.create(pipeline.workbook_name,
                                                'start',
                                                execution_ctx)
@@ -113,8 +118,7 @@ class PipelineHandler(handler.Handler):
         db_obj = objects.registry.Pipeline.get_by_uuid(self.context, id)
 
         # delete the trust.
-        ksc = solum_keystoneclient.KeystoneClientV3(self.context)
-        ksc.delete_trust(db_obj.trust_id)
+        self._clients.keystone().delete_trust(db_obj.trust_id)
         db_obj.destroy(self.context)
 
     def create(self, data):
@@ -127,8 +131,7 @@ class PipelineHandler(handler.Handler):
         db_obj.trigger_id = str(uuid.uuid4())
 
         # create the trust_id and store it.
-        ksc = solum_keystoneclient.KeystoneClientV3(self.context)
-        trust_context = ksc.create_trust_context()
+        trust_context = self._clients.keystone().create_trust_context()
         db_obj.trust_id = trust_context.trust_id
 
         db_obj.create(self.context)
