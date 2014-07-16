@@ -44,8 +44,14 @@ class Handler(object):
             assem = objects.registry.Assembly.get_by_id(ctxt,
                                                         assembly_id)
             if not any([comp for comp in assem.components
-                        if 'Image Build' in comp.description]):
+                        if 'Image_Build' in comp.description]):
+                comp_name = 'Heat_Stack_for_%s' % assem.name
+                stack_id = None
+                if assem.heat_stack_component is not None:
+                    stack_id = assem.heat_stack_component.heat_stack_id
                 objects.registry.Component.assign_and_create(ctxt, assem,
+                                                             comp_name,
                                                              'Image_Build',
                                                              'Image Build job',
-                                                             created_image_id)
+                                                             created_image_id,
+                                                             stack_id)
