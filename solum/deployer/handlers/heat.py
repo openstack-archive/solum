@@ -23,6 +23,7 @@ import yaml
 from solum.common import catalog
 from solum.common import clients
 from solum.common import exception
+from solum.common import heat_utils
 from solum import objects
 from solum.objects import assembly
 from solum.openstack.common import log as logging
@@ -64,19 +65,6 @@ class Handler(object):
     def echo(self, ctxt, message):
         LOG.debug("%s" % message)
 
-    def _get_network_parameters(self, osc):
-        # TODO(julienvey) In the long term, we should have optional parameters
-        # if the user wants to override this default behaviour
-        params = {}
-        tenant_networks = osc.neutron().list_networks()
-        for tenant_network in tenant_networks['networks']:
-            if tenant_network['router:external']:
-                params['public_net'] = tenant_network['id']
-            else:
-                params['private_net'] = tenant_network['id']
-                params['private_subnet'] = tenant_network['subnets'][0]
-        return params
-
     def _get_stack_name(self, assembly, prefix_len=100):
         assem_name = assembly.name
         # heat stack name has a max allowable length of 255
@@ -117,7 +105,7 @@ class Handler(object):
         parameters = {'app_name': assem.name,
                       'image': image_id}
 
-        parameters.update(self._get_network_parameters(osc))
+        parameters.update(heat_utils.get_network_parameters(osc))
 
         # TODO(asalkeld) support template flavors (maybe an autoscaling one)
         #                this could also be stored in glance.
