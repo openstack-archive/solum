@@ -153,11 +153,14 @@ class TestPipelineHandler(base.BaseTestCase):
         mock_registry.Pipeline.get_by_trigger_id.assert_called_once_with(
             None, trigger_id)
 
+    @mock.patch('solum.common.heat_utils.get_network_parameters')
     @mock.patch('solum.common.solum_keystoneclient.KeystoneClientV3')
-    def test_build_execution_context_first_run(self, mock_ks, mock_registry):
+    def test_build_execution_context_first_run(self, mock_ks, mock_net,
+                                               mock_registry):
         fpipe = fakes.FakePipeline()
         fpipe.last_execution.return_value = None
         fplan = fakes.FakePlan()
+        mock_net.return_value = {'public_net': 'fake-net-id'}
         mock_registry.Plan.get_by_id.return_value = fplan
         fplan.raw_content = {
             'name': 'theplan',
@@ -175,3 +178,5 @@ class TestPipelineHandler(base.BaseTestCase):
         self.assertEqual('url-for', ex_ctx['build_service_url'])
         self.assertEqual('1-2-3-4', ex_ctx['base_image_id'])
         self.assertEqual('heroku', ex_ctx['source_format'])
+        self.assertEqual('faker', ex_ctx['parameters']['app_name'])
+        self.assertEqual('fake-net-id', ex_ctx['parameters']['public_net'])

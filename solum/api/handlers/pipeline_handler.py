@@ -21,6 +21,7 @@ from solum.common import catalog
 from solum.common import clients
 from solum.common import context
 from solum.common import exception
+from solum.common import heat_utils
 from solum import objects
 from solum.openstack.common import log as logging
 
@@ -97,12 +98,16 @@ class PipelineHandler(handler.Handler):
             ctx['source_uri'] = arti['content']['href']
             ctx['base_image_id'] = arti.get('language_pack', 'auto')
             ctx['source_format'] = arti.get('artifact_type', 'heroku')
-            ctx['template'] = catalog.get('templates',
-                                          arti.get('heat_template', 'basic'))
             ctx['image_format'] = arti.get('image_format',
                                            CONF.api.image_format)
-            ctx['parameters'] = arti.get('heat_parameters', {})
+
+        ctx['template'] = catalog.get('templates', 'basic')
+        # TODO(asalkeld) add support to the plan to pass heat parameters.
+        ctx['parameters'] = {'app_name': pipeline.name}
+        ctx['parameters'].update(
+            heat_utils.get_network_parameters(self._clients))
         ctx['stack_id'] = self._create_empty_stack(pipeline)
+        ctx['stack_name'] = pipeline.name
 
         # TODO(asalkeld) integrate the Environment into the context.
         return ctx
@@ -133,7 +138,6 @@ class PipelineHandler(handler.Handler):
 
     def _execute_workbook(self, pipeline):
         execution_ctx = self._build_execution_context(pipeline)
-        execution_ctx['auth_token'] = self.context.auth_token
 
         osc = self._clients
         resp = osc.mistral().executions.create(pipeline.workbook_name,
