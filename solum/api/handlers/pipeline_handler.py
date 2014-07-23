@@ -154,6 +154,24 @@ class PipelineHandler(handler.Handler):
         ex_obj.pipeline_id = pipeline.id
         ex_obj.create(self.context)
 
+    def _ensure_workbook(self, pipeline):
+        osc = clients.OpenStackClients(self.context)
+        try:
+            osc.mistral().workbooks.get(pipeline.workbook_name)
+        except Exception as excp:
+            if 'Workbook not found' in str(excp):
+                definition = catalog.get('workbooks', pipeline.workbook_name)
+                # create the workbook for the user.
+                osc.mistral().workbooks.create(
+                    pipeline.workbook_name,
+                    'solum generated workbook',
+                    ['solum', 'builtin'])
+                osc.mistral().workbooks.upload_definition(
+                    pipeline.workbook_name,
+                    definition)
+            else:
+                raise
+
     def update(self, id, data):
         """Modify a resource."""
         db_obj = objects.registry.Pipeline.get_by_uuid(self.context, id)
@@ -183,9 +201,9 @@ class PipelineHandler(handler.Handler):
         # create the trust_id and store it.
         trust_context = self._clients.keystone().create_trust_context()
         db_obj.trust_id = trust_context.trust_id
-
         db_obj.create(self.context)
 
+        self._ensure_workbook(db_obj)
         self._execute_workbook(db_obj)
 
         return db_obj
