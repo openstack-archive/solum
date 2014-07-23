@@ -13,6 +13,7 @@
 # limitations under the License.
 
 from solum.objects import registry
+from solum.objects.sqlalchemy import execution
 from solum.objects.sqlalchemy import pipeline
 from solum.tests import base
 from solum.tests import utils
@@ -52,3 +53,24 @@ class TestPipeline(base.BaseTestCase):
             'trigger_id'])
         for key, value in self.data[0].items():
             self.assertEqual(value, getattr(ta, key))
+
+    def test_last_execution(self):
+        ta = pipeline.Pipeline().get_by_id(self.ctx, self.data[0]['id'])
+        # add executions
+        ex1 = execution.Execution()
+        ex1.uuid = 'first'
+        ex1.pipeline_id = ta.id
+        ex1.create(self.ctx)
+
+        ex2 = execution.Execution()
+        ex2.uuid = 'second'
+        ex2.pipeline_id = ta.id
+        ex2.create(self.ctx)
+
+        extest = ta.last_execution()
+        self.assertEqual('second', extest.uuid)
+
+    def test_last_execution_none(self):
+        ta = pipeline.Pipeline().get_by_id(self.ctx, self.data[0]['id'])
+        extest = ta.last_execution()
+        self.assertIsNone(extest)

@@ -149,7 +149,7 @@ class FakeExtension(mock.Mock):
 
 class FakeExecution(mock.Mock):
     def __init__(self, **kwargs):
-        super(FakeExtension, self).__init__(**kwargs)
+        super(FakeExecution, self).__init__(**kwargs)
         self.__tablename__ = 'execution'
         self.__resource__ = 'execution'
         self.uuid = '44du3dx'
@@ -225,6 +225,9 @@ class FakePipeline(mock.Mock):
         self.id = 8
         self.name = 'faker'
         self.trust_id = 'trust_worthy'
+
+    def last_execution(self):
+        return FakeExecution()
 
     def as_dict(self):
         return dict(user_id=self.user_id,

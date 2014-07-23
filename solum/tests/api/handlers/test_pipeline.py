@@ -17,6 +17,8 @@ import uuid
 import mock
 
 from solum.api.handlers import pipeline_handler
+from solum.common import catalog
+from solum.common import yamlutils
 from solum.tests import base
 from solum.tests import fakes
 from solum.tests import utils
@@ -113,10 +115,6 @@ class TestPipelineHandler(base.BaseTestCase):
     @mock.patch('solum.common.clients.OpenStackClients')
     def test_delete(self, mock_clients, mock_registry):
         db_obj = fakes.FakePipeline()
-        mock_exec_obj = mock.MagicMock()
-        db_obj.last_execution.return_value = mock_exec_obj
-        mock_exec_obj.uuid = 'fake_execution'
-
         mock_exec = mock.MagicMock()
         mock_exec.context = {'stack_id': 'foo'}
         mock_mistral = mock_clients.return_value.mistral.return_value
@@ -153,12 +151,33 @@ class TestPipelineHandler(base.BaseTestCase):
         mock_registry.Pipeline.get_by_trigger_id.assert_called_once_with(
             None, trigger_id)
 
+    @mock.patch('solum.common.clients.OpenStackClients')
+    def test_get_context_from_last_execution(self, mock_clients,
+                                             mock_registry):
+        fpipe = fakes.FakePipeline()
+        mock_exec = mock.MagicMock()
+        mock_exec.context = {'stack_id': 'foo',
+                             'build_service_url': 'url-for',
+                             'base_image_id': '1-2-3-4',
+                             'source_format': 'heroku'}
+        mock_mistral = mock_clients.return_value.mistral.return_value
+        mock_mistral.executions.get.return_value = mock_exec
+        wbook = yamlutils.load(catalog.get('workbooks', 'build_deploy'))
+        mock_mistral.workbooks.download_definition.return_value = wbook
+
+        handler = pipeline_handler.PipelineHandler(self.ctx)
+
+        ex_ctx = handler._get_context_from_last_execution(fpipe)
+        self.assertEqual('foo', ex_ctx['stack_id'])
+        self.assertEqual('url-for', ex_ctx['build_service_url'])
+        self.assertEqual('1-2-3-4', ex_ctx['base_image_id'])
+        self.assertEqual('heroku', ex_ctx['source_format'])
+
     @mock.patch('solum.common.heat_utils.get_network_parameters')
     @mock.patch('solum.common.solum_keystoneclient.KeystoneClientV3')
     def test_build_execution_context_first_run(self, mock_ks, mock_net,
                                                mock_registry):
         fpipe = fakes.FakePipeline()
-        fpipe.last_execution.return_value = None
         fplan = fakes.FakePlan()
         mock_net.return_value = {'public_net': 'fake-net-id'}
         mock_registry.Plan.get_by_id.return_value = fplan
@@ -171,12 +190,53 @@ class TestPipelineHandler(base.BaseTestCase):
                            'language_pack': '1-2-3-4'}]}
 
         handler = pipeline_handler.PipelineHandler(self.ctx)
+
+        handler._get_context_from_last_execution = mock.MagicMock(
+            return_value=None)
+
         handler._create_empty_stack = mock.MagicMock(return_value='foo')
         url_for = mock_ks.return_value.client.service_catalog.url_for
         url_for.return_value = 'url-for'
         ex_ctx = handler._build_execution_context(fpipe)
+        self.assertEqual('foo', ex_ctx['stack_id'])
         self.assertEqual('url-for', ex_ctx['build_service_url'])
         self.assertEqual('1-2-3-4', ex_ctx['base_image_id'])
         self.assertEqual('heroku', ex_ctx['source_format'])
         self.assertEqual('faker', ex_ctx['parameters']['app_name'])
         self.assertEqual('fake-net-id', ex_ctx['parameters']['public_net'])
+
+    @mock.patch('solum.common.clients.OpenStackClients')
+    def test_build_execution_context_next_run(self, mock_clients,
+                                              mock_registry):
+        fpipe = fakes.FakePipeline()
+        fplan = fakes.FakePlan()
+        mock_registry.Plan.get_by_id.return_value = fplan
+        fplan.raw_content = {
+            'name': 'theplan',
+            'artifacts': [{'name': 'nodeus',
+                           'artifact_type': 'heroku',
+                           'content': {
+                               'href': 'https://example.com/ex.git'},
+                           'language_pack': '1-2-3-4'}]}
+
+        mock_exec = mock.MagicMock()
+        mock_exec.context = {'stack_id': 'foo',
+                             'build_service_url': 'url-for',
+                             'base_image_id': '1-2-3-4',
+                             'source_format': 'heroku',
+                             'parameters': {'app_name': 'fruit',
+                                            'public_net': 'nsa-2-0'}}
+        mock_mistral = mock_clients.return_value.mistral.return_value
+        mock_mistral.executions.get.return_value = mock_exec
+        wbook = yamlutils.load(catalog.get('workbooks', 'build_deploy'))
+        mock_mistral.workbooks.download_definition.return_value = wbook
+
+        handler = pipeline_handler.PipelineHandler(self.ctx)
+
+        ex_ctx = handler._build_execution_context(fpipe)
+        self.assertEqual('foo', ex_ctx['stack_id'])
+        self.assertEqual('url-for', ex_ctx['build_service_url'])
+        self.assertEqual('1-2-3-4', ex_ctx['base_image_id'])
+        self.assertEqual('heroku', ex_ctx['source_format'])
+        self.assertEqual('fruit', ex_ctx['parameters']['app_name'])
+        self.assertEqual('nsa-2-0', ex_ctx['parameters']['public_net'])
