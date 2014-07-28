@@ -18,6 +18,7 @@ import mock
 
 from solum.api.handlers import pipeline_handler
 from solum.common import catalog
+from solum.common import exception
 from solum.common import yamlutils
 from solum.tests import base
 from solum.tests import fakes
@@ -83,9 +84,11 @@ class TestPipelineHandler(base.BaseTestCase):
 
         handler = pipeline_handler.PipelineHandler(self.ctx)
         handler._execute_workbook = mock.MagicMock()
+        handler._ensure_workbook = mock.MagicMock()
         res = handler.create(data)
         db_obj.update.assert_called_once_with(data)
         handler._execute_workbook.assert_called_once_with(db_obj)
+        handler._ensure_workbook.assert_called_once_with(db_obj)
         db_obj.create.assert_called_once_with(self.ctx)
         self.assertEqual(db_obj, res)
         mock_kc.return_value.create_trust_context.assert_called_once_with()
@@ -240,3 +243,46 @@ class TestPipelineHandler(base.BaseTestCase):
         self.assertEqual('heroku', ex_ctx['source_format'])
         self.assertEqual('fruit', ex_ctx['parameters']['app_name'])
         self.assertEqual('nsa-2-0', ex_ctx['parameters']['public_net'])
+
+    @mock.patch('solum.common.clients.OpenStackClients')
+    def test_ensure_workbook_exists(self, mock_clients, mock_registry):
+        fpipe = fakes.FakePipeline()
+        fpipe.workbook_name = 'build'
+        mock_mistral = mock_clients.return_value.mistral.return_value
+        wbook = mock.MagicMock()
+        wbook.workbook_name = 'build'
+        mock_mistral.workbooks.get.return_value = wbook
+        handler = pipeline_handler.PipelineHandler(self.ctx)
+        handler._ensure_workbook(fpipe)
+        mock_mistral.workbooks.create.assert_has_calls([])
+
+    @mock.patch('solum.common.clients.OpenStackClients')
+    def test_ensure_workbook_not_exists(self, mock_clients, mock_registry):
+        fpipe = fakes.FakePipeline()
+        fpipe.workbook_name = 'build'
+        mock_mistral = mock_clients.return_value.mistral.return_value
+        mock_mistral.workbooks.get.side_effect = ValueError(
+            'Workbook not found')
+        handler = pipeline_handler.PipelineHandler(self.ctx)
+        handler._ensure_workbook(fpipe)
+
+        mock_mistral.workbooks.create.assert_called_once_with(
+            'build', 'solum generated workbook', ['solum', 'builtin'])
+        wbook = catalog.get('workbooks', 'build')
+        mock_mistral.workbooks.upload_definition.assert_called_once_with(
+            'build', wbook)
+
+    @mock.patch('solum.common.clients.OpenStackClients')
+    @mock.patch('solum.common.catalog.get')
+    def test_ensure_workbook_unknown(self, mock_get,
+                                     mock_clients, mock_registry):
+        fpipe = fakes.FakePipeline()
+        fpipe.workbook_name = 'we-dont-have-this'
+        mock_mistral = mock_clients.return_value.mistral.return_value
+        mock_mistral.workbooks.get.side_effect = ValueError(
+            'Workbook not found')
+        mock_get.side_effect = exception.ObjectNotFound(
+            name='workbook', id='we-dont-have-this')
+        handler = pipeline_handler.PipelineHandler(self.ctx)
+        self.assertRaises(exception.ObjectNotFound,
+                          handler._ensure_workbook, fpipe)
