@@ -14,6 +14,7 @@
 
 import uuid
 
+from mistralclient.api import base
 from oslo.config import cfg
 
 from solum.api.handlers import handler
@@ -61,7 +62,23 @@ class PipelineHandler(handler.Handler):
 
         self._execute_workbook(db_obj)
 
-    def _get_context_from_last_execution(self, definition, execution):
+    def _get_context_from_last_execution(self, pipeline):
+
+        last_execution = pipeline.last_execution()
+        if last_execution is None:
+            return
+
+        osc = self._clients
+        try:
+            execution = osc.mistral().executions.get(
+                pipeline.workbook_name, last_execution.uuid)
+            definition = osc.mistral().workbooks.download_definition(
+                pipeline.workbook_name)
+        except base.APIException:
+            LOG.debug('Could not get last_execution(%s)' %
+                      last_execution, exc_info=True)
+            return
+
         tasks = definition['Workflow'].get('tasks', {})
         inputs = set()
         outputs = set()
@@ -69,13 +86,13 @@ class PipelineHandler(handler.Handler):
             inputs |= set(tasks[act].get('parameters', {}).keys())
             outputs |= set(tasks[act].get('publish', {}).keys())
         inputs -= outputs
-        return dict((inp, execution.context.get(inp)) for inp in inputs)
+        return dict((key, execution.context.get(key)) for key in inputs)
 
     def _build_execution_context(self, pipeline):
-
-        # first try and read previous execution context
-        # mistral exection-get build id
-        # if that exists use that, else create one.
+        # try and read the context from the previous execution
+        ctx = self._get_context_from_last_execution(pipeline)
+        if ctx is not None:
+            return ctx
 
         ctx = {}
         # service urls.
@@ -120,19 +137,8 @@ class PipelineHandler(handler.Handler):
         return created_stack['stack']['id']
 
     def _delete_stack(self, pipeline):
-        last_execution = pipeline.last_execution()
-        if last_execution is not None:
-            osc = self._clients
-            try:
-                execution = osc.mistral().executions.get(
-                    pipeline.workbook_name, last_execution.uuid)
-                definition = osc.mistral().workbooks.download_definition(
-                    pipeline.workbook_name)
-            except Exception as missing_exc:
-                LOG.exception(missing_exc)
-                return
-            execution_ctx = self._get_context_from_last_execution(definition,
-                                                                  execution)
+        execution_ctx = self._get_context_from_last_execution(pipeline)
+        if execution_ctx is not None and 'stack_id' in execution_ctx:
             osc = self._clients
             osc.heat().stacks.delete(stack_id=execution_ctx['stack_id'])
 

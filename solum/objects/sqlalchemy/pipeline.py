@@ -19,6 +19,9 @@ from solum import objects
 from solum.objects import pipeline as abstract
 from solum.objects.sqlalchemy import execution
 from solum.objects.sqlalchemy import models as sql
+from solum.openstack.common import log as logging
+
+LOG = logging.getLogger(__name__)
 
 
 class Pipeline(sql.Base, abstract.Pipeline):
@@ -63,6 +66,17 @@ class Pipeline(sql.Base, abstract.Pipeline):
             return session.query(cls).filter_by(trigger_id=trigger_id).one()
         except sqlalchemy.orm.exc.NoResultFound:
             raise exception.ResourceNotFound(id=trigger_id, name='trigger')
+
+    def last_execution(self):
+        session = sql.Base.get_session()
+        try:
+            return session.query(execution.Execution).filter_by(
+                pipeline_id=self.id).order_by(
+                    sqlalchemy.desc(
+                        execution.Execution.created_at)).limit(1).one()
+        except sqlalchemy.orm.exc.NoResultFound as no_ex:
+            LOG.debug('No Execution found %s' % no_ex)
+            return None
 
     @property
     def executions(self):
