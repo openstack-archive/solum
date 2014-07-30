@@ -119,12 +119,13 @@ class TestPipelineHandler(base.BaseTestCase):
     def test_delete(self, mock_clients, mock_registry):
         db_obj = fakes.FakePipeline()
         mock_exec = mock.MagicMock()
-        mock_exec.context = {'stack_id': 'foo'}
+        mock_exec.context = json.dumps({'stack_id': 'foo'})
         mock_mistral = mock_clients.return_value.mistral.return_value
         mock_mistral.executions.get.return_value = mock_exec
-        wb = {'Workflow': {'tasks': {'start':
-                                     {'parameters': {'stack_id': ''}}}}}
-        mock_mistral.workbooks.download_definition.return_value = wb
+        wb = yamlutils.dump({'Workflow': {
+            'tasks': {'start':
+                      {'parameters': {'stack_id': ''}}}}})
+        mock_mistral.workbooks.get_definition.return_value = wb
 
         mock_registry.Pipeline.get_by_uuid.return_value = db_obj
         handler = pipeline_handler.PipelineHandler(self.ctx)
@@ -159,14 +160,14 @@ class TestPipelineHandler(base.BaseTestCase):
                                              mock_registry):
         fpipe = fakes.FakePipeline()
         mock_exec = mock.MagicMock()
-        mock_exec.context = {'stack_id': 'foo',
-                             'build_service_url': 'url-for',
-                             'base_image_id': '1-2-3-4',
-                             'source_format': 'heroku'}
+        mock_exec.context = json.dumps({'stack_id': 'foo',
+                                        'build_service_url': 'url-for',
+                                        'base_image_id': '1-2-3-4',
+                                        'source_format': 'heroku'})
         mock_mistral = mock_clients.return_value.mistral.return_value
         mock_mistral.executions.get.return_value = mock_exec
-        wbook = yamlutils.load(catalog.get('workbooks', 'build_deploy'))
-        mock_mistral.workbooks.download_definition.return_value = wbook
+        wbook = catalog.get('workbooks', 'build_deploy')
+        mock_mistral.workbooks.get_definition.return_value = wbook
 
         handler = pipeline_handler.PipelineHandler(self.ctx)
 
@@ -223,16 +224,17 @@ class TestPipelineHandler(base.BaseTestCase):
                            'language_pack': '1-2-3-4'}]}
 
         mock_exec = mock.MagicMock()
-        mock_exec.context = {'stack_id': 'foo',
-                             'build_service_url': 'url-for',
-                             'base_image_id': '1-2-3-4',
-                             'source_format': 'heroku',
-                             'parameters': {'app_name': 'fruit',
-                                            'public_net': 'nsa-2-0'}}
+        mock_exec.context = json.dumps(
+            {'stack_id': 'foo',
+             'build_service_url': 'url-for',
+             'base_image_id': '1-2-3-4',
+             'source_format': 'heroku',
+             'parameters': {'app_name': 'fruit',
+                            'public_net': 'nsa-2-0'}})
         mock_mistral = mock_clients.return_value.mistral.return_value
         mock_mistral.executions.get.return_value = mock_exec
-        wbook = yamlutils.load(catalog.get('workbooks', 'build_deploy'))
-        mock_mistral.workbooks.download_definition.return_value = wbook
+        wbook = catalog.get('workbooks', 'build_deploy')
+        mock_mistral.workbooks.get_definition.return_value = wbook
 
         handler = pipeline_handler.PipelineHandler(self.ctx)
 

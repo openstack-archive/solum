@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import json
 import uuid
 
 from mistralclient.api import base
@@ -23,6 +24,7 @@ from solum.common import clients
 from solum.common import context
 from solum.common import exception
 from solum.common import heat_utils
+from solum.common import yamlutils
 from solum import objects
 from solum.openstack.common import log as logging
 
@@ -72,8 +74,10 @@ class PipelineHandler(handler.Handler):
         try:
             execution = osc.mistral().executions.get(
                 pipeline.workbook_name, last_execution.uuid)
-            definition = osc.mistral().workbooks.download_definition(
+            execution_ctx = json.loads(execution.context)
+            str_definition = osc.mistral().workbooks.get_definition(
                 pipeline.workbook_name)
+            definition = yamlutils.load(str_definition)
         except base.APIException:
             LOG.debug('Could not get last_execution(%s)' %
                       last_execution, exc_info=True)
@@ -86,7 +90,7 @@ class PipelineHandler(handler.Handler):
             inputs |= set(tasks[act].get('parameters', {}).keys())
             outputs |= set(tasks[act].get('publish', {}).keys())
         inputs -= outputs
-        return dict((key, execution.context.get(key)) for key in inputs)
+        return dict((key, execution_ctx.get(key)) for key in inputs)
 
     def _build_execution_context(self, pipeline):
         # try and read the context from the previous execution
