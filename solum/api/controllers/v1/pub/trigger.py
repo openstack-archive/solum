@@ -14,6 +14,7 @@ import pecan
 from pecan import rest
 
 from solum.api.handlers import assembly_handler
+from solum.api.handlers import pipeline_handler
 from solum.common import exception
 
 
@@ -24,6 +25,11 @@ class TriggerController(rest.RestController):
     @pecan.expose()
     def post(self, trigger_id):
         """Trigger a new event on Solum."""
-        handler = assembly_handler.AssemblyHandler(None)
-        handler.trigger_workflow(trigger_id)
+        try:
+            handler = assembly_handler.AssemblyHandler(None)
+            handler.trigger_workflow(trigger_id)
+        except exception.ResourceNotFound:
+            handler = pipeline_handler.PipelineHandler(None)
+            handler.trigger_workflow(trigger_id)
+
         pecan.response.status = 202
