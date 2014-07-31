@@ -52,7 +52,7 @@ PRUN mkdir -p $APP_DIR
 
 if [ -d "$APP_DIR/build" ] ; then
   cd $APP_DIR/build
-  OUT=$(PRUN git pull | grep -c 'Already up-to-date')
+  OUT=$(git pull | grep -c 'Already up-to-date')
   # Check to see if this is the same as last build, and don't rebuild if allowed to skip
   if [ "$OUT" != "0" ] ; then
     if [ "$REUSE_IMAGES_IF_REPO_UNCHANGED" -eq "1" ] ; then
@@ -104,7 +104,7 @@ EOF
 
 cd $APP_DIR
 PRUN sudo docker build -t $APP .
-PRUN sudo docker save "$APP" | glance image-create --container-format=docker --disk-format=raw --name "$APP"
+sudo docker save "$APP" | glance image-create --container-format=docker --disk-format=raw --name "$APP"
 
 image_id=$(app_glance_id $APP)
 
