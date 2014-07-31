@@ -11,9 +11,7 @@ source $HERE/app-common
 
 # Get the image_id of the image named $1
 function app_glance_id () {
-  local APPNAME=$1
-  local CMD="glance image-show $APPNAME"
-  PRUN "$CMD" | awk '/^. id / { print $4; }'
+  glance image-list --name $1 --sort-key updated_at --sort-dir asc | grep -v "+--" | tail -1 | cut -d'|' -f2
 }
 
 TLOG ===== Starting Build Script $0 $*
