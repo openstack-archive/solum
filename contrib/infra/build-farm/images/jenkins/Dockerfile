@@ -1,4 +1,4 @@
-FROM ubuntu:13.04
+FROM ubuntu:12.04
 
 MAINTAINER Pierre Padrixe
 
