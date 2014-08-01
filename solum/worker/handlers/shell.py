@@ -168,12 +168,14 @@ class Handler(object):
             LOG.debug("Unit test command is None; skipping unittests.")
             return 0
 
+        git_branch = 'master'
+
         LOG.debug("Running unittests.")
         update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.UNIT_TESTING)
 
         test_app = os.path.join(self.proj_dir, 'contrib', 'lp-cedarish',
                                 'docker', 'unittest-app')
-        command = [test_app, git_url, ctxt.tenant, test_cmd]
+        command = [test_app, git_url, git_branch, ctxt.tenant, test_cmd]
 
         solum.TLS.trace.clear()
         solum.TLS.trace.import_context(ctxt)
