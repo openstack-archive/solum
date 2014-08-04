@@ -27,8 +27,11 @@ PRUN silent docker ps
 
 GIT=$1
 shift
+GIT_BRANCH=$1
+shift
 TENANT=$1
 shift
+
 ENTRYPOINT="$@"
 shift
 
@@ -38,7 +41,7 @@ DOCKER_REGISTRY=${DOCKER_REGISTRY:-'127.0.0.1:5042'}
 # Test the application code
 TLOG "===>" Testing App
 
-sudo docker run --rm -e "GIT_URL=$GIT" -e "TEST_CMD=$ENTRYPOINT" $DOCKER_REGISTRY/slugtester
+sudo docker run --rm -e "GIT_URL=$GIT" -e "GIT_BRANCH=$GIT_BRANCH" -e "TEST_CMD=$ENTRYPOINT" $DOCKER_REGISTRY/slugtester
 
 SUCCESS=$?
 echo Docker finished with status $SUCCESS.

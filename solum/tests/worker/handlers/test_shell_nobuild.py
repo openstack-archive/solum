@@ -59,8 +59,8 @@ class HandlerTest(base.BaseTestCase):
         u_script = os.path.join(util_dir, 'unittest-app')
 
         expected = [
-            mock.call([u_script, 'git://example.com/foo', self.ctx.tenant,
-                       'faketests'], env=test_env)]
+            mock.call([u_script, 'git://example.com/foo', 'master',
+                       self.ctx.tenant, 'faketests'], env=test_env)]
         self.assertEqual(expected, mock_popen.call_args_list)
 
         # The UNIT_TESTING update happens from shell...
@@ -97,8 +97,8 @@ class HandlerTest(base.BaseTestCase):
         u_script = os.path.join(util_dir, 'unittest-app')
 
         expected = [
-            mock.call([u_script, 'git://example.com/foo', self.ctx.tenant,
-                       'faketests'], env=test_env)]
+            mock.call([u_script, 'git://example.com/foo', 'master',
+                       self.ctx.tenant, 'faketests'], env=test_env)]
         self.assertEqual(expected, mock_popen.call_args_list)
 
         expected = [mock.call(self.ctx, 44, 'UNIT_TESTING'),
