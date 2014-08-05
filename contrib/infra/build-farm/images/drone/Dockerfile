@@ -1,4 +1,4 @@
-FROM ubuntu:12.04
+FROM solum/guestagent
 
 MAINTAINER Julien Vey
 
