@@ -218,6 +218,11 @@ class SolumException(Exception):
         return self.message
 
 
+class BadRequest(SolumException):
+    msg_fmt = _("The request is malformed. Reason: %(reason)s")
+    code = 400
+
+
 class ObjectNotFound(SolumException):
     msg_fmt = _("The %(name)s %(id)s could not be found.")
 
@@ -236,9 +241,15 @@ class ResourceExists(ObjectNotUnique):
     code = 409
 
 
-class BadRequest(SolumException):
-    msg_fmt = _("The request is malformed. Reason: %(reason)s")
-    code = 400
+class ResourceStillReferenced(SolumException):
+    msg_fmt = _("The %(name)s resource cannot be deleted because one or more"
+                " resources reference it.")
+    code = 409
+
+
+class PlanStillReferenced(ResourceStillReferenced):
+    msg_fmt = _("Plan %(name)s cannot be deleted because one or more"
+                " Assemblies reference it.")
 
 
 class NotImplemented(SolumException):
