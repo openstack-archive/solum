@@ -16,11 +16,12 @@
 import os
 
 from oslo.config import cfg
+from oslo.db import options
+from oslo.db.sqlalchemy.migration_cli import manager
 
-from solum.openstack.common.db.sqlalchemy.migration_cli import manager
-from solum.openstack.common.db.sqlalchemy import session
+from solum.openstack.common import log as logging
 
-
+LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 
 
@@ -68,21 +69,21 @@ def add_command_parsers(subparsers):
 
 
 def get_manager():
-    CONF.import_opt('connection',
-                    'solum.openstack.common.db.sqlalchemy.session',
-                    group='database')
-    session.set_defaults(sql_connection=CONF.database.connection,
-                         sqlite_db='')
-    session.get_session(mysql_traditional_mode=True)
-    alembic_path = os.path.join(os.path.dirname(__file__),
-                                '..', 'objects', 'sqlalchemy',
-                                'migration', 'alembic.ini')
-    migrate_path = os.path.join(os.path.dirname(__file__),
-                                '..', 'objects', 'sqlalchemy',
-                                'migration', 'alembic_migrations')
+    if cfg.CONF.database.connection is None:
+        raise ValueError(
+            'Database connection not set in /etc/solum/solum.conf')
+
+    alembic_path = os.path.abspath(
+        os.path.join(os.path.dirname(__file__),
+                     '..', 'objects', 'sqlalchemy',
+                     'migration', 'alembic.ini'))
+    migrate_path = os.path.abspath(
+        os.path.join(os.path.dirname(__file__),
+                     '..', 'objects', 'sqlalchemy',
+                     'migration', 'alembic_migrations'))
     migration_config = {'alembic_ini_path': alembic_path,
-                        'migration_repo_path': migrate_path,
-                        'alembic_repo_path': migrate_path}
+                        'alembic_repo_path': migrate_path,
+                        'db_url': CONF.database.connection}
     return manager.MigrationManager(migration_config)
 
 
@@ -92,5 +93,9 @@ def main():
                                     help='Available commands',
                                     handler=add_command_parsers)
     CONF.register_cli_opt(command_opt)
+
+    # set_defaults() is called to register the db options.
+    options.set_defaults(CONF)
+
     CONF(project='solum')
     CONF.command.func(get_manager())

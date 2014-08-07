@@ -19,6 +19,8 @@ SQLAlchemy models for application data.
 import json
 
 from oslo.config import cfg
+from oslo.db import exception as db_exc
+from oslo.db.sqlalchemy import models
 import six
 from six import moves
 from sqlalchemy.ext import declarative
@@ -28,12 +30,16 @@ from sqlalchemy import types
 from solum.common import exception
 from solum.common import yamlutils
 from solum import objects
-from solum.openstack.common.db import exception as db_exc
-from solum.openstack.common.db.sqlalchemy import models
-from solum.openstack.common.db.sqlalchemy import session as db_session
+from solum.objects import sqlalchemy as object_sqla
 
 
 def table_args():
+    cfg.CONF.import_opt('connection', 'oslo.db.options',
+                        group='database')
+    if cfg.CONF.database.connection is None:
+        # this is only within some object tests where
+        # the object classes are directly imported.
+        return None
     engine_name = moves.urllib.parse.urlparse(
         cfg.CONF.database.connection).scheme
     if engine_name == 'mysql':
@@ -49,8 +55,7 @@ def model_query(context, model, *args, **kwargs):
     :param session: if present, the session to use
     """
 
-    session = kwargs.get('session') or db_session.get_session(
-        mysql_traditional_mode=True)
+    session = kwargs.get('session') or object_sqla.get_session()
 
     query = session.query(model, *args)
     return query
@@ -74,7 +79,7 @@ class SolumBase(models.TimestampMixin, models.ModelBase):
 
     @classmethod
     def get_session(cls):
-        return db_session.get_session(mysql_traditional_mode=True)
+        return object_sqla.get_session()
 
     @classmethod
     def get_by_id(cls, context, item_id):

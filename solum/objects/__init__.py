@@ -26,11 +26,9 @@ in application code.
 """
 
 from oslo.config import cfg
+from oslo.db import api
 
-from solum.objects import registry
-from solum.openstack.common.db import api  # noqa
-from solum.openstack.common import importutils
-
+from solum.objects import registry as registry_mod
 
 db_opts = [
     cfg.StrOpt('schema_mode',
@@ -43,6 +41,7 @@ CONF = cfg.CONF
 CONF.register_opts(db_opts, "database")
 
 _BACKEND_MAPPING = {'sqlalchemy': 'solum.objects.sqlalchemy'}
+IMPL = api.DBAPI.from_config(CONF, backend_mapping=_BACKEND_MAPPING)
 
 
 def transition_schema():
@@ -57,11 +56,8 @@ def new_schema():
 
 def load():
     """Ensure that the object model is initialized."""
+    global registry
     registry.clear()
-    backend_name = CONF.database.backend
-    backend_path = _BACKEND_MAPPING.get(backend_name, backend_name)
-    backend_mod = importutils.import_module(backend_path)
-    backend_mod.load()
+    IMPL.load()
 
-
-registry = registry.Registry()
+registry = registry_mod.Registry()

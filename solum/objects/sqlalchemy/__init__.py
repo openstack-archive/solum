@@ -12,33 +12,66 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from solum import objects
-from solum.objects import assembly as abstract_assembly
-from solum.objects import component as abstract_component
-from solum.objects import execution as abstract_execution
-from solum.objects import extension as abstract_extension
-from solum.objects import image as abstract_image
-from solum.objects import infrastructure_stack as abstract_infra_stack
-from solum.objects import operation as abstract_operation
-from solum.objects import pipeline as abstract_pipeline
-from solum.objects import plan as abstract_plan
-from solum.objects import sensor as abstract_sensor
-from solum.objects import service as abstract_srvc
-from solum.objects.sqlalchemy import assembly
-from solum.objects.sqlalchemy import component
-from solum.objects.sqlalchemy import execution
-from solum.objects.sqlalchemy import extension
-from solum.objects.sqlalchemy import image
-from solum.objects.sqlalchemy import infrastructure_stack
-from solum.objects.sqlalchemy import operation
-from solum.objects.sqlalchemy import pipeline
-from solum.objects.sqlalchemy import plan
-from solum.objects.sqlalchemy import sensor
-from solum.objects.sqlalchemy import service
+import sys
+
+from oslo.config import cfg
+from oslo.db.sqlalchemy import session
+
+
+_FACADE = None
+
+
+def get_facade():
+    global _FACADE
+
+    if not _FACADE:
+        _FACADE = session.EngineFacade.from_config(cfg.CONF)
+    return _FACADE
+
+get_engine = lambda: get_facade().get_engine()
+get_session = lambda: get_facade().get_session()
+
+
+def get_backend():
+    """The backend is this module itself."""
+    return sys.modules[__name__]
+
+
+def cleanup():
+    global _FACADE
+
+    if _FACADE:
+        _FACADE._session_maker.close_all()
+        _FACADE.get_engine().dispose()
+        _FACADE = None
 
 
 def load():
     """Activate the sqlalchemy backend."""
+    from solum import objects
+    from solum.objects import assembly as abstract_assembly
+    from solum.objects import component as abstract_component
+    from solum.objects import execution as abstract_execution
+    from solum.objects import extension as abstract_extension
+    from solum.objects import image as abstract_image
+    from solum.objects import infrastructure_stack as abstract_infra_stack
+    from solum.objects import operation as abstract_operation
+    from solum.objects import pipeline as abstract_pipeline
+    from solum.objects import plan as abstract_plan
+    from solum.objects import sensor as abstract_sensor
+    from solum.objects import service as abstract_srvc
+    from solum.objects.sqlalchemy import assembly
+    from solum.objects.sqlalchemy import component
+    from solum.objects.sqlalchemy import execution
+    from solum.objects.sqlalchemy import extension
+    from solum.objects.sqlalchemy import image
+    from solum.objects.sqlalchemy import infrastructure_stack
+    from solum.objects.sqlalchemy import operation
+    from solum.objects.sqlalchemy import pipeline
+    from solum.objects.sqlalchemy import plan
+    from solum.objects.sqlalchemy import sensor
+    from solum.objects.sqlalchemy import service
+
     objects.registry.add(abstract_assembly.Assembly, assembly.Assembly)
     objects.registry.add(abstract_assembly.AssemblyList, assembly.AssemblyList)
     objects.registry.add(abstract_infra_stack.InfrastructureStack,

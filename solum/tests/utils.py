@@ -16,11 +16,11 @@ import tempfile
 
 import fixtures
 from oslo.config import cfg
+from oslo.db import options
 
 from solum.common import context
 from solum import objects
 from solum.objects.sqlalchemy import models
-from solum.openstack.common.db.sqlalchemy import session
 
 CONF = cfg.CONF
 
@@ -38,28 +38,26 @@ class Database(fixtures.Fixture):
                                          delete=False) as test_file:
             # note the temp file gets deleted by the NestedTempfile fixture.
             self.db_file = test_file.name
-        self.engine = session.get_engine()
-        # make sure the current connection is cleaned up.
-        self.engine.dispose()
-        session.cleanup()
+        objects.IMPL.cleanup()
 
     def setUp(self):
         super(Database, self).setUp()
         self.configure()
-        self.addCleanup(self.engine.dispose)
-        self.engine = session.get_engine()
-        models.Base.metadata.create_all(self.engine)
-        self.engine.connect()
+        self.addCleanup(objects.IMPL.cleanup)
+        models.Base.metadata.create_all(objects.IMPL.get_engine())
+        objects.IMPL.get_engine().connect()
         objects.load()
 
     def configure(self):
-        session.set_defaults(sql_connection="sqlite:///%s" % self.db_file,
+        options.cfg.set_defaults(options.database_opts,
+                                 sqlite_synchronous=False)
+        options.set_defaults(cfg.CONF,
+                             connection='sqlite:///%s' % self.db_file,
                              sqlite_db=self.db_file)
-        cfg.CONF.set_default('sqlite_synchronous', False)
 
 
 def get_dummy_session():
-    return session.get_session()
+    return objects.IMPL.get_session()
 
 
 def create_models_from_data(model_cls, data, ctx):

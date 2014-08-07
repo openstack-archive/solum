@@ -15,8 +15,8 @@ from logging import config as log_config
 
 from alembic import context
 
+from solum import objects
 from solum.objects.sqlalchemy import models
-import solum.openstack.common.db.sqlalchemy.session as sqlalchemy_session
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -42,7 +42,7 @@ def run_migrations_offline():
     script output.
 
     """
-    url = config.get_main_option("sqlalchemy.url")
+    url = config.get_main_option("db_url")
     context.configure(url=url)
 
     with context.begin_transaction():
@@ -56,7 +56,7 @@ def run_migrations_online():
     and associate a connection with the context.
 
     """
-    engine = sqlalchemy_session.get_session().get_bind()
+    engine = objects.IMPL.get_session().get_bind()
 
     with engine.connect() as connection:
         context.configure(connection=connection,
