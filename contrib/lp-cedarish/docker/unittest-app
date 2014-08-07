@@ -17,8 +17,8 @@ if [[ -z $OS_AUTH_TOKEN ]]; then
 fi
 
 # Check command line arguments
-if [ $# -ne 3 ]; then
-  TLOG Usage: $0 git_url tenant unit_test_entry_point
+if [ $# -lt 4 ]; then
+  TLOG Usage: $0 git_url git_branch tenant unit_test_entry_point
   exit 1
 fi
 
