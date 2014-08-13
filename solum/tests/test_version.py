@@ -14,13 +14,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from oslotest import base
 import pbr.version
 
-from solum.openstack.common import test
 from solum import version
 
 
-class VersionTestCase(test.BaseTestCase):
+class VersionTestCase(base.BaseTestCase):
     """Test cases for version code."""
 
     def test_version_string(self):

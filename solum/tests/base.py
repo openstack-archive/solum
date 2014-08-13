@@ -15,12 +15,11 @@
 # under the License.
 
 from oslo.config import cfg
+from oslotest import base
 import testscenarios
 
-from solum.openstack.common import test
 
-
-class BaseTestCase(testscenarios.WithScenarios, test.BaseTestCase):
+class BaseTestCase(testscenarios.WithScenarios, base.BaseTestCase):
     """Test base class."""
 
     def setUp(self):
