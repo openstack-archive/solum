@@ -52,7 +52,7 @@ class InfrastructureStack(api_types.Base):
 
     @classmethod
     def sample(cls):
-        return cls(uri='http://example.com/v1/infrastructures/stack/1234',
+        return cls(uri='http://example.com/v1/infrastructure/stacks/1234',
                    name='jenkins',
                    type='infrastructure_stack',
                    image_id='1234',

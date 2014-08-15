@@ -114,7 +114,7 @@ class TestAssemblyAsDict(base.BaseTestCase):
     scenarios = [
         ('none', dict(data=None)),
         ('one', dict(data={'name': 'foo'})),
-        ('full', dict(data={'uri': 'http://example.com/v1/assemblys/x1',
+        ('full', dict(data={'uri': 'http://example.com/v1/assemblies/x1',
                             'name': 'Example-assembly',
                             'type': 'assembly',
                             'project_id': '1dae5a09ef2b4d8cbf3594b0eb4f6b94',

@@ -127,3 +127,18 @@ LanguagePacks
 
 .. autotype:: solum.api.controllers.v1.datamodel.language_pack.LanguagePack
    :members:
+
+Infrastructure
+--------------
+
+.. rest-controller:: solum.api.controllers.v1.infrastructure:InfrastructureController
+   :webprefix: /v1/infrastructure
+
+.. autotype:: solum.api.controllers.v1.datamodel.infrastructure.Infrastructure
+   :members:
+
+Triggers
+--------
+
+.. rest-controller:: solum.api.controllers.v1.trigger:TriggerController
+   :webprefix: /v1/triggers

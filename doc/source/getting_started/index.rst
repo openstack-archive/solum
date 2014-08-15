@@ -91,7 +91,7 @@ Use that URI from above to create an assembly for your app.
   | description     | test assembly                                                            |
   | application_uri | None                                                                     |
   | name            | ex1                                                                      |
-  | trigger_uri     | http://10.0.2.15:9777/v1/public/triggers/ad74f96e-7769-4462-ad90-e31b94f |
+  | trigger_uri     | http://10.0.2.15:9777/v1/triggers/ad74f96e-7769-4462-ad90-e31b94f |
   |                 | 147c4                                                                    |
   | uuid            | de666039-841f-45d7-9ed0-03cc3929f28e                                     |
   +-----------------+--------------------------------------------------------------------------+
@@ -115,7 +115,7 @@ The status field will show the progress of your app through the process.
   | description     | None                                                                     |
   | application_uri | None                                                                     |
   | name            | ex1                                                                      |
-  | trigger_uri     | http://10.0.2.15:9777/v1/public/triggers/ad74f96e-7769-4462-ad90-e31b94f |
+  | trigger_uri     | http://10.0.2.15:9777/v1/triggers/ad74f96e-7769-4462-ad90-e31b94f |
   |                 | 147c4                                                                    |
   | uuid            | de666039-841f-45d7-9ed0-03cc3929f28e                                     |
   +-----------------+--------------------------------------------------------------------------+
@@ -132,7 +132,7 @@ The status field will show the progress of your app through the process.
   | description     | None                                                                     |
   | application_uri | 192.168.76.21:5000                                                       |
   | name            | ex1                                                                      |
-  | trigger_uri     | http://10.0.2.15:9777/v1/public/triggers/ad74f96e-7769-4462-ad90-e31b94f |
+  | trigger_uri     | http://10.0.2.15:9777/v1/triggers/ad74f96e-7769-4462-ad90-e31b94f |
   |                 | 147c4                                                                    |
   | uuid            | de666039-841f-45d7-9ed0-03cc3929f28e                                     |
   +-----------------+--------------------------------------------------------------------------+
@@ -148,7 +148,7 @@ Connect to Your App
 
 Update Your App
 ---------------
-You can set up your Git repository to fire an on_commit action to make a webhook call to Solum each time you make a commit. The webhook call sends a POST request to http://10.0.2.15:9777/v1/public/triggers/<trigger_id> causing Solum to automatically build a new image and re-deploy your application.
+You can set up your Git repository to fire an on_commit action to make a webhook call to Solum each time you make a commit. The webhook call sends a POST request to http://10.0.2.15:9777/v1/triggers/<trigger_id> causing Solum to automatically build a new image and re-deploy your application.
 
 To do this with a GitHub repo, go to your repo on the web, click on Settings, and then select "Webhooks & Services" form the left navication menu. In the Webhooks section, click "Add Webhook", and enter your GitHub account password when prompted. Copy and paste the value of trigger_uri from your "solum assembly show" command into the "Payload URL" filed. Note that this will only work if you have a public IP address or hostname in the trigger_uri field. Select the "application/vnd.github.v3+json" Payload version, determine if you only want to trigger this webhook on "git push" or if you want it for other events too by using the radio buttons and Checkboxes provided. Finish by clicking "Add Webhook". Now next time that event is triggered on GitHub, Solum will automatically check out your change, build it, and deploy it for you.
 

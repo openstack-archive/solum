@@ -40,6 +40,12 @@ CONF = cfg.CONF
 CONF.register_opts(AUTH_OPTS)
 CONF.register_opts(auth_token.opts, group=OPT_GROUP_NAME)
 
+PUBLIC_ENDPOINTS = [
+    '^/?$',
+    '^/v[0-9]+/?$',
+    '^/v[0-9]+/triggers',
+]
+
 
 def install(app, conf):
     if conf.get('enable_authentication'):
@@ -54,19 +60,28 @@ def install(app, conf):
     return app
 
 
+class AuthHelper(object):
+    """Helper methods for Auth."""
+
+    def __init__(self):
+        endpoints_pattern = '|'.join(pe for pe in PUBLIC_ENDPOINTS)
+        self._public_endpoints_regexp = re.compile(endpoints_pattern)
+
+    def is_endpoint_public(self, path):
+        return self._public_endpoints_regexp.match(path)
+
+
 class AuthProtocolWrapper(auth_token.AuthProtocol):
     """A wrapper on Keystone auth_token AuthProtocol.
 
     Does not perform verification of authentication tokens for pub routes in
-    the API. Public routes are those which Uri starts with
-    '/{version_number}/public/'
+    the API. Public routes are those defined by PUBLIC_ENDPOINTS
 
     """
 
     def __call__(self, env, start_response):
         path = env.get('PATH_INFO')
-        regexp = re.compile('^/v[0-9]+/public/')
-        if regexp.match(path):
+        if AUTH.is_endpoint_public(path):
             return self.app(env, start_response)
         return super(AuthProtocolWrapper, self).__call__(env, start_response)
 
@@ -76,9 +91,8 @@ class AuthInformationHook(hooks.PecanHook):
     def before(self, state):
         if not CONF.get('enable_authentication'):
             return
-        # Do not proceed for triggers as they use non authenticated service
-        regexp = re.compile('^/v[0-9]+/public/')
-        if regexp.match(state.request.path):
+        # Skip authentication for public endpoints
+        if AUTH.is_endpoint_public(state.request.path):
             return
 
         headers = state.request.headers
@@ -140,3 +154,6 @@ class AuthInformationHook(hooks.PecanHook):
                 LOG.warn(_("X-Roles is missing. Using deprecated X-Role "
                            "header"))
         return [r.strip() for r in roles.split(',')]
+
+
+AUTH = AuthHelper()
