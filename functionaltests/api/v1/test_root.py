@@ -23,7 +23,7 @@ from solum import version
 class TestRootController(base.TestCase):
 
     def test_index(self):
-        resp, body = self.client.get('')
+        resp, body = self.client.request_without_auth('', 'GET')
         self.assertEqual(resp.status, 200)
         data = json.loads(body)
         self.assertEqual(data[0]['id'], 'v1.0')
@@ -33,7 +33,7 @@ class TestRootController(base.TestCase):
                           'target_name': 'v1'})
 
     def test_platform(self):
-        resp, body = self.client.get('v1')
+        resp, body = self.client.request_without_auth('v1', 'GET')
         self.assertEqual(resp.status, 200)
         data = json.loads(body)
         self.assertEqual(data['uri'], '%s/v1' % self.client.base_url)
@@ -42,6 +42,8 @@ class TestRootController(base.TestCase):
         self.assertEqual(data['description'], 'solum native implementation')
         self.assertEqual(data['implementation_version'],
                          version.version_string())
+        self.assertEqual(data['plans_uri'],
+                         '%s/v1/plans' % self.client.base_url)
         self.assertEqual(data['assemblies_uri'],
                          '%s/v1/assemblies' % self.client.base_url)
         self.assertEqual(data['services_uri'],
@@ -50,3 +52,27 @@ class TestRootController(base.TestCase):
                          '%s/v1/components' % self.client.base_url)
         self.assertEqual(data['extensions_uri'],
                          '%s/v1/extensions' % self.client.base_url)
+        self.assertEqual(data['operations_uri'],
+                         '%s/v1/operations' % self.client.base_url)
+        self.assertEqual(data['sensors_uri'],
+                         '%s/v1/sensors' % self.client.base_url)
+        self.assertEqual(data['language_packs_uri'],
+                         '%s/v1/language_packs' % self.client.base_url)
+        self.assertEqual(data['pipelines_uri'],
+                         '%s/v1/pipelines' % self.client.base_url)
+        self.assertEqual(data['triggers_uri'],
+                         '%s/v1/triggers' % self.client.base_url)
+        self.assertEqual(data['infrastructure_uri'],
+                         '%s/v1/infrastructure' % self.client.base_url)
+
+    def test_request_without_auth(self):
+        resp, body = self.client.request_without_auth('v1', 'GET')
+        self.assertEqual(resp.status, 200)
+        resp, body = self.client.get('v1')
+        self.assertEqual(resp.status, 200)
+        resp, body = self.client.request_without_auth(
+            'v1/plans', 'GET', headers={'content-type': 'application/x-yaml'})
+        self.assertEqual(resp.status, 401)
+        resp, body = self.client.get(
+            'v1/plans', headers={'content-type': 'application/x-yaml'})
+        self.assertEqual(resp.status, 200)

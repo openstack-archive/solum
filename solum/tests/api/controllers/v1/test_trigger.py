@@ -14,7 +14,7 @@
 
 import mock
 
-from solum.api.controllers.v1.pub import trigger
+from solum.api.controllers.v1 import trigger
 from solum.common import exception
 from solum.tests import base
 from solum.tests import fakes
@@ -22,9 +22,9 @@ from solum.tests import fakes
 
 @mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
 @mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
-@mock.patch('solum.api.controllers.v1.pub.trigger.assembly_handler'
+@mock.patch('solum.api.controllers.v1.trigger.assembly_handler'
             '.AssemblyHandler')
-@mock.patch('solum.api.controllers.v1.pub.trigger.pipeline_handler'
+@mock.patch('solum.api.controllers.v1.trigger.pipeline_handler'
             '.PipelineHandler')
 class TestTriggerController(base.BaseTestCase):
     def test_trigger_post(self, pipe_mock, assem_mock,

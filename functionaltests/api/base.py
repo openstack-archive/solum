@@ -18,6 +18,7 @@ import time
 
 from tempest import auth
 from tempest import clients
+from tempest.common import http
 from tempest.common import rest_client
 from tempest import config
 import testtools
@@ -31,6 +32,12 @@ class SolumClient(rest_client.RestClient):
         super(SolumClient, self).__init__(auth_provider)
         self.service = 'application_deployment'
         self.endpoint_url = 'publicURL'
+
+    def request_without_auth(self, resource, method, headers={}, body=None):
+        dscv = CONF.identity.disable_ssl_certificate_validation
+        http_obj = http.ClosingHttp(disable_ssl_certificate_validation=dscv)
+        url = '%s/%s' % (self.base_url, resource)
+        return http_obj.request(url, method, headers=headers, body=body)
 
     def assembly_delete_done(self, assembly_uuid):
         wait_interval = 1

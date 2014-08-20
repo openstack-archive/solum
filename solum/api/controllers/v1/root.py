@@ -26,9 +26,9 @@ from solum.api.controllers.v1 import language_pack
 from solum.api.controllers.v1 import operation
 from solum.api.controllers.v1 import pipeline
 from solum.api.controllers.v1 import plan
-from solum.api.controllers.v1 import public
 from solum.api.controllers.v1 import sensor
 from solum.api.controllers.v1 import service
+from solum.api.controllers.v1 import trigger
 from solum.common import exception
 from solum import version
 
@@ -58,8 +58,23 @@ class Platform(api_types.Base):
     extensions_uri = common_types.Uri
     "URI to extensions."
 
+    operations_uri = common_types.Uri
+    "URI to operations."
+
+    sensors_uri = common_types.Uri
+    "URI to sensors."
+
     language_packs_uri = common_types.Uri
     "URI to language packs."
+
+    pipelines_uri = common_types.Uri
+    "URI to pipelines."
+
+    triggers_uri = common_types.Uri
+    "URI to triggers."
+
+    infrastructure_uri = common_types.Uri
+    "URI to infrastructure."
 
     @classmethod
     def sample(cls):
@@ -76,8 +91,14 @@ class Platform(api_types.Base):
                    services_uri='http://example.com:9777/v1/services',
                    components_uri='http://example.com:9777/v1/components',
                    extensions_uri='http://example.com:9777/v1/extensions',
+                   operations_uri='http://example.com:9777/v1/operations',
+                   sensors_uri='http://example.com:9777/v1/sensors',
                    language_packs_uri=(
-                       'http://example.com:9777/v1/language_packs'))
+                       'http://example.com:9777/v1/language_packs'),
+                   pipelines_uri='http://example.com:9777/v1/pipelines',
+                   triggers_uri='http://example.com:9777/v1/triggers',
+                   infrastructure_uri=(
+                       'http://example.com:9777/v1/infrastructure'))
 
 
 class Controller(object):
@@ -92,7 +113,7 @@ class Controller(object):
     sensors = sensor.SensorsController()
     language_packs = language_pack.LanguagePacksController()
     pipelines = pipeline.PipelinesController()
-    public = public.PublicController()
+    triggers = trigger.TriggerController()
     infrastructure = infrastructure.InfrastructureController()
 
     @exception.wrap_wsme_controller_exception
@@ -109,4 +130,9 @@ class Controller(object):
                         services_uri='%s/services' % host_url,
                         components_uri='%s/components' % host_url,
                         extensions_uri='%s/extensions' % host_url,
-                        language_packs_uri='%s/language_packs' % host_url)
+                        operations_uri='%s/operations' % host_url,
+                        sensors_uri='%s/sensors' % host_url,
+                        language_packs_uri='%s/language_packs' % host_url,
+                        pipelines_uri='%s/pipelines' % host_url,
+                        triggers_uri='%s/triggers' % host_url,
+                        infrastructure_uri='%s/infrastructure' % host_url)
