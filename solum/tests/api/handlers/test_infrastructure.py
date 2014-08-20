@@ -73,7 +73,7 @@ class TestInfrastructureStackHandler(base.BaseTestCase):
         mock_create.return_value = {"stack": {"id": "fake_id",
                                     "links": [{"href": "http://fake.ref",
                                                "rel": "self"}]}}
-        mock_queue = mock_clients.return_value.marconi.return_value.queue
+        mock_queue = mock_clients.return_value.zaqar.return_value.queue
         handler = infra.InfrastructureStackHandler(self.ctx)
         res = handler.create(data)
         db_obj.update.assert_called_once_with(data)
@@ -85,11 +85,11 @@ class TestInfrastructureStackHandler(base.BaseTestCase):
         mock_queue.assert_called_once_with(db_obj.uuid)
 
     @mock.patch('solum.common.clients.OpenStackClients')
-    def test_create_marconi_queue(self, mock_clients, mock_registry):
+    def test_create_zaqar_queue(self, mock_clients, mock_registry):
         queue_name = 'test'
-        mock_queue = mock_clients.return_value.marconi.return_value.queue
+        mock_queue = mock_clients.return_value.zaqar.return_value.queue
         handler = infra.InfrastructureStackHandler(self.ctx)
-        handler._create_marconi_queue(queue_name)
+        handler._create_zaqar_queue(queue_name)
         mock_queue.assert_called_once_with(queue_name)
 
     def test_delete(self, mock_registry):
