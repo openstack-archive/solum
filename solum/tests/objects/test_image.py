@@ -52,5 +52,5 @@ class TestStates(base.BaseTestCase):
                           'ERROR': 'ERROR', 'PENDING': 'PENDING'})
 
     def test_values(self):
-        self.assertEqual(objects.image.States.values(),
-                         ['BUILDING', 'COMPLETE', 'PENDING', 'ERROR'])
+        self.assertEqual(sorted(objects.image.States.values()),
+                         sorted(['BUILDING', 'COMPLETE', 'PENDING', 'ERROR']))

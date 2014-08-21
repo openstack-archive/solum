@@ -14,8 +14,23 @@
 
 # This script is executed inside pre_test_hook function in devstack gate.
 
+DEVSTACK_BASE=/opt/stack/new/devstack
+DEVSTACK_GATE=/opt/stack/new/devstack-gate
+
 # Install solum devstack integration
 SOLUM_BASE=/opt/stack/new/solum/contrib/devstack
-DEVSTACK_BASE=/opt/stack/new/devstack
 cp $SOLUM_BASE/lib/* $DEVSTACK_BASE/lib
 cp $SOLUM_BASE/extras.d/* $DEVSTACK_BASE/extras.d
+
+# TODO(ravips): Workaround until barbican, mistral gets into devstack
+# Allow devstack to do git clone when directory doesn't exist
+sed -e 's/ERROR_ON_CLONE=True/ERROR_ON_CLONE=False/' -i $DEVSTACK_GATE/devstack-vm-gate.sh
+# Install barbican devstack integration
+BARBICAN_BASE=/opt/stack/new/barbican/contrib/devstack
+cp $BARBICAN_BASE/lib/* $DEVSTACK_BASE/lib
+cp $BARBICAN_BASE/extras.d/* $DEVSTACK_BASE/extras.d
+
+# Install mistral devstack integration
+MISTRAL_BASE=/opt/stack/new/mistral/contrib/devstack
+cp $MISTRAL_BASE/lib/* $DEVSTACK_BASE/lib
+cp $MISTRAL_BASE/extras.d/* $DEVSTACK_BASE/extras.d

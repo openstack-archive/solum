@@ -188,9 +188,9 @@ function init_solum() {
 
 # install_solumclient() - Collect source and prepare
 function install_solumclient {
+    # TODO(ravips): We need this until solum gets into devstack
     ERROR_ON_CLONE=False
     git_clone $SOLUMCLIENT_REPO $SOLUMCLIENT_DIR $SOLUMCLIENT_BRANCH
-    cd $SOLUMCLIENT_DIR
     setup_develop $SOLUMCLIENT_DIR
 }
 
