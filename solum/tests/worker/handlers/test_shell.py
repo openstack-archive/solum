@@ -33,6 +33,12 @@ def mock_environment():
     }
 
 
+def mock_git_info():
+    return {
+        'source_url': 'git://example.com/foo',
+    }
+
+
 class HandlerTest(base.BaseTestCase):
     def setUp(self):
         super(HandlerTest, self).setUp()
@@ -59,16 +65,19 @@ class HandlerTest(base.BaseTestCase):
             'foo\ncreated_image_id=%s' % fake_glance_id, None]
         test_env = mock_environment()
         mock_get_env.return_value = test_env
-        handler.build(self.ctx, 5, 'git://example.com/foo', 'new_app',
-                      '1-2-3-4', 'heroku',
-                      'docker', 44, None)
+        git_info = mock_git_info()
+        handler.build(self.ctx, build_id=5, git_info=git_info,
+                      name='new_app', base_image_id='1-2-3-4',
+                      source_format='heroku', image_format='docker',
+                      assembly_id=44, test_cmd=None)
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
         script = os.path.join(proj_dir, 'contrib/lp-cedarish/docker/build-app')
         mock_popen.assert_called_once_with([script, 'git://example.com/foo',
                                             'new_app', self.ctx.tenant,
-                                           '1-2-3-4'], env=test_env, stdout=-1)
+                                            '1-2-3-4'],
+                                           env=test_env, stdout=-1)
         expected = [mock.call(5, 'BUILDING', 'Starting the image build',
                               None, 44),
                     mock.call(5, 'COMPLETE', 'built successfully',
@@ -93,16 +102,18 @@ class HandlerTest(base.BaseTestCase):
             'foo\ncreated_image_id= \n', None]
         test_env = mock_environment()
         mock_get_env.return_value = test_env
-        handler.build(self.ctx, 5, 'git://example.com/foo', 'new_app',
-                      '1-2-3-4', 'heroku',
-                      'docker', 44, None)
+        git_info = mock_git_info()
+        handler.build(self.ctx, build_id=5, git_info=git_info, name='new_app',
+                      base_image_id='1-2-3-4', source_format='heroku',
+                      image_format='docker', assembly_id=44, test_cmd=None)
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
         script = os.path.join(proj_dir, 'contrib/lp-cedarish/docker/build-app')
         mock_popen.assert_called_once_with([script, 'git://example.com/foo',
                                             'new_app', self.ctx.tenant,
-                                           '1-2-3-4'], env=test_env, stdout=-1)
+                                            '1-2-3-4'],
+                                           env=test_env, stdout=-1)
         expected = [mock.call(5, 'BUILDING', 'Starting the image build',
                               None, 44),
                     mock.call(5, 'ERROR', 'image not created', None, 44)]
@@ -121,8 +132,9 @@ class HandlerTest(base.BaseTestCase):
         test_env = mock_environment()
         mock_get_env.return_value = test_env
         mock_popen.return_value.wait.return_value = 0
-        handler.unittest(self.ctx, fake_assembly.id,
-                         'git://example.com/foo', 'tox')
+        git_info = mock_git_info()
+        handler.unittest(self.ctx, assembly_id=fake_assembly.id,
+                         git_info=git_info, test_cmd='tox')
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
@@ -147,8 +159,9 @@ class HandlerTest(base.BaseTestCase):
         test_env = mock_environment()
         mock_get_env.return_value = test_env
         mock_popen.return_value.wait.return_value = 1
-        handler.unittest(self.ctx, fake_assembly.id,
-                         'git://example.com/foo', 'tox')
+        git_info = mock_git_info()
+        handler.unittest(self.ctx, assembly_id=fake_assembly.id,
+                         git_info=git_info, test_cmd='tox')
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
@@ -182,10 +195,11 @@ class HandlerTest(base.BaseTestCase):
             'foo\ncreated_image_id=%s' % fake_glance_id, None]
         test_env = mock_environment()
         mock_get_env.return_value = test_env
-
-        handler.build(self.ctx, 5, 'git://example.com/foo', 'new_app',
-                      '1-2-3-4', 'heroku',
-                      'docker', 44, 'faketests')
+        git_info = mock_git_info()
+        handler.build(self.ctx, build_id=5, git_info=git_info, name='new_app',
+                      base_image_id='1-2-3-4', source_format='heroku',
+                      image_format='docker', assembly_id=44,
+                      test_cmd='faketests')
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
@@ -222,10 +236,11 @@ class HandlerTest(base.BaseTestCase):
         mock_popen.return_value.wait.return_value = 1
         test_env = mock_environment()
         mock_get_env.return_value = test_env
-
-        handler.build(self.ctx, 5, 'git://example.com/foo', 'new_app',
-                      '1-2-3-4', 'heroku',
-                      'docker', 44, 'faketests')
+        git_info = mock_git_info()
+        handler.build(self.ctx, build_id=5, git_info=git_info, name='new_app',
+                      base_image_id='1-2-3-4', source_format='heroku',
+                      image_format='docker', assembly_id=44,
+                      test_cmd='faketests')
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))

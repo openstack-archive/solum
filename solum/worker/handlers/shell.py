@@ -105,14 +105,15 @@ class Handler(object):
                                  pathm.get(source_format, 'lp-cedarish'),
                                  pathm.get(image_format, 'vm-slug'),
                                  'build-app')
+
         return [build_app, source_uri, name, ctxt.tenant, base_image_id]
 
-    def build(self, ctxt, build_id, source_uri, name, base_image_id,
+    def build(self, ctxt, build_id, git_info, name, base_image_id,
               source_format, image_format, assembly_id, test_cmd):
 
         # TODO(datsun180b): This is only temporary, until Mistral becomes our
         # workflow engine.
-        if self._run_unittest(ctxt, assembly_id, source_uri, test_cmd) != 0:
+        if self._run_unittest(ctxt, assembly_id, git_info, test_cmd) != 0:
             return
 
         update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.BUILDING)
@@ -120,9 +121,10 @@ class Handler(object):
         solum.TLS.trace.clear()
         solum.TLS.trace.import_context(ctxt)
 
+        source_uri = git_info['source_url']
         build_cmd = self._get_build_command(ctxt, source_uri, name,
-                                            base_image_id,
-                                            source_format, image_format)
+                                            base_image_id, source_format,
+                                            image_format)
         solum.TLS.trace.support_info(build_cmd=' '.join(build_cmd),
                                      assembly_id=assembly_id)
 
@@ -177,7 +179,7 @@ class Handler(object):
             deployer_api.API(context=ctxt).deploy(assembly_id=assembly_id,
                                                   image_id=created_image_id)
 
-    def _run_unittest(self, ctxt, assembly_id, git_url, test_cmd):
+    def _run_unittest(self, ctxt, assembly_id, git_info, test_cmd):
         if test_cmd is None:
             LOG.debug("Unit test command is None; skipping unittests.")
             return 0
@@ -189,6 +191,7 @@ class Handler(object):
 
         test_app = os.path.join(self.proj_dir, 'contrib', 'lp-cedarish',
                                 'docker', 'unittest-app')
+        git_url = git_info['source_url']
         command = [test_app, git_url, git_branch, ctxt.tenant, test_cmd]
 
         solum.TLS.trace.clear()
@@ -220,5 +223,5 @@ class Handler(object):
 
         return returncode
 
-    def unittest(self, ctxt, assembly_id, git_url, test_cmd):
-        self._run_unittest(ctxt, assembly_id, git_url, test_cmd)
+    def unittest(self, ctxt, assembly_id, git_info, test_cmd):
+        self._run_unittest(ctxt, assembly_id, git_info, test_cmd)

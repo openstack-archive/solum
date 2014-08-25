@@ -43,9 +43,12 @@ class ImageHandler(handler.Handler):
         return db_obj
 
     def _start_build(self, image):
+        git_info = {
+            'source_url': image.source_uri,
+        }
         api.API(context=self.context).build(
             build_id=image.id,
-            source_uri=image.source_uri,
+            git_info=git_info,
             name=image.name,
             base_image_id=image.base_image_id,
             source_format=image.source_format,

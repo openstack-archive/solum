@@ -126,12 +126,14 @@ class AssemblyHandler(handler.Handler):
         return db_obj
 
     def _unittest_artifact(self, assem, artifact):
-        git_url = artifact['content']['href']
         test_cmd = artifact.get('unittest_cmd')
+        git_info = {
+            'source_url': artifact['content']['href'],
+        }
 
         api.API(context=self.context).unittest(
             assembly_id=assem.id,
-            git_url=git_url,
+            git_info=git_info,
             test_cmd=test_cmd)
 
     def _build_artifact(self, assem, artifact):
@@ -151,9 +153,13 @@ class AssemblyHandler(handler.Handler):
         image.create(self.context)
         test_cmd = artifact.get('unittest_cmd')
 
+        git_info = {
+            'source_url': image.source_uri,
+        }
+
         api.API(context=self.context).build(
             build_id=image.id,
-            source_uri=image.source_uri,
+            git_info=git_info,
             name=image.name,
             base_image_id=image.base_image_id,
             source_format=image.source_format,

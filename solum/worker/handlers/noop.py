@@ -30,7 +30,7 @@ class Handler(object):
                     image_format, assembly_id, test_cmd))
         LOG.debug("%s" % message)
 
-    def unittest(self, ctxt, assembly_id, git_url, test_cmd):
+    def unittest(self, ctxt, assembly_id, git_info, test_cmd):
         message = ("Unittest %s %s %s" %
-                   (assembly_id, git_url, test_cmd))
+                   (assembly_id, git_info, test_cmd))
         LOG.debug("%s" % message)

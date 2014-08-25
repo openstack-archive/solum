@@ -17,6 +17,7 @@ import mock
 from solum.openstack.common.gettextutils import _
 from solum.tests import base
 from solum.tests import utils
+from solum.tests.worker.handlers import test_shell
 from solum.worker.handlers import noop as noop_handler
 
 
@@ -32,7 +33,8 @@ class HandlerTest(base.BaseTestCase):
 
     @mock.patch('solum.worker.handlers.noop.LOG')
     def test_build(self, fake_LOG):
-        args = [5, 'git://example.com/foo', 'new_app',
+        git_info = test_shell.mock_git_info()
+        args = [5, git_info, 'new_app',
                 '1-2-3-4', 'heroku', 'docker', 44, None]
         noop_handler.Handler().build(self.ctx, *args)
         message = 'Build %s %s %s %s %s %s %s %s' % tuple(args)
@@ -40,7 +42,8 @@ class HandlerTest(base.BaseTestCase):
 
     @mock.patch('solum.worker.handlers.noop.LOG')
     def test_unittest(self, fake_LOG):
-        args = [5, 'git://example.com/foo', 'pep8']
+        git_info = test_shell.mock_git_info()
+        args = [5, git_info, 'pep8']
         noop_handler.Handler().unittest(self.ctx, *args)
         message = 'Unittest %s %s %s' % tuple(args)
         fake_LOG.debug.assert_called_once_with(_("%s") % message)
