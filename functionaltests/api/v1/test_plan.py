@@ -34,54 +34,34 @@ sample_data = {"version": "1",
 class TestPlanController(base.TestCase):
     def setUp(self):
         super(TestPlanController, self).setUp()
-        self.addCleanup(self._delete_all)
 
-    def _delete_all(self):
-        resp, body = self.client.get(
-            'v1/plans', headers={'content-type': 'application/x-yaml'})
-        data = yaml.load(body)
-        self.assertEqual(resp.status, 200)
-        [self._delete_plan(pl['uuid']) for pl in data]
+    def tearDown(self):
+        super(TestPlanController, self).tearDown()
+        self.client.delete_created_plans()
 
     def _assert_output_expected(self, body_data, data):
         self.assertEqual(body_data['description'], data['description'])
         self.assertEqual(body_data['name'], data['name'])
-        self.assertEqual(body_data['artifacts'], data['artifacts'])
+        if body_data['artifacts']:
+            self.assertEqual(body_data['artifacts'][0]['content']['href'],
+                             data['artifacts'][0]['content']['href'])
         self.assertIsNotNone(body_data['uuid'])
 
-    def _delete_plan(self, uuid):
-        resp, _ = self.client.delete('v1/plans/%s' % uuid)
-        self.assertEqual(resp.status, 204)
-
-    def _create_plan(self):
-        jsondata = yaml.dump(sample_data)
-        resp, body = self.client.post(
-            'v1/plans', jsondata,
-            headers={'content-type': 'application/x-yaml'})
-        self.assertEqual(resp.status, 201)
-        out_data = yaml.load(body)
-        uuid = out_data['uuid']
-        self.assertIsNotNone(uuid)
-        return uuid
-
     def test_plans_get_all(self):
-        uuid = self._create_plan()
+        create_resp = self.client.create_plan()
+        self.assertEqual(create_resp.status, 201)
         resp, body = self.client.get(
             'v1/plans', headers={'content-type': 'application/x-yaml'})
         data = yaml.load(body)
         self.assertEqual(resp.status, 200)
+        uuid = create_resp.uuid
         filtered = [pl for pl in data if pl['uuid'] == uuid]
         self.assertEqual(filtered[0]['uuid'], uuid)
 
     def test_plans_create(self):
-        sample_yaml = yaml.dump(sample_data)
-        resp, body = self.client.post(
-            'v1/plans', sample_yaml,
-            headers={'content-type': 'application/x-yaml'})
+        resp = self.client.create_plan(data=sample_data)
         self.assertEqual(resp.status, 201)
-        yaml_data = yaml.load(body)
-        self._assert_output_expected(yaml_data, sample_data)
-        self._delete_plan(yaml_data['uuid'])
+        self._assert_output_expected(resp.data, sample_data)
 
     def test_plans_create_empty_yaml(self):
         # NOTE(stannie): tempest rest_client raises InvalidContentType and not
@@ -104,14 +84,15 @@ class TestPlanController(base.TestCase):
                           headers={'content-type': 'application/x-yaml'})
 
     def test_plans_get(self):
-        uuid = self._create_plan()
+        create_resp = self.client.create_plan(data=sample_data)
+        self.assertEqual(create_resp.status, 201)
+        uuid = create_resp.uuid
         resp, body = self.client.get(
             'v1/plans/%s' % uuid,
             headers={'content-type': 'application/x-yaml'})
         self.assertEqual(resp.status, 200)
         yaml_data = yaml.load(body)
         self._assert_output_expected(yaml_data, sample_data)
-        self._delete_plan(uuid)
 
     def test_plans_get_not_found(self):
         # NOTE(stannie): tempest rest_client raises InvalidContentType and not
@@ -122,7 +103,9 @@ class TestPlanController(base.TestCase):
                           headers={'content-type': 'application/x-yaml'})
 
     def test_plans_put(self):
-        uuid = self._create_plan()
+        create_resp = self.client.create_plan()
+        self.assertEqual(create_resp.status, 201)
+        uuid = create_resp.uuid
         updated_data = {"version": "1",
                         "name": "test_plan_updated",
                         "description": "A test to create plan updated",
@@ -135,7 +118,6 @@ class TestPlanController(base.TestCase):
         self.assertEqual(resp.status, 200)
         yaml_data = yaml.load(body)
         self._assert_output_expected(yaml_data, updated_data)
-        self._delete_plan(uuid)
 
     def test_plans_put_not_found(self):
         # NOTE(stannie): see test_plans_get_not_found note
@@ -166,8 +148,10 @@ class TestPlanController(base.TestCase):
                           headers={'content-type': 'application/x-yaml'})
 
     def test_plans_delete(self):
-        uuid = self._create_plan()
-        resp, body = self.client.delete('v1/plans/%s' % uuid)
+        create_resp = self.client.create_plan()
+        self.assertEqual(create_resp.status, 201)
+        uuid = create_resp.uuid
+        resp, body = self.client.delete_plan(uuid)
         self.assertEqual(resp.status, 204)
         self.assertEqual(body, '')
 
