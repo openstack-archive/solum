@@ -187,7 +187,7 @@ class Handler(object):
             LOG.debug("Unit test command is None; skipping unittests.")
             return 0
 
-        git_branch = 'master'
+        git_branch = git_info.get('branch_name', 'master')
 
         LOG.debug("Running unittests.")
         update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.UNIT_TESTING)

@@ -33,7 +33,36 @@ class TestTriggerController(base.BaseTestCase):
         obj.post('test_id')
         self.assertEqual(202, resp_mock.status)
         tw = assem_mock.return_value.trigger_workflow
-        tw.assert_called_once_with('test_id')
+        tw.assert_called_once_with('test_id', 'master')
+
+    def test_trigger_post_on_github_webhook(self, pipe_mock, assem_mock,
+                                            resp_mock, request_mock):
+        request_mock.body = ('{"sender": {"url" :"https://api.github.com"},' +
+                             '"pull_request": {"head": {"ref": "t-branch"}}}')
+        obj = trigger.TriggerController()
+        obj.post('test_id')
+        self.assertEqual(202, resp_mock.status)
+        tw = assem_mock.return_value.trigger_workflow
+        tw.assert_called_once_with('test_id', 't-branch')
+
+    def test_trigger_post_on_unknown_git_webhook(self, pipe_mock, assem_mock,
+                                                 resp_mock, request_mock):
+        request_mock.body = ('"pull_request": {"head": {"ref": "t-branch"}}}')
+        obj = trigger.TriggerController()
+        obj.post('test_id')
+        self.assertEqual(202, resp_mock.status)
+        tw = assem_mock.return_value.trigger_workflow
+        tw.assert_called_once_with('test_id', 'master')
+
+    def test_trigger_post_on_non_github_webhook(self, pipe_mock, assem_mock,
+                                                resp_mock, request_mock):
+        request_mock.body = ('{"sender": {"url" :"https://non-github.com"},' +
+                             '"pull_request": {"head": {"ref": "t-branch"}}}')
+        obj = trigger.TriggerController()
+        obj.post('test_id')
+        self.assertEqual(202, resp_mock.status)
+        tw = assem_mock.return_value.trigger_workflow
+        tw.assert_called_once_with('test_id', 'master')
 
     def test_trigger_post_pipeline(self, pipe_mock, assem_mock,
                                    resp_mock, request_mock):
@@ -56,6 +85,6 @@ class TestTriggerController(base.BaseTestCase):
         obj.post('test_id')
         self.assertEqual(404, resp_mock.status)
         tw = assem_mock.return_value.trigger_workflow
-        tw.assert_called_once_with('test_id')
+        tw.assert_called_once_with('test_id', 'master')
         tw = pipe_mock.return_value.trigger_workflow
         tw.assert_called_once_with('test_id')
