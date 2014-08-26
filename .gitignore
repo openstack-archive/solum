@@ -41,3 +41,6 @@ functionaltests/tempest.log
 .mr.developer.cfg
 .project
 .pydevproject
+
+# Eclipse
+.settings

@@ -373,6 +373,17 @@
 #host=127.0.0.1
 
 
+[camp]
+
+#
+# Options defined in solum.api.controllers.root
+#
+
+# Enable/disable support for the OASIS CAMP API. Default value
+# is True. (boolean value)
+#camp_enabled=true
+
+
 [conductor]
 
 #

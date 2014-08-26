@@ -44,6 +44,8 @@ PUBLIC_ENDPOINTS = [
     '^/?$',
     '^/v[0-9]+/?$',
     '^/v[0-9]+/triggers',
+    '^/camp/platform_endpoints',
+    '^/camp/camp_v1_1_endpoint'
 ]
 
 

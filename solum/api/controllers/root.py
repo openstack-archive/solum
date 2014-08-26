@@ -14,15 +14,31 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from oslo.config import cfg
 import pecan
 from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
 
+from solum.api.controllers.camp import root as camp_root
 from solum.api.controllers import common_types
 from solum.api.controllers.v1 import root as v1_root
 
 
 STATUS_KIND = wtypes.Enum(str, 'SUPPORTED', 'CURRENT', 'DEPRECATED')
+
+camp_group = cfg.OptGroup(name='camp',
+                          title='Options that apply to the CAMP API')
+
+CAMP_API_OPTS = [
+    cfg.BoolOpt('camp_enabled',
+                default=True,
+                help=("Enable/disable support for the OASIS CAMP "
+                      "API. Default value is True."))
+]
+
+CONF = cfg.CONF
+CONF.register_group(camp_group)
+CONF.register_opts(CAMP_API_OPTS, group=camp_group)
 
 
 class Version(wtypes.Base):
@@ -48,6 +64,9 @@ class Version(wtypes.Base):
 class RootController(object):
 
     v1 = v1_root.Controller()
+
+    if CONF.camp.camp_enabled:
+        camp = camp_root.Controller()
 
     @wsme_pecan.wsexpose([Version])
     def index(self):
