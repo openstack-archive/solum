@@ -12,11 +12,11 @@
 
 from glanceclient import client as glanceclient
 from heatclient import client as heatclient
-from marconiclient.queues.v1 import client as marconiclient
 from mistralclient.api import client as mistralclient
 import mock
 from neutronclient.neutron import client as neutronclient
 from swiftclient import client as swiftclient
+from zaqarclient.queues.v1 import client as zaqarclient
 
 from solum.common import clients
 from solum.common import exception
@@ -248,10 +248,10 @@ class ClientsTest(base.BaseTestCase):
         mistral_cached = obj.mistral()
         self.assertEqual(mistral, mistral_cached)
 
-    @mock.patch.object(marconiclient, 'Client')
+    @mock.patch.object(zaqarclient, 'Client')
     @mock.patch.object(clients.OpenStackClients, 'url_for')
     @mock.patch.object(clients.OpenStackClients, 'auth_url')
-    def test_clients_marconi(self, mock_auth, mock_url, mock_call):
+    def test_clients_zaqar(self, mock_auth, mock_url, mock_call):
         mock_auth.__get__ = mock.Mock(return_value="keystone_url")
         con = mock.MagicMock()
         con.tenant = "b363706f891f48019483f8bd6503c54b"
@@ -259,8 +259,8 @@ class ClientsTest(base.BaseTestCase):
         con.auth_url = "keystone_url"
         mock_url.return_value = "url_from_keystone"
         obj = clients.OpenStackClients(con)
-        obj._marconi = None
-        obj.marconi()
+        obj._zaqar = None
+        obj.zaqar()
         conf = {'auth_opts':
                 {'backend': 'keystone',
                  'options':
@@ -271,7 +271,7 @@ class ClientsTest(base.BaseTestCase):
                 }
         mock_call.assert_called_once_with('url_from_keystone', conf=conf)
 
-    def test_clients_marconi_noauth(self):
+    def test_clients_zaqar_noauth(self):
         con = mock.MagicMock()
         con.auth_token = None
         con.auth_token_info = None
@@ -282,19 +282,19 @@ class ClientsTest(base.BaseTestCase):
         con.get_url_for = mock.Mock(name="get_url_for")
         con.get_url_for.return_value = "url_from_keystone"
         obj = clients.OpenStackClients(con)
-        obj._marconi = None
-        self.assertRaises(exception.AuthorizationFailure, obj.marconi)
+        obj._zaqar = None
+        self.assertRaises(exception.AuthorizationFailure, obj.zaqar)
 
     @mock.patch.object(clients.OpenStackClients, 'url_for')
     @mock.patch.object(clients.OpenStackClients, 'auth_url')
-    def test_clients_marconi_cached(self, mock_auth, mock_url):
+    def test_clients_zaqar_cached(self, mock_auth, mock_url):
         mock_auth.__get__ = mock.Mock(return_value="keystone_url")
         con = mock.MagicMock()
         con.tenant = "b363706f891f48019483f8bd6503c54b"
         con.auth_token = "3bcc3d3a03f44e3d8377f9247b0ad155"
         mock_url.return_value = "url_from_keystone"
         obj = clients.OpenStackClients(con)
-        obj._marconi = None
-        marconi = obj.marconi()
-        marconi_cached = obj.marconi()
-        self.assertEqual(marconi, marconi_cached)
+        obj._zaqar = None
+        zaqar = obj.zaqar()
+        zaqar_cached = obj.zaqar()
+        self.assertEqual(zaqar, zaqar_cached)

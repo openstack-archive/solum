@@ -49,7 +49,7 @@ class InfrastructureStackHandler(handler.Handler):
     def create(self, data):
         """Create a new stack.
 
-        Create a new infrastructure stack by using Heat. Note that a marconi
+        Create a new infrastructure stack by using Heat. Note that a zaqar
         queue is created and will be consumed by solum-infra-guestagent.
         """
         db_obj = objects.registry.InfrastructureStack()
@@ -58,15 +58,15 @@ class InfrastructureStackHandler(handler.Handler):
         db_obj.user_id = self.context.user
         db_obj.project_id = self.context.tenant
 
-        self._create_marconi_queue(db_obj.uuid)
+        self._create_zaqar_queue(db_obj.uuid)
         db_obj.heat_stack_id = self._deploy_infra(data.get('image_id'))
 
         db_obj.create(self.context)
         return db_obj
 
-    def _create_marconi_queue(self, queue_name):
+    def _create_zaqar_queue(self, queue_name):
         osc = clients.OpenStackClients(self.context)
-        osc.marconi().queue(queue_name)
+        osc.zaqar().queue(queue_name)
 
     def _deploy_infra(self, image_id):
         osc = clients.OpenStackClients(self.context)
