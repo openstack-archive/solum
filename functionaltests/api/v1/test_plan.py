@@ -136,10 +136,7 @@ class TestPlanController(base.TestCase):
         self._assert_output_expected(yaml_data, sample_data)
 
     def test_plans_get_not_found(self):
-        # NOTE(stannie): tempest rest_client raises InvalidContentType and not
-        # NotFound because yaml content-type is not supported in their
-        # _error_checker method.
-        self.assertRaises(tempest_exceptions.InvalidContentType,
+        self.assertRaises(tempest_exceptions.NotFound,
                           self.client.get, 'v1/plans/not_found',
                           headers={'content-type': 'application/x-yaml'})
 
