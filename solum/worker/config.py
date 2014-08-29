@@ -30,6 +30,10 @@ SERVICE_OPTS = [
     cfg.StrOpt('task_log_dir',
                default='/var/log/solum/worker',
                help='The directory containing task log output.'),
+    cfg.StrOpt('proj_dir',
+               default='',
+               help=('The directory containing the project\'s code, '
+                     'especially the contrib directory.')),
 ]
 
 opt_group = cfg.OptGroup(
