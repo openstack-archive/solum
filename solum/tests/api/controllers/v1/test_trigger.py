@@ -12,6 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import json
+
 import mock
 
 from solum.api.controllers.v1 import trigger
@@ -33,17 +35,33 @@ class TestTriggerController(base.BaseTestCase):
         obj.post('test_id')
         self.assertEqual(202, resp_mock.status)
         tw = assem_mock.return_value.trigger_workflow
-        tw.assert_called_once_with('test_id', 'master')
+        tw.assert_called_once_with('test_id', 'master', None)
 
     def test_trigger_post_on_github_webhook(self, pipe_mock, assem_mock,
                                             resp_mock, request_mock):
-        request_mock.body = ('{"sender": {"url" :"https://api.github.com"},' +
-                             '"pull_request": {"head": {"ref": "t-branch"}}}')
+        status_url = 'https://api.github.com/repos/u/r/statuses/SHA'
+        body_dict = {'sender': {'url': 'https://api.github.com'},
+                     'pull_request': {'head': {'ref': 't-branch'},
+                                      'statuses_url': status_url}}
+        request_mock.body = json.dumps(body_dict)
         obj = trigger.TriggerController()
         obj.post('test_id')
         self.assertEqual(202, resp_mock.status)
         tw = assem_mock.return_value.trigger_workflow
-        tw.assert_called_once_with('test_id', 't-branch')
+        tw.assert_called_once_with('test_id', 't-branch', status_url)
+
+    def test_trigger_post_on_wrong_github_webhook(self, pipe_mock, assem_mock,
+                                                  resp_mock, request_mock):
+        status_url = 'https://api.github.com/repos/u/r/statuses/SHA'
+        body_dict = {'sender': {'url': 'https://api.github.com'},
+                     'pull_request': {'head': {'ref': 't-branch'},
+                                      'hacked_statuses_url': status_url}}
+        request_mock.body = json.dumps(body_dict)
+        obj = trigger.TriggerController()
+        obj.post('test_id')
+        self.assertEqual(202, resp_mock.status)
+        tw = assem_mock.return_value.trigger_workflow
+        tw.assert_called_once_with('test_id', 't-branch', None)
 
     def test_trigger_post_on_unknown_git_webhook(self, pipe_mock, assem_mock,
                                                  resp_mock, request_mock):
@@ -52,7 +70,7 @@ class TestTriggerController(base.BaseTestCase):
         obj.post('test_id')
         self.assertEqual(202, resp_mock.status)
         tw = assem_mock.return_value.trigger_workflow
-        tw.assert_called_once_with('test_id', 'master')
+        tw.assert_called_once_with('test_id', 'master', None)
 
     def test_trigger_post_on_non_github_webhook(self, pipe_mock, assem_mock,
                                                 resp_mock, request_mock):
@@ -62,7 +80,7 @@ class TestTriggerController(base.BaseTestCase):
         obj.post('test_id')
         self.assertEqual(202, resp_mock.status)
         tw = assem_mock.return_value.trigger_workflow
-        tw.assert_called_once_with('test_id', 'master')
+        tw.assert_called_once_with('test_id', 'master', None)
 
     def test_trigger_post_pipeline(self, pipe_mock, assem_mock,
                                    resp_mock, request_mock):
@@ -85,6 +103,6 @@ class TestTriggerController(base.BaseTestCase):
         obj.post('test_id')
         self.assertEqual(404, resp_mock.status)
         tw = assem_mock.return_value.trigger_workflow
-        tw.assert_called_once_with('test_id', 'master')
+        tw.assert_called_once_with('test_id', 'master', None)
         tw = pipe_mock.return_value.trigger_workflow
         tw.assert_called_once_with('test_id')

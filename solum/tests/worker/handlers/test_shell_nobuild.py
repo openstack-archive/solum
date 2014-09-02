@@ -16,6 +16,7 @@ import os.path
 import uuid
 
 import mock
+from oslo.config import cfg
 
 from solum.tests import base
 from solum.tests import fakes
@@ -31,6 +32,7 @@ class HandlerTest(base.BaseTestCase):
 
     # Notice most of these mocks do not modify shell_nobuild, but shell.
     @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
+    @mock.patch('httplib2.Http.request')
     @mock.patch('solum.objects.registry')
     @mock.patch('subprocess.Popen')
     @mock.patch('solum.conductor.api.API.build_job_update')
@@ -38,22 +40,37 @@ class HandlerTest(base.BaseTestCase):
     @mock.patch('solum.worker.handlers.shell_nobuild.update_assembly_status')
     def test_unittest_and_build(self, mock_a_update_nb, mock_a_update,
                                 mock_b_update, mock_popen, mock_registry,
-                                mock_get_env):
+                                mock_req, mock_get_env):
         handler = shell_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
         fake_glance_id = str(uuid.uuid4())
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
-        handler._update_assembly_status = mock.MagicMock()
         mock_popen.return_value.wait.return_value = 0
         mock_popen.return_value.communicate.return_value = [
             'foo\ncreated_image_id=%s' % fake_glance_id, None]
         test_env = test_shell.mock_environment()
         mock_get_env.return_value = test_env
         git_info = test_shell.mock_git_info()
+        status_token = git_info.get('status_token')
+        status_url = git_info.get('status_url')
+        mock_req.return_value = test_shell.mock_http_response()
+        cfg.CONF.worker.log_url_prefix = "https://log.com/commit/"
+
         handler.build(self.ctx, build_id=5, git_info=git_info, name='new_app',
                       base_image_id='1-2-3-4', source_format='heroku',
                       image_format='docker', assembly_id=44,
                       test_cmd='faketests')
+
+        expected = [
+            mock.call(status_url, 'POST',
+                      headers=test_shell.mock_request_hdr(status_token),
+                      body=test_shell.mock_req_pending_body(
+                          'https://log.com/commit/SHA')),
+            mock.call(status_url, 'POST',
+                      headers=test_shell.mock_request_hdr(status_token),
+                      body=test_shell.mock_req_success_body(
+                          'https://log.com/commit/SHA'))]
+        self.assertEqual(expected, mock_req.call_args_list)
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
@@ -74,25 +91,39 @@ class HandlerTest(base.BaseTestCase):
         self.assertEqual(expected, mock_a_update_nb.call_args_list)
 
     @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
+    @mock.patch('httplib2.Http.request')
     @mock.patch('subprocess.Popen')
     @mock.patch('solum.worker.handlers.shell.update_assembly_status')
     @mock.patch('solum.objects.registry')
     def test_unittest_no_build(self, mock_registry, mock_a_update,
-                               mock_popen, mock_get_env):
+                               mock_popen, mock_req, mock_get_env):
         handler = shell_handler.Handler()
-        handler._update_assembly_status = mock.MagicMock()
-
         fake_assembly = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
-
         mock_popen.return_value.wait.return_value = 1
         test_env = test_shell.mock_environment()
         mock_get_env.return_value = test_env
         git_info = test_shell.mock_git_info()
+        status_token = git_info.get('status_token')
+        status_url = git_info.get('status_url')
+        mock_req.return_value = test_shell.mock_http_response()
+        cfg.CONF.worker.log_url_prefix = "https://log.com/commit/"
+
         handler.build(self.ctx, build_id=5, git_info=git_info,
                       name='new_app', base_image_id='1-2-3-4',
                       source_format='heroku', image_format='docker',
                       assembly_id=44, test_cmd='faketests')
+
+        expected = [
+            mock.call(status_url, 'POST',
+                      headers=test_shell.mock_request_hdr(status_token),
+                      body=test_shell.mock_req_pending_body(
+                          'https://log.com/commit/SHA')),
+            mock.call(status_url, 'POST',
+                      headers=test_shell.mock_request_hdr(status_token),
+                      body=test_shell.mock_req_failure_body(
+                          'https://log.com/commit/SHA'))]
+        self.assertEqual(expected, mock_req.call_args_list)
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))

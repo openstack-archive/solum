@@ -60,7 +60,8 @@ class AssemblyHandler(handler.Handler):
         kc = solum_keystoneclient.KeystoneClientV3(cntx)
         return kc.context
 
-    def trigger_workflow(self, trigger_id, branch_name='master'):
+    def trigger_workflow(self, trigger_id, branch_name='master',
+                         status_url=None):
         """Get trigger by trigger id and start git worflow associated."""
         # Note: self.context will be None at this point as this is a
         # non-authenticated request.
@@ -78,7 +79,7 @@ class AssemblyHandler(handler.Handler):
 
         artifacts = plan_obj.raw_content.get('artifacts', [])
         for arti in artifacts:
-            self._build_artifact(db_obj, arti, branch_name)
+            self._build_artifact(db_obj, arti, branch_name, status_url)
 
     def update(self, id, data):
         """Modify a resource."""
@@ -125,11 +126,15 @@ class AssemblyHandler(handler.Handler):
             self._build_artifact(db_obj, arti)
         return db_obj
 
-    def _unittest_artifact(self, assem, artifact, branch_name='master'):
+    def _unittest_artifact(self, assem, artifact, branch_name='master',
+                           status_url=None):
         test_cmd = artifact.get('unittest_cmd')
+        status_token = artifact.get('status_token')
         git_info = {
             'source_url': artifact['content']['href'],
             'branch_name': branch_name,
+            'status_token': status_token,
+            'status_url': status_url,
         }
 
         api.API(context=self.context).unittest(
@@ -137,7 +142,8 @@ class AssemblyHandler(handler.Handler):
             git_info=git_info,
             test_cmd=test_cmd)
 
-    def _build_artifact(self, assem, artifact, branch_name='master'):
+    def _build_artifact(self, assem, artifact, branch_name='master',
+                        status_url=None):
         # This is a tempory hack so we don't need the build client
         # in the requirments.
         image = objects.registry.Image()
@@ -153,10 +159,13 @@ class AssemblyHandler(handler.Handler):
         image.state = IMAGE_STATES.PENDING
         image.create(self.context)
         test_cmd = artifact.get('unittest_cmd')
+        status_token = artifact.get('status_token')
 
         git_info = {
             'source_url': image.source_uri,
             'branch_name': branch_name,
+            'status_token': status_token,
+            'status_url': status_url,
         }
 
         api.API(context=self.context).build(
