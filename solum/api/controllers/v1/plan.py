@@ -14,6 +14,7 @@
 
 import sys
 
+from oslo.db import exception as db_exc
 import pecan
 from pecan import rest
 import wsmeext.pecan as wsme_pecan
@@ -89,7 +90,12 @@ class PlanController(rest.RestController):
     def delete(self):
         """Delete this plan."""
         handler = plan_handler.PlanHandler(pecan.request.security_context)
-        handler.delete(self._id)
+        try:
+            handler.delete(self._id)
+        except db_exc.DBReferenceError:
+            raise exception.PlanStillReferenced(name=self._id)
+        except db_exc.DBError as dbe:
+            raise exception.SolumException(reason=dbe.message)
 
 
 class PlansController(rest.RestController):

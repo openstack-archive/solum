@@ -13,6 +13,7 @@
 # under the License.
 
 import mock
+from oslo.db import exception as db_exc
 import pecan
 import yaml
 
@@ -164,6 +165,25 @@ class TestPlanController(base.BaseTestCase):
         obj.delete()
         hand_delete.assert_called_with('test_id')
         self.assertEqual(204, resp_mock.status)
+
+    def test_plan_delete_dbreferror(self, PlanHandler, resp_mock,
+                                    request_mock):
+        hand_delete = PlanHandler.return_value.delete
+        hand_delete.side_effect = db_exc.DBReferenceError(
+            mock.ANY, mock.ANY, mock.ANY, mock.ANY)
+        obj = plan.PlanController('test_id')
+        obj.delete()
+        hand_delete.assert_called_with('test_id')
+        self.assertEqual(409, resp_mock.status)
+
+    def test_plan_delete_othererror(self, PlanHandler, resp_mock,
+                                    request_mock):
+        hand_delete = PlanHandler.return_value.delete
+        hand_delete.side_effect = db_exc.DBError()
+        obj = plan.PlanController('test_id')
+        obj.delete()
+        hand_delete.assert_called_with('test_id')
+        self.assertEqual(500, resp_mock.status)
 
 
 @mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
