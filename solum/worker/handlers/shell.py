@@ -35,6 +35,7 @@ ASSEMBLY_STATES = assembly.States
 IMAGE_STATES = image.States
 
 cfg.CONF.import_opt('task_log_dir', 'solum.worker.config', group='worker')
+cfg.CONF.import_opt('proj_dir', 'solum.worker.config', group='worker')
 
 
 def job_update_notification(ctxt, build_id, state=None, description=None,
@@ -87,6 +88,8 @@ class Handler(object):
 
     @property
     def proj_dir(self):
+        if cfg.CONF.worker.proj_dir:
+            return cfg.CONF.worker.proj_dir
         return os.path.abspath(os.path.join(os.path.dirname(__file__),
                                             '..', '..', '..'))
 

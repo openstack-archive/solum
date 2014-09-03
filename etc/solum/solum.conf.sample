@@ -813,6 +813,10 @@
 # The directory containing task log output. (string value)
 #task_log_dir=/var/log/solum/worker
 
+# The directory containing the project's code, especially the
+# contrib directory. (string value)
+#proj_dir=
+
 
 [zaqar_client]
 
