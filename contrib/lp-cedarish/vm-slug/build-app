@@ -20,7 +20,7 @@ function check_os_credentials () {
 }
 
 function check_glance_access () {
-  glance index 2> /dev/null > /dev/null
+  glance image-list 2> /dev/null > /dev/null
   if [ $? != 0 ]; then
     echo "Cannot talk to Glance. Check your OpenStack credentials." >&2
     exit 1

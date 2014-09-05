@@ -51,7 +51,7 @@ fi
 PRUN silent docker ps
 [[ $? != 0 ]] && TLOG cannot talk to docker. && exit 1
 
-PRUN silent glance index
+PRUN silent glance image-list
 if [ $? != 0 ]; then
   TLOG Cannot talk to Glance. Check your OpenStack credentials. && exit 1
 fi
