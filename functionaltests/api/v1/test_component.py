@@ -17,7 +17,6 @@
 import json
 
 from tempest import exceptions as tempest_exceptions
-import yaml
 
 from functionaltests.api import base
 
@@ -34,6 +33,14 @@ plan_sample_data = {'version': '1',
 
 class TestComponentController(base.TestCase):
 
+    def setUp(self):
+        super(TestComponentController, self).setUp()
+
+    def tearDown(self):
+        super(TestComponentController, self).tearDown()
+        self.client.delete_created_assemblies()
+        self.client.delete_created_plans()
+
     def _assert_output_expected(self, body_data, data):
         self.assertEqual(body_data['name'], data['name'])
         self.assertEqual(body_data['assembly_uuid'], data['assembly_uuid'])
@@ -44,24 +51,14 @@ class TestComponentController(base.TestCase):
     def _delete_component(self, uuid, assembly_uuid, plan_uuid):
         resp, body = self.client.delete('v1/components/%s' % uuid)
         self.assertEqual(resp.status, 204)
-        self._delete_assembly(assembly_uuid, plan_uuid)
-
-    def _delete_assembly(self, assembly_uuid, plan_uuid):
-        resp, body = self.client.delete('v1/assemblies/%s' % assembly_uuid)
-        self.assertEqual(resp.status, 204)
-        if self.client.assembly_delete_done(assembly_uuid):
-            self._delete_plan(plan_uuid)
-        else:
-            self.fail("Assembly couldn't be deleted.")
-
-    def _delete_plan(self, plan_uuid):
-        resp, body = self.client.delete(
-            'v1/plans/%s' % plan_uuid,
-            headers={'content-type': 'application/x-yaml'})
-        self.assertEqual(resp.status, 204)
 
     def _create_component(self):
-        assembly_uuid, plan_uuid = self._create_assembly()
+        plan_resp = self.client.create_plan()
+        self.assertEqual(plan_resp.status, 201)
+        assembly_resp = self.client.create_assembly(plan_uuid=plan_resp.uuid)
+        self.assertEqual(assembly_resp.status, 201)
+        plan_uuid = plan_resp.uuid
+        assembly_uuid = assembly_resp.uuid
         sample_data['assembly_uuid'] = assembly_uuid
         data = json.dumps(sample_data)
         resp, body = self.client.post('v1/components', data)
@@ -71,29 +68,6 @@ class TestComponentController(base.TestCase):
         self.assertIsNotNone(uuid)
         return uuid, assembly_uuid, plan_uuid
 
-    def _create_assembly(self):
-        plan_uuid = self._create_plan()
-        sample_data['plan_uri'] = "%s/v1/plans/%s" % (self.client.base_url,
-                                                      plan_uuid)
-        data = json.dumps(sample_data)
-        resp, body = self.client.post('v1/assemblies', data)
-        self.assertEqual(resp.status, 201)
-        out_data = json.loads(body)
-        uuid = out_data['uuid']
-        self.assertIsNotNone(uuid)
-        return uuid, plan_uuid
-
-    def _create_plan(self):
-        data = yaml.dump(plan_sample_data)
-        resp, body = self.client.post(
-            'v1/plans', data,
-            headers={'content-type': 'application/x-yaml'})
-        self.assertEqual(resp.status, 201)
-        out_data = yaml.load(body)
-        uuid = out_data['uuid']
-        self.assertIsNotNone(uuid)
-        return uuid
-
     def test_components_get_all(self):
         resp, body = self.client.get('v1/components')
         data = json.loads(body)
@@ -101,7 +75,13 @@ class TestComponentController(base.TestCase):
         self.assertEqual(data, [])
 
     def test_components_create(self):
-        assembly_uuid, plan_uuid = self._create_assembly()
+        plan_resp = self.client.create_plan()
+        self.assertEqual(plan_resp.status, 201)
+        assembly_resp = self.client.create_assembly(plan_uuid=plan_resp.uuid)
+        self.assertEqual(assembly_resp.status, 201)
+        plan_uuid = plan_resp.uuid
+        assembly_uuid = assembly_resp.uuid
+
         sample_data['assembly_uuid'] = assembly_uuid
         sample_data['plan_uri'] = "%s/v1/plans/%s" % (self.client.base_url,
                                                       plan_uuid)
@@ -164,7 +144,6 @@ class TestComponentController(base.TestCase):
         resp, body = self.client.delete('v1/components/%s' % uuid)
         self.assertEqual(resp.status, 204)
         self.assertEqual(body, '')
-        self._delete_assembly(assembly_uuid, plan_uuid)
 
     def test_components_delete_not_found(self):
         self.assertRaises(tempest_exceptions.NotFound,

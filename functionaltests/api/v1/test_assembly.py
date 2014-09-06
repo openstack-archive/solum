@@ -17,7 +17,6 @@
 import json
 
 from tempest import exceptions as tempest_exceptions
-import yaml
 
 from functionaltests.api import base
 
@@ -37,6 +36,14 @@ plan_sample_data = {"version": "1",
 
 class TestAssemblyController(base.TestCase):
 
+    def setUp(self):
+        super(TestAssemblyController, self).setUp()
+
+    def tearDown(self):
+        super(TestAssemblyController, self).tearDown()
+        self.client.delete_created_assemblies()
+        self.client.delete_created_plans()
+
     def _assert_output_expected(self, body_data, data):
         self.assertEqual(body_data['description'], data['description'])
         self.assertEqual(body_data['plan_uri'], data['plan_uri'])
@@ -45,79 +52,86 @@ class TestAssemblyController(base.TestCase):
         self.assertEqual(body_data['status'], data['status'])
         self.assertEqual(body_data['application_uri'], data['application_uri'])
 
-    def _delete_assembly(self, uuid, plan_uuid):
-        resp, _ = self.client.delete('v1/assemblies/%s' % uuid)
-        self.assertEqual(resp.status, 204)
-
-        self.assertTrue(self.client.assembly_delete_done(uuid))
-        self._delete_plan(plan_uuid)
-
-    def _delete_plan(self, plan_uuid):
-        resp, _ = self.client.delete(
-            'v1/plans/%s' % plan_uuid,
-            headers={'content-type': 'application/x-yaml'})
-        self.assertEqual(resp.status, 204)
-
-    def _create_assembly(self):
-        p_uuid = self._create_plan()
-        sample_data['plan_uri'] = "%s/v1/plans/%s" % (self.client.base_url,
-                                                      p_uuid)
-        jsondata = json.dumps(sample_data)
-        resp, body = self.client.post('v1/assemblies', jsondata)
-        self.assertEqual(resp.status, 201)
-        out_data = json.loads(body)
-        uuid = out_data['uuid']
-        self.assertIsNotNone(uuid)
-        return uuid, p_uuid
-
-    def _create_plan(self):
-        yaml_data = yaml.dump(plan_sample_data)
-        resp, body = self.client.post(
-            'v1/plans', yaml_data,
-            headers={'content-type': 'application/x-yaml'})
-        self.assertEqual(resp.status, 201)
-        out_data = yaml.load(body)
-        uuid = out_data['uuid']
-        self.assertIsNotNone(uuid)
-        return uuid
-
     def test_assemblies_get_all(self):
+        # Create assemblies to find
+        p_resp_1 = self.client.create_plan()
+        self.assertEqual(p_resp_1.status, 201)
+        a_resp_1 = self.client.create_assembly(data=sample_data,
+                                               plan_uuid=p_resp_1.uuid)
+        self.assertEqual(a_resp_1.status, 201)
+
+        p_resp_2 = self.client.create_plan()
+        self.assertEqual(p_resp_2.status, 201)
+        a_resp_2 = self.client.create_assembly(data=sample_data,
+                                               plan_uuid=p_resp_2.uuid)
+        self.assertEqual(a_resp_2.status, 201)
+
+        # Get list of all assemblies
         resp, body = self.client.get('v1/assemblies')
-        data = json.loads(body)
         self.assertEqual(resp.status, 200)
-        self.assertEqual(data, [])
+
+        # Search for uuids of created assemblies
+        assembly_list = json.loads(body)
+        found_uuid_1 = False
+        found_uuid_2 = False
+        for assembly in assembly_list:
+            uuid = json.dumps(assembly['uuid'])
+            if a_resp_1.uuid in uuid:
+                found_uuid_1 = True
+            elif a_resp_2.uuid in uuid:
+                found_uuid_2 = True
+
+        self.assertTrue(found_uuid_1,
+                        'Cannot find assembly [%s] in list of all assemblies.'
+                        % a_resp_1.uuid)
+        self.assertTrue(found_uuid_2,
+                        'Cannot find assembly [%s] in list of all assemblies.'
+                        % a_resp_2.uuid)
 
     def test_assemblies_create(self):
-        p_uuid = self._create_plan()
+        plan_resp = self.client.create_plan()
+        self.assertEqual(plan_resp.status, 201)
+        assembly_resp = self.client.create_assembly(
+            plan_uuid=plan_resp.uuid,
+            data=sample_data)
+        self.assertEqual(assembly_resp.status, 201)
         sample_data['plan_uri'] = "%s/v1/plans/%s" % (self.client.base_url,
-                                                      p_uuid)
-        sample_json = json.dumps(sample_data)
-        resp, body = self.client.post('v1/assemblies', sample_json)
-        self.assertEqual(resp.status, 201)
-        json_data = json.loads(body)
-        self._assert_output_expected(json_data, sample_data)
-        self._delete_assembly(json_data['uuid'], p_uuid)
+                                                      plan_resp.uuid)
+        self._assert_output_expected(assembly_resp.data, sample_data)
 
     def test_assemblies_create_none(self):
         self.assertRaises(tempest_exceptions.BadRequest,
                           self.client.post, 'v1/assemblies', "{}")
 
     def test_assemblies_get(self):
-        uuid, plan_uuid = self._create_assembly()
+        plan_resp = self.client.create_plan(data=plan_sample_data)
+        self.assertEqual(plan_resp.status, 201)
+        plan_uuid = plan_resp.uuid
+        assembly_resp = self.client.create_assembly(
+            plan_uuid=plan_uuid,
+            data=sample_data)
+        self.assertEqual(assembly_resp.status, 201)
+        uuid = assembly_resp.uuid
         sample_data['plan_uri'] = "%s/v1/plans/%s" % (self.client.base_url,
                                                       plan_uuid)
         resp, body = self.client.get('v1/assemblies/%s' % uuid)
         self.assertEqual(resp.status, 200)
         json_data = json.loads(body)
         self._assert_output_expected(json_data, sample_data)
-        self._delete_assembly(uuid, plan_uuid)
 
     def test_assemblies_get_not_found(self):
         self.assertRaises(tempest_exceptions.NotFound,
                           self.client.get, 'v1/assemblies/not_found')
 
     def test_assemblies_put(self):
-        uuid, plan_uuid = self._create_assembly()
+        plan_resp = self.client.create_plan()
+        self.assertEqual(plan_resp.status, 201)
+        plan_uuid = plan_resp.uuid
+        assembly_resp = self.client.create_assembly(
+            plan_uuid=plan_uuid,
+            data=sample_data)
+        self.assertEqual(assembly_resp.status, 201)
+        uuid = assembly_resp.uuid
         uri = "%s/v1/plans/%s" % (self.client.base_url, plan_uuid)
         updated_data = {"name": "test_assembly_updated",
                         "description": "A test to create assembly updated",
@@ -131,7 +145,6 @@ class TestAssemblyController(base.TestCase):
         self.assertEqual(resp.status, 200)
         json_data = json.loads(body)
         self._assert_output_expected(json_data, updated_data)
-        self._delete_assembly(uuid, plan_uuid)
 
     def test_assemblies_put_not_found(self):
         updated_data = {"name": "test_assembly_updated",
@@ -151,14 +164,19 @@ class TestAssemblyController(base.TestCase):
                           self.client.put, 'v1/assemblies/any', "{}")
 
     def test_assemblies_delete(self):
-        uuid, plan_uuid = self._create_assembly()
-        resp, body = self.client.delete('v1/assemblies/%s' % uuid)
+        plan_resp = self.client.create_plan()
+        self.assertEqual(plan_resp.status, 201)
+        assembly_resp = self.client.create_assembly(
+            plan_uuid=plan_resp.uuid,
+            data=sample_data)
+        self.assertEqual(assembly_resp.status, 201)
+        uuid = assembly_resp.uuid
+
+        resp, body = self.client.delete_assembly(uuid)
         self.assertEqual(resp.status, 204)
         self.assertEqual(body, '')
-        if self.client.assembly_delete_done(uuid):
-            self._delete_plan(plan_uuid)
-        else:
-            self.fail("Assembly couldn't be deleted.")
+        self.assertTrue(self.client.assembly_delete_done(uuid),
+                        "Assembly couldn't be deleted.")
 
     def test_assemblies_delete_not_found(self):
         self.assertRaises(tempest_exceptions.NotFound,
