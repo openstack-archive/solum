@@ -21,7 +21,7 @@ then
     exit 1
 fi
 
-if ! diff -u ${TEMPDIR}/${CFGFILE_NAME} ${CFGFILE}
+if ! diff -u ${CFGFILE} ${TEMPDIR}/${CFGFILE_NAME}
 then
    echo "${0##*/}: ${PROJECT_NAME}.conf.sample is not up to date."
    echo "${0##*/}: Please run ${0%%${0##*/}}generate_sample.sh."
