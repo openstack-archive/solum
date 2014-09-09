@@ -49,6 +49,9 @@ SOLUM_MAX_ATTEMPTS=${SOLUM_MAX_ATTEMPTS:-2000}
 SOLUM_WAIT_INTERVAL=${SOLUM_WAIT_INTERVAL:-1}
 SOLUM_GROWTH_FACTOR=${SOLUM_GROWTH_FACTOR:-1.1}
 
+SOLUM_DRONE_URL=${SOLUM_DRONE_URL:-http://downloads.drone.io/latest/drone.deb}
+SOLUM_INSTALL_DRONE=${SOLUM_INSTALL_DRONE:-False}
+
 # Support entry points installation of console scripts
 if [[ -d $SOLUM_DIR/bin ]]; then
     SOLUM_BIN_DIR=$SOLUM_DIR/bin
@@ -203,6 +206,23 @@ function install_solum() {
     setup_package $SOLUM_DIR -e
 }
 
+# install_drone() - Install drone, but disable service
+function install_drone() {
+    if [[ $SOLUM_INSTALL_DRONE == 'True' ]]; then
+        if [[ $os_VENDOR != 'Ubuntu' ]]; then
+            echo 'Drone is currently only supported on Ubuntu'
+            exit 1
+        fi
+        if [[ ! -e /usr/local/bin/drone ]]; then
+            wget -O /tmp/drone.deb ${SOLUM_DRONE_URL}
+            sudo dpkg -i /tmp/drone.deb
+            rm /tmp/drone.deb
+            sudo initctl stop drone || true
+            sudo rm -f /etc/init/drone.conf || true
+        fi
+    fi
+}
+
 # install_lp-cedarish() - Install tooling to support cedarish LP
 function install_lp-cedarish() {
     if [[ $SOLUM_IMAGE_FORMAT == 'docker' ]]; then
@@ -210,12 +230,14 @@ function install_lp-cedarish() {
     else
         $SOLUM_DIR/contrib/lp-cedarish/vm-slug/prepare
     fi
+    install_drone
 }
 
 # install_lp-dockerfile() - Install tooling to support dockerfile LP
 function install_lp-dockerfile() {
     if [[ $SOLUM_IMAGE_FORMAT == 'docker' ]]; then
         $SOLUM_DIR/contrib/lp-dockerfile/docker/prepare
+        install_drone
     else
         echo does not support VMs
         exit 1
