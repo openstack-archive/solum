@@ -21,20 +21,14 @@ SCRIPT_START_TIME=$(date +"%s")
 PROJECT_ID=${PROJECT_ID:-null}
 BUILD_ID=${BUILD_ID:-null}
 TASKNAME=unittest
+DOCKER_REGISTRY=${DOCKER_REGISTRY:-'127.0.0.1:5042'}
 
 # TLOG, PRUN, ENSURE_LOGFILE, and elapsed defined in app-common
-HERE=$(dirname $0)
-source $HERE/app-common
+source $(dirname $0)/app-common
 
 LOG_FILE=$(GET_LOGFILE)
 
 TLOG ===== Starting Test Script $0 $*
-
-# Make sure tenant auth credentials were passed in
-if [[ -z $OS_AUTH_TOKEN ]]; then
-  TLOG openstack credentials not passed via ENV.
-  exit 1
-fi
 
 # Check command line arguments
 if [ $# -lt 4 ]; then
@@ -56,12 +50,32 @@ ENTRYPOINT="$@"
 shift
 
 TLOG "Executing test command $ENTRYPOINT"
-DOCKER_REGISTRY=${DOCKER_REGISTRY:-'127.0.0.1:5042'}
+
+BASE_DIR=/dev/shm
+DIR_NAME=$(mktemp -u XXXXXXXXXXXXXXXXXXXXXXX | tr '[:upper:]' '[:lower:]' | head -n 1)
+
+APP_DIR=$BASE_DIR/solum/$DIR_NAME
+rm -rf $APP_DIR
+PRUN mkdir -p $APP_DIR
+
+PRUN git clone $GIT --single-branch -b $GIT_BRANCH $APP_DIR/code
+cd $APP_DIR/code
+COMMIT_ID=$(git log -1 --pretty=%H)
 
 # Test the application code
 TLOG "===>" Testing App
 
-sudo docker run --rm -e GIT_URL=$GIT -e TEST_CMD="$ENTRYPOINT" $DOCKER_REGISTRY/slugtester 2>&1 > >(while read LINE; do TLOG $LINE; done)
+TLOG Creating Dockerfile
+cat << EOF > $APP_DIR/Dockerfile
+# SOLUM APP BUILDER
+FROM $DOCKER_REGISTRY/slugtester
+ADD code /code
+WORKDIR /code
+RUN ${ENTRYPOINT}
+EOF
+
+cd $APP_DIR
+sudo docker build --rm -t $DIR_NAME . 2>&1 > >(while read LINE; do TLOG $LINE; done)
 
 SUCCESS=$?
 TLOG Docker finished with status $SUCCESS.
