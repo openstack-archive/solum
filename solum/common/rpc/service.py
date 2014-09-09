@@ -14,12 +14,21 @@
 
 """Common RPC service and API tools for Solum."""
 
+import eventlet
 from oslo.config import cfg
 from oslo import messaging
 
 import solum.common.context
 from solum import objects
 from solum.openstack.common import jsonutils
+
+
+# NOTE(paulczar):
+# Ubuntu 14.04 forces librabbitmq when kombu is used
+# Unfortunately it forces a version that has a crash
+# bug.  Calling eventlet.monkey_patch() tells kombu
+# to use libamqp instead.
+eventlet.monkey_patch()
 
 # NOTE(asalkeld):
 # The solum.openstack.common.rpc entries are for compatability
