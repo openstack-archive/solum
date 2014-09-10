@@ -63,6 +63,9 @@ class Artifact(wtypes.Base):
     unittest_cmd = wtypes.text
     "Optional unit test command for the artifact."
 
+    status_token = wtypes.text
+    "The OAuth token to post status for a pull request"
+
     def __init__(self, **kwargs):
         if 'requirements' in kwargs:
             kwargs['requirements'] = [Requirement(**re)

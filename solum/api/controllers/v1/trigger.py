@@ -32,18 +32,22 @@ class TriggerController(rest.RestController):
     def post(self, trigger_id):
         """Trigger a new event on Solum."""
         branch_name = 'master'
+        status_url = None
         try:
             body = json.loads(pecan.request.body)
             if ('sender' in body and 'url' in body['sender'] and
                     'api.github.com' in body['sender']['url']):
                 # Process a GitHub pull request
                 branch_name = body['pull_request']['head']['ref']
+                # An exmaple of Github statuses_url
+                # https://api.github.com/repos/:user/:repo/statuses/{sha}
+                status_url = body['pull_request']['statuses_url']
         except StandardError:
             LOG.info("Expected fields not found in request body.")
 
         try:
             handler = assembly_handler.AssemblyHandler(None)
-            handler.trigger_workflow(trigger_id, branch_name)
+            handler.trigger_workflow(trigger_id, branch_name, status_url)
         except exception.ResourceNotFound:
             handler = pipeline_handler.PipelineHandler(None)
             handler.trigger_workflow(trigger_id)

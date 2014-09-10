@@ -32,8 +32,14 @@ class Handler(shell_handler.Handler):
 
         # TODO(datsun180b): This is only temporary, until Mistral becomes our
         # workflow engine.
-        if self._run_unittest(ctxt, assembly_id, git_info, test_cmd) != 0:
-            return
+        ret_code = 0
+        status_url = git_info.get('status_url')
+        status_token = git_info.get('status_token')
+
+        self._send_status(ret_code, status_url, status_token, pending=True)
+        ret_code = self._run_unittest(ctxt, assembly_id, git_info, test_cmd)
+        self._send_status(ret_code, status_url, status_token)
 
         # Deployer is normally in charge of declaring an assembly READY.
-        update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.READY)
+        if ret_code == 0:
+            update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.READY)

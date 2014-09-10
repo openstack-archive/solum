@@ -14,9 +14,11 @@
 
 """Solum Worker shell handler."""
 
+import json
 import os
 import subprocess
 
+import httplib2
 from oslo.config import cfg
 
 import solum
@@ -36,6 +38,7 @@ IMAGE_STATES = image.States
 
 cfg.CONF.import_opt('task_log_dir', 'solum.worker.config', group='worker')
 cfg.CONF.import_opt('proj_dir', 'solum.worker.config', group='worker')
+cfg.CONF.import_opt('log_url_prefix', 'solum.worker.config', group='worker')
 
 
 def job_update_notification(ctxt, build_id, state=None, description=None,
@@ -110,6 +113,39 @@ class Handler(object):
                                  'build-app')
 
         return [build_app, source_uri, name, ctxt.tenant, base_image_id]
+
+    def _send_status(self, test_result, status_url, status_token,
+                     pending=False):
+        if status_url and status_token:
+            commit_id = status_url.rstrip('/').split('/')[-1]
+            log_url = cfg.CONF.worker.log_url_prefix + commit_id
+            headers = {'Authorization': 'token ' + status_token,
+                       'Content-Type': 'application/json'}
+            if pending:
+                data = {'state': 'pending',
+                        'description': 'Solum says: Testing in progress',
+                        'target_url': log_url}
+            elif test_result == 0:
+                data = {'state': 'success',
+                        'description': 'Solum says: Tests passed',
+                        'target_url': log_url}
+            else:
+                data = {'state': 'failure',
+                        'description': 'Solum says: Tests failed',
+                        'target_url': log_url}
+
+            try:
+                http = httplib2.Http()
+                resp, _ = http.request(status_url, 'POST', headers=headers,
+                                       body=json.dumps(data))
+                if resp['status'] != '201':
+                    LOG.debug("Failed to send back status. Error code %s,"
+                              "status_url %s, status_token %s" %
+                              (resp['status'], status_url, status_token))
+            except httplib2.HttpLib2Error as ex:
+                LOG.debug("Error in sending status %s" % ex)
+        else:
+            LOG.debug("No url or token available to send back status")
 
     def build(self, ctxt, build_id, git_info, name, base_image_id,
               source_format, image_format, assembly_id, test_cmd):

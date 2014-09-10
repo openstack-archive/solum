@@ -91,6 +91,8 @@ class TestAssemblyHandler(base.BaseTestCase):
         git_info = {
             'source_url': "https://example.com/ex.git",
             'branch_name': 'master',
+            'status_token': None,
+            'status_url': None,
         }
         mock_build.assert_called_once_with(
             build_id=8, name='nodeus', assembly_id=8,
@@ -129,7 +131,7 @@ class TestAssemblyHandler(base.BaseTestCase):
         handler._context_from_trust_id = mock.MagicMock(return_value=self.ctx)
         handler.trigger_workflow(trigger_id)
         handler._build_artifact.assert_called_once_with(db_obj, artifacts[0],
-                                                        'master')
+                                                        'master', None)
         handler._context_from_trust_id.assert_called_once_with('trust_worthy')
         mock_registry.Assembly.get_by_trigger_id.assert_called_once_with(
             None, trigger_id)

@@ -34,6 +34,9 @@ SERVICE_OPTS = [
                default='',
                help=('The directory containing the project\'s code, '
                      'especially the contrib directory.')),
+    cfg.StrOpt('log_url_prefix',
+               default='',
+               help='The prefix of test log URL to be sent back'),
 ]
 
 opt_group = cfg.OptGroup(

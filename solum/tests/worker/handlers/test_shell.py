@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import json
 import os.path
 import uuid
 
@@ -36,7 +37,39 @@ def mock_environment():
 def mock_git_info():
     return {
         'source_url': 'git://example.com/foo',
+        'status_token': '8765',
+        'status_url': 'https://api.github.com/repos/u/r/statuses/SHA'
     }
+
+
+def mock_request_hdr(token):
+    return {'Authorization': 'token ' + token,
+            'Content-Type': 'application/json'}
+
+
+def mock_req_pending_body(log_url):
+    data = {'state': 'pending',
+            'description': 'Solum says: Testing in progress',
+            'target_url': log_url}
+    return json.dumps(data)
+
+
+def mock_req_success_body(log_url):
+    data = {'state': 'success',
+            'description': 'Solum says: Tests passed',
+            'target_url': log_url}
+    return json.dumps(data)
+
+
+def mock_req_failure_body(log_url):
+    data = {'state': 'failure',
+            'description': 'Solum says: Tests failed',
+            'target_url': log_url}
+    return json.dumps(data)
+
+
+def mock_http_response():
+    return {'status': '401'}, ''
 
 
 class HandlerTest(base.BaseTestCase):
@@ -60,7 +93,6 @@ class HandlerTest(base.BaseTestCase):
         fake_assembly = fakes.FakeAssembly()
         fake_glance_id = str(uuid.uuid4())
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
-        handler._update_assembly_status = mock.MagicMock()
         mock_popen.return_value.communicate.return_value = [
             'foo\ncreated_image_id=%s' % fake_glance_id, None]
         test_env = mock_environment()
@@ -97,7 +129,6 @@ class HandlerTest(base.BaseTestCase):
         handler = shell_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
-        handler._update_assembly_status = mock.MagicMock()
         mock_popen.return_value.communicate.return_value = [
             'foo\ncreated_image_id= \n', None]
         test_env = mock_environment()
@@ -189,7 +220,6 @@ class HandlerTest(base.BaseTestCase):
         fake_assembly = fakes.FakeAssembly()
         fake_glance_id = str(uuid.uuid4())
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
-        handler._update_assembly_status = mock.MagicMock()
         mock_popen.return_value.wait.return_value = 0
         mock_popen.return_value.communicate.return_value = [
             'foo\ncreated_image_id=%s' % fake_glance_id, None]
@@ -232,7 +262,6 @@ class HandlerTest(base.BaseTestCase):
     @mock.patch('solum.worker.handlers.shell.update_assembly_status')
     def test_unittest_no_build(self, mock_a_update, mock_popen, mock_get_env):
         handler = shell_handler.Handler()
-        handler._update_assembly_status = mock.MagicMock()
         mock_popen.return_value.wait.return_value = 1
         test_env = mock_environment()
         mock_get_env.return_value = test_env
