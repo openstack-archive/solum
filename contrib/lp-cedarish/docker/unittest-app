@@ -65,7 +65,20 @@ COMMIT_ID=$(git log -1 --pretty=%H)
 # Test the application code
 TLOG "===>" Testing App
 
-TLOG Creating Dockerfile
+if [[ $(which drone) ]]; then
+  TLOG "===>" Using Drone
+  if [[ ! -e $APP_DIR/code/.drone.yml ]]; then
+    TLOG "===>" Creating .drone.yml
+cat << EOF > $APP_DIR/code/.drone.yml
+image: $DOCKER_REGISTRY/slugtester
+script: $ENTRYPOINT
+EOF
+  else
+    TLOG "===>" .drone.yml found in source
+  fi
+  sudo /usr/local/bin/drone build $APP_DIR/code 2>&1 > >(while read LINE; do TLOG $LINE; done)
+else
+  TLOG Creating Dockerfile
 cat << EOF > $APP_DIR/Dockerfile
 # SOLUM APP BUILDER
 FROM $DOCKER_REGISTRY/slugtester
@@ -74,11 +87,12 @@ WORKDIR /code
 RUN ${ENTRYPOINT}
 EOF
 
-cd $APP_DIR
-sudo docker build --rm -t $DIR_NAME . 2>&1 > >(while read LINE; do TLOG $LINE; done)
+  cd $APP_DIR
+  sudo docker build --rm -t $DIR_NAME . 2>&1 > >(while read LINE; do TLOG $LINE; done)
+fi
 
 SUCCESS=$?
-TLOG Docker finished with status $SUCCESS.
+TLOG Tests finished with status $SUCCESS.
 
 TOTAL_TIME=$(elapsed $SCRIPT_START_TIME)
 TLOG ===== Total elapsed time: $TOTAL_TIME sec
