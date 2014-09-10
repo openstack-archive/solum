@@ -71,7 +71,8 @@ if [[ $(which drone) ]]; then
     TLOG "===>" Creating .drone.yml
 cat << EOF > $APP_DIR/code/.drone.yml
 image: $DOCKER_REGISTRY/slugtester
-script: $ENTRYPOINT
+script:
+- $ENTRYPOINT
 EOF
   else
     TLOG "===>" .drone.yml found in source
