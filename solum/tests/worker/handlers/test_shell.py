@@ -220,7 +220,7 @@ class HandlerTest(base.BaseTestCase):
         script = os.path.join(proj_dir,
                               'contrib/lp-cedarish/docker/unittest-app')
         mock_popen.assert_called_once_with([script, 'git://example.com/foo',
-                                            'master', self.ctx.tenant, '',
+                                            '', self.ctx.tenant, '',
                                             'tox'], env=test_env, stdout=-1)
         expected = [mock.call(self.ctx, 8, 'UNIT_TESTING')]
 
@@ -248,7 +248,7 @@ class HandlerTest(base.BaseTestCase):
         script = os.path.join(proj_dir,
                               'contrib/lp-cedarish/docker/unittest-app')
         mock_popen.assert_called_once_with([script, 'git://example.com/foo',
-                                            'master', self.ctx.tenant, '',
+                                            '', self.ctx.tenant, '',
                                             'tox'], env=test_env, stdout=-1)
         expected = [mock.call(self.ctx, 8, 'UNIT_TESTING'),
                     mock.call(self.ctx, 8, 'UNIT_TESTING_FAILED')]
@@ -287,7 +287,7 @@ class HandlerTest(base.BaseTestCase):
         b_script = os.path.join(util_dir, 'build-app')
 
         expected = [
-            mock.call([u_script, 'git://example.com/foo', 'master',
+            mock.call([u_script, 'git://example.com/foo', '',
                        self.ctx.tenant, '', 'faketests'], env=test_env,
                       stdout=-1),
             mock.call([b_script, 'git://example.com/foo', 'new_app',
@@ -328,7 +328,7 @@ class HandlerTest(base.BaseTestCase):
         u_script = os.path.join(util_dir, 'unittest-app')
 
         expected = [
-            mock.call([u_script, 'git://example.com/foo', 'master',
+            mock.call([u_script, 'git://example.com/foo', '',
                        self.ctx.tenant, '', 'faketests'], env=test_env,
                       stdout=-1)]
         self.assertEqual(expected, mock_popen.call_args_list)

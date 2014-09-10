@@ -230,7 +230,7 @@ class Handler(object):
             LOG.debug("Unit test command is None; skipping unittests.")
             return 0
 
-        git_branch = git_info.get('branch_name', 'master')
+        commit_sha = git_info.get('commit_sha', '')
 
         LOG.debug("Running unittests.")
         update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.UNIT_TESTING)
@@ -239,7 +239,7 @@ class Handler(object):
                                 'docker', 'unittest-app')
         git_url = git_info['source_url']
         source_private_key = self._get_private_key(source_creds_ref, git_url)
-        command = [test_app, git_url, git_branch, ctxt.tenant,
+        command = [test_app, git_url, commit_sha, ctxt.tenant,
                    source_private_key, test_cmd]
 
         solum.TLS.trace.clear()

@@ -347,6 +347,9 @@
 # The format of source repository (string value)
 #source_format=heroku
 
+# Comment phrase to trigger rebuilding (string value)
+#rebuild_phrase=solum retry tests
+
 
 [barbican_client]
 
@@ -836,7 +839,7 @@
 #proj_dir=
 
 # The prefix of test log URL to be sent back (string value)
-#log_url_prefix=
+#log_url_prefix=http://localhost/
 
 
 [zaqar_client]

@@ -35,7 +35,7 @@ SERVICE_OPTS = [
                help=('The directory containing the project\'s code, '
                      'especially the contrib directory.')),
     cfg.StrOpt('log_url_prefix',
-               default='',
+               default='http://localhost/',
                help='The prefix of test log URL to be sent back'),
 ]
 

@@ -33,7 +33,7 @@ TLOG ===== Starting Test Script $0 $*
 
 # Check command line arguments
 if [ $# -lt 5 ]; then
-  TLOG Usage: $0 git_url git_branch tenant git_private_key unit_test_entry_point
+  TLOG Usage: $0 git_url commit_sha tenant git_private_key unit_test_entry_point
   exit 1
 fi
 
@@ -42,7 +42,7 @@ PRUN silent docker ps
 
 GIT=$1
 shift
-GIT_BRANCH=$1
+COMMIT_SHA=$1
 shift
 TENANT=$1
 shift
@@ -62,9 +62,16 @@ rm -rf $APP_DIR
 PRUN mkdir -p $APP_DIR
 
 add_ssh_creds "$GIT_PRIVATE_KEY" "$APP_DIR"
-PRUN git clone $GIT --single-branch -b $GIT_BRANCH $APP_DIR/code
 
-cd $APP_DIR/code
+if [[ $COMMIT_SHA ]]; then
+  PRUN git clone $GIT $APP_DIR/code
+  cd $APP_DIR/code
+  PRUN git checkout -B solum_testing $COMMIT_SHA
+else
+  PRUN git clone --single-branch $GIT $APP_DIR/code
+  cd $APP_DIR/code
+fi
+
 COMMIT_ID=$(git log -1 --pretty=%H)
 echo "$GIT_PRIVATE_KEY" > $APP_DIR/code/id_rsa
 # Test the application code
