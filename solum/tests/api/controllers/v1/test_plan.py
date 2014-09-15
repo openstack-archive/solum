@@ -12,6 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import json
+
 import mock
 from oslo.db import exception as db_exc
 import pecan
@@ -194,14 +196,26 @@ class TestPlansController(base.BaseTestCase):
         super(TestPlansController, self).setUp()
         objects.load()
 
-    def test_plans_get_all(self, PlanHandler, resp_mock, request_mock):
+    def test_plans_get_all_yaml(self, PlanHandler, resp_mock, request_mock):
         hand_get = PlanHandler.return_value.get_all
+        request_mock.accept = 'application/x-yaml'
         fake_plan = fakes.FakePlan()
         hand_get.return_value = [fake_plan]
         resp = plan.PlansController().get_all()
         self.assertIsNotNone(resp)
         resp_yml = yaml.load(resp)
         self.assertEqual(fake_plan.raw_content['name'], resp_yml[0]['name'])
+        self.assertEqual(200, resp_mock.status)
+        hand_get.assert_called_with()
+
+    def test_plans_get_all_json(self, PlanHandler, resp_mock, request_mock):
+        hand_get = PlanHandler.return_value.get_all
+        fake_plan = fakes.FakePlan()
+        hand_get.return_value = [fake_plan]
+        resp = plan.PlansController().get_all()
+        self.assertIsNotNone(resp)
+        resp_json = json.loads(resp)
+        self.assertEqual(fake_plan.raw_content['name'], resp_json[0]['name'])
         self.assertEqual(200, resp_mock.status)
         hand_get.assert_called_with()
 

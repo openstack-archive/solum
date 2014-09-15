@@ -17,6 +17,8 @@ import sys
 from oslo.db import exception as db_exc
 import pecan
 from pecan import rest
+from wsme.rest import json as wsme_json
+from wsme import types as wsme_types
 import wsmeext.pecan as wsme_pecan
 
 from solum.api.controllers.v1.datamodel import plan
@@ -125,12 +127,19 @@ class PlansController(rest.RestController):
         return create_plan_yml
 
     @exception.wrap_pecan_controller_exception
-    @pecan.expose(content_type='application/x-yaml')
+    @pecan.expose()
     def get_all(self):
         """Return all plans, based on the query provided."""
         handler = plan_handler.PlanHandler(pecan.request.security_context)
-        plan_yml = yamlutils.dump([yaml_content(obj)
-                                   for obj in handler.get_all()
-                                   if obj and obj.raw_content])
+
+        if pecan.request.accept is not None and 'yaml' in pecan.request.accept:
+            plan_serialized = yamlutils.dump([yaml_content(obj)
+                                              for obj in handler.get_all()
+                                              if obj and obj.raw_content])
+        else:
+            plan_serialized = wsme_json.encode_result(
+                [plan.Plan.from_db_model(obj, pecan.request.host_url)
+                 for obj in handler.get_all()],
+                wsme_types.ArrayType(plan.Plan))
         pecan.response.status = 200
-        return plan_yml
+        return plan_serialized

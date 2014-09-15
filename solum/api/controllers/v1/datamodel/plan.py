@@ -133,10 +133,16 @@ class Plan(api_types.Base):
 
     @classmethod
     def from_db_model(cls, m, host_url):
-        return cls(**(m.raw_content))
+        json = m.as_dict()
+        json['type'] = m.__tablename__
+        json['uri'] = '%s/v1/%s/%s' % (host_url, m.__resource__, m.uuid)
+        if m.raw_content is not None:
+            json.update(m.raw_content)
+        del json['id']
+        return cls(**(json))
 
     def as_dict(self, db_model):
-        base = super(Plan, self).as_dict_from_keys(['name', 'description'])
+        base = super(Plan, self).as_dict(db_model)
         if self.artifacts is not wsme.Unset:
             base.update({'artifacts': [wjson.tojson(Artifact, art)
                                        for art in self.artifacts]})
