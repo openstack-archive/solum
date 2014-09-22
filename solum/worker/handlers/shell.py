@@ -33,6 +33,9 @@ from solum.objects import assembly
 from solum.objects import image
 from solum.openstack.common import log as logging
 from solum.openstack.common import uuidutils
+import solum.uploaders.common as uploader_common
+import solum.uploaders.local as local_uploader
+import solum.uploaders.swift as swift_uploader
 
 LOG = logging.getLogger(__name__)
 
@@ -42,6 +45,19 @@ IMAGE_STATES = image.States
 cfg.CONF.import_opt('task_log_dir', 'solum.worker.config', group='worker')
 cfg.CONF.import_opt('proj_dir', 'solum.worker.config', group='worker')
 cfg.CONF.import_opt('log_url_prefix', 'solum.worker.config', group='worker')
+cfg.CONF.import_opt('log_upload_strategy', 'solum.worker.config',
+                    group='worker')
+
+
+def upload_task_log(ctxt, original_path, assembly_id, build_id, stage):
+    strategy = cfg.CONF.worker.log_upload_strategy
+    LOG.debug("User log upload strategy: %s" % strategy)
+
+    uploader = {
+        'local': local_uploader.LocalStorage,
+        'swift': swift_uploader.SwiftUpload,
+    }.get(strategy, uploader_common.UploaderBase)
+    uploader(ctxt, original_path, assembly_id, build_id, stage).upload()
 
 
 def job_update_notification(ctxt, build_id, state=None, description=None,
@@ -56,12 +72,15 @@ def job_update_notification(ctxt, build_id, state=None, description=None,
                                                      assembly_id)
 
 
+def get_assembly_by_id(ctxt, assembly_id):
+    return solum.objects.registry.Assembly.get_by_id(ctxt, assembly_id)
+
+
 def update_assembly_status(ctxt, assembly_id, status):
     # TODO(datsun180b): use conductor to update assembly status
     if assembly_id is None:
         return
-    assem = solum.objects.registry.Assembly.get_by_id(ctxt,
-                                                      assembly_id)
+    assem = get_assembly_by_id(ctxt, assembly_id)
     assem.status = status
     assem.save(ctxt)
 
@@ -204,6 +223,7 @@ class Handler(object):
         logpath = "%s/%s.log" % (user_env['SOLUM_TASK_DIR'],
                                  user_env['BUILD_ID'])
         LOG.debug("Build logs stored at %s" % logpath)
+        out = None
         try:
             out = subprocess.Popen(build_cmd,
                                    env=user_env,
@@ -213,6 +233,11 @@ class Handler(object):
             job_update_notification(ctxt, build_id, IMAGE_STATES.ERROR,
                                     description=subex, assembly_id=assembly_id)
             return
+
+        assem = get_assembly_by_id(ctxt, assembly_id)
+        assembly_uuid = assem.uuid
+        upload_task_log(ctxt, logpath, assembly_uuid, user_env['BUILD_ID'],
+                        'build')
 
         # we expect one line in the output that looks like:
         # created_image_id=<the glance_id>
@@ -274,6 +299,12 @@ class Handler(object):
         except OSError as subex:
             LOG.exception("Exception running unit tests:")
             LOG.exception(subex)
+
+        assem = get_assembly_by_id(ctxt, assembly_id)
+        assembly_uuid = assem.uuid
+
+        upload_task_log(ctxt, logpath, assembly_uuid, user_env['BUILD_ID'],
+                        'unittest')
 
         if returncode != 0:
             LOG.error("Unit tests failed. Return code is %r" % (returncode))

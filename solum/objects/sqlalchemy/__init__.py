@@ -71,6 +71,8 @@ def load():
     from solum.objects.sqlalchemy import plan
     from solum.objects.sqlalchemy import sensor
     from solum.objects.sqlalchemy import service
+    from solum.objects.sqlalchemy import userlog
+    from solum.objects import userlog as abstract_userlog
 
     objects.registry.add(abstract_assembly.Assembly, assembly.Assembly)
     objects.registry.add(abstract_assembly.AssemblyList, assembly.AssemblyList)
@@ -100,3 +102,5 @@ def load():
                          extension.ExtensionList)
     objects.registry.add(abstract_image.Image, image.Image)
     objects.registry.add(abstract_image.ImageList, image.ImageList)
+    objects.registry.add(abstract_userlog.Userlog, userlog.Userlog)
+    objects.registry.add(abstract_userlog.UserlogList, userlog.UserlogList)

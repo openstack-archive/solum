@@ -37,6 +37,13 @@ SERVICE_OPTS = [
     cfg.StrOpt('log_url_prefix',
                default='http://localhost/',
                help='The prefix of test log URL to be sent back'),
+    cfg.StrOpt('log_upload_strategy',
+               default='local',
+               help=('Upload task log to central storage, using modules like '
+                     'swift and local from solum/uploaders.')),
+    cfg.StrOpt('log_upload_swift_container',
+               default='solum-logs',
+               help='The name of the Swift container to upload logs to.'),
 ]
 
 opt_group = cfg.OptGroup(

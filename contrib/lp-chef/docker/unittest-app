@@ -27,6 +27,30 @@ DOCKER_REGISTRY=${DOCKER_REGISTRY:-'127.0.0.1:5042'}
 HERE=$(dirname $0)
 source $HERE/../../common/utils
 
+# Overwrite TLOG to filter for user input.
+function TLOG () {
+  local MESSAGE="$*"
+  if [ ! -z "$MESSAGE" ]; then
+
+    # This is deliberately not a local, as it's to persist between calls to TLOG.
+    _USER=${_USER:-false}
+
+    echo "$MESSAGE" | grep -i "drone build results" && _USER=false
+
+    local LOGFILE=${LOG_FILE:-/dev/null}
+    local TIMESTAMP=$(date +"%Y-%m-%d %H:%M:%S.%3N")
+    JSONMESSAGE="{ \"@timestamp\": \"$TIMESTAMP\", \"project_id\": \"$PROJECT_ID\", \"build_id\": \"$BUILD_ID\", \"task\": \"$TASKNAME\", \"message\": \"$MESSAGE\", \"_user\": \"$_USER\" }"
+    echo $JSONMESSAGE >> $LOGFILE
+
+    echo "$MESSAGE" | grep -i "starting build" && _USER=true
+
+    export _USER
+
+  fi
+}
+
+
+
 LOG_FILE=$(GET_LOGFILE)
 
 TLOG ===== Starting Test Script $0 $*

@@ -367,8 +367,12 @@ class HandlerTest(base.BaseTestCase):
     @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
     @mock.patch('subprocess.Popen')
     @mock.patch('solum.worker.handlers.shell.update_assembly_status')
-    def test_unittest_no_build(self, mock_a_update, mock_popen, mock_get_env):
+    @mock.patch('solum.objects.registry')
+    def test_unittest_no_build(self, mock_registry, mock_a_update, mock_popen,
+                               mock_get_env):
         handler = shell_handler.Handler()
+        mock_assembly = mock.MagicMock()
+        mock_registry.Assembly.get_by_id.return_value = mock_assembly
         mock_popen.return_value.wait.return_value = 1
         test_env = mock_environment()
         mock_get_env.return_value = test_env

@@ -861,6 +861,14 @@
 # The prefix of test log URL to be sent back (string value)
 #log_url_prefix=http://localhost/
 
+# Upload task log to central storage, using modules like swift
+# and local from solum/uploaders. (string value)
+#log_upload_strategy=local
+
+# The name of the Swift container to upload logs to. (string
+# value)
+#log_upload_swift_container=solum-logs
+
 
 [zaqar_client]
 

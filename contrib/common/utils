@@ -17,20 +17,16 @@
 # Common functions for build-app and unittest-app
 
 # Add a timestamp, and log a message to STDOUT and to $LOG.
+
 function TLOG () {
   local MESSAGE="$*"
   if [ ! -z "$MESSAGE" ]; then
+
     local LOGFILE=${LOG_FILE:-/dev/null}
     local TIMESTAMP=$(date +"%Y-%m-%d %H:%M:%S.%3N")
-    echo "$TIMESTAMP | $MESSAGE"
-    cat << EOF >> $LOGFILE
-{ "@timestamp": "$TIMESTAMP",
-  "project_id": "$PROJECT_ID",
-  "build_id": "$BUILD_ID",
-  "task": "$TASKNAME",
-  "message": "$MESSAGE",
-}
-EOF
+    JSONMESSAGE="{ \"@timestamp\": \"$TIMESTAMP\", \"project_id\": \"$PROJECT_ID\", \"build_id\": \"$BUILD_ID\", \"task\": \"$TASKNAME\", \"message\": \"$MESSAGE\"}"
+    echo $JSONMESSAGE >> $LOGFILE
+
   fi
 }
 
