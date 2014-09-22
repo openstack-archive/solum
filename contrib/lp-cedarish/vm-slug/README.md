@@ -59,7 +59,7 @@ setting `IMAGE_URLS+=,http://cc42a68525a2dda0151c-9a7653a0ba84bd9342f239dc534966
 
 The build script takes two positional arguments.   The location of the git repo, and the app name.  The user running this script must have passwordless sudo access ( use the same user you used to install devstack ).
 
-make sure you have an `openrc` file with your openstack credentials in `~/` or `~/devstack/openrc` before running this script.
+make sure you have an `openrc` file with your OpenStack credentials in `~/` or `~/devstack/openrc` before running this script.
 
 The script will build a slug that will be accessible by VMs and will also create an SSH key and security groups in nova.   These can all be found in `/opt/solum/apps`   it will also provide you with the suggested `nova boot` command to start your app.
 

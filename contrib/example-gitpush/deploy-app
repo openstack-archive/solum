@@ -16,7 +16,7 @@ fi
 
 nova list 2> /dev/null > /dev/null
 if [ $? != 0 ]; then
-  echo 'cannot talk to nova. check your openstack credentials'
+  echo 'cannot talk to nova. check your OpenStack credentials'
   exit 1
 fi
 

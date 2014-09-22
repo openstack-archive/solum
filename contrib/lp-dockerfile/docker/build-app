@@ -29,7 +29,7 @@ shift
 DOCKER_REGISTRY=${DOCKER_REGISTRY:-'127.0.0.1:5042'}
 
 if [[ -z $OS_USERNAME ]]; then
-  TLOG openstack credentials not passed via ENV.
+  TLOG OpenStack credentials not passed via ENV.
   [[ -f ./openrc ]] && . ./openrc
   [[ -f ~/devstack/openrc ]] && . ~/devstack/openrc
 fi

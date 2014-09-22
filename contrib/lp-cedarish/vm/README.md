@@ -27,7 +27,7 @@ This should prepare your (devstack) system to build VMs.  It will install a few 
 
 The build script takes two positional arguments.   The location of the git repo, and the app name.  The user running this script must have passwordless sudo access ( use the same user you used to install devstack ).
 
-make sure you have an `openrc` file with your openstack credentials in `~/` or `~/devstack/openrc` before running this script.
+make sure you have an `openrc` file with your OpenStack credentials in `~/` or `~/devstack/openrc` before running this script.
 
 ```
 /opt/stack/solum/contrib/buildpacker/vm/build-app https://github.com/paulczar/example-nodejs-express.git helloworld

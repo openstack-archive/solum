@@ -3,14 +3,14 @@
 DIR=`dirname $0`
 
 if [[ -z $OS_USERNAME ]]; then
-  echo 'openstack credentials not passed via ENV. hunting for openrc.'
+  echo 'OpenStack credentials not passed via ENV. hunting for openrc.'
   [[ -f ./openrc ]] && . ./openrc
   [[ -f ~/devstack/openrc ]] && . ~/devstack/openrc
 fi
 
 glance image-list 2> /dev/null > /dev/null
 if [ $? != 0 ]; then
-  echo 'cannot talk to glance. check your openstack credentials'
+  echo 'cannot talk to glance. check your OpenStack credentials'
   exit 1
 fi
 

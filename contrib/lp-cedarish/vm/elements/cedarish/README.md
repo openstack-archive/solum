@@ -7,7 +7,7 @@ Based on the following projects
 * [Slugbuilder](https://github.com/flynn/slugbuilder)
 * [Slugrunner](https://github.com/flynn/slugrunner)
 
-builds Openstack Image suitable for running Heroku Buildpacks.
+builds OpenStack Image suitable for running Heroku Buildpacks.
 
 Currently only supports Ubuntu
 
