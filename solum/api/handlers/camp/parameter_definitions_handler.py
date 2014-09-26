@@ -18,11 +18,11 @@ from solum.api.controllers.camp.v1_1.datamodel import (parameter_definitions
 from solum.api.handlers import handler
 
 
-ASSEMB_PARAM_DESCRIPTION = ("Solum CAMP API definitions of the 'pdp_uri', "
+DEPLOY_PARAM_DESCRIPTION = ("Solum CAMP API definitions of the 'pdp_uri', "
                             "'plan_uri', 'pdp_file', and 'plan_file' "
                             "parameters.")
 
-ASSEMB_PARAM_LINKS = [
+DEPLOY_PARAM_LINKS = [
     pd.ParameterDefinitionLink(href='pdp_uri_param',
                                target_name='pdp_uri',
                                required=False),
@@ -53,12 +53,12 @@ NDT_PARAM_LINKS = [
 ]
 
 GLOBAL_PARAM_DEFS = {
-    'assembly_create_params':
-        pd.ParameterDefinitions(uri='assembly_create_params',
-                                name='Solum_CAMP_assembly_create_parameters',
+    'deploy_params':
+        pd.ParameterDefinitions(uri='deploy_params',
+                                name='Solum_CAMP_deploy_parameters',
                                 type='parameter_definitions',
-                                description=ASSEMB_PARAM_DESCRIPTION,
-                                parameter_definition_links=ASSEMB_PARAM_LINKS),
+                                description=DEPLOY_PARAM_DESCRIPTION,
+                                parameter_definition_links=DEPLOY_PARAM_LINKS),
     'ndt_params':
         pd.ParameterDefinitions(uri='ndt_params',
                                 name='Solum_CAMP_NDT_parameters',

@@ -22,15 +22,22 @@ from solum.tests import fakes
 
 @mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
 @mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
+@mock.patch('solum.api.handlers.assembly_handler.AssemblyHandler')
 class TestAssemblies(base.BaseTestCase):
     def setUp(self):
         super(TestAssemblies, self).setUp()
         objects.load()
 
-    def test_assemblies_get(self, resp_mock, request_mock):
-        fake_assemblies = fakes.FakeCAMPAssemblies()
-        cont = assemblies.Controller()
-        resp = cont.index()
+    def test_assemblies_get(self, AssemblyHandler, resp_mock, request_mock):
+        hand_get_all = AssemblyHandler.return_value.get_all
+        fake_assembly = fakes.FakeAssembly()
+        hand_get_all.return_value = [fake_assembly]
+
+        cont = assemblies.AssembliesController()
+        resp = cont.get()
+        self.assertIsNotNone(resp)
         self.assertEqual(200, resp_mock.status)
-        self.assertEqual(fake_assemblies.name, resp['result'].name)
-        self.assertEqual(fake_assemblies.type, resp['result'].type)
+        self.assertIsNotNone(resp['result'].assembly_links)
+        assembly_links = resp['result'].assembly_links
+        self.assertEqual(1, len(assembly_links))
+        self.assertEqual(fake_assembly.name, assembly_links[0].target_name)

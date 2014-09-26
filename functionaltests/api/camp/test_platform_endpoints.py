@@ -24,7 +24,7 @@ class PlatformDiscoveryTestCase(base.TestCase):
             self.skipTest('CAMP not enabled.')
         # get our platform_endpoints container
         resp, body = (self.client.
-                      request_without_auth('camp/platform_endpoints/',
+                      request_without_auth('camp/platform_endpoints',
                                            'GET'))
         self.assertEqual(200, resp.status)
         endpoints = json.loads(body)
@@ -52,5 +52,5 @@ class PlatformDiscoveryTestCase(base.TestCase):
         self.assertEqual('CAMP 1.1', endpoint['specification_version'])
         self.assertEqual('Solum CAMP 1.1', endpoint['implementation_version'])
         self.assertEqual('KEYSTONE-2.0', endpoint['auth_scheme'])
-        self.assertEqual('%s/camp/v1_1/platform/' % self.client.base_url,
+        self.assertEqual('%s/camp/v1_1/platform' % self.client.base_url,
                          endpoint['platform_uri'])

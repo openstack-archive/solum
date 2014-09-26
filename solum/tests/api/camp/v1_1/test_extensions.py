@@ -22,15 +22,22 @@ from solum.tests import fakes
 
 @mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
 @mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
+@mock.patch('solum.api.handlers.extension_handler.ExtensionHandler')
 class TestExtensions(base.BaseTestCase):
     def setUp(self):
         super(TestExtensions, self).setUp()
         objects.load()
 
-    def test_extensions_get(self, resp_mock, request_mock):
-        fake_extensions = fakes.FakeCAMPExtensions()
-        cont = extensions.Controller()
-        resp = cont.index()
+    def test_extensions_get(self, ExtensionHandler, resp_mock, request_mock):
+        hand_get_all = ExtensionHandler.return_value.get_all
+        fake_extension = fakes.FakeExtension()
+        hand_get_all.return_value = [fake_extension]
+
+        cont = extensions.ExtensionsController()
+        resp = cont.get()
+        self.assertIsNotNone(resp)
         self.assertEqual(200, resp_mock.status)
-        self.assertEqual(fake_extensions.name, resp['result'].name)
-        self.assertEqual(fake_extensions.type, resp['result'].type)
+        self.assertIsNotNone(resp['result'].extension_links)
+        extension_links = resp['result'].extension_links
+        self.assertEqual(1, len(extension_links))
+        self.assertEqual(fake_extension.name, extension_links[0].target_name)

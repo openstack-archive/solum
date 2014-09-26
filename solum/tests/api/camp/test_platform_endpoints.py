@@ -28,9 +28,8 @@ class TestPlatformEndpoints(base.BaseTestCase):
         objects.load()
 
     def test_platform_endpoints_get(self, resp_mock, request_mock):
-        fake_platform_endpoints = fakes.FakePlatformEndpoints()
-        cont = platform_endpoints.Controller()
-        resp = cont.index()
+        cont = platform_endpoints.PlatformEndpointsController()
+        resp = cont.get()
         self.assertEqual(200, resp_mock.status)
-        self.assertEqual(fake_platform_endpoints.name, resp['result'].name)
-        self.assertEqual(fake_platform_endpoints.type, resp['result'].type)
+        self.assertEqual('platform_endpoints', resp['result'].type)
+        self.assertEqual('Solum_CAMP_endpoints', resp['result'].name)

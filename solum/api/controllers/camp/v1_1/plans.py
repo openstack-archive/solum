@@ -13,31 +13,47 @@
 # under the License.
 
 import pecan
+from pecan import rest
 import wsmeext.pecan as wsme_pecan
 
 from solum.api.controllers.camp.v1_1.datamodel import plans as model
+from solum.api.controllers.camp.v1_1 import uris
 from solum.api.controllers import common_types
+from solum.api.handlers import plan_handler
 from solum.common import exception
 
 
-uri_string = '%s/camp/v1_1/plans/'
-description_string = "Solum CAMP API plans collection resource."
-param_uri_string = '%s/camp/v1_1/parameter_definitions/assembly_create_params'
-
-
-class Controller():
+class PlansController(rest.RestController):
     """CAMP v1.1 plans controller."""
 
     @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(model.Plans)
-    def index(self):
-        return model.Plans(uri=uri_string % pecan.request.host_url,
-                           name='Solum_CAMP_plans',
-                           type='plans',
-                           description=description_string,
-                           plan_links=[
-                               common_types.Link(href='http://tbd.com/',
-                                                 target_name='TBD')
-                           ],
-                           parameter_definitions_uri=param_uri_string %
-                           pecan.request.host_url)
+    def get(self):
+        puri = uris.PLANS_URI_STR % pecan.request.host_url
+        pdef_uri = uris.DEPLOY_PARAMS_URI % pecan.request.host_url
+        desc = "Solum CAMP API plans collection resource."
+
+        handler = plan_handler.PlanHandler(pecan.request.security_context)
+        plan_objs = handler.get_all()
+        p_links = []
+        for m in plan_objs:
+            p_links.append(common_types.Link(href=uris.PLAN_URI_STR %
+                                             (pecan.request.host_url, m.uuid),
+                                             target_name=m.name))
+
+        # if there aren't any plans, avoid returning a resource with an
+        # empty plan_links array
+        if len(p_links) > 0:
+            res = model.Plans(uri=puri,
+                              name='Solum_CAMP_plans',
+                              type='plans',
+                              description=desc,
+                              parameter_definitions_uri=pdef_uri,
+                              plan_links=p_links)
+        else:
+            res = model.Plans(uri=puri,
+                              name='Solum_CAMP_plans',
+                              type='plans',
+                              description=desc,
+                              parameter_definitions_uri=pdef_uri)
+        return res

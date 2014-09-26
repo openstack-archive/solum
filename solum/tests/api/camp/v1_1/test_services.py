@@ -22,15 +22,22 @@ from solum.tests import fakes
 
 @mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
 @mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
+@mock.patch('solum.api.handlers.service_handler.ServiceHandler')
 class TestServices(base.BaseTestCase):
     def setUp(self):
         super(TestServices, self).setUp()
         objects.load()
 
-    def test_services_get(self, resp_mock, request_mock):
-        fake_services = fakes.FakeCAMPServices()
-        cont = services.Controller()
-        resp = cont.index()
+    def test_services_get(self, ServiceHandler, resp_mock, request_mock):
+        hand_get_all = ServiceHandler.return_value.get_all
+        fake_service = fakes.FakeService()
+        hand_get_all.return_value = [fake_service]
+
+        cont = services.ServicesController()
+        resp = cont.get()
+        self.assertIsNotNone(resp)
         self.assertEqual(200, resp_mock.status)
-        self.assertEqual(fake_services.name, resp['result'].name)
-        self.assertEqual(fake_services.type, resp['result'].type)
+        self.assertIsNotNone(resp['result'].service_links)
+        service_links = resp['result'].service_links
+        self.assertEqual(1, len(service_links))
+        self.assertEqual(fake_service.name, service_links[0].target_name)

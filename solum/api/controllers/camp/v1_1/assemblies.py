@@ -13,31 +13,49 @@
 # under the License.
 
 import pecan
+from pecan import rest
 import wsmeext.pecan as wsme_pecan
 
 from solum.api.controllers.camp.v1_1.datamodel import assemblies as model
+from solum.api.controllers.camp.v1_1 import uris
 from solum.api.controllers import common_types
+from solum.api.handlers import assembly_handler
 from solum.common import exception
 
 
-uri_string = '%s/camp/v1_1/assemblies/'
-description_string = "Solum CAMP API assemblies collection resource"
-param_uri_string = '%s/camp/v1_1/parameter_definitions/assembly_create_params'
-
-
-class Controller(object):
+class AssembliesController(rest.RestController):
     """CAMP v1.1 assemblies controller."""
 
     @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(model.Assemblies)
-    def index(self):
-        return model.Assemblies(uri=uri_string % pecan.request.host_url,
-                                name='Solum_CAMP_assemblies',
-                                type='assemblies',
-                                description=description_string,
-                                assembly_links=[
-                                    common_types.Link(href="http://tbd.com/",
-                                                      target_name="TBD")
-                                ],
-                                parameter_definitions_uri=param_uri_string %
-                                pecan.request.host_url)
+    def get(self):
+        auri = uris.ASSEMS_URI_STR % pecan.request.host_url
+        pdef_uri = uris.DEPLOY_PARAMS_URI % pecan.request.host_url
+        desc = "Solum CAMP API assemblies collection resource"
+
+        handlr = (assembly_handler.
+                  AssemblyHandler(pecan.request.security_context))
+        asem_objs = handlr.get_all()
+        a_links = []
+        for m in asem_objs:
+            a_links.append(common_types.Link(href=uris.ASSEM_URI_STR %
+                                             (pecan.request.host_url, m.uuid),
+                                             target_name=m.name))
+
+        # if there aren't any assemblies, avoid returning a resource with an
+        # empty assembly_links array
+        if len(a_links) > 0:
+            res = model.Assemblies(uri=auri,
+                                   name='Solum_CAMP_assemblies',
+                                   type='assemblies',
+                                   description=desc,
+                                   parameter_definitions_uri=pdef_uri,
+                                   assembly_links=a_links)
+        else:
+            res = model.Assemblies(uri=auri,
+                                   name='Solum_CAMP_assemblies',
+                                   type='assemblies',
+                                   description=desc,
+                                   parameter_definitions_uri=pdef_uri)
+
+        return res

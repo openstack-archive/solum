@@ -13,29 +13,30 @@
 # under the License.
 
 import pecan
+from pecan import rest
 import wsmeext.pecan as wsme_pecan
 
 from solum.api.controllers.camp.datamodel import platform_endpoint as model
+from solum.api.controllers.camp.v1_1 import uris
 from solum.common import exception
 
 
-uri_string = '%s/camp/camp_v1_1_endpoint/'
-name_string = 'Solum_CAMP_v1_1_endpoint'
-platform_uri_string = '%s/camp/v1_1/platform/'
-description_string = "Solum CAMP v1.1 API platform_endpoint resource."
+URI_STRING = '%s/camp/camp_v1_1_endpoint'
+NAME_STRING = 'Solum_CAMP_v1_1_endpoint'
+DESCRIPTION_STRING = "Solum CAMP v1.1 API platform_endpoint resource."
 
 
-class Controller(object):
+class CAMPv11EndpointController(rest.RestController):
     """camp_v1_1_endpoint resource controller."""
 
     @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(model.PlatformEndpoint)
-    def index(self):
-        return model.PlatformEndpoint(uri=uri_string % pecan.request.host_url,
-                                      name=name_string,
+    def get(self):
+        return model.PlatformEndpoint(uri=URI_STRING % pecan.request.host_url,
+                                      name=NAME_STRING,
                                       type='platform_endpoint',
-                                      description=description_string,
-                                      platform_uri=platform_uri_string %
+                                      description=DESCRIPTION_STRING,
+                                      platform_uri=uris.PLATFORM_URI_STR %
                                       pecan.request.host_url,
                                       specification_version='CAMP 1.1',
                                       implementation_version='Solum CAMP 1.1',
