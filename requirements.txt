@@ -20,4 +20,4 @@ python-swiftclient>=2.0.2
 six>=1.7.0
 SQLAlchemy>=0.8.4,!=0.9.5,<=0.9.99
 WSME>=0.6
-python-mistralclient>=0.0.4
+python-mistralclient>=0.1

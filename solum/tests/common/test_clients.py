@@ -252,7 +252,7 @@ class ClientsTest(base.BaseTestCase):
         neutron_cached = obj.neutron()
         self.assertEqual(neutron, neutron_cached)
 
-    @mock.patch.object(mistralclient, 'Client')
+    @mock.patch.object(mistralclient, 'client')
     @mock.patch.object(clients.OpenStackClients, 'url_for')
     def test_clients_mistral(self, mock_url, mock_call):
         con = mock.MagicMock()
@@ -277,7 +277,7 @@ class ClientsTest(base.BaseTestCase):
         obj._mistral = None
         self.assertRaises(exception.AuthorizationFailure, obj.mistral)
 
-    @mock.patch.object(mistralclient, 'Client')
+    @mock.patch.object(mistralclient, 'client')
     @mock.patch.object(clients.OpenStackClients, 'url_for')
     def test_clients_mistral_cached(self, mock_url, mock_call):
         con = mock.MagicMock()

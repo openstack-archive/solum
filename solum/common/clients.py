@@ -234,7 +234,7 @@ class OpenStackClients(object):
         endpoint_type = self._get_client_option('mistral', 'endpoint_type')
         endpoint = self.url_for(service_type='workflow',
                                 endpoint_type=endpoint_type)
-        self._mistral = mistralclient.Client(mistral_url=endpoint, **args)
+        self._mistral = mistralclient.client(mistral_url=endpoint, **args)
 
         return self._mistral
 
