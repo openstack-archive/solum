@@ -1,0 +1,8 @@
+{
+    "uri": "format_links",
+    "name": "format_links",
+    "type": "attribute_definition",
+    "description": "CAMP 1.1 standard format_links attribute definition",
+    "documentation": "http://docs.oasis-open.org/camp/camp-spec/v1.1/camp-spec-v1.1.pdf",
+    "attribute_type": "Link[]"
+}

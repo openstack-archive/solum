@@ -1,0 +1,40 @@
+{
+    "uri": "assembly",
+    "name": "assembly",
+    "type": "type_definition",
+    "description": "CAMP 1.1 standard assembly definition",
+    "documentation": "http://docs.oasis-open.org/camp/camp-spec/v1.1/camp-spec-v1.1.pdf",
+    "inherits_from": [
+        {
+            "href": "camp_resource",
+            "target_name": "camp_resource"
+        }
+    ],
+    "attribute_definition_links": [
+        {
+            "href": "components",
+            "target_name": "components Attribute Definition",
+            "required": true,
+            "mutable": true,
+            "consumer_mutable": false
+        },
+        {
+            "href": "plan_uri",
+            "target_name": "plan_uri Attribute Definition",
+            "required": false,
+            "mutable": false
+        },
+        {
+            "href": "operations_uri",
+            "target_name": "operationsUri Attribute Definition",
+            "required": false,
+            "mutable": false
+        },
+        {
+            "href": "sensors_uri",
+            "target_name": "sensors_uri Attribute Definition",
+            "required": false,
+            "mutable": false
+        }
+    ]
+}

@@ -1,0 +1,21 @@
+{
+    "uri": "type_definitions",
+    "name": "type_definitions",
+    "type": "type_definition",
+    "description": "CAMP 1.1 standard type_definitions definition",
+    "documentation": "http://docs.oasis-open.org/camp/camp-spec/v1.1/camp-spec-v1.1.pdf",
+    "inherits_from": [
+        {
+            "href": "camp_resource",
+            "target_name": "camp_resource"
+        }
+    ],
+    "attribute_definition_links": [
+        {
+            "href": "type_definition_links",
+            "target_name": "type_definitions_links Attribute Definition",
+            "required": true,
+            "mutable": false
+        }
+    ]
+}

@@ -1,0 +1,69 @@
+{
+    "uri": "platform",
+    "name": "platform",
+    "type": "type_definition",
+    "description": "CAMP 1.1 standard platform definition",
+    "documentation": "http://docs.oasis-open.org/camp/camp-spec/v1.1/camp-spec-v1.1.pdf",
+    "inherits_from": [
+        {
+            "href": "camp_resource",
+            "target_name": "camp_resource"
+        }
+    ],
+    "attribute_definition_links": [
+        {
+            "href": "supported_formats_uri",
+            "target_name": "supported_formats_uri Attribute Definition",
+            "required": false,
+            "mutable": false
+        },
+        {
+            "href": "extensions_uri",
+            "target_name": "extensions_uri Attribute Definition",
+            "required": true,
+            "mutable": false
+        },
+        {
+            "href": "type_definitions_uri",
+            "target_name": "type_definitions_uri Attribute Definition",
+            "required": true,
+            "mutable": false
+        },
+        {
+            "href": "platform_endpoints_uri",
+            "target_name": "platform_endpoints_uri Attribute Definition",
+            "required": true,
+            "mutable": false
+        },
+        {
+            "href": "specification_version",
+            "target_name": "specification_version Attribute Definition",
+            "required": true,
+            "mutable": false
+        },
+        {
+            "href": "implementation_version",
+            "target_name": "implementation_version Attribute Definition",
+            "required": false,
+            "mutable": false
+        },
+        {
+            "href": "assemblies_uri",
+            "target_name": "assemblies_uri Attribute Definition",
+            "required": true,
+            "mutable": false
+        },
+        {
+            "href": "services_uri",
+            "target_name": "services_uri Attribute Definition",
+            "required": true,
+            "mutable": false
+        },
+        {
+            "href": "plans_uri",
+            "target_name": "plans_uri Attribute Definition",
+            "required": false,
+            "mutable": false
+        }
+    ]
+}

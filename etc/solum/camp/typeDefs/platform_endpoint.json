@@ -1,0 +1,51 @@
+{
+    "uri": "platform_endpoint",
+    "name": "platform_endpoint",
+    "type": "type_definition",
+    "description": "CAMP 1.1 standard PlatformEndpoint definition",
+    "documentation": "http://docs.oasis-open.org/camp/camp-spec/v1.1/camp-spec-v1.1.pdf",
+    "inherits_from": [
+        {
+            "href": "camp_resource",
+            "target_name": "camp_resource"
+        }
+    ],
+    "attribute_definition_links": [
+        {
+            "href": "platform_uri",
+            "target_name": "platform_uri Attribute Definition",
+            "required": true,
+            "mutable": false
+        },
+        {
+            "href": "specification_version",
+            "target_name": "specification_version Attribute Definition",
+            "required": true,
+            "mutable": false
+        },
+        {
+            "href": "backward_compatible_specification_versions",
+            "target_name": "backward_compatible_specification_versions Attribute Definition",
+            "required": false,
+            "mutable": false
+        },
+        {
+            "href": "implementation_version",
+            "target_name": "implementation_version Attribute Definition",
+            "required": false,
+            "mutable": false
+        },
+        {
+            "href": "backward_compatible_implementation_versions",
+            "target_name": "backward_compatible_implementation_versions Attribute Definition",
+            "required": false,
+            "mutable": false
+        },
+        {
+            "href": "auth_scheme",
+            "target_name": "auth_scheme Attribute Definition",
+            "required": false,
+            "mutable": false
+        }
+    ]
+}

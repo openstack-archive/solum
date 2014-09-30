@@ -1,0 +1,21 @@
+{
+    "uri": "extensions",
+    "name": "extensions",
+    "type": "type_definition",
+    "description": "CAMP 1.1 standard extensions definition",
+    "documentation": "http://docs.oasis-open.org/camp/camp-spec/v1.1/camp-spec-v1.1.pdf",
+    "inherits_from": [
+        {
+            "href": "camp_resource",
+            "target_name": "camp_resource"
+        }
+    ],
+    "attribute_definition_links": [
+        {
+            "href": "extension_links",
+            "target_name": "extension_links Attribute Definition",
+            "required": true,
+            "mutable": false
+        }
+    ]
+}

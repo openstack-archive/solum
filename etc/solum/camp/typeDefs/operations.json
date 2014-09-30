@@ -1,0 +1,27 @@
+{
+    "uri": "operations",
+    "name": "operations",
+    "type": "type_definition",
+    "description": "CAMP 1.1 standard operations definition",
+    "documentation": "http://docs.oasis-open.org/camp/camp-spec/v1.1/camp-spec-v1.1.pdf",
+    "inherits_from": [
+        {
+            "href": "camp_resource",
+            "target_name": "camp_resource"
+        }
+    ],
+    "attribute_definition_links": [
+        {
+            "href": "target_resource",
+            "target_name": "target_resource Attribute Definition",
+            "required": true,
+            "mutable": false
+        },
+        {
+            "href": "operation_links",
+            "target_name": "operation_links Attribute Definition",
+            "required": true,
+            "mutable": false
+        }
+    ]
+}
