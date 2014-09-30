@@ -35,6 +35,9 @@ API_SERVICE_OPTS = [
     cfg.StrOpt('source_format',
                default='heroku',
                help='The format of source repository'),
+    cfg.StrOpt('rebuild_phrase',
+               default='solum retry tests',
+               help='Comment phrase to trigger rebuilding'),
 ]
 
 LOG = logging.getLogger(__name__)
@@ -60,9 +63,9 @@ class AssemblyHandler(handler.Handler):
         kc = solum_keystoneclient.KeystoneClientV3(cntx)
         return kc.context
 
-    def trigger_workflow(self, trigger_id, branch_name='master',
+    def trigger_workflow(self, trigger_id, commit_sha='',
                          status_url=None):
-        """Get trigger by trigger id and start git worflow associated."""
+        """Get trigger by trigger id and start git workflow associated."""
         # Note: self.context will be None at this point as this is a
         # non-authenticated request.
         db_obj = objects.registry.Assembly.get_by_trigger_id(None,
@@ -80,7 +83,7 @@ class AssemblyHandler(handler.Handler):
         artifacts = plan_obj.raw_content.get('artifacts', [])
         for arti in artifacts:
             self._build_artifact(assem=db_obj, artifact=arti,
-                                 branch_name=branch_name,
+                                 commit_sha=commit_sha,
                                  status_url=status_url)
 
     def update(self, id, data):
@@ -129,14 +132,14 @@ class AssemblyHandler(handler.Handler):
                                  deploy_keys_ref=plan_obj.deploy_keys_uri)
         return db_obj
 
-    def _unittest_artifact(self, assem, artifact, branch_name='master',
+    def _unittest_artifact(self, assem, artifact, commit_sha='',
                            status_url=None, deploy_keys_ref=None):
 
         test_cmd = artifact.get('unittest_cmd')
         status_token = artifact.get('status_token')
         git_info = {
             'source_url': artifact['content']['href'],
-            'branch_name': branch_name,
+            'commit_sha': commit_sha,
             'status_token': status_token,
             'status_url': status_url,
         }
@@ -147,7 +150,7 @@ class AssemblyHandler(handler.Handler):
             test_cmd=test_cmd,
             source_creds_ref=deploy_keys_ref)
 
-    def _build_artifact(self, assem, artifact, branch_name='master',
+    def _build_artifact(self, assem, artifact, commit_sha='',
                         status_url=None, deploy_keys_ref=None):
 
         # This is a tempory hack so we don't need the build client
@@ -169,7 +172,7 @@ class AssemblyHandler(handler.Handler):
 
         git_info = {
             'source_url': image.source_uri,
-            'branch_name': branch_name,
+            'commit_sha': commit_sha,
             'status_token': status_token,
             'status_url': status_url
         }

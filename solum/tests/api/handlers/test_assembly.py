@@ -91,7 +91,7 @@ class TestAssemblyHandler(base.BaseTestCase):
         self.assertEqual(db_obj, res)
         git_info = {
             'source_url': "https://example.com/ex.git",
-            'branch_name': 'master',
+            'commit_sha': '',
             'status_token': None,
             'status_url': None,
         }
@@ -136,7 +136,7 @@ class TestAssemblyHandler(base.BaseTestCase):
         self.assertEqual(db_obj, res)
         git_info = {
             'source_url': "https://example.com/ex.git",
-            'branch_name': 'master',
+            'commit_sha': '',
             'status_token': None,
             'status_url': None,
         }
@@ -180,7 +180,7 @@ class TestAssemblyHandler(base.BaseTestCase):
         handler.trigger_workflow(trigger_id)
         handler._build_artifact.assert_called_once_with(assem=db_obj,
                                                         artifact=artifacts[0],
-                                                        branch_name='master',
+                                                        commit_sha='',
                                                         status_url=None)
         handler._context_from_trust_id.assert_called_once_with('trust_worthy')
         mock_registry.Assembly.get_by_trigger_id.assert_called_once_with(

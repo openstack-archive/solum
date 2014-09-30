@@ -79,7 +79,7 @@ class HandlerTest(base.BaseTestCase):
         u_script = os.path.join(util_dir, 'unittest-app')
 
         expected = [
-            mock.call([u_script, 'git://example.com/foo', 'master',
+            mock.call([u_script, 'git://example.com/foo', '',
                        self.ctx.tenant, '', 'faketests'], env=test_env,
                       stdout=-1)]
         self.assertEqual(expected, mock_popen.call_args_list)
@@ -134,7 +134,7 @@ class HandlerTest(base.BaseTestCase):
         u_script = os.path.join(util_dir, 'unittest-app')
 
         expected = [
-            mock.call([u_script, 'git://example.com/foo', 'master',
+            mock.call([u_script, 'git://example.com/foo', '',
                        self.ctx.tenant, '', 'faketests'], env=test_env,
                       stdout=-1)]
         self.assertEqual(expected, mock_popen.call_args_list)
