@@ -128,3 +128,12 @@ function remove_ssh_creds () {
     ssh-agent -k
   fi
 }
+
+function test_public_repo () {
+    local GIT_REPO=$1
+    if [[ -z $GIT_PRIVATE_KEY ]]; then
+        curl -If ${GIT_REPO%%.git} > /dev/null 2>&1
+        return $?
+    fi
+    return 0
+}

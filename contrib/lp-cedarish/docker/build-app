@@ -73,6 +73,11 @@ APP_DIR=$BASE_DIR/apps/$TENANT/$GIT_CHECKSUM
 PRUN silent mkdir -p $APP_DIR
 add_ssh_creds "$GIT_PRIVATE_KEY" "$APP_DIR"
 
+if ! (test_public_repo $GIT); then
+    TLOG Could not reach $GIT with curl. Failing.
+    exit 1
+fi
+
 if [ -d "$APP_DIR/build" ] ; then
   cd $APP_DIR/build
   OUT=$(git pull | grep -c 'Already up-to-date')

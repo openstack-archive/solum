@@ -63,6 +63,11 @@ PRUN mkdir -p $APP_DIR
 
 add_ssh_creds "$GIT_PRIVATE_KEY" "$APP_DIR"
 
+if ! (test_public_repo $GIT); then
+    TLOG Could not reach $GIT with curl. Failing.
+    exit 1
+fi
+
 if [[ $COMMIT_SHA ]]; then
   PRUN git clone $GIT $APP_DIR/code
   cd $APP_DIR/code
