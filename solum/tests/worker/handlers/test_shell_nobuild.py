@@ -57,7 +57,7 @@ class HandlerTest(base.BaseTestCase):
         cfg.CONF.worker.log_url_prefix = "https://log.com/commit/"
 
         handler.build(self.ctx, build_id=5, git_info=git_info, name='new_app',
-                      base_image_id='1-2-3-4', source_format='heroku',
+                      base_image_id='1-2-3-4', source_format='chef',
                       image_format='docker', assembly_id=44,
                       test_cmd='faketests', source_creds_ref=None)
 
@@ -75,7 +75,7 @@ class HandlerTest(base.BaseTestCase):
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
-        util_dir = os.path.join(proj_dir, 'contrib', 'lp-cedarish', 'docker')
+        util_dir = os.path.join(proj_dir, 'contrib', 'lp-chef', 'docker')
         u_script = os.path.join(util_dir, 'unittest-app')
 
         expected = [
@@ -113,7 +113,7 @@ class HandlerTest(base.BaseTestCase):
 
         handler.build(self.ctx, build_id=5, git_info=git_info,
                       name='new_app', base_image_id='1-2-3-4',
-                      source_format='heroku', image_format='docker',
+                      source_format='chef', image_format='docker',
                       assembly_id=44, test_cmd='faketests',
                       source_creds_ref=None)
 
@@ -130,7 +130,7 @@ class HandlerTest(base.BaseTestCase):
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
-        util_dir = os.path.join(proj_dir, 'contrib', 'lp-cedarish', 'docker')
+        util_dir = os.path.join(proj_dir, 'contrib', 'lp-chef', 'docker')
         u_script = os.path.join(util_dir, 'unittest-app')
 
         expected = [
@@ -191,11 +191,12 @@ class TestBuildCommand(base.BaseTestCase):
         ctx = utils.dummy_context()
         handler = shell_handler.Handler()
         cmd = handler._get_build_command(ctx,
+                                         'build',
                                          'http://example.com/a.git',
                                          'testa',
                                          self.base_image_id,
                                          self.source_format,
-                                         self.image_format)
+                                         self.image_format, '', '')
         self.assertIn(self.expect, cmd[0])
         self.assertEqual('http://example.com/a.git', cmd[1])
         self.assertEqual('testa', cmd[2])

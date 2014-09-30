@@ -43,7 +43,8 @@ class HandlerTest(base.BaseTestCase):
     @mock.patch('solum.worker.handlers.noop.LOG')
     def test_unittest(self, fake_LOG):
         git_info = test_shell.mock_git_info()
-        args = [5, git_info, 'pep8', 'fake-private-key']
+        args = [5, git_info, 'new_app',
+                '1-2-3-4', 'heroku', 'docker', 44, 'pep8', 'fake-private-key']
         noop_handler.Handler().unittest(self.ctx, *args)
-        message = 'Unittest %s %s %s %s' % tuple(args)
+        message = 'Unittest %s %s %s %s %s %s %s %s %s' % tuple(args)
         fake_LOG.debug.assert_called_once_with(_("%s") % message)

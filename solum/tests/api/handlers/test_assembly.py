@@ -60,9 +60,9 @@ class TestAssemblyHandler(base.BaseTestCase):
         mock_registry.Assembly.get_by_uuid.assert_called_once_with(self.ctx,
                                                                    'test_id')
 
-    @mock.patch('solum.worker.api.API.build')
+    @mock.patch('solum.worker.api.API.perform_action')
     @mock.patch('solum.common.solum_keystoneclient.KeystoneClientV3')
-    def test_create(self, mock_kc, mock_build, mock_registry):
+    def test_create(self, mock_kc, mock_pa, mock_registry):
         data = {'user_id': 'new_user_id',
                 'uuid': 'input_uuid',
                 'plan_uuid': 'input_plan_uuid'}
@@ -95,7 +95,8 @@ class TestAssemblyHandler(base.BaseTestCase):
             'status_token': None,
             'status_url': None,
         }
-        mock_build.assert_called_once_with(
+        mock_pa.assert_called_once_with(
+            verb='build',
             build_id=8, name='nodeus', assembly_id=8,
             git_info=git_info, test_cmd=None,
             base_image_id='auto', source_format='heroku',
@@ -103,9 +104,9 @@ class TestAssemblyHandler(base.BaseTestCase):
 
         mock_kc.return_value.create_trust_context.assert_called_once_with()
 
-    @mock.patch('solum.worker.api.API.build')
+    @mock.patch('solum.worker.api.API.perform_action')
     @mock.patch('solum.common.solum_keystoneclient.KeystoneClientV3')
-    def test_create_with_private_github_repo(self, mock_kc, mock_build,
+    def test_create_with_private_github_repo(self, mock_kc, mock_pa,
                                              mock_registry):
         data = {'user_id': 'new_user_id',
                 'uuid': 'input_uuid',
@@ -140,7 +141,8 @@ class TestAssemblyHandler(base.BaseTestCase):
             'status_token': None,
             'status_url': None,
         }
-        mock_build.assert_called_once_with(
+        mock_pa.assert_called_once_with(
+            verb='build',
             build_id=8, name='nodeus', assembly_id=8,
             git_info=git_info,
             test_cmd=None, base_image_id='auto', source_format='heroku',

@@ -99,25 +99,33 @@ class Handler(object):
         return os.path.abspath(os.path.join(os.path.dirname(__file__),
                                             '..', '..', '..'))
 
-    def _get_build_command(self, ctxt, source_uri, name, base_image_id,
-                           source_format, image_format, source_creds_ref=None):
+    def _get_build_command(self, ctxt, stage, source_uri, name,
+                           base_image_id, source_format, image_format,
+                           commit_sha, test_cmd, source_creds_ref=None):
         # map the input formats to script paths.
         # TODO(asalkeld) we need an "auto".
         pathm = {'heroku': 'lp-cedarish',
                  'dib': 'diskimage-builder',
                  'dockerfile': 'lp-dockerfile',
+                 'chef': 'lp-chef',
                  'docker': 'docker',
                  'qcow2': 'vm-slug'}
         if base_image_id == 'auto' and image_format == 'qcow2':
             base_image_id = 'cedarish'
-        build_app = os.path.join(self.proj_dir, 'contrib',
-                                 pathm.get(source_format, 'lp-cedarish'),
-                                 pathm.get(image_format, 'vm-slug'),
-                                 'build-app')
+        build_app_path = os.path.join(self.proj_dir, 'contrib',
+                                      pathm.get(source_format, 'lp-cedarish'),
+                                      pathm.get(image_format, 'vm-slug'))
         source_private_key = self._get_private_key(source_creds_ref,
                                                    source_uri)
-        return [build_app, source_uri, name, ctxt.tenant,
-                base_image_id, source_private_key]
+
+        if stage == 'unittest':
+            build_app = os.path.join(build_app_path, 'unittest-app')
+            return [build_app, source_uri, commit_sha, ctxt.tenant,
+                    source_private_key, test_cmd]
+        elif stage == 'build':
+            build_app = os.path.join(build_app_path, 'build-app')
+            return [build_app, source_uri, name, ctxt.tenant,
+                    base_image_id, source_private_key]
 
     def _send_status(self, test_result, status_url, status_token,
                      pending=False):
@@ -158,8 +166,9 @@ class Handler(object):
 
         # TODO(datsun180b): This is only temporary, until Mistral becomes our
         # workflow engine.
-        if self._run_unittest(ctxt, assembly_id, git_info, test_cmd,
-                              source_creds_ref) != 0:
+        if self._run_unittest(ctxt, build_id, git_info, name, base_image_id,
+                              source_format, image_format, assembly_id,
+                              test_cmd, source_creds_ref) != 0:
             return
 
         update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.BUILDING)
@@ -168,10 +177,10 @@ class Handler(object):
         solum.TLS.trace.import_context(ctxt)
 
         source_uri = git_info['source_url']
-        build_cmd = self._get_build_command(ctxt, source_uri, name,
-                                            base_image_id,
-                                            source_format, image_format,
-                                            source_creds_ref)
+        build_cmd = self._get_build_command(ctxt, 'build', source_uri,
+                                            name, base_image_id,
+                                            source_format, image_format, '',
+                                            test_cmd, source_creds_ref)
         solum.TLS.trace.support_info(build_cmd=' '.join(build_cmd),
                                      assembly_id=assembly_id)
 
@@ -225,8 +234,9 @@ class Handler(object):
             deployer_api.API(context=ctxt).deploy(assembly_id=assembly_id,
                                                   image_id=created_image_id)
 
-    def _run_unittest(self, ctxt, assembly_id, git_info, test_cmd,
-                      source_creds_ref=None):
+    def _run_unittest(self, ctxt, build_id, git_info, name, base_image_id,
+                      source_format, image_format, assembly_id,
+                      test_cmd, source_creds_ref=None):
         if test_cmd is None:
             LOG.debug("Unit test command is None; skipping unittests.")
             return 0
@@ -236,12 +246,12 @@ class Handler(object):
         LOG.debug("Running unittests.")
         update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.UNIT_TESTING)
 
-        test_app = os.path.join(self.proj_dir, 'contrib', 'lp-cedarish',
-                                'docker', 'unittest-app')
         git_url = git_info['source_url']
-        source_private_key = self._get_private_key(source_creds_ref, git_url)
-        command = [test_app, git_url, commit_sha, ctxt.tenant,
-                   source_private_key, test_cmd]
+        command = self._get_build_command(ctxt, 'unittest', git_url, name,
+                                          base_image_id,
+                                          source_format, image_format,
+                                          commit_sha, test_cmd,
+                                          source_creds_ref)
 
         solum.TLS.trace.clear()
         solum.TLS.trace.import_context(ctxt)
@@ -272,10 +282,12 @@ class Handler(object):
 
         return returncode
 
-    def unittest(self, ctxt, assembly_id, git_info, test_cmd,
-                 source_creds_ref=None):
-        self._run_unittest(ctxt, assembly_id, git_info, test_cmd,
-                           source_creds_ref)
+    def unittest(self, ctxt, build_id, git_info, name, base_image_id,
+                 source_format, image_format, assembly_id,
+                 test_cmd, source_creds_ref=None):
+        self._run_unittest(ctxt, build_id, git_info, name, base_image_id,
+                           source_format, image_format, assembly_id,
+                           test_cmd, source_creds_ref)
 
     def _get_private_key(self, source_creds_ref, source_url):
         source_private_key = ''

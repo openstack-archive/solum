@@ -132,25 +132,7 @@ class AssemblyHandler(handler.Handler):
                                  deploy_keys_ref=plan_obj.deploy_keys_uri)
         return db_obj
 
-    def _unittest_artifact(self, assem, artifact, commit_sha='',
-                           status_url=None, deploy_keys_ref=None):
-
-        test_cmd = artifact.get('unittest_cmd')
-        status_token = artifact.get('status_token')
-        git_info = {
-            'source_url': artifact['content']['href'],
-            'commit_sha': commit_sha,
-            'status_token': status_token,
-            'status_url': status_url,
-        }
-
-        api.API(context=self.context).unittest(
-            assembly_id=assem.id,
-            git_info=git_info,
-            test_cmd=test_cmd,
-            source_creds_ref=deploy_keys_ref)
-
-    def _build_artifact(self, assem, artifact, commit_sha='',
+    def _build_artifact(self, assem, artifact, verb='build', commit_sha='',
                         status_url=None, deploy_keys_ref=None):
 
         # This is a tempory hack so we don't need the build client
@@ -177,7 +159,8 @@ class AssemblyHandler(handler.Handler):
             'status_url': status_url
         }
 
-        api.API(context=self.context).build(
+        api.API(context=self.context).perform_action(
+            verb=verb,
             build_id=image.id,
             git_info=git_info,
             name=image.name,
