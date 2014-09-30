@@ -11,6 +11,9 @@ if is_service_enabled solum; then
         if [[ "$SOLUM_INSTALL_DOCKERFILE" == "True" ]]; then
             install_lp-dockerfile
         fi
+        if [[ "$SOLUM_INSTALL_CHEF" == "True" ]]; then
+            install_lp-chef
+        fi
     elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
         echo_summary "Configuring Solum"
         add_solum_user

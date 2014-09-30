@@ -1,0 +1,14 @@
+#!/bin/bash
+
+DOCKER_REGISTRY=${DOCKER_REGISTRY:-'127.0.0.1:5042'}
+
+sudo mkdir -p /opt/solum
+sudo chown -R ${USER}:${USER} /opt/solum
+
+mkdir -p /opt/solum/apps
+
+HERE=$(dirname $0)
+CHEF_DOCKERFILE=$HERE/../../examples/language-packs/chef
+
+echo Creating chef docker image
+sudo docker build -t $DOCKER_REGISTRY/chef $CHEF_DOCKERFILE

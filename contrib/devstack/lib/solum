@@ -256,6 +256,17 @@ function install_lp-dockerfile() {
     fi
 }
 
+# install_lp-chef() - Install tooling to support chef LP
+function install_lp-chef() {
+    if [[ $SOLUM_IMAGE_FORMAT == 'docker' ]]; then
+        $SOLUM_DIR/contrib/lp-chef/docker/prepare
+        install_drone
+    else
+        echo does not support VMs
+        exit 1
+    fi
+}
+
 # start_solum() - Start running processes, including screen
 function start_solum() {
     screen_it solum-api "cd $SOLUM_DIR && $SOLUM_BIN_DIR/solum-api --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE"
