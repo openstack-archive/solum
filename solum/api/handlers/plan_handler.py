@@ -91,7 +91,7 @@ class PlanHandler(handler.Handler):
                     s.close()
             else:
                 client = clients.OpenStackClients(None).barbican().admin_client
-                db_obj.deploy_keys_uri = client.secrets.Secret(
+                db_obj.deploy_keys_uri = client.secrets.create(
                     name=db_obj.uuid,
                     payload=encoded_payload,
                     payload_content_type='application/octet-stream',

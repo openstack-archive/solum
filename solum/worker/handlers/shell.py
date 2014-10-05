@@ -337,7 +337,7 @@ class Handler(object):
                 s.close()
             else:
                 client = clients.OpenStackClients(None).barbican().admin_client
-                secret = client.secrets.Secret(secret_ref=source_creds_ref)
+                secret = client.secrets.get(secret_ref=source_creds_ref)
                 deploy_keys_str = secret.payload
             deploy_keys = ast.literal_eval(deploy_keys_str)
             for dk in deploy_keys:
