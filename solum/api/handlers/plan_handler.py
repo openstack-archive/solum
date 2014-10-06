@@ -13,13 +13,22 @@
 # under the License.
 
 import base64
+import shelve
 import uuid
 
 from Crypto.PublicKey import RSA
+from oslo.config import cfg
 
 from solum.api.handlers import handler
 from solum.common import clients
 from solum import objects
+
+cfg.CONF.import_opt('git_secrets_file', 'solum.common.clients',
+                    group='barbican_client')
+cfg.CONF.import_opt('barbican_disabled', 'solum.common.clients',
+                    group='barbican_client')
+secrets_file = cfg.CONF.barbican_client.git_secrets_file
+barbican_disabled = cfg.CONF.barbican_client.barbican_disabled
 
 
 class PlanHandler(handler.Handler):
@@ -42,8 +51,13 @@ class PlanHandler(handler.Handler):
         """Delete existing plan."""
         db_obj = objects.registry.Plan.get_by_uuid(self.context, id)
         if db_obj.deploy_keys_uri:
-            barbican = clients.OpenStackClients(None).barbican().admin_client
-            barbican.secrets.delete(db_obj.deploy_keys_uri)
+            if barbican_disabled:
+                s = shelve.open(secrets_file)
+                del s[db_obj.deploy_keys_uri]
+                s.close()
+            else:
+                client = clients.OpenStackClients(None).barbican().admin_client
+                client.secrets.delete(db_obj.deploy_keys_uri)
         db_obj.destroy(self.context)
 
     def create(self, data):
@@ -67,13 +81,21 @@ class PlanHandler(handler.Handler):
             deploy_keys.append({'source_url': artifact['content']['href'],
                                 'private_key': private_key})
         if deploy_keys:
-            barbican = clients.OpenStackClients(None).barbican().admin_client
             encoded_payload = base64.b64encode(bytes(str(deploy_keys)))
-            db_obj.deploy_keys_uri = barbican.secrets.Secret(
-                name=db_obj.uuid,
-                payload=encoded_payload,
-                payload_content_type='application/octet-stream',
-                payload_content_encoding='base64').store()
+            if barbican_disabled:
+                s = shelve.open(secrets_file)
+                try:
+                    s[db_obj.uuid] = encoded_payload
+                    db_obj.deploy_keys_uri = db_obj.uuid
+                finally:
+                    s.close()
+            else:
+                client = clients.OpenStackClients(None).barbican().admin_client
+                db_obj.deploy_keys_uri = client.secrets.Secret(
+                    name=db_obj.uuid,
+                    payload=encoded_payload,
+                    payload_content_type='application/octet-stream',
+                    payload_content_encoding='base64').store()
         db_obj.raw_content = data
         db_obj.create(self.context)
         return db_obj

@@ -34,7 +34,16 @@ barbican_client_opts = [
     cfg.BoolOpt('insecure',
                 default=False,
                 help=_("If set, then the server's certificate for barbican "
-                       "will not be verified."))]
+                       "will not be verified.")),
+    cfg.StrOpt('git_secrets_file',
+               default='/etc/solum/secrets/git_secrets.db',
+               help="Tells where to store the secrets of private git repo. "
+                    "private git repo secrets location"),
+    cfg.BoolOpt('barbican_disabled',
+                default=False,
+                help="Default store is barbican. If barbican is disabled, "
+                     "it will store secrets on the local filesystem specified "
+                     "by 'git_secrets_file'")]
 
 # Note: this config is duplicated in many projects that use OpenStack
 # clients. This should really be in the client.

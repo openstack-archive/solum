@@ -17,6 +17,7 @@
 import ast
 import json
 import os
+import shelve
 import subprocess
 
 import httplib2
@@ -279,9 +280,22 @@ class Handler(object):
     def _get_private_key(self, source_creds_ref, source_url):
         source_private_key = ''
         if source_creds_ref:
-            barbican = clients.OpenStackClients(None).barbican().admin_client
-            secret = barbican.secrets.Secret(secret_ref=source_creds_ref)
-            deploy_keys_str = secret.payload
+            cfg.CONF.import_opt('barbican_disabled',
+                                'solum.common.clients',
+                                group='barbican_client')
+            cfg.CONF.import_opt('git_secrets_file',
+                                'solum.common.clients',
+                                group='barbican_client')
+            barbican_disabled = cfg.CONF.barbican_client.barbican_disabled
+            secrets_file = cfg.CONF.barbican_client.git_secrets_file
+            if barbican_disabled:
+                s = shelve.open(secrets_file)
+                deploy_keys_str = s[source_creds_ref]
+                s.close()
+            else:
+                client = clients.OpenStackClients(None).barbican().admin_client
+                secret = client.secrets.Secret(secret_ref=source_creds_ref)
+                deploy_keys_str = secret.payload
             deploy_keys = ast.literal_eval(deploy_keys_str)
             for dk in deploy_keys:
                 if source_url == dk['source_url']:
