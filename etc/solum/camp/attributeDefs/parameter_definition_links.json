@@ -1,0 +1,8 @@
+{
+    "uri": "parameter_definition_links",
+    "name": "parameter_definition_links",
+    "type": "attribute_definition",
+    "description": "CAMP 1.1 standard parameter_definition_links attribute definition",
+    "documentation": "http://docs.oasis-open.org/camp/camp-spec/v1.1/camp-spec-v1.1.pdf",
+    "attribute_type": "ParameterLink[]"
+}

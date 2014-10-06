@@ -1,0 +1,49 @@
+{
+    "uri": "camp_resource",
+    "name": "camp_resource",
+    "type": "type_definition",
+    "description": "CAMP 1.1 standard camp_resource definition",
+    "documentation": "http://docs.oasis-open.org/camp/camp-spec/v1.1/camp-spec-v1.1.pdf",
+    "attribute_definition_links": [
+        {
+            "href": "uri",
+            "target_name": "uri Attribute Definition",
+            "required": true,
+            "mutable": false
+        },
+        {
+            "href": "name",
+            "target_name": "name Attribute Definition",
+            "required": true,
+            "mutable": true,
+            "consumer_mutable": true
+        },
+        {
+            "href": "type",
+            "target_name": "type Attribute Definition",
+            "required": true,
+            "mutable": false
+        },
+        {
+            "href": "description",
+            "target_name": "description Attribute Definition",
+            "required": false,
+            "mutable": true,
+            "consumer_mutable": true
+        },
+        {
+            "href": "tags",
+            "target_name": "tags Attribute Definition",
+            "required": false,
+            "mutable": true,
+            "consumer_mutable": true
+        },
+        {
+            "href": "representation_skew",
+            "target_name": "representation_skew Attribute Definition",
+            "required": false,
+            "mutable": true,
+            "consumer_mutable": false
+        }
+    ]
+}

@@ -1,0 +1,8 @@
+{
+    "uri": "camp_version",
+    "name": "camp_version",
+    "type": "attribute_definition",
+    "description": "CAMP 1.1 standard camp_version attribute definition",
+    "documentation": "http://docs.oasis-open.org/camp/camp-spec/v1.1/camp-spec-v1.1.pdf",
+    "attribute_type": "String"
+}

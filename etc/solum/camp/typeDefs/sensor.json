@@ -1,0 +1,53 @@
+{
+    "uri": "sensor",
+    "name": "sensor",
+    "type": "type_definition",
+    "description": "CAMP 1.1 standard Operation definition",
+    "documentation": "http://docs.oasis-open.org/camp/camp-spec/v1.1/camp-spec-v1.1.pdf",
+    "inherits_from": [
+        {
+            "href": "camp_resource",
+            "target_name": "camp_resource"
+        }
+    ],
+    "attribute_definition_links": [
+        {
+            "href": "documentation",
+            "target_name": "documentation Attribute Definition",
+            "required": true,
+            "mutable": false
+        },
+        {
+            "href": "target_resource",
+            "target_name": "target_resource Attribute Definition",
+            "required": true,
+            "mutable": false
+        },
+        {
+            "href": "sensor_type",
+            "target_name": "sensor_type Attribute Definition",
+            "required": true,
+            "mutable": false
+        },
+        {
+            "href": "value",
+            "target_name": "value Attribute Definition",
+            "required": false,
+            "mutable": true,
+            "consumer_mutable": false
+        },
+        {
+            "href": "timestamp",
+            "target_name": "timestamp Attribute Definition",
+            "required": false,
+            "mutable": true,
+            "consumer_mutable": false
+        },
+        {
+            "href": "operations_uri",
+            "target_name": "operations_uri Attribute Definition",
+            "required": false,
+            "mutable": false
+        }
+    ]
+}

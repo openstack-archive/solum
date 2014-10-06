@@ -1,0 +1,65 @@
+{
+    "uri": "component",
+    "name": "component",
+    "type": "type_definition",
+    "description": "CAMP 1.1 standard component definition",
+    "documentation": "http://docs.oasis-open.org/camp/camp-spec/v1.1/camp-spec-v1.1.pdf",
+    "inherits_from": [
+        {
+            "href": "camp_resource",
+            "target_name": "camp_resource"
+        }
+    ],
+    "attribute_definition_links": [
+        {
+            "href": "assemblies",
+            "target_name": "assemblies Attribute Definition",
+            "required": true,
+            "mutable": true,
+            "consumer_mutable": false
+        },
+        {
+            "href": "artifact",
+            "target_name": "artifact Attribute Definition",
+            "required": false,
+            "mutable": false
+        },
+        {
+            "href": "service",
+            "target_name": "service Attribute Definition",
+            "required": false,
+            "mutable": false
+        },
+        {
+            "href": "status",
+            "target_name": "status Attribute Definition",
+            "required": true,
+            "mutable": true,
+            "consumer_mutable": false
+        },
+        {
+            "href": "external_management_resource",
+            "target_name": "external_management_resource Attribute Definition",
+            "required": false,
+            "mutable": false
+        },
+        {
+            "href": "related_components",
+            "target_name": "related_components Attribute Definition",
+            "required": false,
+            "mutable": false
+        },
+        {
+            "href": "operations_uri",
+            "target_name": "operationsUri Attribute Definition",
+            "required": false,
+            "mutable": false
+        },
+        {
+            "href": "sensors_uri",
+            "target_name": "sensors_uri Attribute Definition",
+            "required": false,
+            "mutable": false
+        }
+    ]
+}

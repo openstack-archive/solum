@@ -1,0 +1,33 @@
+{
+    "uri": "format",
+    "name": "format",
+    "type": "type_definition",
+    "description": "CAMP 1.1 standard format definition",
+    "documentation": "http://docs.oasis-open.org/camp/camp-spec/v1.1/camp-spec-v1.1.pdf",
+    "inherits_from": [
+        {
+            "href": "camp_resource",
+            "target_name": "camp_resource"
+        }
+    ],
+    "attribute_definition_links": [
+        {
+            "href": "mime_type",
+            "target_name": "mimeType Attribute Definition",
+            "required": true,
+            "mutable": false
+        },
+        {
+            "href": "version",
+            "target_name": "version Attribute Definition",
+            "required": false,
+            "mutable": false
+        },
+        {
+            "href": "documentation",
+            "target_name": "documentation Attribute Definition",
+            "required": true,
+            "mutable": false
+        }
+    ]
+}

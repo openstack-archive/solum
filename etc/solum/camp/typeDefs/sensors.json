@@ -1,0 +1,27 @@
+{
+    "uri": "sensors",
+    "name": "sensors",
+    "type": "type_definition",
+    "description": "CAMP 1.1 standard sensors definition",
+    "documentation": "http://docs.oasis-open.org/camp/camp-spec/v1.1/camp-spec-v1.1.pdf",
+    "inherits_from": [
+        {
+            "href": "camp_resource",
+            "target_name": "camp_resource"
+        }
+    ],
+    "attribute_definition_links": [
+        {
+            "href": "target_resource",
+            "target_name": "target_resource Attribute Definition",
+            "required": true,
+            "mutable": false
+        },
+        {
+            "href": "sensor_links",
+            "target_name": "sensor_links Attribute Definition",
+            "required": true,
+            "mutable": false
+        }
+    ]
+}
