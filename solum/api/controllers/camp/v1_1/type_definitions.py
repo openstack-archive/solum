@@ -13,30 +13,52 @@
 # under the License.
 
 import pecan
+from pecan import core
+from pecan import rest
+from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
 
 from solum.api.controllers.camp.v1_1.datamodel import type_definitions as model
+from solum.api.controllers.camp.v1_1 import uris
 from solum.api.controllers import common_types
+from solum.api.handlers.camp import type_definition_handler
 from solum.common import exception
 
 
-uri_string = '%s/camp/v1_1/type_definitions/'
-description_string = "Solum CAMP API type_definitions collection resource."
+DESCRIPTION_STRING = "Solum CAMP API type_definitions collection resource."
 
 
-class Controller():
+class TypeDefinitionsController(rest.RestController):
     """CAMP v1.1 type_definitions controller."""
 
     @exception.wrap_wsme_controller_exception
-    @wsme_pecan.wsexpose(model.TypeDefinitions)
-    def index(self):
-        links = [
-            common_types.Link(href='http://tbd.com/',
-                              target_name='TBD')
-        ]
+    @wsme_pecan.wsexpose(model.TypeDefinition, wtypes.text)
+    def get_one(self, type_def_name):
+        handler = (type_definition_handler.
+                   TypeDefinitionHandler(pecan.request.security_context))
+        raw_def = handler.get(type_def_name)
+        if not raw_def:
+            core.abort(404,
+                       '%s is not a type_definition' %
+                       type_def_name)
+        return raw_def.fix_uris(pecan.request.host_url)
 
-        return model.TypeDefinitions(uri=uri_string % pecan.request.host_url,
+    @exception.wrap_wsme_controller_exception
+    @wsme_pecan.wsexpose(model.TypeDefinitions)
+    def get(self):
+        links = []
+        handler = (type_definition_handler.
+                   TypeDefinitionHandler(pecan.request.security_context))
+        def_list = handler.get_all()
+
+        for tdef in def_list:
+            links.append(common_types.Link(href=uris.TYPE_DEF_URI_STR %
+                                           (pecan.request.host_url, tdef.uri),
+                                           target_name=tdef.name))
+
+        return model.TypeDefinitions(uri=uris.TYPE_DEFS_URI_STR %
+                                     pecan.request.host_url,
                                      name='Solum_CAMP_type_definitions',
                                      type='type_definitions',
-                                     description=description_string,
+                                     description=DESCRIPTION_STRING,
                                      type_definition_links=links)
