@@ -16,7 +16,7 @@ import mock
 from oslo.config import cfg
 
 cfg.CONF.import_group('keystone_authtoken',
-                      'keystoneclient.middleware.auth_token')
+                      'keystonemiddleware.auth_token')
 
 import keystoneclient.exceptions as kc_exception  # noqa
 
