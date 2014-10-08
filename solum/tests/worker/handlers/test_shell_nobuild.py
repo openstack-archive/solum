@@ -25,13 +25,22 @@ from solum.tests.worker.handlers import test_shell
 from solum.worker.handlers import shell_nobuild as shell_handler
 
 
+def mock_environment():
+    return {
+        'PATH': '/bin',
+        'SOLUM_TASK_DIR': '/dev/null',
+        'BUILD_ID': 'abcd',
+        'PROJECT_ID': 1,
+    }
+
+
 class HandlerTest(base.BaseTestCase):
     def setUp(self):
         super(HandlerTest, self).setUp()
         self.ctx = utils.dummy_context()
 
     # Notice most of these mocks do not modify shell_nobuild, but shell.
-    @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
+    @mock.patch('solum.worker.handlers.shell_nobuild.Handler._get_environment')
     @mock.patch('httplib2.Http.request')
     @mock.patch('solum.objects.registry')
     @mock.patch('subprocess.Popen')
@@ -92,7 +101,7 @@ class HandlerTest(base.BaseTestCase):
         expected = [mock.call(self.ctx, 44, 'READY')]
         self.assertEqual(expected, mock_a_update_nb.call_args_list)
 
-    @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
+    @mock.patch('solum.worker.handlers.shell_nobuild.Handler._get_environment')
     @mock.patch('httplib2.Http.request')
     @mock.patch('subprocess.Popen')
     @mock.patch('solum.worker.handlers.shell.update_assembly_status')

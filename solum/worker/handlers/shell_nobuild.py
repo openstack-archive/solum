@@ -14,8 +14,13 @@
 
 """Solum Worker shell handler, with build dummied out."""
 
+import os
+
+from oslo.config import cfg
+
 from solum.objects import assembly
 from solum.openstack.common import log as logging
+from solum.openstack.common import uuidutils
 from solum.worker.handlers import shell as shell_handler
 
 LOG = logging.getLogger(__name__)
@@ -47,3 +52,18 @@ class Handler(shell_handler.Handler):
         # Deployer is normally in charge of declaring an assembly READY.
         if ret_code == 0:
             update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.READY)
+
+    def _get_environment(self, ctxt):
+        # create a minimal environment
+        user_env = {}
+        for var in ['PATH', 'LOGNAME', 'LANG', 'HOME', 'USER', 'TERM']:
+            if var in os.environ:
+                user_env[var] = os.environ[var]
+        user_env['OS_AUTH_TOKEN'] = ctxt.auth_token
+        user_env['OS_AUTH_URL'] = ctxt.auth_url
+
+        user_env['PROJECT_ID'] = ctxt.tenant
+
+        user_env['BUILD_ID'] = uuidutils.generate_uuid()
+        user_env['SOLUM_TASK_DIR'] = cfg.CONF.worker.task_log_dir
+        return user_env
