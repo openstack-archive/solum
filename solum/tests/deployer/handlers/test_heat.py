@@ -194,7 +194,7 @@ class HandlerTest(base.BaseTestCase):
 
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.common.clients.OpenStackClients')
-    def test_delete_heat_stack_success(self, mock_client, mock_registry):
+    def test_destroy_success(self, mock_client, mock_registry):
         fake_assem = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assem
 
@@ -207,14 +207,14 @@ class HandlerTest(base.BaseTestCase):
         cfg.CONF.deployer.wait_interval = 0
         cfg.CONF.deployer.growth_factor = 1.2
 
-        handler.delete_heat_stack(self.ctx, fake_assem.id)
+        handler.destroy(self.ctx, fake_assem.id)
 
         mock_client.heat.stacks.delete.assert_called_once()
         fake_assem.destroy.assert_called_once()
 
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.common.clients.OpenStackClients')
-    def test_delete_heat_stack_error(self, mock_client, mock_registry):
+    def test_destroy_error(self, mock_client, mock_registry):
         fake_assem = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assem
 
@@ -225,7 +225,7 @@ class HandlerTest(base.BaseTestCase):
         cfg.CONF.deployer.wait_interval = 0
         cfg.CONF.deployer.growth_factor = 1.2
 
-        handler.delete_heat_stack(self.ctx, fake_assem.id)
+        handler.destroy(self.ctx, fake_assem.id)
 
         mock_client.heat.stacks.delete.assert_called_once()
         fake_assem.save.assert_called_once_with(self.ctx)
@@ -233,13 +233,13 @@ class HandlerTest(base.BaseTestCase):
 
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.common.clients.OpenStackClients')
-    def test_delete_heat_stack_absent(self, mock_client, mock_registry):
+    def test_destroy_absent(self, mock_client, mock_registry):
         fake_assem = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assem
 
         handler = heat_handler.Handler()
         handler._find_id_if_stack_exists = mock.MagicMock(return_value=None)
-        handler.delete_heat_stack(self.ctx, fake_assem.id)
+        handler.destroy(self.ctx, fake_assem.id)
 
         assert not mock_client.heat.stacks.delete.called
         fake_assem.destroy.assert_called_once()

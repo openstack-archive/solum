@@ -14,6 +14,7 @@
 
 """Solum Deployer noop handler."""
 
+from solum import objects
 from solum.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
@@ -25,4 +26,10 @@ class Handler(object):
 
     def deploy(self, ctxt, assembly_id, image_id):
         message = ("Deploy %s %s" % (assembly_id, image_id))
+        LOG.debug("%s" % message)
+
+    def destroy(self, ctxt, assem_id):
+        assem = objects.registry.Assembly.get_by_id(ctxt, assem_id)
+        assem.destroy(ctxt)
+        message = ("Destroy %s" % (assem_id))
         LOG.debug("%s" % message)
