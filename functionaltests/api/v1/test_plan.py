@@ -78,9 +78,6 @@ class TestPlanController(base.TestCase):
         self._assert_output_expected(resp.data, sample_data)
 
     def test_plans_create_with_private_github_repo(self):
-        # FIXME(ravips): remove this when bug #1371252 is fixed
-        if base.is_fedora():
-            self.skipTest("Fails on Fedora 20, bug: #1371252")
         resp = self.client.create_plan(data=sample_data_private)
         self.assertEqual(resp.status, 201)
         self._assert_output_expected(resp.data, sample_data)
@@ -118,9 +115,6 @@ class TestPlanController(base.TestCase):
         self._assert_output_expected(yaml_data, sample_data)
 
     def test_plans_get_with_private_github_repo(self):
-        # FIXME(ravips): remove this when bug #1371252 is fixed
-        if base.is_fedora():
-            self.skipTest("Fails on Fedora 20, bug: #1371252")
         create_resp = self.client.create_plan(data=sample_data_private)
         self.assertEqual(create_resp.status, 201)
         uuid = create_resp.uuid
