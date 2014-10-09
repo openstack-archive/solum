@@ -104,7 +104,7 @@ class AssemblyHandler(handler.Handler):
         db_obj.status = ASSEMBLY_STATES.DELETING
         db_obj.save(self.context)
 
-        deploy_api.API(context=self.context).delete_heat_stack(
+        deploy_api.API(context=self.context).destroy(
             assem_id=db_obj.id)
 
     def create(self, data):

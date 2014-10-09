@@ -71,7 +71,7 @@ class Handler(object):
         return ''.join([assem_name[:min(len(assem_name), prefix_len)], '-',
                         assembly.uuid])
 
-    def delete_heat_stack(self, ctxt, assem_id):
+    def destroy(self, ctxt, assem_id):
         osc = clients.OpenStackClients(ctxt)
         assem = objects.registry.Assembly.get_by_id(ctxt, assem_id)
         stack_id = self._find_id_if_stack_exists(osc, assem)

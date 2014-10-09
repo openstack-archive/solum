@@ -17,6 +17,7 @@ import mock
 from solum.deployer.handlers import noop as noop_handler
 from solum.openstack.common.gettextutils import _
 from solum.tests import base
+from solum.tests import fakes
 from solum.tests import utils
 
 
@@ -32,9 +33,19 @@ class HandlerTest(base.BaseTestCase):
 
     @mock.patch('solum.deployer.handlers.noop.LOG')
     def test_deploy(self, fake_LOG):
-        args = [5, 'git://example.com/foo', 'new_app',
-                '1-2-3-4', 'heroku', 'docker', 44]
         args = [77, 'created_image_id']
         noop_handler.Handler().deploy(self.ctx, *args)
         message = 'Deploy %s %s' % tuple(args)
+        fake_LOG.debug.assert_called_once_with(_("%s") % message)
+
+    @mock.patch('solum.objects.registry')
+    @mock.patch('solum.deployer.handlers.noop.LOG')
+    def test_destroy(self, fake_LOG, fake_registry):
+        fake_assembly = fakes.FakeAssembly()
+        fake_registry.Assembly.get_by_id.return_value = fake_assembly
+        args = [fake_assembly.id]
+        noop_handler.Handler().destroy(self.ctx, *args)
+        fake_assembly.destroy.assert_called_once_with(self.ctx)
+
+        message = 'Destroy %s' % tuple(args)
         fake_LOG.debug.assert_called_once_with(_("%s") % message)
