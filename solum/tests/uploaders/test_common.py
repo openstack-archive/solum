@@ -14,7 +14,7 @@
 
 from solum.tests import base
 from solum.tests import utils
-from solum.uploader import common as uploader
+from solum.uploaders import common as uploader
 
 
 class CommonTest(base.BaseTestCase):
