@@ -61,7 +61,7 @@ if [ $# -lt 5 ]; then
   exit 1
 fi
 
-PRUN silent docker ps
+PRUN silent sudo docker ps
 [[ $? != 0 ]] && TLOG Cannot talk to docker. && exit 1
 
 GIT=$1
