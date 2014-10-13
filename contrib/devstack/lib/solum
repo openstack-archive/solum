@@ -49,7 +49,7 @@ SOLUM_MAX_ATTEMPTS=${SOLUM_MAX_ATTEMPTS:-2000}
 SOLUM_WAIT_INTERVAL=${SOLUM_WAIT_INTERVAL:-1}
 SOLUM_GROWTH_FACTOR=${SOLUM_GROWTH_FACTOR:-1.1}
 
-SOLUM_DRONE_URL=${SOLUM_DRONE_URL:-http://downloads.drone.io/latest/drone.deb}
+SOLUM_DRONE_URL=${SOLUM_DRONE_URL:-http://downloads.drone.io/master/drone.deb}
 SOLUM_INSTALL_DRONE=${SOLUM_INSTALL_DRONE:-False}
 
 # Support entry points installation of console scripts
