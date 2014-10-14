@@ -29,7 +29,7 @@ class Image(sql.Base, abstract.Image):
     uuid = sa.Column(sa.String(36), nullable=False)
     name = sa.Column(sa.String(100))
     source_uri = sa.Column(sa.String(1024))
-    source_format = sa.Column(sa.String(12))
+    source_format = sa.Column(sa.String(36))
     description = sa.Column(sa.String(255))
     project_id = sa.Column(sa.String(36))
     user_id = sa.Column(sa.String(36))
@@ -38,6 +38,7 @@ class Image(sql.Base, abstract.Image):
     base_image_id = sa.Column(sa.String(36))
     created_image_id = sa.Column(sa.String(36))
     image_format = sa.Column(sa.String(12))
+    artifact_type = sa.Column(sa.String(36))
 
 
 class ImageList(abstract.ImageList):

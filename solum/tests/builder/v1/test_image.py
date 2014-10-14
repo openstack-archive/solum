@@ -87,11 +87,12 @@ class TestImagesController(base.BaseTestCase):
         objects.load()
 
     def test_post(self, ImagesHandler, resp_mock, request_mock):
-        json_create = {'name': 'foo'}
+        json_create = {'name': 'foo', 'lp_metadata': 'lp_metadata'}
         request_mock.body = json.dumps(json_create)
         request_mock.content_type = 'application/json'
         hand_create = ImagesHandler.return_value.create
         hand_create.return_value = fakes.FakeImage()
         image.ImagesController().post()
-        hand_create.assert_called_with(json_create)
+        del json_create['lp_metadata']
+        hand_create.assert_called_with(json_create, 'lp_metadata')
         self.assertEqual(201, resp_mock.status)

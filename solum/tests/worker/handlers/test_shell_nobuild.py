@@ -68,7 +68,8 @@ class HandlerTest(base.BaseTestCase):
         handler.build(self.ctx, build_id=5, git_info=git_info, name='new_app',
                       base_image_id='1-2-3-4', source_format='chef',
                       image_format='docker', assembly_id=44,
-                      test_cmd='faketests', source_creds_ref=None)
+                      test_cmd='faketests', source_creds_ref=None,
+                      artifact_type=None, lp_metadata=None)
 
         expected = [
             mock.call(status_url, 'POST',
@@ -124,7 +125,8 @@ class HandlerTest(base.BaseTestCase):
                       name='new_app', base_image_id='1-2-3-4',
                       source_format='chef', image_format='docker',
                       assembly_id=44, test_cmd='faketests',
-                      source_creds_ref=None)
+                      artifact_type=None, source_creds_ref=None,
+                      lp_metadata=None)
 
         expected = [
             mock.call(status_url, 'POST',
@@ -205,7 +207,8 @@ class TestBuildCommand(base.BaseTestCase):
                                          'testa',
                                          self.base_image_id,
                                          self.source_format,
-                                         self.image_format, '', '')
+                                         self.image_format, '', '',
+                                         None)
         self.assertIn(self.expect, cmd[0])
         self.assertEqual('http://example.com/a.git', cmd[1])
         self.assertEqual('testa', cmd[2])

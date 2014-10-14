@@ -111,7 +111,7 @@ PRUN sudo docker logs --tail=all -f $BUILD_ID
 
 cd $APP_DIR
 PRUN sudo docker cp $BUILD_ID:/tmp/slug.tgz $APP_DIR/
-if [ ! -f "$APP_DIR/slug.tgz" ] ; then 
+if [ ! -f "$APP_DIR/slug.tgz" ] ; then
   TLOG Slug build failed see container: $BUILD_ID
   exit
 fi

@@ -37,6 +37,10 @@ sample_data = {"name": "test_language_pack",
                "attributes": {"key1": "value1", "key2": "value2"},
                "type": "language_pack"}
 
+sample_lp = {"name": "test_language_pack",
+             "git_url": "https://github.com/murali44/Solum-lp-Go.git",
+             "lp_metadata": "test_metadata"}
+
 
 class TestLanguagePackController(base.TestCase):
 
@@ -180,3 +184,11 @@ class TestLanguagePackController(base.TestCase):
     def test_language_packs_delete_not_found(self):
         self.assertRaises(tempest_exceptions.NotFound,
                           self.client.delete, 'v1/language_packs/not_found')
+
+    def test_language_packs_build(self):
+        sample_json = json.dumps(sample_lp)
+        resp, body = self.builderclient.post('v1/images', sample_json)
+        self.assertEqual(resp.status, 201)
+        json_data = json.loads(body)
+        self.assertEqual(json_data["state"], "PENDING")
+        self.assertEqual(json_data["name"], "test_language_pack")
