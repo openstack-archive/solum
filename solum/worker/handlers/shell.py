@@ -15,6 +15,7 @@
 """Solum Worker shell handler."""
 
 import ast
+import base64
 import json
 import os
 import shelve
@@ -333,7 +334,8 @@ class Handler(object):
             secrets_file = cfg.CONF.barbican_client.git_secrets_file
             if barbican_disabled:
                 s = shelve.open(secrets_file)
-                deploy_keys_str = s[source_creds_ref]
+                deploy_keys_str = s[str(source_creds_ref)]
+                deploy_keys_str = base64.b64decode(deploy_keys_str)
                 s.close()
             else:
                 client = clients.OpenStackClients(None).barbican().admin_client

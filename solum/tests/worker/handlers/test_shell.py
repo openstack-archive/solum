@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import base64
 import json
 import os.path
 import uuid
@@ -189,6 +190,7 @@ class HandlerTest(base.BaseTestCase):
         mock_config.barbican_disabled.return_value = True
         mock_config.git_secrets_file.return_value = 'some_file_path'
         mock_shelve.return_value = mock.MagicMock()
+        base64.b64decode = mock.MagicMock()
         mock_ast.return_value = [{'source_url': 'git://example.com/foo',
                                   'private_key': 'some-private-key'}]
 
