@@ -180,10 +180,12 @@ class TestAssemblyHandler(base.BaseTestCase):
         handler._build_artifact = mock.MagicMock()
         handler._context_from_trust_id = mock.MagicMock(return_value=self.ctx)
         handler.trigger_workflow(trigger_id)
-        handler._build_artifact.assert_called_once_with(assem=db_obj,
-                                                        artifact=artifacts[0],
-                                                        commit_sha='',
-                                                        status_url=None)
+        handler._build_artifact.assert_called_once_with(
+            assem=db_obj,
+            artifact=artifacts[0],
+            commit_sha='',
+            status_url=None,
+            deploy_keys_ref=plan_obj.deploy_keys_uri)
         handler._context_from_trust_id.assert_called_once_with('trust_worthy')
         mock_registry.Assembly.get_by_trigger_id.assert_called_once_with(
             None, trigger_id)
