@@ -432,3 +432,11 @@ class FakeTypeDefinitions(mock.Mock):
         super(FakeTypeDefinitions, self).__init__(**kwargs)
         self.name = 'Solum_CAMP_type_definitions'
         self.type = 'type_definitions'
+
+
+class FakeAttributeDefinition(mock.Mock):
+
+    def __init__(self, **kwargs):
+        super(FakeAttributeDefinition, self).__init__(**kwargs)
+        self.name = 'fake_attribute'
+        self.type = 'attribute_definition'

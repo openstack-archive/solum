@@ -13,6 +13,7 @@
 # under the License.
 
 from solum.api.controllers.camp.v1_1 import assemblies
+from solum.api.controllers.camp.v1_1 import attribute_definitions
 from solum.api.controllers.camp.v1_1 import extensions
 from solum.api.controllers.camp.v1_1 import formats
 from solum.api.controllers.camp.v1_1 import json_format
@@ -27,12 +28,14 @@ class Controller(object):
     """CAMP API version 1.1 controller root."""
 
     assemblies = assemblies.Controller()
+    attribute_definitions = (attribute_definitions.
+                             AttributeDefinitionsController())
     extensions = extensions.Controller()
     formats = formats.Controller()
     json_format = json_format.Controller()
     plans = plans.Controller()
     platform = platform.Controller()
     services = services.Controller()
-    type_definitions = type_definitions.Controller()
+    type_definitions = type_definitions.TypeDefinitionsController()
     parameter_definitions = (parameter_definitions.
                              ParameterDefinitionsController())

@@ -22,7 +22,7 @@ from solum.api.controllers.camp.v1_1 import extensions
 from solum.api.controllers.camp.v1_1 import formats
 from solum.api.controllers.camp.v1_1 import plans
 from solum.api.controllers.camp.v1_1 import services
-from solum.api.controllers.camp.v1_1 import type_definitions as td
+from solum.api.controllers.camp.v1_1 import uris
 from solum.common import exception
 
 uri_string = '%s/camp/v1_1/platform/'
@@ -43,7 +43,7 @@ class Controller():
                               pecan.request.host_url,
                               extensions_uri=extensions.uri_string %
                               pecan.request.host_url,
-                              type_definitions_uri=td.uri_string %
+                              type_definitions_uri=uris.TYPE_DEFS_URI_STR %
                               pecan.request.host_url,
                               platform_endpoints_uri=pe.uri_string %
                               pecan.request.host_url,
