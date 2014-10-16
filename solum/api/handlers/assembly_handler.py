@@ -84,7 +84,8 @@ class AssemblyHandler(handler.Handler):
         for arti in artifacts:
             self._build_artifact(assem=db_obj, artifact=arti,
                                  commit_sha=commit_sha,
-                                 status_url=status_url)
+                                 status_url=status_url,
+                                 deploy_keys_ref=plan_obj.deploy_keys_uri)
 
     def update(self, id, data):
         """Modify a resource."""
