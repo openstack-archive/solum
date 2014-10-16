@@ -64,6 +64,9 @@ fi
 PRUN silent sudo docker ps
 [[ $? != 0 ]] && TLOG Cannot talk to docker. && exit 1
 
+# Make sure the chef LP exists; build if it doesn't.
+docker inspect $DOCKER_REGISTRY/chef || docker build -t $DOCKER_REGISTRY/chef $HERE/../../../examples/language-packs/chef/
+
 GIT=$1
 shift
 COMMIT_SHA=$1
