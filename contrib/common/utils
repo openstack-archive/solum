@@ -34,8 +34,8 @@ function TLOG () {
 function GET_LOGFILE () {
   local LOG_DIR=${SOLUM_TASK_DIR:-/dev/null}
   if [ "$LOG_DIR" != "/dev/null" ]; then
-    sudo mkdir -p "$LOG_DIR"
-    sudo chmod a+w "$LOG_DIR"
+    mkdir -p "$LOG_DIR"
+    chmod a+w "$LOG_DIR"
   fi
 
   local LOG_FILE=/dev/null
