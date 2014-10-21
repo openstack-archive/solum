@@ -133,7 +133,7 @@ EOF
 
 cd $APP_DIR
 PRUN sudo docker build -t $APP .
-PRUN silent sudo docker save "$APP" | glance image-create --container-format=docker --disk-format=raw --name "$APP"
+sudo docker save "$APP" | glance image-create --container-format=docker --disk-format=raw --name "$APP" > /dev/null
 
 image_id=$(app_glance_id $APP)
 
@@ -141,5 +141,8 @@ TOTAL_TIME=$(elapsed $SCRIPT_START_TIME)
 TLOG ===== Total elapsed time: $TOTAL_TIME sec
 
 TLOG created_image_id=$image_id
+
+# Need stdout for solum-worker to parse the image_id
+echo created_image_id=$image_id
 
 exit 0

@@ -89,6 +89,10 @@ function upload_image_to_glance () {
   local IMAGE_ID=$(glance image-show $APP | grep " id " | cut -d"|" -f3 | tr -d " ")
 
   TLOG created_image_id=$image_id
+
+  # Need stdout for solum-worker to parse the image_id
+  echo created_image_id=$image_id
+
   TLOG Done uploading
 }
 

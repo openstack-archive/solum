@@ -54,4 +54,7 @@ image_id=$(glance image-show $APP:latest | grep " id " | cut -d"|" -f3 | tr -d "
 
 TLOG created_image_id=$image_id
 
+# Need stdout for solum-worker to parse the image_id
+echo created_image_id=$image_id
+
 exit 0
