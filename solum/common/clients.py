@@ -40,9 +40,9 @@ barbican_client_opts = [
                help="Tells where to store the secrets of private git repo. "
                     "private git repo secrets location"),
     cfg.BoolOpt('barbican_disabled',
-                default=False,
-                help="Default store is barbican. If barbican is disabled, "
-                     "it will store secrets on the local filesystem specified "
+                default=True,
+                help="Defaults to True. If barbican is disabled, it will "
+                     "store secrets on the local filesystem specified "
                      "by 'git_secrets_file'")]
 
 # Note: this config is duplicated in many projects that use OpenStack
@@ -165,7 +165,8 @@ class OpenStackClients(object):
             return self._barbican
 
         insecure = self._get_client_option('barbican', 'insecure')
-        self._barbican = solum_barbicanclient.BarbicanClient(insecure)
+        self._barbican = solum_barbicanclient.BarbicanClient(
+            verify=not insecure)
         return self._barbican
 
     def keystone(self):

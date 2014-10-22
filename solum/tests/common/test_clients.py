@@ -11,10 +11,11 @@
 # under the License.
 
 from barbicanclient import client as barbicanclient
-from barbicanclient.common import auth as barbicanauth
 from glanceclient import client as glanceclient
 from heatclient import client as heatclient
+from keystoneclient.auth.identity import v2 as identity_v2
 from keystoneclient.openstack.common.apiclient import exceptions
+from keystoneclient import session
 from mistralclient.api import client as mistralclient
 import mock
 from neutronclient.neutron import client as neutronclient
@@ -39,16 +40,15 @@ class ClientsTest(base.BaseTestCase):
                                                  endpoint_type='fake_endpoint')
 
     @mock.patch.object(barbicanclient, 'Client')
-    @mock.patch.object(barbicanauth, 'KeystoneAuthV2')
-    def test_clients_barbican(self, mock_auth, mock_call):
-        mock_auth.return_value = "keystone_auth_handle"
+    @mock.patch.object(session, 'Session')
+    def test_clients_barbican(self, mock_sess, mock_call):
+        mock_sess.return_value = "keystone_session"
         mock_call.return_value = "barbican_client_handle"
         obj = clients.OpenStackClients(None)
         self.assertEqual(None, obj._barbican)
         obj.barbican().admin_client
         self.assertNotEqual(None, obj._barbican)
-        mock_call.assert_called_once_with(auth_plugin='keystone_auth_handle',
-                                          insecure=False)
+        mock_call.assert_called_once_with(session='keystone_session')
 
     def test_clients_barbican_noauth(self):
         dummy_url = 'http://server.test:5000/v2.0'
@@ -61,20 +61,21 @@ class ClientsTest(base.BaseTestCase):
         cfg.CONF.set_override('admin_tenant_name', 'service',
                               group='keystone_authtoken')
         obj = clients.OpenStackClients(None)
-        self.assertRaises(exceptions.AuthorizationFailure,
+        self.assertRaises(exceptions.ConnectionRefused,
                           lambda: obj.barbican().admin_client)
 
     @mock.patch.object(barbicanclient, 'Client')
-    @mock.patch.object(barbicanauth, 'KeystoneAuthV2')
-    def test_clients_barbican_cached(self, mock_auth, mock_call):
+    @mock.patch.object(identity_v2, 'Password')
+    @mock.patch.object(session, 'Session')
+    def test_clients_barbican_cached(self, mock_sess, mock_auth, mock_call):
         mock_auth.return_value = "keystone_auth_handle"
         mock_call.return_value = "barbican_client_handle"
+        mock_sess.return_value = "keystone_session"
         obj = clients.OpenStackClients(None)
         barbican_admin = obj.barbican().admin_client
         barbican_admin_cached = obj.barbican().admin_client
         self.assertEqual(barbican_admin, barbican_admin_cached)
-        mock_call.assert_called_once_with(auth_plugin='keystone_auth_handle',
-                                          insecure=False)
+        mock_call.assert_called_once_with(session='keystone_session')
 
     @mock.patch.object(glanceclient, 'Client')
     @mock.patch.object(clients.OpenStackClients, 'url_for')

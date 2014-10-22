@@ -13,7 +13,8 @@
 # limitations under the License.
 
 from barbicanclient import client as barbicanclient
-from barbicanclient.common import auth as barbicanauth
+from keystoneclient.auth import identity
+from keystoneclient import session
 from oslo.config import cfg
 
 from solum.openstack.common import importutils
@@ -22,8 +23,8 @@ from solum.openstack.common import importutils
 class BarbicanClient(object):
     """Barbican client wrapper so we can encapsulate logic in one place."""
 
-    def __init__(self, insecure=False):
-        self.insecure = insecure
+    def __init__(self, verify=True):
+        self.verify = verify
         self._admin_client = None
 
     @property
@@ -36,10 +37,10 @@ class BarbicanClient(object):
     def _barbican_admin_init(self):
         # Import auth_token to have keystone_authtoken settings setup.
         importutils.import_module('keystoneclient.middleware.auth_token')
-        keystone = barbicanauth.KeystoneAuthV2(
+        auth = identity.v2.Password(
             auth_url=cfg.CONF.keystone_authtoken.auth_uri,
             username=cfg.CONF.keystone_authtoken.admin_user,
             password=cfg.CONF.keystone_authtoken.admin_password,
             tenant_name=cfg.CONF.keystone_authtoken.admin_tenant_name)
-        return barbicanclient.Client(auth_plugin=keystone,
-                                     insecure=self.insecure)
+        sess = session.Session(auth=auth, verify=self.verify)
+        return barbicanclient.Client(session=sess)

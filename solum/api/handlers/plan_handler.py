@@ -13,6 +13,8 @@
 # under the License.
 
 import base64
+import errno
+import os
 import shelve
 import uuid
 
@@ -53,7 +55,7 @@ class PlanHandler(handler.Handler):
         if db_obj.deploy_keys_uri:
             if barbican_disabled:
                 s = shelve.open(secrets_file)
-                del s[db_obj.deploy_keys_uri]
+                del s[db_obj.deploy_keys_uri.encode("utf-8")]
                 s.close()
             else:
                 client = clients.OpenStackClients(None).barbican().admin_client
@@ -83,6 +85,11 @@ class PlanHandler(handler.Handler):
         if deploy_keys:
             encoded_payload = base64.b64encode(bytes(str(deploy_keys)))
             if barbican_disabled:
+                try:
+                    os.makedirs(os.path.dirname(secrets_file), 0o700)
+                except OSError as ex:
+                    if ex.errno != errno.EEXIST:
+                        raise
                 s = shelve.open(secrets_file)
                 try:
                     s[db_obj.uuid] = encoded_payload

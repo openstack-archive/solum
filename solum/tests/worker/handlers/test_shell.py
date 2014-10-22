@@ -18,6 +18,7 @@ import os.path
 import uuid
 
 import mock
+from oslo.config import cfg
 
 from solum.openstack.common.gettextutils import _
 from solum.tests import base
@@ -141,6 +142,8 @@ class HandlerTest(base.BaseTestCase):
             'foo\ncreated_image_id=%s' % fake_glance_id, None]
         test_env = mock_environment()
         mock_get_env.return_value = test_env
+        cfg.CONF.set_override('barbican_disabled', False,
+                              group='barbican_client')
         mock_ast.return_value = [{'source_url': 'git://example.com/foo',
                                   'private_key': 'some-private-key'}]
         git_info = mock_git_info()
@@ -173,10 +176,9 @@ class HandlerTest(base.BaseTestCase):
     @mock.patch('solum.deployer.api.API.deploy')
     @mock.patch('subprocess.Popen')
     @mock.patch('shelve.open')
-    @mock.patch('oslo.config.cfg.CONF.barbican_client')
     @mock.patch('ast.literal_eval')
     def test_build_with_private_github_repo_with_barbican_disabled(
-            self, mock_ast, mock_config, mock_shelve, mock_popen,
+            self, mock_ast, mock_shelve, mock_popen,
             mock_deploy, mock_b_update, mock_registry, mock_get_env):
         handler = shell_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
@@ -187,8 +189,10 @@ class HandlerTest(base.BaseTestCase):
             'foo\ncreated_image_id=%s' % fake_glance_id, None]
         test_env = mock_environment()
         mock_get_env.return_value = test_env
-        mock_config.barbican_disabled.return_value = True
-        mock_config.git_secrets_file.return_value = 'some_file_path'
+        cfg.CONF.set_override('barbican_disabled', True,
+                              group='barbican_client')
+        cfg.CONF.set_override('git_secrets_file', 'some_file_path',
+                              group='barbican_client')
         mock_shelve.return_value = mock.MagicMock()
         base64.b64decode = mock.MagicMock()
         mock_ast.return_value = [{'source_url': 'git://example.com/foo',

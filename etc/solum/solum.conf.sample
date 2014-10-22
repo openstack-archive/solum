@@ -365,10 +365,10 @@
 # private git repo secrets location (string value)
 #git_secrets_file=/etc/solum/secrets/git_secrets.db
 
-# Default store is barbican. If barbican is disabled, it will
-# store secrets on the local filesystem specified by
+# Defaults to True. If barbican is disabled, it will store
+# secrets on the local filesystem specified by
 # 'git_secrets_file' (boolean value)
-#barbican_disabled=false
+#barbican_disabled=true
 
 
 [builder]
