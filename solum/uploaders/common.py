@@ -16,33 +16,55 @@ import datetime
 
 import solum
 from solum.openstack.common import jsonutils as json
+from solum.openstack.common import log as logging
+
+LOG = logging.getLogger(__name__)
 
 
 class UploaderBase(object):
     context = None
     original_file_path = None
-    assembly_id = None
+    assembly = None
     build_id = None
     stage_name = None
     strategy = None
 
-    def __init__(self, context, original_file_path, assembly_id, build_id,
+    def __init__(self, context, original_file_path, assembly, build_id,
                  stage_name):
         self.context = context
         self.original_file_path = original_file_path
-        self.assembly_id = assembly_id
+        self.transformed_path = original_file_path + '.tf'
+        self.assembly = assembly
         self.build_id = build_id
         self.stage_name = stage_name
 
     def upload(self):
         pass
 
+    def transform_jsonlog(self):
+        with open(self.original_file_path, 'r') as logfile:
+            with open(self.transformed_path, 'w') as tflogfile:
+                for line in logfile.readlines():
+                    try:
+                        json_line = json.loads(line, encoding='utf-8')
+                        json_line['user'] = ''
+                        if json_line.get('_user') == 'false':
+                            # add a suffix to the tag to differentiate user
+                            # logs from system logs.
+                            json_line['user'] = '.system'
+                        flatline = ("%(@timestamp)s "
+                                    "solum.%(task)s.%(build_id)s%(user)s "
+                                    "%(message)s\n")
+                        tflogfile.write(flatline % json_line)
+                    except ValueError:
+                        LOG.debug("Could not parse json line: %s", line)
+
     def write_userlog_row(self, location, strategy_info=None):
         ulog = solum.objects.registry.Userlog()
         now = datetime.datetime.utcnow()
         ulog.created_at = now
         ulog.updated_at = now
-        ulog.assembly_uuid = self.assembly_id
+        ulog.assembly_uuid = self.assembly.uuid
         ulog.location = location
         ulog.strategy = self.strategy
         if strategy_info is None:

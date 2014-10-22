@@ -50,7 +50,7 @@ cfg.CONF.import_opt('log_upload_strategy', 'solum.worker.config',
                     group='worker')
 
 
-def upload_task_log(ctxt, original_path, assembly_id, build_id, stage):
+def upload_task_log(ctxt, original_path, assembly, build_id, stage):
     strategy = cfg.CONF.worker.log_upload_strategy
     LOG.debug("User log upload strategy: %s" % strategy)
 
@@ -58,7 +58,7 @@ def upload_task_log(ctxt, original_path, assembly_id, build_id, stage):
         'local': local_uploader.LocalStorage,
         'swift': swift_uploader.SwiftUpload,
     }.get(strategy, uploader_common.UploaderBase)
-    uploader(ctxt, original_path, assembly_id, build_id, stage).upload()
+    uploader(ctxt, original_path, assembly, build_id, stage).upload()
 
 
 def job_update_notification(ctxt, build_id, state=None, description=None,
@@ -221,8 +221,9 @@ class Handler(object):
                                 description='Starting the image build',
                                 assembly_id=assembly_id)
         # TODO(datsun180b): Associate log with assembly properly
-        logpath = "%s/%s.log" % (user_env['SOLUM_TASK_DIR'],
-                                 user_env['BUILD_ID'])
+        logpath = "%s/%s-%s.log" % (user_env['SOLUM_TASK_DIR'],
+                                    'build',
+                                    user_env['BUILD_ID'])
         LOG.debug("Build logs stored at %s" % logpath)
         out = None
         try:
@@ -235,10 +236,10 @@ class Handler(object):
                                     description=subex, assembly_id=assembly_id)
             return
 
-        assem = get_assembly_by_id(ctxt, assembly_id)
-        assembly_uuid = assem.uuid
-        upload_task_log(ctxt, logpath, assembly_uuid, user_env['BUILD_ID'],
-                        'build')
+        if assembly_id is not None:
+            assem = get_assembly_by_id(ctxt, assembly_id)
+            upload_task_log(ctxt, logpath, assem, user_env['BUILD_ID'],
+                            'build')
 
         # we expect one line in the output that looks like:
         # created_image_id=<the glance_id>
@@ -288,8 +289,9 @@ class Handler(object):
             del log_env['OS_AUTH_TOKEN']
         solum.TLS.trace.support_info(environment=log_env)
 
-        logpath = "%s/%s.log" % (user_env['SOLUM_TASK_DIR'],
-                                 user_env['BUILD_ID'])
+        logpath = "%s/%s-%s.log" % (user_env['SOLUM_TASK_DIR'],
+                                    'unittest',
+                                    user_env['BUILD_ID'])
         LOG.debug("Unittest logs stored at %s" % logpath)
 
         returncode = -1
@@ -301,11 +303,10 @@ class Handler(object):
             LOG.exception("Exception running unit tests:")
             LOG.exception(subex)
 
-        assem = get_assembly_by_id(ctxt, assembly_id)
-        assembly_uuid = assem.uuid
-
-        upload_task_log(ctxt, logpath, assembly_uuid, user_env['BUILD_ID'],
-                        'unittest')
+        if assembly_id is not None:
+            assem = get_assembly_by_id(ctxt, assembly_id)
+            upload_task_log(ctxt, logpath, assem, user_env['BUILD_ID'],
+                            'unittest')
 
         if returncode != 0:
             LOG.error("Unit tests failed. Return code is %r" % (returncode))

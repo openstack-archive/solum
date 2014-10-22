@@ -31,9 +31,11 @@ class SwiftUpload(solum.uploaders.common.UploaderBase):
 
     def upload(self):
         container = cfg.CONF.worker.log_upload_swift_container
-        filename = "%s/%s-%s.log" % (self.assembly_id, self.build_id,
-                                     self.stage_name)
-        with open(self.original_file_path, 'r') as logfile:
+        filename = "%s-%s/%s-%s.log" % (self.assembly.name, self.assembly.uuid,
+                                        self.stage_name, self.build_id)
+
+        self.transform_jsonlog()
+        with open(self.transformed_path, 'r') as logfile:
             try:
                 LOG.debug("Uploading log to Swift. %s, %s" %
                           (container, filename))
@@ -42,10 +44,11 @@ class SwiftUpload(solum.uploaders.common.UploaderBase):
                 swift.put_object(container, filename, logfile)
             except swiftexceptions.ClientException:
                 LOG.exception("Failed to upload logfile to Swift.")
+                return
             LOG.debug("Logfile uploaded to Swift.")
 
         swift_info = {
             'container': container,
         }
 
-        self.write_userlog_row(self.original_file_path, swift_info)
+        self.write_userlog_row(filename, swift_info)

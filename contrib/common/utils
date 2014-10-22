@@ -64,7 +64,7 @@ function GET_LOGFILE () {
 
   local LOG_FILE=/dev/null
   if [ "$LOG_DIR" != "/dev/null" ]; then
-    LOG_FILE="$LOG_DIR/$BUILD_ID.log"
+    LOG_FILE="$LOG_DIR/$TASKNAME-$BUILD_ID.log"
     touch $LOG_FILE
   fi
 

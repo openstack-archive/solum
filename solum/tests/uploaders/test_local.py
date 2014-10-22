@@ -15,6 +15,7 @@
 import mock
 
 from solum.tests import base
+from solum.tests import fakes
 from solum.tests import utils
 import solum.uploaders.local as uploader
 
@@ -26,10 +27,10 @@ class LocalStorageTest(base.BaseTestCase):
     def test_upload(self):
         ctxt = utils.dummy_context()
         orig_path = "original path"
-        assembly_id = "1234"
+        assembly = fakes.FakeAssembly()
         build_id = "5678"
         localstorage = uploader.LocalStorage(ctxt, orig_path,
-                                             assembly_id, build_id,
+                                             assembly, build_id,
                                              "fakestage")
         localstorage.write_userlog_row = mock.MagicMock()
         localstorage.upload()
