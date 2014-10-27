@@ -3,7 +3,7 @@ name: solum8
 description: solum with pep8
 artifacts:
 - name: solum8
-  artifact_type: chef
+  artifact_type: heroku
   content:
     href: https://github.com/stackforge/solum.git
   language_pack: auto

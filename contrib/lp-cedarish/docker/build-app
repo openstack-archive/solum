@@ -68,6 +68,7 @@ GIT_PRIVATE_KEY=$1
 shift
 
 BASE_DIR=/dev/shm
+COMMIT_ID=$(git log -1 --pretty=%H)
 GIT_CHECKSUM=$(echo $GIT | md5sum | awk '{print $1;}')
 APP_DIR=$BASE_DIR/apps/$TENANT/$GIT_CHECKSUM
 PRUN silent mkdir -p $APP_DIR
