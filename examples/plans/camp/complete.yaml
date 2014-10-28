@@ -1,0 +1,53 @@
+name: Complete_Plan
+description: A Plan that contains all possible nodes.
+tags: [ red, up, left, in, fuzzy, cute, squishy ]
+camp_version: CAMP 1.1
+origin: http://www.joes-ide.com
+artifacts:
+  -
+    name: An_Artifact
+    description: An artifact in the Complete Plan.
+    tags: [ red ]
+    artifact_type: com.example:ZIP
+    language_pack: auto
+    content: { href: something.zip }
+    requirements:
+      -
+        requirement_type: org.foo:NeedSomething
+        fulfillment:
+          name: A_Service
+          description: Some kind of service.
+          tags: [ left ]
+          characteristics:
+            -
+              characteristic_type: org.foo:SomeChar
+              org.foo:Whatever: copper
+      -
+        requirement_type: org.foo:WantSomethingElse
+        fulfillment: id:serviceB
+  -
+    name: Another_Artifact
+    description: Another artifact in the Complete Plan.
+    tags: [ up ]
+    artifact_type: com.example:bash_script
+    language_pack: auto
+    content: { data: IyEvYmluL3NoCgpmb3IgZmlsZSBpbiBgbHMgKi5qc29uYApkbwogICAgZWNobyAkZmlsZQogICAgc2VkIC1lICdzfC5qc29ufHwnICRmaWxlID4gZWRfJHtmaWxlfQogICAgaWYgWyAiJD8iID0gIjAiIF0KICAgIHRoZW4KICAgICAgICBtdiAtZiBlZF8ke2ZpbGV9ICRmaWxlCiAgICBlbHNlCiAgICAgICAgZWNobyAiU29tZSBwcm9ibGVtIGVkaXR0aW5nICR7ZmlsZX0iCiAgICAgICAgZXhpdCAxCiAgICBmaQpkb25lCg== }
+    requirements:
+      -
+        requirement_type: org.foo:YetAnotherThing
+        fulfillment:
+          name: Yet_Another_Service
+          description: A third kind of service.
+          tags: [ squishy ]
+          href: http://192.168.76.2:9777/camp/services/0c0baa67-b306-421c-94aa-919968e7512e
+
+services:
+  -
+    name: Another_Service
+    description: Some other kind of service.
+    tags: [ fuzzy, cute ]
+    id: serviceB
+    characteristics:
+      -
+        characteristic_type: org.baz:AnotherChar
+        org.baz:Fleeble: moon

@@ -29,11 +29,8 @@ from solum.common import yamlutils
 from solum import objects
 
 
-def init_plan_v1(input_plan):
-    plan_handler_v1 = plan_handler.PlanHandler(
-        pecan.request.security_context)
-    plan_v1 = plan.Plan(**input_plan)
-    return plan_handler_v1, plan_v1
+def init_plan_v1(yml_input_plan):
+    return plan.Plan(**yml_input_plan)
 
 
 def init_plan_by_version(input_plan):
@@ -100,20 +97,25 @@ class PlanController(rest.RestController):
     @pecan.expose()
     def put(self):
         """Modify this plan."""
+        # make sure the plan exists before parsing the request
+        handler = plan_handler.PlanHandler(pecan.request.security_context)
+        handler.get(self._id)
+
         if not pecan.request.body or len(pecan.request.body) < 1:
             raise exception.BadRequest
 
         if (pecan.request.content_type is not None and
                 'yaml' in pecan.request.content_type):
-            handler, data = init_yml_plan_by_version()
+            data = init_yml_plan_by_version()
             updated_plan_yml = yamlutils.dump(yaml_content(handler.update(
                 self._id, data.as_dict(objects.registry.Plan))))
         else:
-            handler, data = init_json_plan_by_version()
+            data = init_json_plan_by_version()
             plan_obj = handler.update(self._id,
                                       data.as_dict(objects.registry.Plan))
             updated_plan_yml = wsme_json.encode_result(plan.Plan.from_db_model(
                 plan_obj, pecan.request.host_url), plan.Plan)
+
         pecan.response.status = 200
         return updated_plan_yml
 
@@ -142,17 +144,21 @@ class PlansController(rest.RestController):
     def post(self):
         """Create a new plan."""
         if not pecan.request.body or len(pecan.request.body) < 1:
-                raise exception.BadRequest
+            raise exception.BadRequest
+
+        handler = plan_handler.PlanHandler(pecan.request.security_context)
+
         if (pecan.request.content_type is not None and
                 'yaml' in pecan.request.content_type):
-            handler, data = init_yml_plan_by_version()
+            data = init_yml_plan_by_version()
             created_plan = yamlutils.dump(yaml_content(handler.create(
                 data.as_dict(objects.registry.Plan))))
         else:
-            handler, data = init_json_plan_by_version()
+            data = init_json_plan_by_version()
             plan_wsme = plan.Plan.from_db_model(handler.create(
                 data.as_dict(objects.registry.Plan)), pecan.request.host_url)
             created_plan = wsme_json.encode_result(plan_wsme, plan.Plan)
+
         pecan.response.status = 201
         return created_plan
 

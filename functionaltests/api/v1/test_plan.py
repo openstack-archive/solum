@@ -158,23 +158,44 @@ class TestPlanController(base.TestCase):
                         "type": "plan",
                         "artifacts": []}
         updated_yaml = yaml.dump(updated_data)
-        self.assertRaises(tempest_exceptions.BadRequest,
+        self.assertRaises(tempest_exceptions.NotFound,
                           self.client.put, 'v1/plans/not_found', updated_yaml,
                           headers={'content-type': 'application/x-yaml'})
 
     def test_plans_put_empty_yaml(self):
+        create_resp = self.client.create_plan()
+        self.assertEqual(create_resp.status, 201)
+
+        # get the URI of the newly created plan
+        uri = (create_resp.data['uri']
+               [len(self.client.base_url) + 1:])
+
         self.assertRaises(tempest_exceptions.BadRequest,
-                          self.client.put, 'v1/plans/any', '{}',
+                          self.client.put, uri, '{}',
                           headers={'content-type': 'application/x-yaml'})
 
     def test_plans_put_invalid_yaml_type(self):
+        create_resp = self.client.create_plan()
+        self.assertEqual(create_resp.status, 201)
+
+        # get the URI of the newly created plan
+        uri = (create_resp.data['uri']
+               [len(self.client.base_url) + 1:])
+
         self.assertRaises(tempest_exceptions.BadRequest,
-                          self.client.put, 'v1/plans/any', 'invalid type',
+                          self.client.put, uri, 'invalid type',
                           headers={'content-type': 'application/x-yaml'})
 
     def test_plans_put_invalid_yaml_syntax(self):
+        create_resp = self.client.create_plan()
+        self.assertEqual(create_resp.status, 201)
+
+        # get the URI of the newly created plan
+        uri = (create_resp.data['uri']
+               [len(self.client.base_url) + 1:])
+
         self.assertRaises(tempest_exceptions.BadRequest,
-                          self.client.put, 'v1/plans/any', "}invalid: y'm'l3!",
+                          self.client.put, uri, "}invalid: y'm'l3!",
                           headers={'content-type': 'application/x-yaml'})
 
     def test_plans_delete(self):
