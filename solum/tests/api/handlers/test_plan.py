@@ -66,6 +66,20 @@ class TestPlanHandler(base.BaseTestCase):
         db_obj.create.assert_called_once_with(self.ctx)
         self.assertEqual(db_obj, res)
 
+    def test_plan_create_with_param(self, mock_registry):
+        data = {'name': 'new_name',
+                'uuid': 'input_uuid',
+                'parameters': {'username': 'user_a'}}
+        db_obj = fakes.FakePlan()
+        param_obj = fakes.FakeParameter()
+        mock_registry.Plan.return_value = db_obj
+        mock_registry.Parameter.return_value = param_obj
+        handler = plan_handler.PlanHandler(self.ctx)
+        res = handler.create(data)
+        db_obj.create.assert_called_once_with(self.ctx)
+        param_obj.create.assert_called_once_with(self.ctx)
+        self.assertEqual(db_obj, res)
+
     def test_plan_delete(self, mock_registry):
         db_obj = fakes.FakePlan()
         mock_registry.Plan.get_by_uuid.return_value = db_obj
@@ -74,3 +88,17 @@ class TestPlanHandler(base.BaseTestCase):
         db_obj.destroy.assert_called_once_with(self.ctx)
         mock_registry.Plan.get_by_uuid.assert_called_once_with(self.ctx,
                                                                'test_id')
+
+    def test_plan_delete_with_param(self, mock_registry):
+        db_obj = fakes.FakePlan()
+        param_obj = fakes.FakeParameter()
+        mock_registry.Plan.get_by_uuid.return_value = db_obj
+        mock_registry.Parameter.get_by_plan_id.return_value = param_obj
+        handler = plan_handler.PlanHandler(self.ctx)
+        handler.delete('test_id')
+        db_obj.destroy.assert_called_once_with(self.ctx)
+        param_obj.destroy.assert_called_once_with(self.ctx)
+        mock_registry.Plan.get_by_uuid.assert_called_once_with(self.ctx,
+                                                               'test_id')
+        mock_registry.Parameter.get_by_plan_id.assert_called_once_with(
+            self.ctx, db_obj.id)

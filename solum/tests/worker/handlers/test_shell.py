@@ -84,6 +84,29 @@ class HandlerTest(base.BaseTestCase):
         shell_handler.Handler().echo({}, 'foo')
         fake_LOG.debug.assert_called_once_with(_('%s') % 'foo')
 
+    @mock.patch('solum.worker.handlers.shell.get_parameter_by_assem_id')
+    @mock.patch('__builtin__.open')
+    @mock.patch('os.makedirs')
+    def test_get_parameter_files(self, mock_mkdirs, mock_open, mock_param):
+        mock_param.return_value = fakes.FakeParameter()
+        fake_build_id = '1-2-3-4'
+        cfg.CONF.set_override('param_file_path', '/tmp/test', group='worker')
+        path = '/tmp/test/' + fake_build_id
+        handler = shell_handler.Handler()
+
+        handler._get_parameter_files(self.ctx, 8, fake_build_id)
+
+        mock_mkdirs.assert_called_once_with(path, 0o700)
+        expected = [mock.call(path + '/user_params', 'w'),
+                    mock.call(path + '/solum_params', 'w')]
+        self.assertEqual(expected, mock_open.call_args_list)
+
+        mock_file = mock_open.return_value.__enter__.return_value
+        expected_params = [mock.call('#!/bin/bash\n'),
+                           mock.call('export key="ab\\"cd"\n'),
+                           mock.call('#!/bin/bash\n')]
+        self.assertEqual(expected_params, mock_file.write.call_args_list)
+
     @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.conductor.api.API.build_job_update')

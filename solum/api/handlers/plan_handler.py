@@ -45,13 +45,15 @@ class PlanHandler(handler.Handler):
         db_obj = objects.registry.Plan.get_by_uuid(self.context, id)
         if 'name' in data:
             db_obj.name = data['name']
-        db_obj.raw_content.update(data)
+        db_obj.raw_content.update(dict((k, v) for k, v in data.items()
+                                       if k is not 'parameters'))
         db_obj.save(self.context)
         return db_obj
 
     def delete(self, id):
         """Delete existing plan."""
         db_obj = objects.registry.Plan.get_by_uuid(self.context, id)
+        self._delete_params(db_obj.id)
         if db_obj.deploy_keys_uri:
             if barbican_disabled:
                 s = shelve.open(secrets_file)
@@ -103,10 +105,26 @@ class PlanHandler(handler.Handler):
                     payload=encoded_payload,
                     payload_content_type='application/octet-stream',
                     payload_content_encoding='base64').store()
-        db_obj.raw_content = data
+        db_obj.raw_content = dict((k, v) for k, v in data.items()
+                                  if k is not 'parameters')
         db_obj.create(self.context)
+
+        if 'parameters' in data:
+            self._create_params(db_obj.id, data['parameters'])
         return db_obj
 
     def get_all(self):
         """Return all plans."""
         return objects.registry.PlanList.get_all(self.context)
+
+    def _create_params(self, plan_id, parameters):
+        param_obj = objects.registry.Parameter()
+        param_obj.plan_id = plan_id
+        param_obj.user_defined_params = parameters
+        param_obj.create(self.context)
+
+    def _delete_params(self, plan_id):
+        param_obj = objects.registry.Parameter.get_by_plan_id(self.context,
+                                                              plan_id)
+        if param_obj:
+            param_obj.destroy(self.context)

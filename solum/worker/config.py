@@ -44,6 +44,9 @@ SERVICE_OPTS = [
     cfg.StrOpt('log_upload_swift_container',
                default='solum-logs',
                help='The name of the Swift container to upload logs to.'),
+    cfg.StrOpt('param_file_path',
+               default='/tmp/solum',
+               help='The path of param files to save to.'),
 ]
 
 opt_group = cfg.OptGroup(

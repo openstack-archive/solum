@@ -22,6 +22,8 @@ PROJECT_ID=${PROJECT_ID:-null}
 BUILD_ID=${BUILD_ID:-null}
 TASKNAME=build
 REUSE_IMAGES_IF_REPO_UNCHANGED=${REUSE_IMAGES_IF_REPO_UNCHANGED:="1"}
+USER_PARAMS=${USER_PARAMS:-null}
+SOLUM_PARAMS=${SOLUM_PARAMS:-null}
 
 # TLOG, PRUN, etc. defined in common/utils
 HERE=$(dirname $0)
@@ -89,6 +91,8 @@ if [ -d "$APP_DIR/build" ] ; then
       if [ ${#image_id} == 36 ] ; then # uuid4 is 36 characters
         TLOG Repo is unchanged. Reusing image $image_id.
         TLOG created_image_id=$image_id
+        # Need stdout for solum-worker to parse the image_id
+        echo created_image_id=$image_id
         TOTAL_TIME=$(elapsed $SCRIPT_START_TIME)
         TLOG ===== Total elapsed time: $TOTAL_TIME sec
         exit 0
@@ -118,6 +122,15 @@ fi
 PRUN sudo docker rm $BUILD_ID
 remove_ssh_creds "$GIT_PRIVATE_KEY"
 
+# copy params to the working dir
+mkdir $APP_DIR/params
+if [[ $USER_PARAMS != null ]]; then
+  cp $USER_PARAMS $APP_DIR/params/user_params
+fi
+if [[ $SOLUM_PARAMS != null ]]; then
+  cp $SOLUM_PARAMS $APP_DIR/params/solum_params
+fi
+
 # Build the application image by injecting slug into runner
 # and push to docker-registry ( which is tied to glance )
 
@@ -126,6 +139,7 @@ cat << EOF > $APP_DIR/Dockerfile
 # SOLUM APP BUILDER
 FROM solum/slugrunner
 ADD slug.tgz /app
+ADD params /root/params
 EXPOSE 5000
 ENV port 5000
 ENTRYPOINT ["/runner/init"]

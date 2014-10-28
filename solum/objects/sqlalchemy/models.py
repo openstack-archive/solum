@@ -153,7 +153,7 @@ Base = declarative.declarative_base(cls=SolumBase)
 class JSONEncodedDict(types.TypeDecorator):
     """Represents an immutable structure as a json-encoded string."""
 
-    impl = types.VARCHAR
+    impl = types.TEXT
 
     def process_bind_param(self, value, dialect):
         if value is not None:
@@ -169,7 +169,7 @@ class JSONEncodedDict(types.TypeDecorator):
 class YAMLEncodedDict(types.TypeDecorator):
     """Represents an immutable structure as a yaml-encoded string."""
 
-    impl = types.VARCHAR
+    impl = types.TEXT
 
     def process_bind_param(self, value, dialect):
         if value is not None:

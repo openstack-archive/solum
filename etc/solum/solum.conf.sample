@@ -462,8 +462,9 @@
 # Deprecated group/name - [DATABASE]/sql_max_pool_size
 #max_pool_size=<None>
 
-# Maximum db connection retries during startup. Set to -1 to
-# specify an infinite retry count. (integer value)
+# Maximum number of database connection retries during
+# startup. Set to -1 to specify an infinite retry count.
+# (integer value)
 # Deprecated group/name - [DEFAULT]/sql_max_retries
 # Deprecated group/name - [DATABASE]/sql_max_retries
 #max_retries=10
@@ -868,6 +869,9 @@
 # The name of the Swift container to upload logs to. (string
 # value)
 #log_upload_swift_container=solum-logs
+
+# The path of param files to save to. (string value)
+#param_file_path=/tmp/solum
 
 
 [zaqar_client]

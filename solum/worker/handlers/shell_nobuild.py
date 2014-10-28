@@ -54,7 +54,7 @@ class Handler(shell_handler.Handler):
         if ret_code == 0:
             update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.READY)
 
-    def _get_environment(self, ctxt):
+    def _get_environment(self, ctxt, assembly_id):
         # create a minimal environment
         user_env = {}
         for var in ['PATH', 'LOGNAME', 'LANG', 'HOME', 'USER', 'TERM']:
@@ -67,4 +67,11 @@ class Handler(shell_handler.Handler):
 
         user_env['BUILD_ID'] = uuidutils.generate_uuid()
         user_env['SOLUM_TASK_DIR'] = cfg.CONF.worker.task_log_dir
+
+        params = self._get_parameter_files(ctxt, assembly_id,
+                                           user_env['BUILD_ID'])
+        if params:
+            user_env['USER_PARAMS'] = params[0]
+            user_env['SOLUM_PARAMS'] = params[1]
+
         return user_env

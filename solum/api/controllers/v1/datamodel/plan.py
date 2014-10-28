@@ -93,6 +93,9 @@ class Plan(api_types.Base):
     services = [ServiceReference]
     """List of services needed by the plan."""
 
+    parameters = {wtypes.text: wtypes.text}
+    """User defined parameters"""
+
     def __init__(self, **kwargs):
         if 'artifacts' in kwargs:
             kwargs['artifacts'] = [Artifact(**art)
@@ -137,4 +140,6 @@ class Plan(api_types.Base):
         if self.services is not wsme.Unset:
             base.update({'services': [wjson.tojson(ServiceReference, ref)
                                       for ref in self.services]})
+        if self.parameters is not wsme.Unset:
+            base.update({'parameters': self.parameters})
         return base

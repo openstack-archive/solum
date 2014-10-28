@@ -452,3 +452,11 @@ class FakeUserlog(mock.Mock):
         self.location = 'fake location'
         self.strategy = 'local'
         self.strategy_info = '{}'
+
+
+class FakeParameter(mock.Mock):
+    def __init__(self, **kwargs):
+        super(FakeParameter, self).__init__(**kwargs)
+        self.plan_id = 11
+        self.user_defined_params = {'key': 'ab"cd'}
+        self.sys_defined_params = {}

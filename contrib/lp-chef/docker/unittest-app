@@ -22,6 +22,8 @@ PROJECT_ID=${PROJECT_ID:-null}
 BUILD_ID=${BUILD_ID:-null}
 TASKNAME=unittest
 DOCKER_REGISTRY=${DOCKER_REGISTRY:-'127.0.0.1:5042'}
+USER_PARAMS=${USER_PARAMS:-null}
+SOLUM_PARAMS=${SOLUM_PARAMS:-null}
 
 # TLOG, PRUN, ENSURE_LOGFILE, and elapsed defined in app-common
 HERE=$(dirname $0)
@@ -84,6 +86,20 @@ else
   cd $APP_DIR/code
 fi
 
+DRONE_ENTRYPOINT=$ENTRYPOINT
+DOCKER_ENTRYPOINT=$ENTRYPOINT
+
+# copy params to the working dir
+EXT=$(mktemp -u XXX | head -n 1)
+if [[ $USER_PARAMS != null ]]; then
+  cp $USER_PARAMS $APP_DIR/code/user_params.$EXT
+  DRONE_ENTRYPOINT="/bin/bash -c 'source user_params.$EXT && $ENTRYPOINT'"
+  DOCKER_ENTRYPOINT="[\"/bin/bash\", \"-c\", \"source user_params.$EXT && $ENTRYPOINT\"]"
+fi
+if [[ $SOLUM_PARAMS != null ]]; then
+  cp $SOLUM_PARAMS $APP_DIR/code/solum_params.$EXT
+fi
+
 COMMIT_ID=$(git log -1 --pretty=%H)
 echo "$GIT_PRIVATE_KEY" > $APP_DIR/code/id_rsa
 # Test the application code
@@ -96,7 +112,7 @@ if [[ $(which drone) ]]; then
     cat << EOF > $APP_DIR/code/.drone.yml
 image: $DOCKER_REGISTRY/chef
 script:
-- $ENTRYPOINT
+- $DRONE_ENTRYPOINT
 EOF
   else
     TLOG "===>" .drone.yml found in source
@@ -112,7 +128,7 @@ ADD code/id_rsa /root/.ssh/id_rsa
 RUN chmod 0600 /root/.ssh/id_rsa
 RUN echo "Host *\n\tStrictHostKeyChecking no\n\tUserKnownHostsFile=/dev/null" > /root/.ssh/config
 WORKDIR /code
-RUN ${ENTRYPOINT}
+RUN ${DOCKER_ENTRYPOINT}
 EOF
 
   cd $APP_DIR

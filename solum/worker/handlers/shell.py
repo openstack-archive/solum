@@ -46,6 +46,7 @@ IMAGE_STATES = image.States
 cfg.CONF.import_opt('task_log_dir', 'solum.worker.config', group='worker')
 cfg.CONF.import_opt('proj_dir', 'solum.worker.config', group='worker')
 cfg.CONF.import_opt('log_url_prefix', 'solum.worker.config', group='worker')
+cfg.CONF.import_opt('param_file_path', 'solum.worker.config', group='worker')
 cfg.CONF.import_opt('log_upload_strategy', 'solum.worker.config',
                     group='worker')
 
@@ -77,6 +78,13 @@ def get_assembly_by_id(ctxt, assembly_id):
     return solum.objects.registry.Assembly.get_by_id(ctxt, assembly_id)
 
 
+def get_parameter_by_assem_id(ctxt, assembly_id):
+    assem = get_assembly_by_id(ctxt, assembly_id)
+    param_obj = solum.objects.registry.Parameter.get_by_plan_id(ctxt,
+                                                                assem.plan_id)
+    return param_obj
+
+
 def update_assembly_status(ctxt, assembly_id, status):
     # TODO(datsun180b): use conductor to update assembly status
     if assembly_id is None:
@@ -91,7 +99,7 @@ class Handler(object):
         LOG.debug("%s" % message)
 
     @exception.wrap_keystone_exception
-    def _get_environment(self, ctxt):
+    def _get_environment(self, ctxt, assembly_id):
         kc = solum_keystoneclient.KeystoneClientV3(ctxt)
         image_url = kc.client.service_catalog.url_for(
             service_type='image',
@@ -110,6 +118,12 @@ class Handler(object):
 
         user_env['BUILD_ID'] = uuidutils.generate_uuid()
         user_env['SOLUM_TASK_DIR'] = cfg.CONF.worker.task_log_dir
+
+        params = self._get_parameter_files(ctxt, assembly_id,
+                                           user_env['BUILD_ID'])
+        if params:
+            user_env['USER_PARAMS'] = params[0]
+            user_env['SOLUM_PARAMS'] = params[1]
         return user_env
 
     @property
@@ -189,6 +203,41 @@ class Handler(object):
         else:
             LOG.debug("No url or token available to send back status")
 
+    def _get_parameter_files(self, ctxt, assembly_id, build_id):
+        if assembly_id is None:
+            return None
+
+        param_obj = get_parameter_by_assem_id(ctxt, assembly_id)
+        if param_obj is None:
+            return None
+
+        user_param_file = '/'.join([cfg.CONF.worker.param_file_path,
+                                    build_id, 'user_params'])
+        solum_param_file = '/'.join([cfg.CONF.worker.param_file_path,
+                                     build_id, 'solum_params'])
+        try:
+            os.makedirs(os.path.dirname(user_param_file), 0o700)
+        except OSError as ex:
+            LOG.error("Error creating dirs to write out param files, %s" % ex)
+            return None
+
+        def _sanitize_param(s):
+            # Handles the case of exporting a var with a multi-line string
+            return ''.join(['"', s.strip('\n').replace('"', '\\"'), '"'])
+
+        with open(user_param_file, 'w') as f:
+            f.write("#!/bin/bash\n")
+            if param_obj.user_defined_params:
+                for k, v in param_obj.user_defined_params.items():
+                    f.write("export %s=%s\n" % (k, _sanitize_param(v)))
+        with open(solum_param_file, 'w') as f:
+            f.write("#!/bin/bash\n")
+            if param_obj.sys_defined_params:
+                for k, v in param_obj.sys_defined_params.items():
+                    f.write("export %s=%s\n" % (k, _sanitize_param(v)))
+
+        return (user_param_file, solum_param_file)
+
     def build(self, ctxt, build_id, git_info, name, base_image_id,
               source_format, image_format, assembly_id,
               test_cmd, source_creds_ref=None,
@@ -221,7 +270,7 @@ class Handler(object):
                                      assembly_id=assembly_id)
 
         try:
-            user_env = self._get_environment(ctxt)
+            user_env = self._get_environment(ctxt, assembly_id)
         except exception.SolumException as env_ex:
             LOG.exception(env_ex)
             job_update_notification(ctxt, build_id, IMAGE_STATES.ERROR,
@@ -299,7 +348,7 @@ class Handler(object):
         solum.TLS.trace.clear()
         solum.TLS.trace.import_context(ctxt)
 
-        user_env = self._get_environment(ctxt)
+        user_env = self._get_environment(ctxt, assembly_id)
         log_env = user_env.copy()
         if 'OS_AUTH_TOKEN' in log_env:
             del log_env['OS_AUTH_TOKEN']

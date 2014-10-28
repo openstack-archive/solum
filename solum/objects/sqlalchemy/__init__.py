@@ -56,6 +56,7 @@ def load():
     from solum.objects import image as abstract_image
     from solum.objects import infrastructure_stack as abstract_infra_stack
     from solum.objects import operation as abstract_operation
+    from solum.objects import parameter as abstract_parameter
     from solum.objects import pipeline as abstract_pipeline
     from solum.objects import plan as abstract_plan
     from solum.objects import sensor as abstract_sensor
@@ -67,6 +68,7 @@ def load():
     from solum.objects.sqlalchemy import image
     from solum.objects.sqlalchemy import infrastructure_stack
     from solum.objects.sqlalchemy import operation
+    from solum.objects.sqlalchemy import parameter
     from solum.objects.sqlalchemy import pipeline
     from solum.objects.sqlalchemy import plan
     from solum.objects.sqlalchemy import sensor
@@ -104,3 +106,6 @@ def load():
     objects.registry.add(abstract_image.ImageList, image.ImageList)
     objects.registry.add(abstract_userlog.Userlog, userlog.Userlog)
     objects.registry.add(abstract_userlog.UserlogList, userlog.UserlogList)
+    objects.registry.add(abstract_parameter.Parameter, parameter.Parameter)
+    objects.registry.add(abstract_parameter.ParameterList,
+                         parameter.ParameterList)
