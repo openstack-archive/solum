@@ -20,6 +20,8 @@ from functionaltests.api import base
 class PlatformDiscoveryTestCase(base.TestCase):
 
     def test_get_root_discovers_camp_v1_1(self):
+        if base.config_set_as('camp_enabled', False):
+            self.skipTest('CAMP not enabled.')
         # get our platform_endpoints container
         resp, body = (self.client.
                       request_without_auth('camp/platform_endpoints/',

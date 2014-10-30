@@ -51,6 +51,21 @@ plan_sample_data = {"version": "1",
                         "language_pack": "auto",
                         }]}
 
+solum_group = config.cfg.OptGroup(name='solum', title='Solum test options')
+SolumGroup = [
+    config.cfg.BoolOpt('barbican_enabled',
+                       default=False,
+                       help="Defaults to false. Determines whether Barbican"
+                            "is enabled."),
+    config.cfg.BoolOpt('camp_enabled',
+                       default=True,
+                       help="Defaults to true. Determines whether CAMP"
+                            "is enabled.")
+]
+
+CONF.register_group(solum_group)
+CONF.register_opts(SolumGroup, group=solum_group.name)
+
 
 class SolumClient(rest_client.RestClient):
 
@@ -178,3 +193,8 @@ def is_fedora():
     if os.path.exists("/etc/redhat-release"):
         return True
     return False
+
+
+def config_set_as(config, target_value):
+    value = getattr(CONF.solum, config)
+    return value == target_value

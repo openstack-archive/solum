@@ -35,6 +35,8 @@ class TestTypeDefinitions(base.TestCase):
         resources exist and that all the links to the attribute_definition
         resources are valid and the attribute_definitions resources exist.
         """
+        if base.config_set_as('camp_enabled', False):
+            self.skipTest('CAMP not enabled.')
 
         resp, body = self.client.get('camp/v1_1/type_definitions')
         self.assertEqual(200, resp.status, 'GET type_definitions resource')

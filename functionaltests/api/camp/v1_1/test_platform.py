@@ -20,6 +20,8 @@ from functionaltests.api import base
 class TestPlatformAndContainers(base.TestCase):
 
     def _test_get_resource(self, url, rtype, name):
+        if base.config_set_as('camp_enabled', False):
+            self.skipTest('CAMP not enabled.')
         resp, body = self.client.get(url)
         self.assertEqual(200, resp.status, 'GET %s resource' % rtype)
         resource = json.loads(body)
@@ -27,6 +29,8 @@ class TestPlatformAndContainers(base.TestCase):
         self.assertEqual(name, resource['name'])
 
     def test_get_platform_and_containers(self):
+        if base.config_set_as('camp_enabled', False):
+            self.skipTest('CAMP not enabled.')
         # get and test our platform resource
         resp, body = self.client.get('camp/v1_1/platform/')
         self.assertEqual(200, resp.status, 'GET platform resource')

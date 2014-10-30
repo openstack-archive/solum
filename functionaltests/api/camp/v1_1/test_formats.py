@@ -25,6 +25,8 @@ class TestSupportedFormats(base.TestCase):
         http://docs.oasis-open.org/camp/camp-spec/v1.1/csprd02/
         camp-spec-v1.1-csprd02.pdf
         """
+        if base.config_set_as('camp_enabled', False):
+            self.skipTest('CAMP not enabled.')
         resp, body = self.client.get('camp/v1_1/formats/')
         self.assertEqual(200, resp.status, 'GET formats resource')
         formats = json.loads(body)
