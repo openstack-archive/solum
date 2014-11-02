@@ -173,14 +173,14 @@ function add_solum_user() {
     # Register new service user as other services do
     SOLUM_USER_ID=$(keystone user-create --name=$SOLUM_USER \
        --pass=$ADMIN_PASSWORD \
-       --tenant_id $SERVICE_TENANT \
+       --tenant $SERVICE_TENANT \
        --email=$SOLUM_USER@example.com \
        | grep " id " | get_field 2)
 
      keystone user-role-add \
        --user-id $SOLUM_USER_ID \
        --role-id $ADMIN_ROLE \
-       --tenant-id $SERVICE_TENANT
+       --tenant $SERVICE_TENANT
 }
 
 #create_solum_cache_dir() - Setup keystone signing folder
