@@ -13,6 +13,7 @@
 # under the License.
 
 from solum.tests import base
+from solum.tests import fakes
 from solum.tests import utils
 from solum.uploaders import common as uploader
 
@@ -24,10 +25,10 @@ class CommonTest(base.BaseTestCase):
     def test_upload(self):
         ctxt = utils.dummy_context()
         orig_path = "original path"
-        assembly_id = "1234"
+        assembly = fakes.FakeAssembly()
         build_id = "5678"
         baseuploader = uploader.UploaderBase(ctxt, orig_path,
-                                             assembly_id, build_id,
+                                             assembly, build_id,
                                              "fakestage")
 
         self.assertEqual(0, baseuploader.write_userlog_row.call_count)

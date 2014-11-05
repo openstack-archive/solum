@@ -22,7 +22,7 @@ class Userlog(sql.Base, abstract.Userlog):
     """Represent a userlog in sqlalchemy."""
 
     __tablename__ = 'userlogs'
-    __resource__ = 'userlogs'
+    __resource__ = 'userlog'
     __table_args__ = sql.table_args()
 
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
@@ -39,3 +39,9 @@ class UserlogList(abstract.UserlogList):
     @classmethod
     def get_all(cls, context):
         return UserlogList(sql.model_query(context, Userlog))
+
+    @classmethod
+    def get_all_by_assembly_id(cls, context, assembly_uuid):
+        session = sql.Base.get_session()
+        logs = session.query(Userlog).filter_by(assembly_uuid=assembly_uuid)
+        return logs.order_by(Userlog.created_at).all()

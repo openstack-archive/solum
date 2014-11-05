@@ -15,6 +15,7 @@
 import mock
 
 from solum.tests import base
+from solum.tests import fakes
 from solum.tests import utils
 import solum.uploaders.swift as uploader
 
@@ -29,7 +30,7 @@ class SwiftUploadTest(base.BaseTestCase):
     def test_upload(self, mock_config, mock_client, mock_open):
         ctxt = utils.dummy_context()
         orig_path = "original path"
-        assembly_id = "1234"
+        assembly = fakes.FakeAssembly()
         build_id = "5678"
         container = 'fake-container'
         mock_config.log_upload_swift_container.return_value = container
@@ -38,13 +39,15 @@ class SwiftUploadTest(base.BaseTestCase):
         fake_file = mock.MagicMock()
         mock_open.return_value = fake_file
         swiftupload = uploader.SwiftUpload(ctxt, orig_path,
-                                           assembly_id, build_id,
+                                           assembly, build_id,
                                            "fakestage")
+        swiftupload.transform_jsonlog = mock.MagicMock()
         swiftupload.write_userlog_row = mock.MagicMock()
         swiftupload.upload()
         swift_info = {'container': container}
 
         swiftupload.write_userlog_row.assert_called_once_with(orig_path,
                                                               swift_info)
+        swiftupload.transform_jsonlog.assert_called_once()
         mock_swift.put_container.assert_called_once_with(container)
         mock_swift.put_object.assembly_id(container, orig_path, fake_file)

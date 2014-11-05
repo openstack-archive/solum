@@ -14,6 +14,9 @@
 
 import mock
 
+from solum.openstack.common import uuidutils
+
+
 fakeAuthTokenHeaders = {'X-User-Id': u'773a902f022949619b5c2f32cd89d419',
                         'X-Roles': u'admin, ResellerAdmin, _member_',
                         'X-Project-Id': u'5588aebbcdc24e17a061595f80574376',
@@ -440,3 +443,12 @@ class FakeAttributeDefinition(mock.Mock):
         super(FakeAttributeDefinition, self).__init__(**kwargs)
         self.name = 'fake_attribute'
         self.type = 'attribute_definition'
+
+
+class FakeUserlog(mock.Mock):
+    def __init__(self, **kwargs):
+        super(FakeUserlog, self).__init__(**kwargs)
+        self.assembly_uuid = uuidutils.generate_uuid()
+        self.location = 'fake location'
+        self.strategy = 'local'
+        self.strategy_info = '{}'

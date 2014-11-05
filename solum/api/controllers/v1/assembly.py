@@ -18,6 +18,7 @@ import wsme
 import wsmeext.pecan as wsme_pecan
 
 from solum.api.controllers.v1.datamodel import assembly
+import solum.api.controllers.v1.userlog as userlog_controller
 from solum.api.handlers import assembly_handler
 from solum.common import exception
 from solum import objects
@@ -30,6 +31,14 @@ class AssemblyController(rest.RestController):
     def __init__(self, assembly_id):
         super(AssemblyController, self).__init__()
         self._id = assembly_id
+
+    @pecan.expose()
+    def _lookup(self, primary_key, *remainder):
+        if remainder and not remainder[-1]:
+            remainder = remainder[:-1]
+        if primary_key == 'logs':
+            logs = userlog_controller.UserlogsController(self._id)
+            return logs, remainder
 
     @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(assembly.Assembly)
