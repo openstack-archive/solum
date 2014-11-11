@@ -49,6 +49,9 @@ class Image(api_types.Base):
     created_image_id = wtypes.text
     """The id of the created image in glance."""
 
+    lp_metadata = wtypes.text
+    """The languagepack meta data."""
+
     @classmethod
     def sample(cls):
         return cls(uri='http://example.com/v1/images/b3e0d79',
@@ -99,4 +102,5 @@ class ImagesController(rest.RestController):
             pecan.request.security_context)
         host_url = pecan.request.host_url
         return Image.from_db_model(
-            handler.create(data.as_dict(objects.registry.Image)), host_url)
+            handler.create(data.as_dict(objects.registry.Image),
+                           data.lp_metadata), host_url)

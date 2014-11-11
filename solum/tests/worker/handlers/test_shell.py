@@ -340,7 +340,8 @@ class HandlerTest(base.BaseTestCase):
         handler.build(self.ctx, build_id=5, git_info=git_info, name='new_app',
                       base_image_id='1-2-3-4', source_format='heroku',
                       image_format='docker', assembly_id=44,
-                      test_cmd='faketests', source_creds_ref=None)
+                      test_cmd='faketests', source_creds_ref=None,
+                      artifact_type=None, lp_metadata=None)
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
@@ -432,27 +433,32 @@ class TestBuildCommand(base.BaseTestCase):
     scenarios = [
         ('docker',
          dict(source_format='heroku', image_format='docker',
-              base_image_id='auto',
+              base_image_id='auto', lp_metadata=None,
+              artifact_type=None,
               expect_b='lp-cedarish/docker/build-app',
               expect_u='lp-cedarish/docker/unittest-app')),
         ('vmslug',
          dict(source_format='heroku', image_format='qcow2',
-              base_image_id='auto',
+              base_image_id='auto', lp_metadata=None,
+              artifact_type=None,
               expect_b='lp-cedarish/vm-slug/build-app',
               expect_u='lp-cedarish/vm-slug/unittest-app')),
         ('dockerfile',
          dict(source_format='dockerfile', image_format='docker',
-              base_image_id='auto',
+              base_image_id='auto', lp_metadata=None,
+              artifact_type=None,
               expect_b='lp-dockerfile/docker/build-app',
               expect_u='lp-dockerfile/docker/unittest-app')),
         ('dib',
          dict(source_format='dib', image_format='qcow2',
-              base_image_id='xyz',
+              base_image_id='xyz', lp_metadata=None,
+              artifact_type=None,
               expect_b='diskimage-builder/vm-slug/build-app',
               expect_u='diskimage-builder/vm-slug/unittest-app')),
         ('chef',
          dict(source_format='chef', image_format='docker',
-              base_image_id='xyz',
+              base_image_id='xyz', lp_metadata=None,
+              artifact_type=None,
               expect_b='lp-chef/docker/build-app',
               expect_u='lp-chef/docker/unittest-app'))]
 
@@ -465,7 +471,9 @@ class TestBuildCommand(base.BaseTestCase):
                                          'testa',
                                          self.base_image_id,
                                          self.source_format,
-                                         self.image_format, '', '')
+                                         self.image_format, '', '',
+                                         self.artifact_type, '',
+                                         self.lp_metadata)
         self.assertIn(self.expect_b, cmd[0])
         self.assertEqual('http://example.com/a.git', cmd[1])
         self.assertEqual('testa', cmd[2])
@@ -484,10 +492,32 @@ class TestBuildCommand(base.BaseTestCase):
                                          'testa',
                                          self.base_image_id,
                                          self.source_format,
-                                         self.image_format, 'asdf', 'pep8')
+                                         self.image_format, 'asdf', 'pep8',
+                                         self.artifact_type, '',
+                                         self.lp_metadata)
         self.assertIn(self.expect_u, cmd[0])
         self.assertEqual('http://example.com/a.git', cmd[1])
         self.assertEqual('asdf', cmd[2])
         self.assertEqual(ctx.tenant, cmd[3])
         self.assertEqual('', cmd[4])
         self.assertEqual('pep8', cmd[5])
+
+
+class TestLanguagePackBuildCommand(base.BaseTestCase):
+    def test_languagepack_build_cmd(self):
+        ctx = utils.dummy_context()
+        handler = shell_handler.Handler()
+        cmd = handler._get_build_command(ctx,
+                                         'build',
+                                         'http://example.com/a.git',
+                                         'testa',
+                                         'auto',
+                                         'heroku',
+                                         'docker', '', '',
+                                         '', 'language_pack',
+                                         'language_pack_metadata')
+        self.assertIn('lp-cedarish/docker/build-lp', cmd[0])
+        self.assertEqual('http://example.com/a.git', cmd[1])
+        self.assertEqual('testa', cmd[2])
+        self.assertEqual(ctx.tenant, cmd[3])
+        self.assertEqual('auto', cmd[4])

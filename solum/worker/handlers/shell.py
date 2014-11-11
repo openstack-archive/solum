@@ -121,7 +121,8 @@ class Handler(object):
 
     def _get_build_command(self, ctxt, stage, source_uri, name,
                            base_image_id, source_format, image_format,
-                           commit_sha, test_cmd, source_creds_ref=None):
+                           commit_sha, test_cmd, source_creds_ref=None,
+                           artifact_type=None, lp_metadata=None):
         # map the input formats to script paths.
         # TODO(asalkeld) we need an "auto".
         pathm = {'heroku': 'lp-cedarish',
@@ -137,6 +138,14 @@ class Handler(object):
                                       pathm.get(image_format, 'vm-slug'))
         source_private_key = self._get_private_key(source_creds_ref,
                                                    source_uri)
+
+        if lp_metadata is None:
+            lp_metadata = ''
+
+        if artifact_type == 'language_pack':
+            build_lp = os.path.join(build_app_path, 'build-lp')
+            return [build_lp, source_uri, name, ctxt.tenant,
+                    base_image_id, source_private_key, lp_metadata]
 
         if stage == 'unittest':
             build_app = os.path.join(build_app_path, 'unittest-app')
@@ -182,7 +191,13 @@ class Handler(object):
 
     def build(self, ctxt, build_id, git_info, name, base_image_id,
               source_format, image_format, assembly_id,
-              test_cmd, source_creds_ref=None):
+              test_cmd, source_creds_ref=None,
+              artifact_type=None, lp_metadata=None):
+        if artifact_type == 'language_pack':
+            self.build_lp(self, ctxt, git_info, name, base_image_id,
+                          source_format, image_format, test_cmd,
+                          source_creds_ref, artifact_type, lp_metadata)
+            return
 
         # TODO(datsun180b): This is only temporary, until Mistral becomes our
         # workflow engine.
@@ -200,7 +215,8 @@ class Handler(object):
         build_cmd = self._get_build_command(ctxt, 'build', source_uri,
                                             name, base_image_id,
                                             source_format, image_format, '',
-                                            test_cmd, source_creds_ref)
+                                            test_cmd, source_creds_ref,
+                                            artifact_type, lp_metadata)
         solum.TLS.trace.support_info(build_cmd=' '.join(build_cmd),
                                      assembly_id=assembly_id)
 
@@ -347,3 +363,24 @@ class Handler(object):
                 if source_url == dk['source_url']:
                     source_private_key = dk['private_key']
         return source_private_key
+
+    def build_lp(self, ctxt, git_info, name, base_image_id,
+                 source_format, image_format, test_cmd, source_creds_ref=None,
+                 artifact_type=None, lp_metadata=None):
+        source_uri = git_info['source_url']
+        build_cmd = self._get_build_command(ctxt, 'build', source_uri,
+                                            name, base_image_id,
+                                            source_format, image_format, '',
+                                            test_cmd, source_creds_ref,
+                                            artifact_type, lp_metadata)
+
+        try:
+            user_env = self._get_environment(ctxt)
+        except exception.SolumException as env_ex:
+            LOG.exception(env_ex)
+
+        try:
+            subprocess.Popen(build_cmd, env=user_env)
+        except OSError as subex:
+            LOG.exception(subex)
+            return

@@ -30,7 +30,7 @@ class ImageHandler(handler.Handler):
         """Return an image."""
         return objects.registry.Image.get_by_uuid(self.context, id)
 
-    def create(self, data):
+    def create(self, data, lp_metadata):
         """Create a new resource."""
         db_obj = objects.registry.Image()
         db_obj.update(data)
@@ -38,11 +38,13 @@ class ImageHandler(handler.Handler):
         db_obj.user_id = self.context.user
         db_obj.project_id = self.context.tenant
         db_obj.state = image.States.PENDING
+        db_obj.artifact_type = 'language_pack'
+
         db_obj.create(self.context)
-        self._start_build(db_obj)
+        self._start_build(db_obj, lp_metadata)
         return db_obj
 
-    def _start_build(self, image):
+    def _start_build(self, image, lp_metadata):
         git_info = {
             'source_url': image.source_uri,
         }
@@ -53,4 +55,6 @@ class ImageHandler(handler.Handler):
             name=image.name,
             base_image_id=image.base_image_id,
             source_format=image.source_format,
-            image_format=image.image_format)
+            image_format=image.image_format,
+            artifact_type=image.artifact_type,
+            lp_metadata=lp_metadata)

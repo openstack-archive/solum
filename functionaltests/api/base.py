@@ -69,9 +69,9 @@ CONF.register_opts(SolumGroup, group=solum_group.name)
 
 class SolumClient(rest_client.RestClient):
 
-    def __init__(self, auth_provider):
+    def __init__(self, auth_provider, service='application_deployment'):
         super(SolumClient, self).__init__(auth_provider)
-        self.service = 'application_deployment'
+        self.service = service
         self.endpoint_url = 'publicURL'
         self.created_assemblies = []
         self.created_plans = []
@@ -175,6 +175,7 @@ class TestCase(testtools.TestCase):
         mgr = clients.Manager()
         auth_provider = mgr.get_auth_provider(credentials)
         self.client = SolumClient(auth_provider)
+        self.builderclient = SolumClient(auth_provider, 'image_builder')
 
 
 class SolumCredentials(auth.KeystoneV2Credentials):

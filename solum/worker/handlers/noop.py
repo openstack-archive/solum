@@ -25,11 +25,12 @@ class Handler(object):
 
     def build(self, ctxt, build_id, source_uri, name, base_image_id,
               source_format, image_format, assembly_id,
-              test_cmd, source_creds_ref=None):
-        message = ("Build %s %s %s %s %s %s %s %s %s" %
-                   (build_id, source_uri, name, base_image_id, source_format,
-                    image_format, assembly_id,
-                    test_cmd, (source_creds_ref or '')))
+              test_cmd, source_creds_ref=None,
+              artifact_type=None, lp_metadata=None):
+        args = [build_id, source_uri, name, base_image_id, source_format,
+                image_format, assembly_id, test_cmd, source_creds_ref,
+                artifact_type, lp_metadata]
+        message = 'Build ' + ', '.join([str(a) for a in args])
         LOG.debug("%s" % message)
 
     def unittest(self, ctxt, build_id, source_uri, name, base_image_id,

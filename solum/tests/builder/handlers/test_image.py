@@ -42,7 +42,7 @@ class TestImageHandler(base.BaseTestCase):
         fi = fakes.FakeImage()
         mock_registry.Image.return_value = fi
         handler = image_handler.ImageHandler(self.ctx)
-        res = handler.create(data)
-        mock_build.assert_called_once_with(res)
+        res = handler.create(data, lp_metadata=None)
+        mock_build.assert_called_once_with(res, None)
         fi.update.assert_called_once_with(data)
         fi.create.assert_called_once_with(self.ctx)
