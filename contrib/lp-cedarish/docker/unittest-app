@@ -107,7 +107,7 @@ FROM $DOCKER_REGISTRY/slugtester
 ADD code /code
 ADD code/id_rsa /root/.ssh/id_rsa
 RUN chmod 0600 /root/.ssh/id_rsa
-RUN echo "Host github.com\n\tStrictHostKeyChecking no\n\tUserKnownHostsFile=/dev/null" > /root/.ssh/config
+RUN echo "Host *\n\tStrictHostKeyChecking no\n\tUserKnownHostsFile=/dev/null" > /root/.ssh/config
 WORKDIR /code
 RUN ${ENTRYPOINT}
 EOF
