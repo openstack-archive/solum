@@ -27,6 +27,7 @@ class Userlog(sql.Base, abstract.Userlog):
 
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
     assembly_uuid = sa.Column(sa.String(36), nullable=False)
+    project_id = sa.Column(sa.String(36))
     created_at = sa.Column(sa.DateTime)
     location = sa.Column(sa.String(255))
     strategy = sa.Column(sa.String(255))
@@ -43,5 +44,6 @@ class UserlogList(abstract.UserlogList):
     @classmethod
     def get_all_by_assembly_id(cls, context, assembly_uuid):
         session = sql.Base.get_session()
-        logs = session.query(Userlog).filter_by(assembly_uuid=assembly_uuid)
+        logs = session.query(Userlog).filter_by(project_id=context.tenant)
+        logs = logs.filter_by(assembly_uuid=assembly_uuid)
         return logs.order_by(Userlog.created_at).all()

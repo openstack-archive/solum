@@ -55,6 +55,9 @@ class Assembly(sql.Base, abstract.Assembly):
         except sa.orm.exc.NoResultFound:
             cls._raise_trigger_not_found(trigger_id)
 
+    def _non_updatable_fields(self):
+        return set(('uuid', 'id', 'project_id'))
+
     @property
     def plan_uuid(self):
         return objects.registry.Plan.get_by_id(None, self.plan_id).uuid

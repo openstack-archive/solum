@@ -23,7 +23,7 @@ class TestExtension(base.BaseTestCase):
         self.ctx = utils.dummy_context()
 
         self.data = [{'uuid': 'test-uuid-42',
-                      'project_id': '1dae5a09ef2b4d8cbf3594b0eb4f6b94',
+                      'project_id': self.ctx.tenant,
                       'user_id': '55f41cf46df74320b9486a35f5d28a11',
                       'name': 'logstash',
                       'version': '2.13',

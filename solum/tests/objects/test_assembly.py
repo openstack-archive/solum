@@ -27,7 +27,7 @@ class TestAssembly(base.BaseTestCase):
         self.db = self.useFixture(utils.Database())
         self.ctx = utils.dummy_context()
 
-        self.data = [{'project_id': 'project_id_blah',
+        self.data = [{'project_id': self.ctx.tenant,
                       'uuid': 'ce43e347f0b0422825245b3e5f140a81cef6e65b',
                       'user_id': 'fred',
                       'name': 'assembly1',

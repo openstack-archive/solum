@@ -31,6 +31,7 @@ class TestUserlog(base.BaseTestCase):
                       'assembly_uuid': '%s' % a_id,
                       'strategy': 'local',
                       'location': '/dev/null',
+                      'project_id': self.ctx.tenant,
                       'strategy_info': '{}',
                       }]
         utils.create_models_from_data(userlog.Userlog, self.data, self.ctx)

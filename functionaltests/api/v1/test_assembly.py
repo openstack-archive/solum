@@ -136,7 +136,6 @@ class TestAssemblyController(base.TestCase):
         updated_data = {"name": "test_assembly_updated",
                         "description": "A test to create assembly updated",
                         "plan_uri": uri,
-                        "project_id": "project_id updated",
                         "user_id": "user_id updated",
                         "status": "new_status",
                         "application_uri": "new_uri"}
@@ -162,6 +161,28 @@ class TestAssemblyController(base.TestCase):
     def test_assemblies_put_none(self):
         self.assertRaises(tempest_exceptions.BadRequest,
                           self.client.put, 'v1/assemblies/any', "{}")
+
+    def test_assemblies_put_cannot_update(self):
+        plan_resp = self.client.create_plan()
+        self.assertEqual(plan_resp.status, 201)
+        plan_uuid = plan_resp.uuid
+        assembly_resp = self.client.create_assembly(
+            plan_uuid=plan_uuid,
+            data=sample_data)
+        self.assertEqual(assembly_resp.status, 201)
+        uuid = assembly_resp.uuid
+        immutables = [
+            ('id', 'new_assembly_id'),
+            ('uuid', 'new_assembly_uuid'),
+            ('project_id', 'new_project_id'),
+            ]
+        for key_value in immutables:
+            updated_data = dict([key_value])
+            updated_json = json.dumps(updated_data)
+            self.assertRaises(tempest_exceptions.BadRequest,
+                              self.client.put,
+                              'v1/assemblies/%s' % uuid,
+                              updated_json)
 
     def test_assemblies_delete(self):
         plan_resp = self.client.create_plan()

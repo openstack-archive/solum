@@ -35,6 +35,9 @@ class Service(sql.Base, abstract.Service):
     read_only = sa.Column(sa.Boolean, default=False)
     tags = sa.Column(sa.Text)
 
+    def _non_updatable_fields(self):
+        return set(('uuid', 'id', 'project_id'))
+
 
 class ServiceList(abstract.ServiceList):
     """Represent a list of services in sqlalchemy."""

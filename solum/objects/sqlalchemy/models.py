@@ -23,6 +23,7 @@ from oslo.db import exception as db_exc
 from oslo.db.sqlalchemy import models
 import six
 from six import moves
+from sqlalchemy import exc as sqla_exc
 from sqlalchemy.ext import declarative
 from sqlalchemy.orm import exc
 from sqlalchemy import types
@@ -48,6 +49,20 @@ def table_args():
     return None
 
 
+def filter_by_project(context, query):
+    if context is not None:
+        is_admin = context.is_admin
+        if context.roles is not None:
+            is_admin |= 'admin' in context.roles
+        if not is_admin and context.tenant is not None:
+            try:
+                query = query.filter_by(project_id=context.tenant)
+            except sqla_exc.InvalidRequestError:
+                # No project_id column.
+                pass
+    return query
+
+
 def model_query(context, model, *args, **kwargs):
     """Query helper.
 
@@ -58,7 +73,7 @@ def model_query(context, model, *args, **kwargs):
     session = kwargs.get('session') or object_sqla.get_session()
 
     query = session.query(model, *args)
-    return query
+    return filter_by_project(context, query)
 
 
 class SolumBase(models.TimestampMixin, models.ModelBase):
@@ -85,7 +100,8 @@ class SolumBase(models.TimestampMixin, models.ModelBase):
     def get_by_id(cls, context, item_id):
         try:
             session = SolumBase.get_session()
-            return session.query(cls).filter_by(id=item_id).one()
+            result = session.query(cls).filter_by(id=item_id)
+            return filter_by_project(context, result).one()
         except exc.NoResultFound:
             cls._raise_not_found(item_id)
 
@@ -93,7 +109,8 @@ class SolumBase(models.TimestampMixin, models.ModelBase):
     def get_by_uuid(cls, context, item_uuid):
         try:
             session = SolumBase.get_session()
-            return session.query(cls).filter_by(uuid=item_uuid).one()
+            result = session.query(cls).filter_by(uuid=item_uuid)
+            return filter_by_project(context, result).one()
         except exc.NoResultFound:
             cls._raise_not_found(item_uuid)
 

@@ -27,7 +27,7 @@ class TestPlan(base.BaseTestCase):
             {'content':
              {'href': 'http://github.com/some/project'}}]}
         self.data = [{'uuid': 'test-uuid-123',
-                      'project_id': 'bla',
+                      'project_id': self.ctx.tenant,
                       'user_id': 'fred',
                       'description': 'some description',
                       'raw_content': raw_content}]
