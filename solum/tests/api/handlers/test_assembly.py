@@ -104,6 +104,38 @@ class TestAssemblyHandler(base.BaseTestCase):
 
         mock_kc.return_value.create_trust_context.assert_called_once_with()
 
+    @mock.patch('solum.common.solum_keystoneclient.KeystoneClientV3')
+    def test_create_with_username_in_ctx(self, mock_kc, mock_registry):
+        data = {'plan_uuid': 'input_plan_uuid'}
+
+        db_obj = fakes.FakeAssembly()
+        mock_registry.Assembly.return_value = db_obj
+        fp = fakes.FakePlan()
+        mock_registry.Plan.get_by_id.return_value = fp
+        fp.raw_content = {'name': 'theplan'}
+
+        handler = assembly_handler.AssemblyHandler(self.ctx)
+        res = handler.create(data)
+
+        self.assertEqual(res.username, self.ctx.user_name)
+
+    @mock.patch('solum.common.solum_keystoneclient.KeystoneClientV3')
+    def test_create_without_username_in_ctx(self, mock_kc, mock_registry):
+        data = {'plan_uuid': 'input_plan_uuid'}
+
+        ctx = utils.dummy_context()
+        ctx.user_name = ''
+        db_obj = fakes.FakeAssembly()
+        mock_registry.Assembly.return_value = db_obj
+        fp = fakes.FakePlan()
+        mock_registry.Plan.get_by_id.return_value = fp
+        fp.raw_content = {'name': 'theplan'}
+
+        handler = assembly_handler.AssemblyHandler(ctx)
+        res = handler.create(data)
+
+        self.assertEqual(res.username, '')
+
     @mock.patch('solum.worker.api.API.perform_action')
     @mock.patch('solum.common.solum_keystoneclient.KeystoneClientV3')
     def test_create_with_private_github_repo(self, mock_kc, mock_pa,

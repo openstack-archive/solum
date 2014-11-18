@@ -25,8 +25,10 @@ from solum.objects.sqlalchemy import models
 CONF = cfg.CONF
 
 
-def dummy_context(user='test_username', tenant_id='test_tenant_id'):
-    return context.RequestContext(user=user, tenant=tenant_id)
+def dummy_context(user='test_username', tenant_id='test_tenant_id',
+                  user_name='usr_name'):
+    return context.RequestContext(user=user, tenant=tenant_id,
+                                  user_name=user_name)
 
 
 class Database(fixtures.Fixture):
