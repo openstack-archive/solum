@@ -116,6 +116,7 @@ class AssemblyHandler(handler.Handler):
         db_obj.user_id = self.context.user
         db_obj.project_id = self.context.tenant
         db_obj.trigger_id = str(uuid.uuid4())
+        db_obj.username = self.context.user_name
 
         # create the trust_id and store it.
         ksc = solum_keystoneclient.KeystoneClientV3(self.context)
