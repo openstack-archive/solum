@@ -15,6 +15,7 @@
 import mock
 
 from solum.api.handlers import assembly_handler
+from solum.common import exception
 from solum.objects import assembly
 from solum.tests import base
 from solum.tests import fakes
@@ -92,7 +93,7 @@ class TestAssemblyHandler(base.BaseTestCase):
         git_info = {
             'source_url': "https://example.com/ex.git",
             'commit_sha': '',
-            'status_token': None,
+            'repo_token': None,
             'status_url': None,
         }
         mock_pa.assert_called_once_with(
@@ -170,7 +171,7 @@ class TestAssemblyHandler(base.BaseTestCase):
         git_info = {
             'source_url': "https://example.com/ex.git",
             'commit_sha': '',
-            'status_token': None,
+            'repo_token': None,
             'status_url': None,
         }
         mock_pa.assert_called_once_with(
@@ -223,3 +224,35 @@ class TestAssemblyHandler(base.BaseTestCase):
             None, trigger_id)
         mock_registry.Plan.get_by_id.assert_called_once_with(self.ctx,
                                                              db_obj.plan_id)
+
+    def test_trigger_workflow_verify_artifact_failed(self, mock_registry):
+        trigger_id = 1
+        artifacts = [{"name": "Test",
+                      "artifact_type": "heroku",
+                      "content": {"href": "https://github.com/some/project"},
+                      "language_pack": "auto"}]
+        db_obj = fakes.FakeAssembly()
+        mock_registry.Assembly.get_by_trigger_id.return_value = db_obj
+        plan_obj = fakes.FakePlan()
+        mock_registry.Plan.get_by_id.return_value = plan_obj
+        plan_obj.raw_content = {"artifacts": artifacts}
+        handler = assembly_handler.AssemblyHandler(self.ctx)
+        handler._build_artifact = mock.MagicMock()
+        handler._verify_artifact = mock.MagicMock(return_value=False)
+        handler._context_from_trust_id = mock.MagicMock(return_value=self.ctx)
+        collab_url = 'https://api.github.com/repos/u/r/collaborators/foo'
+        handler.trigger_workflow(trigger_id, collab_url=collab_url)
+        assert not handler._build_artifact.called
+
+    @mock.patch('httplib2.Http.request')
+    def test_verify_artifact_raise_exp(self, http_mock, mock_registry):
+        artifact = {"name": "Test",
+                    "artifact_type": "heroku",
+                    "content": {"href": "https://github.com/some/project"},
+                    "language_pack": "auto",
+                    "repo_token": "abcd"}
+        handler = assembly_handler.AssemblyHandler(self.ctx)
+        http_mock.return_value = ({'status': '404'}, '')  # Not a collaborator
+        collab_url = 'https://api.github.com/repos/u/r/collaborators/foo'
+        self.assertRaises(exception.RequestForbidden, handler._verify_artifact,
+                          artifact, collab_url)

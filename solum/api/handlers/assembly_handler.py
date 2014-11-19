@@ -14,6 +14,7 @@
 
 import uuid
 
+import httplib2
 from oslo.config import cfg
 
 from solum.api.handlers import handler
@@ -63,8 +64,30 @@ class AssemblyHandler(handler.Handler):
         kc = solum_keystoneclient.KeystoneClientV3(cntx)
         return kc.context
 
+    def _verify_artifact(self, artifact, collab_url):
+        # TODO(james_li): verify if the artifact is the one that gets triggered
+        if collab_url is None:
+            return True
+
+        repo_token = artifact.get('repo_token')
+        if repo_token is None:
+            return False
+
+        headers = {'Authorization': 'token ' + repo_token}
+        try:
+            resp, _ = httplib2.Http().request(collab_url, headers=headers)
+            if resp['status'] == '204':
+                return True
+            elif resp['status'] == '404':
+                raise exception.RequestForbidden(
+                    reason="User %s not allowed to do rebuild" %
+                           collab_url.split('/')[-1])
+        except httplib2.HttpLib2Error as ex:
+            LOG.info("Error in verifying collaborator %s" % ex)
+        return False
+
     def trigger_workflow(self, trigger_id, commit_sha='',
-                         status_url=None):
+                         status_url=None, collab_url=None):
         """Get trigger by trigger id and start git workflow associated."""
         # Note: self.context will be None at this point as this is a
         # non-authenticated request.
@@ -82,10 +105,11 @@ class AssemblyHandler(handler.Handler):
 
         artifacts = plan_obj.raw_content.get('artifacts', [])
         for arti in artifacts:
-            self._build_artifact(assem=db_obj, artifact=arti,
-                                 commit_sha=commit_sha,
-                                 status_url=status_url,
-                                 deploy_keys_ref=plan_obj.deploy_keys_uri)
+            if self._verify_artifact(arti, collab_url):
+                self._build_artifact(assem=db_obj, artifact=arti,
+                                     commit_sha=commit_sha,
+                                     status_url=status_url,
+                                     deploy_keys_ref=plan_obj.deploy_keys_uri)
 
     def update(self, id, data):
         """Modify a resource."""
@@ -152,12 +176,12 @@ class AssemblyHandler(handler.Handler):
         image.state = IMAGE_STATES.PENDING
         image.create(self.context)
         test_cmd = artifact.get('unittest_cmd')
-        status_token = artifact.get('status_token')
+        repo_token = artifact.get('repo_token')
 
         git_info = {
             'source_url': image.source_uri,
             'commit_sha': commit_sha,
-            'status_token': status_token,
+            'repo_token': repo_token,
             'status_url': status_url
         }
 

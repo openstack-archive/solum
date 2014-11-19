@@ -231,6 +231,11 @@ class ObjectNotUnique(SolumException):
     msg_fmt = _("The %(name)s already exists.")
 
 
+class RequestForbidden(SolumException):
+    msg_fmt = _("The request is forbidden. Reason: %(reason)s")
+    code = 403
+
+
 class ResourceNotFound(ObjectNotFound):
     msg_fmt = _("The %(name)s resource %(id)s could not be found.")
     code = 404

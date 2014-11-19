@@ -39,7 +39,7 @@ def mock_environment():
 def mock_git_info():
     return {
         'source_url': 'git://example.com/foo',
-        'status_token': '8765',
+        'repo_token': '8765',
         'status_url': 'https://api.github.com/repos/u/r/statuses/SHA'
     }
 
