@@ -28,9 +28,8 @@ class TestCAMPEndpoint(base.BaseTestCase):
         objects.load()
 
     def test_camp_endpoint_get(self, resp_mock, request_mock):
-        fake_platform_endpoint = fakes.FakeCAMPEndpoint()
-        cont = camp_v1_1_endpoint.Controller()
-        resp = cont.index()
+        cont = camp_v1_1_endpoint.CAMPv11EndpointController()
+        resp = cont.get()
         self.assertEqual(200, resp_mock.status)
-        self.assertEqual(fake_platform_endpoint.name, resp['result'].name)
-        self.assertEqual(fake_platform_endpoint.type, resp['result'].type)
+        self.assertEqual('platform_endpoint', resp['result'].type)
+        self.assertEqual(camp_v1_1_endpoint.NAME_STRING, resp['result'].name)

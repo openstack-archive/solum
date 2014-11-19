@@ -13,45 +13,41 @@
 # under the License.
 
 import pecan
+from pecan import rest
 import wsmeext.pecan as wsme_pecan
 
 from solum.api.controllers.camp import platform_endpoints as pe
-from solum.api.controllers.camp.v1_1 import assemblies
 from solum.api.controllers.camp.v1_1.datamodel import platform as model
-from solum.api.controllers.camp.v1_1 import extensions
-from solum.api.controllers.camp.v1_1 import formats
-from solum.api.controllers.camp.v1_1 import plans
-from solum.api.controllers.camp.v1_1 import services
 from solum.api.controllers.camp.v1_1 import uris
 from solum.common import exception
 
-uri_string = '%s/camp/v1_1/platform/'
+uri_string = '%s/camp/v1_1/platform'
 description_string = "Solum CAMP API platform resource for CAMP v1.1."
 
 
-class Controller():
+class PlatformController(rest.RestController):
     """CAMP v1.1 platform controller."""
 
     @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(model.Platform)
-    def index(self):
+    def get(self):
         return model.Platform(uri=uri_string % pecan.request.host_url,
                               name='Solum_CAMP_v1_1_platform',
                               type='platform',
                               description=description_string,
-                              supported_formats_uri=formats.uri_string %
+                              supported_formats_uri=uris.FORMATS_URI_STR %
                               pecan.request.host_url,
-                              extensions_uri=extensions.uri_string %
+                              extensions_uri=uris.EXTNS_URI_STR %
                               pecan.request.host_url,
                               type_definitions_uri=uris.TYPE_DEFS_URI_STR %
                               pecan.request.host_url,
-                              platform_endpoints_uri=pe.uri_string %
+                              platform_endpoints_uri=pe.URI_STRING %
                               pecan.request.host_url,
                               specification_version='CAMP 1.1',
                               implementation_version='Solum CAMP 1.1',
-                              assemblies_uri=assemblies.uri_string %
+                              assemblies_uri=uris.ASSEMS_URI_STR %
                               pecan.request.host_url,
-                              services_uri=services.uri_string %
+                              services_uri=uris.SERVS_URI_STR %
                               pecan.request.host_url,
-                              plans_uri=plans.uri_string %
+                              plans_uri=uris.PLANS_URI_STR %
                               pecan.request.host_url)

@@ -15,6 +15,7 @@
 import pecan
 from pecan import core
 from pecan import rest
+from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
 
 from solum.api.controllers.camp.v1_1.datamodel import (parameter_definitions
@@ -47,8 +48,21 @@ class ParamsDefController(rest.RestController):
 class ParameterDefinitionsController(rest.RestController):
     """Manages operations on CAMP's parameter_definitions resources."""
 
-    @pecan.expose()
-    def _lookup(self, param_defs_name, *remainder):
-        if remainder and not remainder[-1]:
-            remainder = remainder[:-1]
-        return ParamsDefController(param_defs_name), remainder
+#    @pecan.expose()
+#    def _lookup(self, param_defs_name, *remainder):
+#        if remainder and not remainder[-1]:
+#            remainder = remainder[:-1]
+#        return ParamsDefController(param_defs_name), remainder
+
+    @exception.wrap_wsme_controller_exception
+    @wsme_pecan.wsexpose(model.ParameterDefinitions, wtypes.text)
+    def get_one(self, param_defs_name):
+        """Return the appropriate format resource."""
+        handler = (parameter_definitions_handler.
+                   ParameterDefinitionsHandler(pecan.request.security_context))
+        raw_defs = handler.get(param_defs_name)
+        if not raw_defs:
+            core.abort(404,
+                       '%s is not a parameter_definitions collection' %
+                       param_defs_name)
+        return raw_defs.fix_uris(pecan.request.host_url)

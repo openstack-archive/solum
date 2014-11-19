@@ -13,29 +13,44 @@
 # under the License.
 
 import pecan
+from pecan import rest
 import wsmeext.pecan as wsme_pecan
 
-
 from solum.api.controllers.camp.v1_1.datamodel import services as model
+from solum.api.controllers.camp.v1_1 import uris
 from solum.api.controllers import common_types
+from solum.api.handlers import service_handler
 from solum.common import exception
 
 
-uri_string = '%s/camp/v1_1/services/'
-description_string = "Solum CAMP API services collection resource."
-
-
-class Controller():
+class ServicesController(rest.RestController):
     """CAMP v1.1 services controller."""
 
     @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(model.Services)
-    def index(self):
-        return model.Services(uri=uri_string % pecan.request.host_url,
-                              name='Solum_CAMP_services',
-                              type='services',
-                              description=description_string,
-                              service_links=[
-                                  common_types.Link(href='http://tbd.com/',
-                                                    target_name='TBD')
-                              ])
+    def get(self):
+        suri = uris.SERVS_URI_STR % pecan.request.host_url
+        desc = "Solum CAMP API services collection resource."
+
+        handlr = service_handler.ServiceHandler(pecan.request.security_context)
+        service_objs = handlr.get_all()
+        s_links = []
+        for m in service_objs:
+            s_links.append(common_types.Link(href=uris.SERV_URI_STR %
+                                             (pecan.request.host_url, m.uuid),
+                                             target_name=m.name))
+
+        # if there aren't any services, avoid returning a resource with an
+        # empty service_links array
+        if len(s_links) > 0:
+            res = model.Services(uri=suri,
+                                 name='Solum_CAMP_services',
+                                 type='services',
+                                 description=desc,
+                                 service_links=s_links)
+        else:
+            res = model.Services(uri=suri,
+                                 name='Solum_CAMP_services',
+                                 type='services',
+                                 description=desc)
+        return res

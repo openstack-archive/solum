@@ -13,28 +13,48 @@
 # under the License.
 
 import pecan
+from pecan import core
+from pecan import rest
+from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
 
-from solum.api.controllers.camp.v1_1.datamodel import formats as model
-from solum.api.controllers.camp.v1_1 import json_format
+from solum.api.controllers.camp.v1_1.datamodel import format
+from solum.api.controllers.camp.v1_1.datamodel import formats
+from solum.api.controllers.camp.v1_1 import uris
 from solum.api.controllers import common_types
+from solum.api.handlers.camp import format_handler
 from solum.common import exception
 
-uri_string = '%s/camp/v1_1/formats/'
-description_string = "Solum CAMP API supported formats collection resource."
+
+DESCRIPTION_STRING = "Solum CAMP API supported formats collection resource."
 
 
-class Controller():
-    """CAMP v1.1 formats controller."""
+class FormatsController(rest.RestController):
+    """Manages operations on CAMP's formats resource."""
 
     @exception.wrap_wsme_controller_exception
-    @wsme_pecan.wsexpose(model.Formats)
-    def index(self):
-        links = [common_types.Link(href=json_format.uri_string %
+    @wsme_pecan.wsexpose(format.Format, wtypes.text)
+    def get_one(self, format_name):
+        """Return the appropriate format resource."""
+        handler = (format_handler.
+                   FormatHandler(pecan.request.security_context))
+        raw_format = handler.get(format_name)
+        if not raw_format:
+            core.abort(404,
+                       '%s is not a format resource' %
+                       format_name)
+        return raw_format.fix_uris(pecan.request.host_url)
+
+    @exception.wrap_wsme_controller_exception
+    @wsme_pecan.wsexpose(formats.Formats)
+    def get(self):
+        """Return the formats resource."""
+        links = [common_types.Link(href=uris.JSON_FORMAT_URI_STR %
                                    pecan.request.host_url,
-                                   target_name=json_format.name_string)]
-        return model.Formats(uri=uri_string % pecan.request.host_url,
-                             name='Solum_CAMP_formats',
-                             type='formats',
-                             description=description_string,
-                             format_links=links)
+                                   target_name=uris.JSON_FORMAT_NAME_STR)]
+        return formats.Formats(uri=uris.FORMATS_URI_STR %
+                               pecan.request.host_url,
+                               name='Solum_CAMP_formats',
+                               type='formats',
+                               description=DESCRIPTION_STRING,
+                               format_links=links)

@@ -28,9 +28,9 @@ class TestPlatform(base.BaseTestCase):
         objects.load()
 
     def test_platform_get(self, resp_mock, request_mock):
-        fake_platform = fakes.FakeCAMPPlatform()
-        cont = platform.Controller()
-        resp = cont.index()
+        cont = platform.PlatformController()
+        resp = cont.get()
+        self.assertIsNotNone(resp)
         self.assertEqual(200, resp_mock.status)
-        self.assertEqual(fake_platform.name, resp['result'].name)
-        self.assertEqual(fake_platform.type, resp['result'].type)
+        self.assertEqual('platform', resp['result'].type)
+        self.assertEqual('Solum_CAMP_v1_1_platform', resp['result'].name)

@@ -27,15 +27,29 @@ class TestParameterDefinitions(base.BaseTestCase):
         super(TestParameterDefinitions, self).setUp()
         objects.load()
 
-    def test_assembly_create_param_get(self, resp_mock, request_mock):
-        fake_params = fakes.FakeAssemblyCreateParams()
-        cont = pd.ParamsDefController('assembly_create_params')
-        resp = cont.get()
+    # These tests aren't strictly "unit tests" since we don't stub-out the
+    # handler for parameter_definition resources. However, since that handler
+    # simply looks up a static object in a static dictionary, it isn't that big
+    # of a deal.
+
+    def test_deploy_params_get(self, resp_mock, request_mock):
+        cont = pd.ParameterDefinitionsController()
+        resp = cont.get_one('deploy_params')
+        self.assertIsNotNone(resp)
         self.assertEqual(200, resp_mock.status)
-        self.assertEqual(fake_params.name, resp['result'].name)
-        self.assertEqual(fake_params.type, resp['result'].type)
+        self.assertEqual('parameter_definitions', resp['result'].type)
+        self.assertEqual('Solum_CAMP_deploy_parameters', resp['result'].name)
+
+    def test_ndt_params_get(self, resp_mock, request_mock):
+        cont = pd.ParameterDefinitionsController()
+        resp = cont.get_one('ndt_params')
+        self.assertIsNotNone(resp)
+        self.assertEqual(200, resp_mock.status)
+        self.assertEqual('parameter_definitions', resp['result'].type)
+        self.assertEqual('Solum_CAMP_NDT_parameters', resp['result'].name)
 
     def test_parameter_def_get_not_found(self, resp_mock, request_mock):
-        cont = pd.ParamsDefController('does_not_exist')
-        cont.get()
+        cont = pd.ParameterDefinitionsController()
+        resp = cont.get_one('does_not_exist')
+        self.assertIsNotNone(resp)
         self.assertEqual(404, resp_mock.status)

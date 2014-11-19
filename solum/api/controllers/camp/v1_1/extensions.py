@@ -13,10 +13,13 @@
 # under the License.
 
 import pecan
+from pecan import rest
 import wsmeext.pecan as wsme_pecan
 
 from solum.api.controllers.camp.v1_1.datamodel import extensions as model
+from solum.api.controllers.camp.v1_1 import uris
 from solum.api.controllers import common_types
+from solum.api.handlers import extension_handler
 from solum.common import exception
 
 
@@ -24,17 +27,35 @@ uri_string = '%s/camp/v1_1/extensions/'
 description_string = "Solum CAMP API extensions collection resource."
 
 
-class Controller():
+class ExtensionsController(rest.RestController):
     """CAMP v1.1 extensions controller."""
 
     @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(model.Extensions)
-    def index(self):
-        return model.Extensions(uri=uri_string % pecan.request.host_url,
-                                name="Solum_CAMP_extensions",
-                                type='extensions',
-                                description=description_string,
-                                extension_links=[
-                                    common_types.Link(href="http://tbd.com/",
-                                                      target_name="TBD")
-                                ])
+    def get(self):
+        euri = uris.EXTNS_URI_STR % pecan.request.host_url
+        desc = "Solum CAMP API extensions collection resource."
+
+        handlr = (extension_handler.
+                  ExtensionHandler(pecan.request.security_context))
+        ext_objs = handlr.get_all()
+        e_links = []
+        for m in ext_objs:
+            e_links.append(common_types.Link(href=uris.EXTN_URI_STR %
+                                             (pecan.request.host_url, m.uuid),
+                                             target_name=m.name))
+
+        # if there aren't any extensions, avoid returning a resource with an
+        # empty extension_links array
+        if len(e_links) > 0:
+            res = model.Extensions(uri=euri,
+                                   name="Solum_CAMP_extensions",
+                                   type='extensions',
+                                   description=desc,
+                                   extension_links=e_links)
+        else:
+            res = model.Extensions(uri=euri,
+                                   name="Solum_CAMP_extensions",
+                                   type='extensions',
+                                   description=desc)
+        return res

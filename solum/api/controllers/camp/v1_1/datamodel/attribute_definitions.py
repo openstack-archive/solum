@@ -30,11 +30,11 @@ class AttributeDefinition(api_types.Base):
 
     documentation = wtypes.text
     """The value of the documentation attribute is a URI that references the
-     documentation for the attribute that this resource represents."""
+     documentation for the attribute that this resource describes."""
 
     attribute_type = wtypes.text
     """The value of the attribute_type attribute specifies the type of the
-     attribute that this described by this resource."""
+     attribute that this resource describes."""
 
     @classmethod
     def from_json(cls, dct):

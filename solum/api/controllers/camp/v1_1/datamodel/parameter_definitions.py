@@ -16,6 +16,7 @@ import copy
 
 from wsme import types as wtypes
 
+from solum.api.controllers.camp.v1_1 import uris
 from solum.api.controllers import common_types
 from solum.api.controllers.v1.datamodel import types as api_types
 
@@ -45,9 +46,8 @@ class ParameterDefinitions(api_types.Base):
         """Update URIs to reflect a host URL."""
 
         ret_val = copy.deepcopy(self)
-        ret_val.uri = '%s/camp/v1_1/parameter_definitions/%s' % (host_url,
-                                                                 ret_val.uri)
+        ret_val.uri = uris.PARAM_DEFS_URI_STR % (host_url, ret_val.uri)
         for pd_link in ret_val.parameter_definition_links:
-            pd_link.href = '%s/camp/v1_1/param_def/%s' % (host_url,
-                                                          pd_link.href)
+            pd_link.href = uris.PARAM_DEF_URI_STR % (host_url, pd_link.href)
+
         return ret_val

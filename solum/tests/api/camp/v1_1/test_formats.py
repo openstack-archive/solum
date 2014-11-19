@@ -27,10 +27,32 @@ class TestFormats(base.BaseTestCase):
         super(TestFormats, self).setUp()
         objects.load()
 
+    # These tests aren't strictly "unit tests" since we don't stub-out the
+    # handler for format resources. However, since that handler simply
+    # looks up a static object in a static dictionary, it isn't that big
+    # of a deal.
+
     def test_formats_get(self, resp_mock, request_mock):
-        fake_formats = fakes.FakeCAMPFormats()
-        cont = formats.Controller()
-        resp = cont.index()
+        cont = formats.FormatsController()
+        resp = cont.get()
+        self.assertIsNotNone(resp)
         self.assertEqual(200, resp_mock.status)
-        self.assertEqual(fake_formats.name, resp['result'].name)
-        self.assertEqual(fake_formats.type, resp['result'].type)
+        self.assertEqual('formats', resp['result'].type)
+        self.assertEqual('Solum_CAMP_formats', resp['result'].name)
+        format_links = resp['result'].format_links
+        self.assertEqual(1, len(format_links))
+        self.assertEqual('JSON', format_links[0].target_name)
+
+    def test_get_json_format(self, resp_mock, request_mock):
+        cont = formats.FormatsController()
+        resp = cont.get_one('json_format')
+        self.assertIsNotNone(resp)
+        self.assertEqual(200, resp_mock.status)
+        self.assertEqual('format', resp['result'].type)
+        self.assertEqual('JSON', resp['result'].name)
+
+    def test_format_get_not_found(self, resp_mock, request_mock):
+        cont = formats.FormatsController()
+        resp = cont.get_one('nonexistent_format')
+        self.assertIsNotNone(resp)
+        self.assertEqual(404, resp_mock.status)

@@ -13,6 +13,7 @@
 # under the License.
 
 import pecan
+from pecan import rest
 import wsmeext.pecan as wsme_pecan
 
 from solum.api.controllers.camp import camp_v1_1_endpoint as endpoint
@@ -21,24 +22,24 @@ from solum.api.controllers import common_types
 from solum.common import exception
 
 
-uri_string = '%s/camp/platform_endpoints/'
-description_string = "Solum CAMP API platform_endpoints resource."
+URI_STRING = '%s/camp/platform_endpoints'
+DESCRIPTION_STRING = "Solum CAMP API platform_endpoints resource."
 
 
-class Controller(object):
+class PlatformEndpointsController(rest.RestController):
     """platform_endpoints resource controller."""
 
     @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(model.PlatformEndpoints)
-    def index(self):
+    def get(self):
         links = [
-            common_types.Link(href=endpoint.uri_string %
+            common_types.Link(href=endpoint.URI_STRING %
                               pecan.request.host_url,
-                              target_name=endpoint.name_string)
+                              target_name=endpoint.NAME_STRING)
         ]
 
-        return model.PlatformEndpoints(uri=uri_string % pecan.request.host_url,
+        return model.PlatformEndpoints(uri=URI_STRING % pecan.request.host_url,
                                        name='Solum_CAMP_endpoints',
                                        type='platform_endpoints',
-                                       description=description_string,
+                                       description=DESCRIPTION_STRING,
                                        platform_endpoint_links=links)

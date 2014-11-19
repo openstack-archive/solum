@@ -12,8 +12,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import copy
+
 from wsme import types as wtypes
 
+from solum.api.controllers.camp.v1_1 import uris
 from solum.api.controllers import common_types
 from solum.api.controllers.v1.datamodel import types as api_types
 
@@ -35,3 +38,11 @@ class Format(api_types.Base):
 
     def __init__(self, **kwds):
         super(Format, self).__init__(**kwds)
+
+    def fix_uris(self, host_url):
+        """Update URIs to reflect a host URL."""
+
+        ret_val = copy.deepcopy(self)
+        ret_val.uri = uris.FORMAT_URI_STR % (host_url, ret_val.uri)
+
+        return ret_val
