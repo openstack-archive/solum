@@ -7,7 +7,7 @@ MAINTAINER Devdatta Kulkarni <devdatta.kulkarni@rackspace.com>
 
 RUN apt-get -yqq update
 
-RUN apt-get -yqq install build-essential libxml2-dev libxslt-dev git autoconf ruby1.9.3 libgecode-dev
+RUN apt-get -yqq install build-essential libxml2-dev libxslt-dev git autoconf ruby1.9.3 libgecode-dev curl
 
 ENV USE_SYSTEM_GECODE 1
 
