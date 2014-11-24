@@ -86,12 +86,10 @@ def get_parameter_by_assem_id(ctxt, assembly_id):
 
 
 def update_assembly_status(ctxt, assembly_id, status):
-    # TODO(datsun180b): use conductor to update assembly status
     if assembly_id is None:
         return
-    assem = get_assembly_by_id(ctxt, assembly_id)
-    assem.status = status
-    assem.save(ctxt)
+    LOG.debug('Updating assembly %s status to %s' % (assembly_id, status))
+    conductor_api.API(context=ctxt).update_assembly_status(assembly_id, status)
 
 
 class Handler(object):

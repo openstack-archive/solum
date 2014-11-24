@@ -109,11 +109,12 @@ class HandlerTest(base.BaseTestCase):
 
     @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
     @mock.patch('solum.objects.registry')
+    @mock.patch('solum.conductor.api.API.update_assembly_status')
     @mock.patch('solum.conductor.api.API.build_job_update')
     @mock.patch('solum.deployer.api.API.deploy')
     @mock.patch('subprocess.Popen')
-    def test_build(self, mock_popen, mock_deploy, mock_b_update, mock_registry,
-                   mock_get_env):
+    def test_build(self, mock_popen, mock_deploy, mock_b_update, mock_uas,
+                   mock_registry, mock_get_env):
         handler = shell_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
         fake_glance_id = str(uuid.uuid4())
@@ -143,19 +144,23 @@ class HandlerTest(base.BaseTestCase):
 
         self.assertEqual(expected, mock_b_update.call_args_list)
 
+        expected = [mock.call(44, 'BUILDING')]
+        self.assertEqual(expected, mock_uas.call_args_list)
+
         expected = [mock.call(assembly_id=44, image_id=fake_glance_id)]
         self.assertEqual(expected, mock_deploy.call_args_list)
 
     @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.conductor.api.API.build_job_update')
+    @mock.patch('solum.conductor.api.API.update_assembly_status')
     @mock.patch('solum.deployer.api.API.deploy')
     @mock.patch('subprocess.Popen')
     @mock.patch('solum.common.clients.OpenStackClients.barbican')
     @mock.patch('ast.literal_eval')
     def test_build_with_private_github_repo(
             self, mock_ast, mock_barbican, mock_popen, mock_deploy,
-            mock_b_update, mock_registry, mock_get_env):
+            mock_uas, mock_b_update, mock_registry, mock_get_env):
         handler = shell_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
         fake_glance_id = str(uuid.uuid4())
@@ -190,19 +195,23 @@ class HandlerTest(base.BaseTestCase):
 
         self.assertEqual(expected, mock_b_update.call_args_list)
 
+        expected = [mock.call(44, 'BUILDING')]
+        self.assertEqual(expected, mock_uas.call_args_list)
+
         expected = [mock.call(assembly_id=44, image_id=fake_glance_id)]
         self.assertEqual(expected, mock_deploy.call_args_list)
 
     @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.conductor.api.API.build_job_update')
+    @mock.patch('solum.conductor.api.API.update_assembly_status')
     @mock.patch('solum.deployer.api.API.deploy')
     @mock.patch('subprocess.Popen')
     @mock.patch('shelve.open')
     @mock.patch('ast.literal_eval')
     def test_build_with_private_github_repo_with_barbican_disabled(
             self, mock_ast, mock_shelve, mock_popen,
-            mock_deploy, mock_b_update, mock_registry, mock_get_env):
+            mock_deploy, mock_uas, mock_b_update, mock_registry, mock_get_env):
         handler = shell_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
         fake_glance_id = str(uuid.uuid4())
@@ -243,15 +252,19 @@ class HandlerTest(base.BaseTestCase):
 
         self.assertEqual(expected, mock_b_update.call_args_list)
 
+        expected = [mock.call(44, 'BUILDING')]
+        self.assertEqual(expected, mock_uas.call_args_list)
+
         expected = [mock.call(assembly_id=44, image_id=fake_glance_id)]
         self.assertEqual(expected, mock_deploy.call_args_list)
 
     @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.conductor.api.API.build_job_update')
+    @mock.patch('solum.conductor.api.API.update_assembly_status')
     @mock.patch('subprocess.Popen')
-    def test_build_fail(self, mock_popen, mock_b_update, mock_registry,
-                        mock_get_env):
+    def test_build_fail(self, mock_popen, mock_uas, mock_b_update,
+                        mock_registry, mock_get_env):
         handler = shell_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
@@ -277,6 +290,9 @@ class HandlerTest(base.BaseTestCase):
                     mock.call(5, 'ERROR', 'image not created', None, 44)]
 
         self.assertEqual(expected, mock_b_update.call_args_list)
+
+        expected = [mock.call(44, 'BUILDING')]
+        self.assertEqual(expected, mock_uas.call_args_list)
 
     @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
     @mock.patch('solum.objects.registry')
@@ -434,19 +450,20 @@ class TestNotifications(base.BaseTestCase):
         self.ctx = utils.dummy_context()
         self.db = self.useFixture(utils.Database())
 
+    @mock.patch('solum.conductor.api.API.update_assembly_status')
     @mock.patch('solum.objects.registry')
-    def test_update_assembly_status(self, mock_registry):
+    def test_update_assembly_status(self, mock_registry, mock_uas):
         mock_assembly = mock.MagicMock()
         mock_registry.Assembly.get_by_id.return_value = mock_assembly
         shell_handler.update_assembly_status(self.ctx, '1234',
                                              'BUILDING')
-        mock_registry.Assembly.get_by_id.assert_called_once_with(self.ctx,
-                                                                 '1234')
-        mock_assembly.save.assert_called_once_with(self.ctx)
-        self.assertEqual(mock_assembly.status, 'BUILDING')
+        self.assertEqual(mock_registry.Assembly.get_by_id.call_count, 0)
+        self.assertEqual(mock_registry.save.call_count, 0)
+        self.assertEqual(mock_uas.call_count, 1)
 
+    @mock.patch('solum.conductor.api.API.update_assembly_status')
     @mock.patch('solum.objects.registry')
-    def test_update_assembly_status_pass(self, mock_registry):
+    def test_update_assembly_status_pass(self, mock_registry, mock_uas):
         shell_handler.update_assembly_status(self.ctx, None,
                                              'BUILDING')
         self.assertEqual(mock_registry.call_count, 0)
