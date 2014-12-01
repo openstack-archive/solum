@@ -55,3 +55,8 @@ class Handler(object):
                                                              'Image Build job',
                                                              created_image_id,
                                                              stack_id)
+
+    def update_assembly_status(self, ctxt, assembly_id, status):
+        assem = objects.registry.Assembly.get_by_id(ctxt, assembly_id)
+        assem.status = status
+        assem.save(ctxt)

@@ -31,3 +31,7 @@ class API(service.API):
         self._cast('build_job_update', build_id=build_id, state=state,
                    description=description, created_image_id=created_image_id,
                    assembly_id=assembly_id)
+
+    def update_assembly_status(self, assembly_id, status):
+        self._cast('update_assembly_status', assembly_id=assembly_id,
+                   status=status)
