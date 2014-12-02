@@ -45,11 +45,9 @@ class HandlerTest(base.BaseTestCase):
     @mock.patch('solum.objects.registry')
     @mock.patch('subprocess.Popen')
     @mock.patch('solum.conductor.api.API.build_job_update')
-    @mock.patch('solum.worker.handlers.shell.update_assembly_status')
-    @mock.patch('solum.worker.handlers.shell_nobuild.update_assembly_status')
-    def test_unittest_and_build(self, mock_a_update_nb, mock_a_update,
-                                mock_b_update, mock_popen, mock_registry,
-                                mock_req, mock_get_env):
+    @mock.patch('solum.conductor.api.API.update_assembly_status')
+    def test_unittest_and_build(self, mock_uas, mock_b_update, mock_popen,
+                                mock_registry, mock_req, mock_get_env):
         handler = shell_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
         fake_glance_id = str(uuid.uuid4())
@@ -63,7 +61,8 @@ class HandlerTest(base.BaseTestCase):
         status_token = git_info.get('status_token')
         status_url = git_info.get('status_url')
         mock_req.return_value = test_shell.mock_http_response()
-        cfg.CONF.worker.log_url_prefix = "https://log.com/commit/"
+        cfg.CONF.set_override('log_url_prefix', 'https://log.com/commit/',
+                              group='worker')
 
         handler.build(self.ctx, build_id=5, git_info=git_info, name='new_app',
                       base_image_id='1-2-3-4', source_format='chef',
@@ -94,20 +93,16 @@ class HandlerTest(base.BaseTestCase):
                       stdout=-1)]
         self.assertEqual(expected, mock_popen.call_args_list)
 
-        # The UNIT_TESTING update happens from shell...
-        expected = [mock.call(self.ctx, 44, 'UNIT_TESTING')]
-        self.assertEqual(expected, mock_a_update.call_args_list)
-
-        # ...but the READY update happens in shell_nobuild.
-        expected = [mock.call(self.ctx, 44, 'READY')]
-        self.assertEqual(expected, mock_a_update_nb.call_args_list)
+        expected = [mock.call(44, 'UNIT_TESTING'),
+                    mock.call(44, 'READY')]
+        self.assertEqual(expected, mock_uas.call_args_list)
 
     @mock.patch('solum.worker.handlers.shell_nobuild.Handler._get_environment')
     @mock.patch('httplib2.Http.request')
     @mock.patch('subprocess.Popen')
-    @mock.patch('solum.worker.handlers.shell.update_assembly_status')
+    @mock.patch('solum.conductor.api.API.update_assembly_status')
     @mock.patch('solum.objects.registry')
-    def test_unittest_no_build(self, mock_registry, mock_a_update,
+    def test_unittest_no_build(self, mock_registry, mock_uas,
                                mock_popen, mock_req, mock_get_env):
         handler = shell_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
@@ -119,7 +114,8 @@ class HandlerTest(base.BaseTestCase):
         status_token = git_info.get('status_token')
         status_url = git_info.get('status_url')
         mock_req.return_value = test_shell.mock_http_response()
-        cfg.CONF.worker.log_url_prefix = "https://log.com/commit/"
+        cfg.CONF.set_override('log_url_prefix', 'https://log.com/commit/',
+                              group='worker')
 
         handler.build(self.ctx, build_id=5, git_info=git_info,
                       name='new_app', base_image_id='1-2-3-4',
@@ -150,9 +146,9 @@ class HandlerTest(base.BaseTestCase):
                       stdout=-1)]
         self.assertEqual(expected, mock_popen.call_args_list)
 
-        expected = [mock.call(self.ctx, 44, 'UNIT_TESTING'),
-                    mock.call(self.ctx, 44, 'UNIT_TESTING_FAILED')]
-        self.assertEqual(expected, mock_a_update.call_args_list)
+        expected = [mock.call(44, 'UNIT_TESTING'),
+                    mock.call(44, 'UNIT_TESTING_FAILED')]
+        self.assertEqual(expected, mock_uas.call_args_list)
 
 
 class TestNotifications(base.BaseTestCase):

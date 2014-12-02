@@ -293,10 +293,11 @@ class Handler(object):
             out = subprocess.Popen(build_cmd,
                                    env=user_env,
                                    stdout=subprocess.PIPE).communicate()[0]
-        except OSError as subex:
+        except (OSError, ValueError) as subex:
             LOG.exception(subex)
             job_update_notification(ctxt, build_id, IMAGE_STATES.ERROR,
                                     description=subex, assembly_id=assembly_id)
+            update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.ERROR)
             return
 
         if assembly_id is not None:
@@ -315,6 +316,7 @@ class Handler(object):
             job_update_notification(ctxt, build_id, IMAGE_STATES.ERROR,
                                     description='image not created',
                                     assembly_id=assembly_id)
+            update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.ERROR)
             return
         job_update_notification(ctxt, build_id, IMAGE_STATES.COMPLETE,
                                 description='built successfully',
@@ -323,6 +325,8 @@ class Handler(object):
         if created_image_id is not None:
             deployer_api.API(context=ctxt).deploy(assembly_id=assembly_id,
                                                   image_id=created_image_id)
+        else:
+            update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.ERROR)
 
     def _run_unittest(self, ctxt, build_id, git_info, name, base_image_id,
                       source_format, image_format, assembly_id,
@@ -371,10 +375,13 @@ class Handler(object):
             upload_task_log(ctxt, logpath, assem, user_env['BUILD_ID'],
                             'unittest')
 
-        if returncode != 0:
+        if returncode > 0:
             LOG.error("Unit tests failed. Return code is %r" % (returncode))
             update_assembly_status(ctxt, assembly_id,
                                    ASSEMBLY_STATES.UNIT_TESTING_FAILED)
+        elif returncode < 0:
+            LOG.error("Error running unit tests.")
+            update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.ERROR)
 
         return returncode
 
