@@ -94,7 +94,7 @@ class HandlerTest(base.BaseTestCase):
         path = '/tmp/test/' + fake_build_id
         handler = shell_handler.Handler()
 
-        handler._get_parameter_files(self.ctx, 8, fake_build_id)
+        handler._get_parameter_env(self.ctx, 8, fake_build_id)
 
         mock_mkdirs.assert_called_once_with(path, 0o700)
         expected = [mock.call(path + '/user_params', 'w'),
