@@ -118,8 +118,12 @@ function configure_solum() {
     sudo chown $STACK_USER $STACK_USER_SSH_DIR
     echo -e "Host github.com\n\tStrictHostKeyChecking no\n" > $STACK_USER_SSH_DIR/config
 
-    # Copy over solum configuration file and configure common parameters.
-    cp $SOLUM_DIR/etc/solum/solum.conf.sample $SOLUM_CONF_DIR/$SOLUM_CONF_FILE
+    # Generate sample config and configure common parameters.
+    mkdir -p /tmp/solum
+    pushd $SOLUM_DIR
+        OUTPUTDIR=/tmp/solum/ ./tools/config/generate_sample.sh
+    popd
+    cp /tmp/solum/solum.conf.sample $SOLUM_CONF_DIR/$SOLUM_CONF_FILE
 
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE DEFAULT debug $SOLUM_DEBUG
 
