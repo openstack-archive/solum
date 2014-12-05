@@ -117,11 +117,9 @@ class Handler(object):
         user_env['BUILD_ID'] = uuidutils.generate_uuid()
         user_env['SOLUM_TASK_DIR'] = cfg.CONF.worker.task_log_dir
 
-        params = self._get_parameter_files(ctxt, assembly_id,
-                                           user_env['BUILD_ID'])
-        if params:
-            user_env['USER_PARAMS'] = params[0]
-            user_env['SOLUM_PARAMS'] = params[1]
+        params_env = self._get_parameter_env(ctxt, assembly_id,
+                                             user_env['BUILD_ID'])
+        user_env.update(params_env)
         return user_env
 
     @property
@@ -201,13 +199,14 @@ class Handler(object):
         else:
             LOG.debug("No url or token available to send back status")
 
-    def _get_parameter_files(self, ctxt, assembly_id, build_id):
+    def _get_parameter_env(self, ctxt, assembly_id, build_id):
+        param_env = {}
         if assembly_id is None:
-            return None
+            return param_env
 
         param_obj = get_parameter_by_assem_id(ctxt, assembly_id)
         if param_obj is None:
-            return None
+            return param_env
 
         user_param_file = '/'.join([cfg.CONF.worker.param_file_path,
                                     build_id, 'user_params'])
@@ -217,7 +216,7 @@ class Handler(object):
             os.makedirs(os.path.dirname(user_param_file), 0o700)
         except OSError as ex:
             LOG.error("Error creating dirs to write out param files, %s" % ex)
-            return None
+            return param_env
 
         def _sanitize_param(s):
             # Handles the case of exporting a var with a multi-line string
@@ -227,6 +226,9 @@ class Handler(object):
             f.write("#!/bin/bash\n")
             if param_obj.user_defined_params:
                 for k, v in param_obj.user_defined_params.items():
+                    if k and k.startswith('_SYSTEM'):
+                        # Variables for control purpose, e.g. _SYSTEM_USE_DRONE
+                        param_env[k] = v
                     f.write("export %s=%s\n" % (k, _sanitize_param(v)))
         with open(solum_param_file, 'w') as f:
             f.write("#!/bin/bash\n")
@@ -234,7 +236,9 @@ class Handler(object):
                 for k, v in param_obj.sys_defined_params.items():
                     f.write("export %s=%s\n" % (k, _sanitize_param(v)))
 
-        return (user_param_file, solum_param_file)
+        param_env['USER_PARAMS'] = user_param_file
+        param_env['SOLUM_PARAMS'] = solum_param_file
+        return param_env
 
     def build(self, ctxt, build_id, git_info, name, base_image_id,
               source_format, image_format, assembly_id,

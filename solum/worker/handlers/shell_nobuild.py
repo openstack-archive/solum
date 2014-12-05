@@ -68,10 +68,7 @@ class Handler(shell_handler.Handler):
         user_env['BUILD_ID'] = uuidutils.generate_uuid()
         user_env['SOLUM_TASK_DIR'] = cfg.CONF.worker.task_log_dir
 
-        params = self._get_parameter_files(ctxt, assembly_id,
-                                           user_env['BUILD_ID'])
-        if params:
-            user_env['USER_PARAMS'] = params[0]
-            user_env['SOLUM_PARAMS'] = params[1]
-
+        params_env = self._get_parameter_env(ctxt, assembly_id,
+                                             user_env['BUILD_ID'])
+        user_env.update(params_env)
         return user_env

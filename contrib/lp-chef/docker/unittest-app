@@ -24,6 +24,7 @@ TASKNAME=unittest
 DOCKER_REGISTRY=${DOCKER_REGISTRY:-'127.0.0.1:5042'}
 USER_PARAMS=${USER_PARAMS:-null}
 SOLUM_PARAMS=${SOLUM_PARAMS:-null}
+USE_DRONE=${_SYSTEM_USE_DRONE:-null}
 
 # TLOG, PRUN, ENSURE_LOGFILE, and elapsed defined in app-common
 HERE=$(dirname $0)
@@ -105,7 +106,7 @@ echo "$GIT_PRIVATE_KEY" > $APP_DIR/code/id_rsa
 # Test the application code
 TLOG "===>" Testing App
 
-if [[ $(which drone) ]]; then
+if [[ $USE_DRONE != null && $(which drone) ]]; then
   TLOG "===>" Using Drone
   if [[ ! -e $APP_DIR/code/.drone.yml ]]; then
     TLOG "===>" Creating .drone.yml
