@@ -46,7 +46,7 @@ class PlanHandler(handler.Handler):
         if 'name' in data:
             db_obj.name = data['name']
         db_obj.raw_content.update(dict((k, v) for k, v in data.items()
-                                       if k is not 'parameters'))
+                                       if k != 'parameters'))
         db_obj.save(self.context)
         return db_obj
 
@@ -106,7 +106,7 @@ class PlanHandler(handler.Handler):
                     payload_content_type='application/octet-stream',
                     payload_content_encoding='base64').store()
         db_obj.raw_content = dict((k, v) for k, v in data.items()
-                                  if k is not 'parameters')
+                                  if k != 'parameters')
         db_obj.create(self.context)
 
         if 'parameters' in data:

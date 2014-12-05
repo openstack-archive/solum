@@ -93,7 +93,10 @@ class Plan(api_types.Base):
     services = [ServiceReference]
     """List of services needed by the plan."""
 
-    parameters = {wtypes.text: wtypes.text}
+    parameters = {wtypes.text: api_types.MultiType(wtypes.text,
+                                                   six.integer_types,
+                                                   six.types.BooleanType,
+                                                   six.types.FloatType)}
     """User defined parameters"""
 
     def __init__(self, **kwargs):

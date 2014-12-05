@@ -219,8 +219,11 @@ class Handler(object):
             return param_env
 
         def _sanitize_param(s):
-            # Handles the case of exporting a var with a multi-line string
-            return ''.join(['"', s.strip('\n').replace('"', '\\"'), '"'])
+            if type(s) in [str, unicode]:
+                # Handles the case of exporting a var with a multi-line string
+                return ''.join(['"', s.strip('\n').replace('"', '\\"'), '"'])
+            else:
+                return str(s)
 
         with open(user_param_file, 'w') as f:
             f.write("#!/bin/bash\n")
@@ -228,8 +231,9 @@ class Handler(object):
                 for k, v in param_obj.user_defined_params.items():
                     if k and k.startswith('_SYSTEM'):
                         # Variables for control purpose, e.g. _SYSTEM_USE_DRONE
-                        param_env[k] = v
-                    f.write("export %s=%s\n" % (k, _sanitize_param(v)))
+                        param_env[k] = _sanitize_param(v)
+                    else:
+                        f.write("export %s=%s\n" % (k, _sanitize_param(v)))
         with open(solum_param_file, 'w') as f:
             f.write("#!/bin/bash\n")
             if param_obj.sys_defined_params:
