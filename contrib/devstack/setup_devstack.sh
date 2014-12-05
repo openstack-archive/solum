@@ -15,7 +15,7 @@ git clone git://git.openstack.org/stackforge/solum ${SOLUM_DIR}
 
 echo "Getting Devstack Code"
 mkdir -p ${DEVSTACK_DIR}
-git clone https://github.com/openstack-dev/devstack.git ${DEVSTACK_DIR}
+git clone https://git.openstack.org/cgit/openstack-dev/devstack.git ${DEVSTACK_DIR}
 
 echo "Setting up Devstack for Solum"
 cd ${SOLUM_DIR}/contrib/devstack
