@@ -17,8 +17,9 @@
 import logging as std_logging
 import os
 import sys
-from wsgiref import simple_server
 
+import eventlet
+from eventlet import wsgi
 from oslo.config import cfg
 
 from solum.api import app as api_app
@@ -31,13 +32,13 @@ LOG = logging.getLogger(__name__)
 
 
 def main():
+    eventlet.monkey_patch(socket=True, select=True, time=True)
     service.prepare_service(sys.argv)
 
     app = api_app.setup_app()
 
     # Create the WSGI server and start it
     host, port = cfg.CONF.api.host, cfg.CONF.api.port
-    srv = simple_server.make_server(host, port, app)
 
     LOG.info(_('Starting server in PID %s') % os.getpid())
     LOG.debug("Configuration:")
@@ -51,4 +52,4 @@ def main():
         LOG.info(_('serving on http://%(host)s:%(port)s') %
                  dict(host=host, port=port))
 
-    srv.serve_forever()
+    wsgi.server(eventlet.listen((host, port)), app)
