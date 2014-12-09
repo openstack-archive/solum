@@ -1,0 +1,10 @@
+version: 1
+name: cherrypy
+description: python web app
+artifacts:
+- name: web
+  artifact_type: heroku
+  content:
+    href: https://github.com/jamesyli/cherrypy-helloworld.git
+  language_pack: auto
+  unittest_cmd: ./unit_tests.sh
