@@ -53,11 +53,23 @@ class TestTriggerController(base.TestCase):
         return uuid
 
     def test_trigger_post(self):
+        assembly_uuid, plan_uuid, trigger_uri = self._create_assembly()
+        # Using requests instead of self.client to test unauthenticated request
+        status_url = 'https://api.github.com/repos/u/r/statuses/{sha}'
+        body_dict = {'sender': {'url': 'https://api.github.com'},
+                     'pull_request': {'head': {'sha': 'asdf'}},
+                     'repository': {'statuses_url': status_url}}
+        body = json.dumps(body_dict)
+        resp = requests.post(trigger_uri, data=body)
+        self.assertEqual(resp.status_code, 202)
 
+        self._delete_assembly(assembly_uuid, plan_uuid)
+
+    def test_trigger_post_with_empty_body(self):
         assembly_uuid, plan_uuid, trigger_uri = self._create_assembly()
         # Using requests instead of self.client to test unauthenticated request
         resp = requests.post(trigger_uri)
-        self.assertEqual(resp.status_code, 202)
+        self.assertEqual(resp.status_code, 400)
 
         self._delete_assembly(assembly_uuid, plan_uuid)
 

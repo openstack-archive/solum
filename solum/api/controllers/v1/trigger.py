@@ -61,14 +61,21 @@ class TriggerController(rest.RestController):
                 elif 'pull_request' in body:
                     # Process a GitHub pull request
                     commit_sha = body['pull_request']['head']['sha']
+                else:
+                    raise exception.NotImplemented()
 
                 # An exmaple of Github statuses_url
                 # https://api.github.com/repos/:user/:repo/statuses/{sha}
                 if commit_sha:
                     status_url = body['repository']['statuses_url'].format(
                         sha=commit_sha)
+            else:
+                # Request NOT from a Github repo
+                raise exception.NotImplemented()
         except StandardError:
-            LOG.info("Expected fields not found in request body.")
+            info_msg = "Expected fields not found in request body."
+            LOG.info(info_msg)
+            raise exception.BadRequest(reason=info_msg)
 
         try:
             handler = assembly_handler.AssemblyHandler(None)
