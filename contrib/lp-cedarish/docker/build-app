@@ -70,7 +70,6 @@ GIT_PRIVATE_KEY=$1
 shift
 
 BASE_DIR=/dev/shm
-COMMIT_ID=$(git log -1 --pretty=%H)
 GIT_CHECKSUM=$(echo $GIT | md5sum | awk '{print $1;}')
 APP_DIR=$BASE_DIR/apps/$TENANT/$GIT_CHECKSUM
 PRUN silent mkdir -p $APP_DIR
@@ -103,9 +102,11 @@ else
   PRUN git clone $GIT $APP_DIR/build
 fi
 
+
 # Build the application slug
 TLOG "===>" Building App
 cd $APP_DIR/build
+COMMIT_ID=$(git log -1 --pretty=%H)
 BUILD_ID=$(git archive master | sudo docker run -i -a stdin \
            -v /opt/solum/cache:/tmp/cache:rw  \
            -v /opt/solum/buildpacks:/tmp/buildpacks:rw  \
