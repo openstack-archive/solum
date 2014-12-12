@@ -249,7 +249,7 @@ class Handler(object):
               test_cmd, source_creds_ref=None,
               artifact_type=None, lp_metadata=None):
         if artifact_type == 'language_pack':
-            self.build_lp(self, ctxt, git_info, name, base_image_id,
+            self.build_lp(ctxt, git_info, name, base_image_id,
                           source_format, image_format, test_cmd,
                           source_creds_ref, artifact_type, lp_metadata)
             return
