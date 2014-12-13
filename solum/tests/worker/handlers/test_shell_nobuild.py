@@ -58,7 +58,7 @@ class HandlerTest(base.BaseTestCase):
         test_env = test_shell.mock_environment()
         mock_get_env.return_value = test_env
         git_info = test_shell.mock_git_info()
-        status_token = git_info.get('status_token')
+        repo_token = git_info.get('repo_token')
         status_url = git_info.get('status_url')
         mock_req.return_value = test_shell.mock_http_response()
         cfg.CONF.set_override('log_url_prefix', 'https://log.com/commit/',
@@ -72,11 +72,11 @@ class HandlerTest(base.BaseTestCase):
 
         expected = [
             mock.call(status_url, 'POST',
-                      headers=test_shell.mock_request_hdr(status_token),
+                      headers=test_shell.mock_request_hdr(repo_token),
                       body=test_shell.mock_req_pending_body(
                           'https://log.com/commit/SHA')),
             mock.call(status_url, 'POST',
-                      headers=test_shell.mock_request_hdr(status_token),
+                      headers=test_shell.mock_request_hdr(repo_token),
                       body=test_shell.mock_req_success_body(
                           'https://log.com/commit/SHA'))]
 
@@ -111,7 +111,7 @@ class HandlerTest(base.BaseTestCase):
         test_env = test_shell.mock_environment()
         mock_get_env.return_value = test_env
         git_info = test_shell.mock_git_info()
-        status_token = git_info.get('status_token')
+        repo_token = git_info.get('repo_token')
         status_url = git_info.get('status_url')
         mock_req.return_value = test_shell.mock_http_response()
         cfg.CONF.set_override('log_url_prefix', 'https://log.com/commit/',
@@ -126,11 +126,11 @@ class HandlerTest(base.BaseTestCase):
 
         expected = [
             mock.call(status_url, 'POST',
-                      headers=test_shell.mock_request_hdr(status_token),
+                      headers=test_shell.mock_request_hdr(repo_token),
                       body=test_shell.mock_req_pending_body(
                           'https://log.com/commit/SHA')),
             mock.call(status_url, 'POST',
-                      headers=test_shell.mock_request_hdr(status_token),
+                      headers=test_shell.mock_request_hdr(repo_token),
                       body=test_shell.mock_req_failure_body(
                           'https://log.com/commit/SHA'))]
         self.assertEqual(expected, mock_req.call_args_list)

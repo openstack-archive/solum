@@ -36,7 +36,7 @@ class TestTriggerController(base.BaseTestCase):
         obj.post('test_id')
         self.assertEqual(202, resp_mock.status)
         tw = assem_mock.return_value.trigger_workflow
-        tw.assert_called_once_with('test_id', '', None)
+        tw.assert_called_once_with('test_id', '', None, None)
 
     def test_trigger_post_on_github_webhook(self, pipe_mock, assem_mock,
                                             resp_mock, request_mock):
@@ -50,7 +50,7 @@ class TestTriggerController(base.BaseTestCase):
         obj.post('test_id')
         self.assertEqual(202, resp_mock.status)
         tw = assem_mock.return_value.trigger_workflow
-        tw.assert_called_once_with('test_id', 'asdf', expected_st_url)
+        tw.assert_called_once_with('test_id', 'asdf', expected_st_url, None)
 
     def test_trigger_post_on_github_comment_webhook(self, pipe_mock,
                                                     assem_mock, resp_mock,
@@ -72,31 +72,7 @@ class TestTriggerController(base.BaseTestCase):
         obj.post('test_id')
         self.assertEqual(202, resp_mock.status)
         tw = assem_mock.return_value.trigger_workflow
-        tw.assert_called_once_with('test_id', 'asdf', expected_st_url)
-
-    @mock.patch('httplib2.Http.request')
-    def test_trigger_post_on_invalid_commenter_pub_repo(self, http_mock,
-                                                        pipe_mock,
-                                                        assem_mock, resp_mock,
-                                                        request_mock):
-        cfg.CONF.api.rebuild_phrase = "solum retry tests"
-        status_url = 'https://api.github.com/repos/u/r/statuses/{sha}'
-        collab_url = ('https://api.github.com/repos/u/r/' +
-                      'collaborators{/collaborator}')
-        body_dict = {'sender': {'url': 'https://api.github.com'},
-                     'comment': {'commit_id': 'asdf',
-                                 'body': 'solum retry tests',
-                                 'user': {'login': 'u'}},
-                     'repository': {'statuses_url': status_url,
-                                    'collaborators_url': collab_url,
-                                    'private': False}}
-        request_mock.body = json.dumps(body_dict)
-        http_mock.return_value = ({'status': '404'}, '')  # Not a collaborator
-        obj = trigger.TriggerController()
-        obj.post('test_id')
-        self.assertEqual(403, resp_mock.status)
-        tw = assem_mock.return_value.trigger_workflow
-        assert not tw.called
+        tw.assert_called_once_with('test_id', 'asdf', expected_st_url, None)
 
     @mock.patch('httplib2.Http.request')
     def test_trigger_post_on_mismatch_comment_pub_repo(self, http_mock,
@@ -139,13 +115,15 @@ class TestTriggerController(base.BaseTestCase):
                                     'collaborators_url': collab_url,
                                     'private': False}}
         expected_st_url = 'https://api.github.com/repos/u/r/statuses/asdf'
+        expected_clb_url = 'https://api.github.com/repos/u/r/collaborators/u'
         request_mock.body = json.dumps(body_dict)
         http_mock.return_value = ({'status': '204'}, '')  # Valid collaborator
         obj = trigger.TriggerController()
         obj.post('test_id')
         self.assertEqual(202, resp_mock.status)
         tw = assem_mock.return_value.trigger_workflow
-        tw.assert_called_once_with('test_id', 'asdf', expected_st_url)
+        tw.assert_called_once_with('test_id', 'asdf', expected_st_url,
+                                   expected_clb_url)
 
     def test_trigger_post_on_comment_missing_login(self, pipe_mock,
                                                    assem_mock, resp_mock,
@@ -166,7 +144,7 @@ class TestTriggerController(base.BaseTestCase):
         obj.post('test_id')
         self.assertEqual(202, resp_mock.status)
         tw = assem_mock.return_value.trigger_workflow
-        tw.assert_called_once_with('test_id', '', None)
+        tw.assert_called_once_with('test_id', '', None, None)
 
     def test_trigger_post_on_wrong_github_webhook(self, pipe_mock, assem_mock,
                                                   resp_mock, request_mock):
@@ -179,7 +157,7 @@ class TestTriggerController(base.BaseTestCase):
         obj.post('test_id')
         self.assertEqual(202, resp_mock.status)
         tw = assem_mock.return_value.trigger_workflow
-        tw.assert_called_once_with('test_id', 'asdf', None)
+        tw.assert_called_once_with('test_id', 'asdf', None, None)
 
     def test_trigger_post_on_unknown_git_webhook(self, pipe_mock, assem_mock,
                                                  resp_mock, request_mock):
@@ -188,7 +166,7 @@ class TestTriggerController(base.BaseTestCase):
         obj.post('test_id')
         self.assertEqual(202, resp_mock.status)
         tw = assem_mock.return_value.trigger_workflow
-        tw.assert_called_once_with('test_id', '', None)
+        tw.assert_called_once_with('test_id', '', None, None)
 
     def test_trigger_post_on_non_github_webhook(self, pipe_mock, assem_mock,
                                                 resp_mock, request_mock):
@@ -198,7 +176,7 @@ class TestTriggerController(base.BaseTestCase):
         obj.post('test_id')
         self.assertEqual(202, resp_mock.status)
         tw = assem_mock.return_value.trigger_workflow
-        tw.assert_called_once_with('test_id', '', None)
+        tw.assert_called_once_with('test_id', '', None, None)
 
     def test_trigger_post_pipeline(self, pipe_mock, assem_mock,
                                    resp_mock, request_mock):
@@ -221,6 +199,6 @@ class TestTriggerController(base.BaseTestCase):
         obj.post('test_id')
         self.assertEqual(404, resp_mock.status)
         tw = assem_mock.return_value.trigger_workflow
-        tw.assert_called_once_with('test_id', '', None)
+        tw.assert_called_once_with('test_id', '', None, None)
         tw = pipe_mock.return_value.trigger_workflow
         tw.assert_called_once_with('test_id')

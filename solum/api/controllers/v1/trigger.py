@@ -13,11 +13,9 @@
 
 import json
 
-import httplib2
 from oslo.config import cfg
 import pecan
 from pecan import rest
-import six
 
 from solum.api.handlers import assembly_handler
 from solum.api.handlers import pipeline_handler
@@ -26,19 +24,6 @@ from solum.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
-
-
-def _is_repo_collaborator(api_url, private_repo):
-    if private_repo:
-        # Only collaborators can review and comment on a private repo
-        return True
-    try:
-        resp, _ = httplib2.Http().request(api_url)
-        if resp['status'] == '204':
-            return True
-    except httplib2.HttpLib2Error as ex:
-        LOG.info("Error in verifying collaborator %s" % ex)
-    return False
 
 
 class TriggerController(rest.RestController):
@@ -50,6 +35,7 @@ class TriggerController(rest.RestController):
         """Trigger a new event on Solum."""
         commit_sha = ''
         status_url = None
+        collab_url = None
         try:
             body = json.loads(pecan.request.body)
             if ('sender' in body and 'url' in body['sender'] and
@@ -61,25 +47,17 @@ class TriggerController(rest.RestController):
                     private_repo = body['repository']['private']
                     # An example of collab_url
                     # https://api.github.com/repos/:user/:repo/collaborators{/collaborator}
-                    collab_url = body['repository']['collaborators_url']
-                    api_collab_url = collab_url.format(
-                        **{'/collaborator': '/' + commenter})
-                    err_msg = None
+                    if not private_repo:
+                        # Only verify collaborator for public repos
+                        collab_url = (
+                            body['repository']['collaborators_url'].format(
+                                **{'/collaborator': '/' + commenter}))
                     if (phrase.strip('. ').lower() !=
                             CONF.api.rebuild_phrase.lower()):
                         err_msg = 'Rebuild phrase does not match'
-                    elif (not _is_repo_collaborator(api_collab_url,
-                                                    private_repo)):
-                        err_msg = 'User {0} not allowed to do rebuild'.format(
-                            commenter)
+                        raise exception.RequestForbidden(reason=err_msg)
                     else:
                         commit_sha = body['comment']['commit_id']
-
-                    if err_msg:
-                        LOG.info(err_msg)
-                        pecan.response.status = 403
-                        pecan.response.text = six.text_type(err_msg)
-                        return
                 elif 'pull_request' in body:
                     # Process a GitHub pull request
                     commit_sha = body['pull_request']['head']['sha']
@@ -94,7 +72,8 @@ class TriggerController(rest.RestController):
 
         try:
             handler = assembly_handler.AssemblyHandler(None)
-            handler.trigger_workflow(trigger_id, commit_sha, status_url)
+            handler.trigger_workflow(trigger_id, commit_sha, status_url,
+                                     collab_url)
         except exception.ResourceNotFound:
             handler = pipeline_handler.PipelineHandler(None)
             handler.trigger_workflow(trigger_id)

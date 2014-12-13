@@ -166,12 +166,12 @@ class Handler(object):
             return [build_app, source_uri, name, ctxt.tenant,
                     base_image_id, source_private_key]
 
-    def _send_status(self, test_result, status_url, status_token,
+    def _send_status(self, test_result, status_url, repo_token,
                      pending=False):
-        if status_url and status_token:
+        if status_url and repo_token:
             commit_id = status_url.rstrip('/').split('/')[-1]
             log_url = cfg.CONF.worker.log_url_prefix + commit_id
-            headers = {'Authorization': 'token ' + status_token,
+            headers = {'Authorization': 'token ' + repo_token,
                        'Content-Type': 'application/json'}
             if pending:
                 data = {'state': 'pending',
@@ -192,8 +192,8 @@ class Handler(object):
                                        body=json.dumps(data))
                 if resp['status'] != '201':
                     LOG.debug("Failed to send back status. Error code %s,"
-                              "status_url %s, status_token %s" %
-                              (resp['status'], status_url, status_token))
+                              "status_url %s, repo_token %s" %
+                              (resp['status'], status_url, repo_token))
             except httplib2.HttpLib2Error as ex:
                 LOG.debug("Error in sending status %s" % ex)
         else:
