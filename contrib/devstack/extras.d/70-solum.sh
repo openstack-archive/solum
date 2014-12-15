@@ -22,6 +22,7 @@ if is_service_enabled solum; then
         if is_service_enabled key; then
            create_solum_service_and_endpoint
         fi
+        add_additional_solum_users
     elif [[ "$1" == "stack" && "$2" == "extra" ]]; then
         echo_summary "Initializing Solum"
         init_solum

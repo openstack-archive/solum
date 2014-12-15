@@ -65,6 +65,7 @@ class UploaderBase(object):
         ulog.created_at = now
         ulog.updated_at = now
         ulog.assembly_uuid = self.assembly.uuid
+        ulog.project_id = self.assembly.project_id
         ulog.location = location
         ulog.strategy = self.strategy
         if strategy_info is None:

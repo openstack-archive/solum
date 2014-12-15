@@ -97,7 +97,6 @@ class TestServiceController(base.TestCase):
         uuid = self._create_service()
         updated_data = {"name": "test_service_updated",
                         "description": "A test to create service updated",
-                        "project_id": "project_id updated",
                         "user_id": "user_id updated",
                         "service_type": "mysql updated",
                         "read_only": False}
@@ -111,7 +110,6 @@ class TestServiceController(base.TestCase):
     def test_services_put_not_found(self):
         updated_data = {"name": "test_service_updated",
                         "description": "A test to create service updated",
-                        "project_id": "project_id updated",
                         "user_id": "user_id updated",
                         "service_type": "mysql updated",
                         "read_only": False}

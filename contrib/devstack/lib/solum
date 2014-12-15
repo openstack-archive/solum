@@ -187,6 +187,31 @@ function add_solum_user() {
        --tenant-id $SERVICE_TENANT
 }
 
+function add_additional_solum_users() {
+
+    SOLUM_UPDATE_ROLE=$(openstack role show \
+        solum_assembly_update \
+        | grep " id " | get_field 2)
+
+    ROLE_ID=$(keystone role-create --name solum_user \
+              | grep " id " | get_field 2)
+    for _LETTER in a b c; do
+        local TENANTNAME=solum_tenant_$_LETTER
+        openstack project create \
+            --description "Solum user tenant ${_LETTER^^}" \
+            $TENANTNAME
+
+        local USERNAME=solum_user_$_LETTER
+        openstack user create \
+            --password solum \
+            --project $TENANTNAME \
+            $USERNAME
+
+        openstack role add $SOLUM_UPDATE_ROLE --project $TENANTNAME --user $USERNAME
+        openstack role add $SOLUM_UPDATE_ROLE --project $TENANTNAME --user admin
+    done
+}
+
 #create_solum_cache_dir() - Setup keystone signing folder
 function create_solum_cache_dir() {
     sudo mkdir -p $SOLUM_AUTH_CACHE_DIR

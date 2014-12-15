@@ -23,7 +23,7 @@ class TestService(base.BaseTestCase):
         super(TestService, self).setUp()
         self.db = self.useFixture(utils.Database())
         self.ctx = utils.dummy_context()
-        self.data = [{'project_id': 'test_id',
+        self.data = [{'project_id': 'fake_project_id',
                       'user_id': 'fred',
                       'uuid': '12345678abcdefgh',
                       'name': 'service1',

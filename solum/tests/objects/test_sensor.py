@@ -23,7 +23,7 @@ class TestSensor(base.BaseTestCase):
         self.ctx = utils.dummy_context()
 
         self.data = [{'uuid': 'test-uuid-34dsxD',
-                      'project_id': 'bla',
+                      'project_id': self.ctx.tenant,
                       'user_id': '55f41cf46df74320b9486a35f5d28a11',
                       'name': 'hb',
                       'description': 'A heartbeat sensor',

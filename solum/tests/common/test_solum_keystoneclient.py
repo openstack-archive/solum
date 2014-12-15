@@ -145,7 +145,7 @@ class KeystoneClientTest(base.BaseTestCase):
                               auth_url='http://server.test:5000/v3',
                               endpoint='http://server.test:5000/v3'),
                     mock.call(token='abcd1234',
-                              project_id='test_tenant_id',
+                              project_id='fake_project_id',
                               auth_url='http://server.test:5000/v3',
                               endpoint='http://server.test:5000/v3')]
 

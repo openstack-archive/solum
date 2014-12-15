@@ -22,7 +22,7 @@ class TestInfrastructureStack(base.BaseTestCase):
         self.db = self.useFixture(utils.Database())
         self.ctx = utils.dummy_context()
 
-        self.data = [{'project_id': 'bla',
+        self.data = [{'project_id': self.ctx.tenant,
                       'user_id': 'fred',
                       'uuid': 'ceda0408-c93d-4772-abb2-18f65189d440',
                       'name': 'o1',

@@ -19,8 +19,8 @@ from solum.openstack.common import uuidutils
 
 fakeAuthTokenHeaders = {'X-User-Id': u'773a902f022949619b5c2f32cd89d419',
                         'X-Roles': u'admin, ResellerAdmin, _member_',
-                        'X-Project-Id': u'5588aebbcdc24e17a061595f80574376',
-                        'X-Project-Name': 'test',
+                        'X-Project-Id': u'fake_project_id',
+                        'X-Project-Name': 'fake_project_name',
                         'X-User-Name': 'test',
                         'X-Auth-Token': u'5588aebbcdc24e17a061595f80574376',
                         'X-Forwarded-For': u'10.10.10.10, 11.11.11.11',
@@ -67,7 +67,7 @@ class FakeService(mock.Mock):
         self.__tablename__ = 'service'
         self.__resource__ = 'services'
         self.user_id = 'fake user id'
-        self.project_id = 'fake project id'
+        self.project_id = 'fake_project_id'
         self.uuid = 'test_uuid'
         self.id = 8
         self.name = 'james'
@@ -102,7 +102,7 @@ class FakeSensor(mock.Mock):
         self.__tablename__ = 'sensor'
         self.__resource__ = 'sensors'
         self.user_id = 'test_user_id'
-        self.project_id = 'test_project_id'
+        self.project_id = 'fake_project_id'
         self.uuid = '54d54'
         self.id = 'test_id'
         self.name = 'test_name'
@@ -131,7 +131,7 @@ class FakeExtension(mock.Mock):
         self.__tablename__ = 'extension'
         self.__resource__ = 'extension'
         self.user_id = 'user_id'
-        self.project_id = 'test_id'
+        self.project_id = 'fake_project_id'
         self.uuid = '44du3dx'
         self.documentation = 'http://test_documentation.com'
         self.description = 'test_desc'
@@ -171,7 +171,7 @@ class FakeInfrastructureStack(mock.Mock):
         self.__tablename__ = 'build_farm'
         self.__resource__ = 'build_farms'
         self.user_id = 'user_id'
-        self.project_id = 'test_id'
+        self.project_id = 'fake_project_id'
         self.uuid = 'ceda0408-c93d-4772-abb2-18f65189d440'
         self.description = 'test_desc'
         self.id = 'test_id'
@@ -196,7 +196,7 @@ class FakeAssembly(mock.Mock):
         self.__tablename__ = 'assembly'
         self.__resource__ = 'assemblies'
         self.user_id = 'fake user id'
-        self.project_id = 'fake project id'
+        self.project_id = 'fake_project_id'
         self.plan_uuid = 'fake plan uuid'
         self.uuid = 'test_uuid'
         self.id = 8
@@ -222,7 +222,7 @@ class FakePipeline(mock.Mock):
         self.__tablename__ = 'pipeline'
         self.__resource__ = 'pipelines'
         self.user_id = 'fake user id'
-        self.project_id = 'fake project id'
+        self.project_id = 'fake_project_id'
         self.plan_uuid = 'fake plan uuid'
         self.uuid = 'test_uuid'
         self.id = 8
@@ -247,7 +247,7 @@ class FakePlan(mock.Mock):
         self.__resource__ = 'plans'
         self.raw_content = {'name': 'faker', 'artifacts': []}
         self.user_id = 'fake user id'
-        self.project_id = 'fake project id'
+        self.project_id = 'fake_project_id'
         self.uuid = 'test_uuid'
         self.id = 8
         self.name = 'faker'
@@ -273,7 +273,7 @@ class FakeImage(mock.Mock):
         self.__tablename__ = 'image'
         self.__resource__ = 'images'
         self.user_id = 'fake user id'
-        self.project_id = 'fake project id'
+        self.project_id = 'fake_project_id'
         self.uuid = 'test_uuid'
         self.id = 8
         self.name = 'faker'

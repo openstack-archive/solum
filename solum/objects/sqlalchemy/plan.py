@@ -35,6 +35,9 @@ class Plan(sql.Base, abstract.Plan):
     raw_content = sqlalchemy.Column(sql.YAMLEncodedDict(2048))
     deploy_keys_uri = sqlalchemy.Column(sqlalchemy.String(1024))
 
+    def _non_updatable_fields(self):
+        return set(('uuid', 'id', 'project_id'))
+
     def refined_content(self):
         if self.raw_content and self.uuid:
             self.raw_content['uuid'] = self.uuid
