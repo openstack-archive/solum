@@ -25,6 +25,7 @@ sample_data = {"name": "test_assembly",
                "project_id": "project_id",
                "user_id": "user_id",
                "status": "status",
+               "trigger_uri": "http://localhost:5000",
                "application_uri": "http://localhost:5000"}
 
 plan_sample_data = {"version": "1",
@@ -115,6 +116,17 @@ class TestAssemblyController(base.TestCase):
         sample_data['plan_uri'] = "%s/v1/plans/%s" % (self.client.base_url,
                                                       plan_uuid)
         resp, body = self.client.get('v1/assemblies/%s' % uuid)
+        self.assertEqual(resp.status, 200)
+        json_data = json.loads(body)
+        self._assert_output_expected(json_data, sample_data)
+
+        # Now check that HTTPS is respected. No new assemblies are created.
+        for k in ['plan_uri', 'trigger_uri']:
+            if k in sample_data:
+                sample_data[k] = sample_data[k].replace('http:', 'https:', 1)
+        use_https = {'X-Forwarded-Proto': 'https'}
+        resp, body = self.client.get('v1/assemblies/%s' % uuid,
+                                     headers=use_https)
         self.assertEqual(resp.status, 200)
         json_data = json.loads(body)
         self._assert_output_expected(json_data, sample_data)

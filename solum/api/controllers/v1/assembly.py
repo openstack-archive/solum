@@ -21,6 +21,7 @@ from solum.api.controllers.v1.datamodel import assembly
 import solum.api.controllers.v1.userlog as userlog_controller
 from solum.api.handlers import assembly_handler
 from solum.common import exception
+from solum.common import request
 from solum import objects
 from solum.openstack.common.gettextutils import _
 
@@ -44,6 +45,7 @@ class AssemblyController(rest.RestController):
     @wsme_pecan.wsexpose(assembly.Assembly)
     def get(self):
         """Return this assembly."""
+        request.check_request_for_https()
         handler = assembly_handler.AssemblyHandler(
             pecan.request.security_context)
         return assembly.Assembly.from_db_model(handler.get(self._id),
@@ -109,6 +111,7 @@ class AssembliesController(rest.RestController):
     @wsme_pecan.wsexpose([assembly.Assembly])
     def get_all(self):
         """Return all assemblies, based on the query provided."""
+        request.check_request_for_https()
         handler = assembly_handler.AssemblyHandler(
             pecan.request.security_context)
         return [assembly.Assembly.from_db_model(assm, pecan.request.host_url)
