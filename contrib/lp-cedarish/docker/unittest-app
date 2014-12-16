@@ -25,6 +25,7 @@ DOCKER_REGISTRY=${DOCKER_REGISTRY:-'127.0.0.1:5042'}
 USER_PARAMS=${USER_PARAMS:-null}
 SOLUM_PARAMS=${SOLUM_PARAMS:-null}
 USE_DRONE=${_SYSTEM_USE_DRONE:-null}
+GIT_PRIVATE_KEY=${REPO_DEPLOY_KEYS:-''}
 
 # TLOG, PRUN, ENSURE_LOGFILE, and elapsed defined in app-common
 HERE=$(dirname $0)
@@ -39,8 +40,8 @@ LOG_FILE=$(GET_LOGFILE)
 TLOG ===== Starting Test Script $0 $*
 
 # Check command line arguments
-if [ $# -lt 5 ]; then
-  TLOG Usage: $0 git_url commit_sha tenant git_private_key unit_test_entry_point
+if [ $# -lt 4 ]; then
+  TLOG Usage: $0 git_url commit_sha tenant unit_test_entry_point
   exit 1
 fi
 
@@ -52,8 +53,6 @@ shift
 COMMIT_SHA=$1
 shift
 TENANT=$1
-shift
-GIT_PRIVATE_KEY=$1
 shift
 
 ENTRYPOINT="$@"

@@ -95,7 +95,7 @@ class Handler(object):
         LOG.debug("%s" % message)
 
     @exception.wrap_keystone_exception
-    def _get_environment(self, ctxt, assembly_id):
+    def _get_environment(self, ctxt, source_uri, assembly_id):
         kc = solum_keystoneclient.KeystoneClientV3(ctxt)
         image_url = kc.client.service_catalog.url_for(
             service_type='image',
@@ -115,7 +115,7 @@ class Handler(object):
         user_env['BUILD_ID'] = uuidutils.generate_uuid()
         user_env['SOLUM_TASK_DIR'] = cfg.CONF.worker.task_log_dir
 
-        params_env = self._get_parameter_env(ctxt, assembly_id,
+        params_env = self._get_parameter_env(ctxt, source_uri, assembly_id,
                                              user_env['BUILD_ID'])
         user_env.update(params_env)
         return user_env
@@ -129,8 +129,8 @@ class Handler(object):
 
     def _get_build_command(self, ctxt, stage, source_uri, name,
                            base_image_id, source_format, image_format,
-                           commit_sha, test_cmd, source_creds_ref=None,
-                           artifact_type=None, lp_metadata=None):
+                           commit_sha, test_cmd, artifact_type=None,
+                           lp_metadata=None):
         # map the input formats to script paths.
         # TODO(asalkeld) we need an "auto".
         pathm = {'heroku': 'lp-cedarish',
@@ -144,8 +144,6 @@ class Handler(object):
         build_app_path = os.path.join(self.proj_dir, 'contrib',
                                       pathm.get(source_format, 'lp-cedarish'),
                                       pathm.get(image_format, 'vm-slug'))
-        source_private_key = self._get_private_key(source_creds_ref,
-                                                   source_uri)
 
         if lp_metadata is None:
             lp_metadata = ''
@@ -153,18 +151,16 @@ class Handler(object):
         if artifact_type == 'language_pack':
             build_lp = os.path.join(build_app_path, 'build-lp')
             return [build_lp, source_uri, name, ctxt.tenant,
-                    base_image_id, source_private_key, lp_metadata]
+                    base_image_id, lp_metadata]
 
         if stage == 'unittest':
             build_app = os.path.join(build_app_path, 'unittest-app')
-            return [build_app, source_uri, commit_sha, ctxt.tenant,
-                    source_private_key, test_cmd]
+            return [build_app, source_uri, commit_sha, ctxt.tenant, test_cmd]
         elif stage == 'build':
             build_app = os.path.join(build_app_path, 'build-app')
-            return [build_app, source_uri, name, ctxt.tenant,
-                    base_image_id, source_private_key]
+            return [build_app, source_uri, name, ctxt.tenant, base_image_id]
 
-    def _get_parameter_env(self, ctxt, assembly_id, build_id):
+    def _get_parameter_env(self, ctxt, source_uri, assembly_id, build_id):
         param_env = {}
         if assembly_id is None:
             return param_env
@@ -203,6 +199,9 @@ class Handler(object):
             f.write("#!/bin/bash\n")
             if param_obj.sys_defined_params:
                 for k, v in param_obj.sys_defined_params.items():
+                    if k == 'REPO_DEPLOY_KEYS':
+                        # Pass in deploy key as an environment variable
+                        param_env[k] = self._get_private_key(v, source_uri)
                     f.write("export %s=%s\n" % (k, _sanitize_param(v)))
 
         param_env['USER_PARAMS'] = user_param_file
@@ -211,19 +210,18 @@ class Handler(object):
 
     def build(self, ctxt, build_id, git_info, name, base_image_id,
               source_format, image_format, assembly_id,
-              test_cmd, source_creds_ref=None,
-              artifact_type=None, lp_metadata=None):
+              test_cmd, artifact_type=None, lp_metadata=None):
         if artifact_type == 'language_pack':
             self.build_lp(ctxt, git_info, name, base_image_id,
                           source_format, image_format, test_cmd,
-                          source_creds_ref, artifact_type, lp_metadata)
+                          artifact_type, lp_metadata)
             return
 
         # TODO(datsun180b): This is only temporary, until Mistral becomes our
         # workflow engine.
         if self._run_unittest(ctxt, build_id, git_info, name, base_image_id,
                               source_format, image_format, assembly_id,
-                              test_cmd, source_creds_ref) != 0:
+                              test_cmd) != 0:
             return
 
         update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.BUILDING)
@@ -235,13 +233,13 @@ class Handler(object):
         build_cmd = self._get_build_command(ctxt, 'build', source_uri,
                                             name, base_image_id,
                                             source_format, image_format, '',
-                                            test_cmd, source_creds_ref,
-                                            artifact_type, lp_metadata)
+                                            test_cmd, artifact_type,
+                                            lp_metadata)
         solum.TLS.trace.support_info(build_cmd=' '.join(build_cmd),
                                      assembly_id=assembly_id)
 
         try:
-            user_env = self._get_environment(ctxt, assembly_id)
+            user_env = self._get_environment(ctxt, source_uri, assembly_id)
         except exception.SolumException as env_ex:
             LOG.exception(env_ex)
             job_update_notification(ctxt, build_id, IMAGE_STATES.ERROR,
@@ -303,7 +301,7 @@ class Handler(object):
 
     def _run_unittest(self, ctxt, build_id, git_info, name, base_image_id,
                       source_format, image_format, assembly_id,
-                      test_cmd, source_creds_ref=None):
+                      test_cmd):
         if test_cmd is None:
             LOG.debug("Unit test command is None; skipping unittests.")
             return 0
@@ -319,13 +317,12 @@ class Handler(object):
         command = self._get_build_command(ctxt, 'unittest', git_url, name,
                                           base_image_id,
                                           source_format, image_format,
-                                          commit_sha, test_cmd,
-                                          source_creds_ref)
+                                          commit_sha, test_cmd)
 
         solum.TLS.trace.clear()
         solum.TLS.trace.import_context(ctxt)
 
-        user_env = self._get_environment(ctxt, assembly_id)
+        user_env = self._get_environment(ctxt, git_url, assembly_id)
         log_env = user_env.copy()
         if 'OS_AUTH_TOKEN' in log_env:
             del log_env['OS_AUTH_TOKEN']
@@ -364,31 +361,34 @@ class Handler(object):
 
     def unittest(self, ctxt, build_id, git_info, name, base_image_id,
                  source_format, image_format, assembly_id,
-                 test_cmd, source_creds_ref=None):
+                 test_cmd):
         self._run_unittest(ctxt, build_id, git_info, name, base_image_id,
                            source_format, image_format, assembly_id,
-                           test_cmd, source_creds_ref)
+                           test_cmd)
 
-    def _get_private_key(self, source_creds_ref, source_url):
+    def _get_private_key(self, source_creds, source_url):
         source_private_key = ''
-        if source_creds_ref:
-            cfg.CONF.import_opt('barbican_disabled',
-                                'solum.common.clients',
-                                group='barbican_client')
-            cfg.CONF.import_opt('git_secrets_file',
-                                'solum.common.clients',
-                                group='barbican_client')
-            barbican_disabled = cfg.CONF.barbican_client.barbican_disabled
-            secrets_file = cfg.CONF.barbican_client.git_secrets_file
-            if barbican_disabled:
+        if source_creds:
+            cfg.CONF.import_opt('system_param_store',
+                                'solum.api.handlers.plan_handler',
+                                group='api')
+            store = cfg.CONF.api.system_param_store
+
+            if store == 'database':
+                deploy_keys_str = base64.b64decode(source_creds)
+            elif store == 'barbican':
+                client = clients.OpenStackClients(None).barbican().admin_client
+                secret = client.secrets.get(secret_ref=source_creds)
+                deploy_keys_str = secret.payload
+            elif store == 'local_file':
+                cfg.CONF.import_opt('system_param_file',
+                                    'solum.api.handlers.plan_handler',
+                                    group='api')
+                secrets_file = cfg.CONF.api.system_param_file
                 s = shelve.open(secrets_file)
-                deploy_keys_str = s[str(source_creds_ref)]
+                deploy_keys_str = s[str(source_creds)]
                 deploy_keys_str = base64.b64decode(deploy_keys_str)
                 s.close()
-            else:
-                client = clients.OpenStackClients(None).barbican().admin_client
-                secret = client.secrets.get(secret_ref=source_creds_ref)
-                deploy_keys_str = secret.payload
             deploy_keys = ast.literal_eval(deploy_keys_str)
             for dk in deploy_keys:
                 if source_url == dk['source_url']:
@@ -396,17 +396,17 @@ class Handler(object):
         return source_private_key
 
     def build_lp(self, ctxt, git_info, name, base_image_id,
-                 source_format, image_format, test_cmd, source_creds_ref=None,
-                 artifact_type=None, lp_metadata=None):
+                 source_format, image_format, test_cmd, artifact_type=None,
+                 lp_metadata=None):
         source_uri = git_info['source_url']
         build_cmd = self._get_build_command(ctxt, 'build', source_uri,
                                             name, base_image_id,
                                             source_format, image_format, '',
-                                            test_cmd, source_creds_ref,
-                                            artifact_type, lp_metadata)
+                                            test_cmd, artifact_type,
+                                            lp_metadata)
 
         try:
-            user_env = self._get_environment(ctxt)
+            user_env = self._get_environment(ctxt, source_uri)
         except exception.SolumException as env_ex:
             LOG.exception(env_ex)
 

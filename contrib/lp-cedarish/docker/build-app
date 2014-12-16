@@ -24,6 +24,7 @@ TASKNAME=build
 REUSE_IMAGES_IF_REPO_UNCHANGED=${REUSE_IMAGES_IF_REPO_UNCHANGED:="1"}
 USER_PARAMS=${USER_PARAMS:-null}
 SOLUM_PARAMS=${SOLUM_PARAMS:-null}
+GIT_PRIVATE_KEY=${REPO_DEPLOY_KEYS:-''}
 
 # TLOG, PRUN, etc. defined in common/utils
 HERE=$(dirname $0)
@@ -46,7 +47,7 @@ fi
 
 # Check command line arguments
 if [ $# -lt 4 ]; then
-  TLOG Usage: $0 git_url appname project_id base_image [git_private_key]
+  TLOG Usage: $0 git_url appname project_id base_image
   exit 1
 fi
 
@@ -65,8 +66,6 @@ shift
 TENANT=$1
 shift
 BASE_IMAGE=$1
-shift
-GIT_PRIVATE_KEY=$1
 shift
 
 BASE_DIR=/dev/shm

@@ -94,7 +94,8 @@ class HandlerTest(base.BaseTestCase):
         path = '/tmp/test/' + fake_build_id
         handler = shell_handler.Handler()
 
-        handler._get_parameter_env(self.ctx, 8, fake_build_id)
+        handler._get_parameter_env(self.ctx, 'git://example.com/foo',
+                                   8, fake_build_id)
 
         mock_mkdirs.assert_called_once_with(path, 0o700)
         expected = [mock.call(path + '/user_params', 'w'),
@@ -127,15 +128,14 @@ class HandlerTest(base.BaseTestCase):
         handler.build(self.ctx, build_id=5, git_info=git_info,
                       name='new_app', base_image_id='1-2-3-4',
                       source_format='heroku', image_format='docker',
-                      assembly_id=44, test_cmd=None,
-                      source_creds_ref=None)
+                      assembly_id=44, test_cmd=None)
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
         script = os.path.join(proj_dir, 'contrib/lp-cedarish/docker/build-app')
         mock_popen.assert_called_once_with([script, 'git://example.com/foo',
                                             'new_app', self.ctx.tenant,
-                                            '1-2-3-4', ''], env=test_env,
+                                            '1-2-3-4'], env=test_env,
                                            stdout=-1)
         expected = [mock.call(5, 'BUILDING', 'Starting the image build',
                               None, 44),
@@ -156,11 +156,10 @@ class HandlerTest(base.BaseTestCase):
     @mock.patch('solum.conductor.api.API.update_assembly_status')
     @mock.patch('solum.deployer.api.API.deploy')
     @mock.patch('subprocess.Popen')
-    @mock.patch('solum.common.clients.OpenStackClients.barbican')
     @mock.patch('ast.literal_eval')
     def test_build_with_private_github_repo(
-            self, mock_ast, mock_barbican, mock_popen, mock_deploy,
-            mock_uas, mock_b_update, mock_registry, mock_get_env):
+            self, mock_ast, mock_popen, mock_deploy, mock_uas, mock_b_update,
+            mock_registry, mock_get_env):
         handler = shell_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
         fake_glance_id = str(uuid.uuid4())
@@ -170,8 +169,6 @@ class HandlerTest(base.BaseTestCase):
             'foo\ncreated_image_id=%s' % fake_glance_id, None]
         test_env = mock_environment()
         mock_get_env.return_value = test_env
-        cfg.CONF.set_override('barbican_disabled', False,
-                              group='barbican_client')
         mock_ast.return_value = [{'source_url': 'git://example.com/foo',
                                   'private_key': 'some-private-key'}]
         git_info = mock_git_info()
@@ -179,14 +176,14 @@ class HandlerTest(base.BaseTestCase):
                       git_info=git_info, name='new_app',
                       base_image_id='1-2-3-4', source_format='heroku',
                       image_format='docker', assembly_id=44,
-                      test_cmd=None, source_creds_ref='secret_ref_uri')
+                      test_cmd=None)
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
         script = os.path.join(proj_dir, 'contrib/lp-cedarish/docker/build-app')
         mock_popen.assert_called_once_with([script, 'git://example.com/foo',
                                             'new_app', self.ctx.tenant,
-                                            '1-2-3-4', 'some-private-key'],
+                                            '1-2-3-4'],
                                            env=test_env, stdout=-1)
         expected = [mock.call(5, 'BUILDING', 'Starting the image build',
                               None, 44),
@@ -209,7 +206,7 @@ class HandlerTest(base.BaseTestCase):
     @mock.patch('subprocess.Popen')
     @mock.patch('shelve.open')
     @mock.patch('ast.literal_eval')
-    def test_build_with_private_github_repo_with_barbican_disabled(
+    def test_build_with_private_github_repo_with_shelve(
             self, mock_ast, mock_shelve, mock_popen,
             mock_deploy, mock_uas, mock_b_update, mock_registry, mock_get_env):
         handler = shell_handler.Handler()
@@ -221,10 +218,10 @@ class HandlerTest(base.BaseTestCase):
             'foo\ncreated_image_id=%s' % fake_glance_id, None]
         test_env = mock_environment()
         mock_get_env.return_value = test_env
-        cfg.CONF.set_override('barbican_disabled', True,
-                              group='barbican_client')
-        cfg.CONF.set_override('git_secrets_file', 'some_file_path',
-                              group='barbican_client')
+        cfg.CONF.set_override('system_param_store', 'local_file',
+                              group='api')
+        cfg.CONF.set_override('system_param_file', 'some_file_path',
+                              group='api')
         mock_shelve.return_value = mock.MagicMock()
         base64.b64decode = mock.MagicMock()
         mock_ast.return_value = [{'source_url': 'git://example.com/foo',
@@ -235,7 +232,7 @@ class HandlerTest(base.BaseTestCase):
                       git_info=git_info, name='new_app',
                       base_image_id='1-2-3-4', source_format='heroku',
                       image_format='docker', assembly_id=44,
-                      test_cmd=None, source_creds_ref='secret_ref_uri')
+                      test_cmd=None)
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
@@ -243,7 +240,7 @@ class HandlerTest(base.BaseTestCase):
         mock_shelve.call().__setitem__.assert_called_once()
         mock_popen.assert_called_once_with([script, 'git://example.com/foo',
                                             'new_app', self.ctx.tenant,
-                                            '1-2-3-4', 'some-private-key'],
+                                            '1-2-3-4'],
                                            env=test_env, stdout=-1)
         expected = [mock.call(5, 'BUILDING', 'Starting the image build',
                               None, 44),
@@ -282,7 +279,7 @@ class HandlerTest(base.BaseTestCase):
         script = os.path.join(proj_dir, 'contrib/lp-cedarish/docker/build-app')
         mock_popen.assert_called_once_with([script, 'git://example.com/foo',
                                             'new_app', self.ctx.tenant,
-                                            '1-2-3-4', ''],
+                                            '1-2-3-4'],
                                            env=test_env, stdout=-1)
 
         expected = [mock.call(5, 'BUILDING', 'Starting the image build',
@@ -318,7 +315,7 @@ class HandlerTest(base.BaseTestCase):
         script = os.path.join(proj_dir, 'contrib/lp-cedarish/docker/build-app')
         mock_popen.assert_called_once_with([script, 'git://example.com/foo',
                                             'new_app', self.ctx.tenant,
-                                            '1-2-3-4', ''],
+                                            '1-2-3-4'],
                                            env=test_env, stdout=-1)
 
         expected = [mock.call(5, 'BUILDING', 'Starting the image build',
@@ -347,16 +344,15 @@ class HandlerTest(base.BaseTestCase):
         handler.unittest(self.ctx, build_id=5, name='new_app',
                          base_image_id='1-2-3-4', source_format='chef',
                          image_format='docker', assembly_id=fake_assembly.id,
-                         git_info=git_info, test_cmd='tox',
-                         source_creds_ref=None)
+                         git_info=git_info, test_cmd='tox')
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
         script = os.path.join(proj_dir,
                               'contrib/lp-chef/docker/unittest-app')
         mock_popen.assert_called_once_with([script, 'git://example.com/foo',
-                                            '', self.ctx.tenant, '',
-                                            'tox'], env=test_env, stdout=-1)
+                                            '', self.ctx.tenant, 'tox'],
+                                           env=test_env, stdout=-1)
         expected = [mock.call(self.ctx, 8, 'UNIT_TESTING')]
 
         self.assertEqual(expected, mock_a_update.call_args_list)
@@ -378,16 +374,15 @@ class HandlerTest(base.BaseTestCase):
                          assembly_id=fake_assembly.id,
                          base_image_id='1-2-3-4', source_format='chef',
                          image_format='docker',
-                         git_info=git_info, test_cmd='tox',
-                         source_creds_ref=None)
+                         git_info=git_info, test_cmd='tox')
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
         script = os.path.join(proj_dir,
                               'contrib/lp-chef/docker/unittest-app')
         mock_popen.assert_called_once_with([script, 'git://example.com/foo',
-                                            '', self.ctx.tenant, '',
-                                            'tox'], env=test_env, stdout=-1)
+                                            '', self.ctx.tenant, 'tox'],
+                                           env=test_env, stdout=-1)
         expected = [mock.call(self.ctx, 8, 'UNIT_TESTING'),
                     mock.call(self.ctx, 8, 'UNIT_TESTING_FAILED')]
 
@@ -416,8 +411,8 @@ class HandlerTest(base.BaseTestCase):
         handler.build(self.ctx, build_id=5, git_info=git_info, name='new_app',
                       base_image_id='1-2-3-4', source_format='heroku',
                       image_format='docker', assembly_id=44,
-                      test_cmd='faketests', source_creds_ref=None,
-                      artifact_type=None, lp_metadata=None)
+                      test_cmd='faketests', artifact_type=None,
+                      lp_metadata=None)
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
@@ -427,10 +422,10 @@ class HandlerTest(base.BaseTestCase):
 
         expected = [
             mock.call([u_script, 'git://example.com/foo', '',
-                       self.ctx.tenant, '', 'faketests'], env=test_env,
+                       self.ctx.tenant, 'faketests'], env=test_env,
                       stdout=-1),
             mock.call([b_script, 'git://example.com/foo', 'new_app',
-                       self.ctx.tenant, '1-2-3-4', ''], env=test_env,
+                       self.ctx.tenant, '1-2-3-4'], env=test_env,
                       stdout=-1)]
         self.assertEqual(expected, mock_popen.call_args_list)
 
@@ -463,7 +458,7 @@ class HandlerTest(base.BaseTestCase):
         handler.build(self.ctx, build_id=5, git_info=git_info, name='new_app',
                       base_image_id='1-2-3-4', source_format='chef',
                       image_format='docker', assembly_id=44,
-                      test_cmd='faketests', source_creds_ref=None)
+                      test_cmd='faketests')
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
@@ -472,7 +467,7 @@ class HandlerTest(base.BaseTestCase):
 
         expected = [
             mock.call([u_script, 'git://example.com/foo', '',
-                       self.ctx.tenant, '', 'faketests'], env=test_env,
+                       self.ctx.tenant, 'faketests'], env=test_env,
                       stdout=-1)]
         self.assertEqual(expected, mock_popen.call_args_list)
 
@@ -549,7 +544,7 @@ class TestBuildCommand(base.BaseTestCase):
                                          self.base_image_id,
                                          self.source_format,
                                          self.image_format, '', '',
-                                         self.artifact_type, '',
+                                         self.artifact_type,
                                          self.lp_metadata)
         self.assertIn(self.expect_b, cmd[0])
         self.assertEqual('http://example.com/a.git', cmd[1])
@@ -570,14 +565,13 @@ class TestBuildCommand(base.BaseTestCase):
                                          self.base_image_id,
                                          self.source_format,
                                          self.image_format, 'asdf', 'pep8',
-                                         self.artifact_type, '',
+                                         self.artifact_type,
                                          self.lp_metadata)
         self.assertIn(self.expect_u, cmd[0])
         self.assertEqual('http://example.com/a.git', cmd[1])
         self.assertEqual('asdf', cmd[2])
         self.assertEqual(ctx.tenant, cmd[3])
-        self.assertEqual('', cmd[4])
-        self.assertEqual('pep8', cmd[5])
+        self.assertEqual('pep8', cmd[4])
 
 
 class TestLanguagePackBuildCommand(base.BaseTestCase):
@@ -591,7 +585,7 @@ class TestLanguagePackBuildCommand(base.BaseTestCase):
                                          'auto',
                                          'heroku',
                                          'docker', '', '',
-                                         '', 'language_pack',
+                                         'language_pack',
                                          'language_pack_metadata')
         self.assertIn('lp-cedarish/docker/build-lp', cmd[0])
         self.assertEqual('http://example.com/a.git', cmd[1])

@@ -4,6 +4,7 @@
 SCRIPT_START_TIME=`date +'%s'`
 LOG=${SOLUM_BUILD_LOG:="/opt/stack/logs/solum_build.log"}
 REUSE_IMAGES_IF_REPO_UNCHANGED=${REUSE_IMAGES_IF_REPO_UNCHANGED:="1"}
+GIT_PRIVATE_KEY=${REPO_DEPLOY_KEYS:-''}
 
 # TLOG, PRUN, etc. defined in common/utils
 HERE=$(dirname $0)
@@ -23,8 +24,8 @@ if [[ -z $OS_AUTH_TOKEN ]]; then
 fi
 
 # Check command line arguments
-if [ $# -lt 6 ]; then
-  TLOG Usage: $0 git_url lpname project_id [base_image] [git_private_key] lp_metadata
+if [ $# -lt 5 ]; then
+  TLOG Usage: $0 git_url lpname project_id [base_image] lp_metadata
   exit 1
 fi
 
@@ -43,8 +44,6 @@ shift
 TENANT=$1
 shift
 BASE_IMAGE=$1
-shift
-GIT_PRIVATE_KEY=$1
 shift
 LP_METADATA=$1
 shift
