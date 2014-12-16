@@ -14,4 +14,5 @@ HERE=$(dirname $0)
 CHEF_DOCKERFILE=$HERE/../../../examples/language-packs/chef
 
 echo Creating chef docker image
-sudo docker build -t $DOCKER_REGISTRY/chef $CHEF_DOCKERFILE
+sudo docker build -t solum/chef $CHEF_DOCKERFILE
+docker tag solum/chef $DOCKER_REGISTRY/chef

@@ -48,7 +48,7 @@ PRUN silent sudo docker ps
 [[ $? != 0 ]] && TLOG Cannot talk to docker. && exit 1
 
 # Make sure the chef LP exists; build if it doesn't.
-docker inspect $DOCKER_REGISTRY/chef || docker build -t $DOCKER_REGISTRY/chef $HERE/../../../examples/language-packs/chef/
+docker inspect solum/chef || docker build -t solum/chef $HERE/../../../examples/language-packs/chef/
 
 GIT=$1
 shift
@@ -111,7 +111,7 @@ if [[ $USE_DRONE != null && $(which drone) ]]; then
   if [[ ! -e $APP_DIR/code/.drone.yml ]]; then
     TLOG "===>" Creating .drone.yml
     cat << EOF > $APP_DIR/code/.drone.yml
-image: $DOCKER_REGISTRY/chef
+image: solum/chef
 script:
 - $DRONE_ENTRYPOINT
 EOF
@@ -123,7 +123,7 @@ else
   TLOG Creating Dockerfile
   cat << EOF > $APP_DIR/Dockerfile
 # SOLUM APP BUILDER
-FROM $DOCKER_REGISTRY/chef
+FROM solum/chef
 ADD code /code
 ADD code/id_rsa /root/.ssh/id_rsa
 RUN chmod 0600 /root/.ssh/id_rsa
