@@ -25,7 +25,7 @@ class AssemblyList(list, base.CrudListMixin):
 
 
 class States(object):
-    PENDING = 'PENDING'
+    QUEUED = 'QUEUED'
     UNIT_TESTING = 'UNIT_TESTING'
     UNIT_TESTING_FAILED = 'UNIT_TESTING_FAILED'
     BUILDING = 'BUILDING'

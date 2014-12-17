@@ -73,10 +73,6 @@ class HandlerTest(base.BaseTestCase):
         expected = [
             mock.call(status_url, 'POST',
                       headers=test_shell.mock_request_hdr(repo_token),
-                      body=test_shell.mock_req_pending_body(
-                          'https://log.com/commit/SHA')),
-            mock.call(status_url, 'POST',
-                      headers=test_shell.mock_request_hdr(repo_token),
                       body=test_shell.mock_req_success_body(
                           'https://log.com/commit/SHA'))]
 
@@ -125,10 +121,6 @@ class HandlerTest(base.BaseTestCase):
                       lp_metadata=None)
 
         expected = [
-            mock.call(status_url, 'POST',
-                      headers=test_shell.mock_request_hdr(repo_token),
-                      body=test_shell.mock_req_pending_body(
-                          'https://log.com/commit/SHA')),
             mock.call(status_url, 'POST',
                       headers=test_shell.mock_request_hdr(repo_token),
                       body=test_shell.mock_req_failure_body(

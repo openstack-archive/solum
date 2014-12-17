@@ -14,12 +14,12 @@
 
 import uuid
 
-import httplib2
 from oslo.config import cfg
 
 from solum.api.handlers import handler
 from solum.common import context
 from solum.common import exception
+from solum.common import repo_utils
 from solum.common import solum_keystoneclient
 from solum.deployer import api as deploy_api
 from solum import objects
@@ -64,28 +64,6 @@ class AssemblyHandler(handler.Handler):
         kc = solum_keystoneclient.KeystoneClientV3(cntx)
         return kc.context
 
-    def _verify_artifact(self, artifact, collab_url):
-        # TODO(james_li): verify if the artifact is the one that gets triggered
-        if collab_url is None:
-            return True
-
-        repo_token = artifact.get('repo_token')
-        if repo_token is None:
-            return False
-
-        headers = {'Authorization': 'token ' + repo_token}
-        try:
-            resp, _ = httplib2.Http().request(collab_url, headers=headers)
-            if resp['status'] == '204':
-                return True
-            elif resp['status'] == '404':
-                raise exception.RequestForbidden(
-                    reason="User %s not allowed to do rebuild" %
-                           collab_url.split('/')[-1])
-        except httplib2.HttpLib2Error as ex:
-            LOG.info("Error in verifying collaborator %s" % ex)
-        return False
-
     def trigger_workflow(self, trigger_id, commit_sha='',
                          status_url=None, collab_url=None):
         """Get trigger by trigger id and start git workflow associated."""
@@ -105,7 +83,7 @@ class AssemblyHandler(handler.Handler):
 
         artifacts = plan_obj.raw_content.get('artifacts', [])
         for arti in artifacts:
-            if self._verify_artifact(arti, collab_url):
+            if repo_utils.verify_artifact(arti, collab_url):
                 self._build_artifact(assem=db_obj, artifact=arti,
                                      commit_sha=commit_sha,
                                      status_url=status_url,
@@ -147,6 +125,7 @@ class AssemblyHandler(handler.Handler):
         trust_context = ksc.create_trust_context()
         db_obj.trust_id = trust_context.trust_id
 
+        db_obj.status = ASSEMBLY_STATES.QUEUED
         db_obj.create(self.context)
 
         plan_obj = objects.registry.Plan.get_by_id(self.context,
@@ -184,6 +163,9 @@ class AssemblyHandler(handler.Handler):
             'repo_token': repo_token,
             'status_url': status_url
         }
+
+        if test_cmd:
+            repo_utils.send_status(0, status_url, repo_token, pending=True)
 
         api.API(context=self.context).perform_action(
             verb=verb,

@@ -16,17 +16,16 @@
 
 import ast
 import base64
-import json
 import os
 import shelve
 import subprocess
 
-import httplib2
 from oslo.config import cfg
 
 import solum
 from solum.common import clients
 from solum.common import exception
+from solum.common import repo_utils
 from solum.common import solum_keystoneclient
 from solum.conductor import api as conductor_api
 from solum.deployer import api as deployer_api
@@ -45,7 +44,6 @@ IMAGE_STATES = image.States
 
 cfg.CONF.import_opt('task_log_dir', 'solum.worker.config', group='worker')
 cfg.CONF.import_opt('proj_dir', 'solum.worker.config', group='worker')
-cfg.CONF.import_opt('log_url_prefix', 'solum.worker.config', group='worker')
 cfg.CONF.import_opt('param_file_path', 'solum.worker.config', group='worker')
 cfg.CONF.import_opt('log_upload_strategy', 'solum.worker.config',
                     group='worker')
@@ -165,39 +163,6 @@ class Handler(object):
             build_app = os.path.join(build_app_path, 'build-app')
             return [build_app, source_uri, name, ctxt.tenant,
                     base_image_id, source_private_key]
-
-    def _send_status(self, test_result, status_url, repo_token,
-                     pending=False):
-        if status_url and repo_token:
-            commit_id = status_url.rstrip('/').split('/')[-1]
-            log_url = cfg.CONF.worker.log_url_prefix + commit_id
-            headers = {'Authorization': 'token ' + repo_token,
-                       'Content-Type': 'application/json'}
-            if pending:
-                data = {'state': 'pending',
-                        'description': 'Solum says: Testing in progress',
-                        'target_url': log_url}
-            elif test_result == 0:
-                data = {'state': 'success',
-                        'description': 'Solum says: Tests passed',
-                        'target_url': log_url}
-            else:
-                data = {'state': 'failure',
-                        'description': 'Solum says: Tests failed',
-                        'target_url': log_url}
-
-            try:
-                http = httplib2.Http()
-                resp, _ = http.request(status_url, 'POST', headers=headers,
-                                       body=json.dumps(data))
-                if resp['status'] != '201':
-                    LOG.debug("Failed to send back status. Error code %s,"
-                              "status_url %s, repo_token %s" %
-                              (resp['status'], status_url, repo_token))
-            except httplib2.HttpLib2Error as ex:
-                LOG.debug("Error in sending status %s" % ex)
-        else:
-            LOG.debug("No url or token available to send back status")
 
     def _get_parameter_env(self, ctxt, assembly_id, build_id):
         param_env = {}
@@ -344,6 +309,8 @@ class Handler(object):
             return 0
 
         commit_sha = git_info.get('commit_sha', '')
+        status_url = git_info.get('status_url')
+        repo_token = git_info.get('repo_token')
 
         LOG.debug("Running unittests.")
         update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.UNIT_TESTING)
@@ -390,6 +357,8 @@ class Handler(object):
         elif returncode < 0:
             LOG.error("Error running unit tests.")
             update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.ERROR)
+
+        repo_utils.send_status(returncode, status_url, repo_token)
 
         return returncode
 

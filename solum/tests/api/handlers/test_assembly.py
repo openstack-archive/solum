@@ -16,6 +16,7 @@ import mock
 
 from solum.api.handlers import assembly_handler
 from solum.common import exception
+from solum.common import repo_utils
 from solum.objects import assembly
 from solum.tests import base
 from solum.tests import fakes
@@ -251,8 +252,8 @@ class TestAssemblyHandler(base.BaseTestCase):
                     "content": {"href": "https://github.com/some/project"},
                     "language_pack": "auto",
                     "repo_token": "abcd"}
-        handler = assembly_handler.AssemblyHandler(self.ctx)
         http_mock.return_value = ({'status': '404'}, '')  # Not a collaborator
         collab_url = 'https://api.github.com/repos/u/r/collaborators/foo'
-        self.assertRaises(exception.RequestForbidden, handler._verify_artifact,
+        self.assertRaises(exception.RequestForbidden,
+                          repo_utils.verify_artifact,
                           artifact, collab_url)

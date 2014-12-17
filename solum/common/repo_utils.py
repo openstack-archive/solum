@@ -1,0 +1,82 @@
+# Copyright 2014 - Rackspace Hosting
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
+import json
+
+import httplib2
+from oslo.config import cfg
+
+from solum.common import exception
+from solum.openstack.common import log as logging
+
+
+LOG = logging.getLogger(__name__)
+
+cfg.CONF.import_opt('log_url_prefix', 'solum.worker.config', group='worker')
+
+
+def send_status(test_result, status_url, repo_token, pending=False):
+    if status_url and repo_token:
+        commit_id = status_url.rstrip('/').split('/')[-1]
+        log_url = cfg.CONF.worker.log_url_prefix + commit_id
+        headers = {'Authorization': 'token ' + repo_token,
+                   'Content-Type': 'application/json'}
+        if pending:
+            data = {'state': 'pending',
+                    'description': 'Solum says: Testing in progress',
+                    'target_url': log_url}
+        elif test_result == 0:
+            data = {'state': 'success',
+                    'description': 'Solum says: Tests passed',
+                    'target_url': log_url}
+        else:
+            data = {'state': 'failure',
+                    'description': 'Solum says: Tests failed',
+                    'target_url': log_url}
+
+        try:
+            http = httplib2.Http()
+            resp, _ = http.request(status_url, 'POST', headers=headers,
+                                   body=json.dumps(data))
+            if resp['status'] != '201':
+                LOG.debug("Failed to send back status. Error code %s,"
+                          "status_url %s, repo_token %s" %
+                          (resp['status'], status_url, repo_token))
+        except httplib2.HttpLib2Error as ex:
+            LOG.debug("Error in sending status %s" % ex)
+    else:
+        LOG.debug("No url or token available to send back status")
+
+
+def verify_artifact(artifact, collab_url):
+    # TODO(james_li): verify if the artifact is the one that gets triggered
+    if collab_url is None:
+        return True
+
+    repo_token = artifact.get('repo_token')
+    if repo_token is None:
+        return False
+
+    headers = {'Authorization': 'token ' + repo_token}
+    try:
+        resp, _ = httplib2.Http().request(collab_url, headers=headers)
+        if resp['status'] == '204':
+            return True
+        elif resp['status'] == '404':
+            raise exception.RequestForbidden(
+                reason="User %s not allowed to do rebuild" %
+                       collab_url.split('/')[-1])
+    except httplib2.HttpLib2Error as ex:
+        LOG.info("Error in verifying collaborator %s" % ex)
+    return False

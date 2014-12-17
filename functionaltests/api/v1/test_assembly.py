@@ -24,7 +24,7 @@ sample_data = {"name": "test_assembly",
                "description": "A test to create assembly",
                "project_id": "project_id",
                "user_id": "user_id",
-               "status": "status",
+               "status": "QUEUED",
                "trigger_uri": "http://localhost:5000",
                "application_uri": "http://localhost:5000"}
 
