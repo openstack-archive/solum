@@ -96,6 +96,7 @@ class TestLanguagePackController(base.TestCase):
         self.assertEqual(resp.status, 200)
         filtered = [pl for pl in data if pl['uuid'] == uuid]
         self.assertEqual(filtered[0]['uuid'], uuid)
+        self._delete_language_pack(uuid)
 
     def test_language_packs_create(self):
         sample_json = json.dumps(sample_data)
