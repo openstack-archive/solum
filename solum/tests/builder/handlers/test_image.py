@@ -34,6 +34,17 @@ class TestImageHandler(base.BaseTestCase):
         mock_registry.Image.get_by_uuid.assert_called_once_with(
             self.ctx, 'test_id')
 
+    def test_image_delete(self, mock_registry):
+        fi = fakes.FakeImage()
+        mock_registry.Image.get_by_uuid.return_value = fi
+        mock_registry.Image.destroy.return_value = {}
+        handler = image_handler.ImageHandler(self.ctx)
+        res = handler.delete('test_id')
+        self.assertIsNotNone(res)
+        mock_registry.Image.get_by_uuid.assert_called_once_with(
+            self.ctx, 'test_id')
+        fi.destroy.assert_called_once_with(self.ctx)
+
     @mock.patch('solum.builder.handlers.image_handler.'
                 'ImageHandler._start_build')
     def test_image_create(self, mock_build, mock_registry):

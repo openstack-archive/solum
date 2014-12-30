@@ -192,3 +192,4 @@ class TestLanguagePackController(base.TestCase):
         json_data = json.loads(body)
         self.assertEqual(json_data["state"], "PENDING")
         self.assertEqual(json_data["name"], "test_language_pack")
+        self.builderclient.delete('v1/images/%s' % json_data["uuid"])

@@ -85,6 +85,14 @@ class ImageController(rest.RestController):
         host_url = pecan.request.host_url
         return Image.from_db_model(handler.get(self._id), host_url)
 
+    @exception.wrap_wsme_controller_exception
+    @wsme_pecan.wsexpose(status_code=204)
+    def delete(self):
+        """Delete this image."""
+        handler = image_handler.ImageHandler(
+            pecan.request.security_context)
+        return handler.delete(self._id)
+
 
 class ImagesController(rest.RestController):
     """Manages operations on the images collection."""
