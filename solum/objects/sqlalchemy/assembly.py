@@ -69,7 +69,7 @@ class Assembly(sql.Base, abstract.Assembly):
 
     @property
     def _extra_keys(self):
-        return ['plan_uuid']
+        return ['plan_uuid', 'created_at', 'updated_at']
 
     @property
     def components(self):
@@ -97,4 +97,6 @@ class AssemblyList(abstract.AssemblyList):
 
     @classmethod
     def get_all(cls, context):
-        return AssemblyList(sql.model_query(context, Assembly))
+        mq = sql.model_query(context, Assembly).order_by(
+            'updated_at desc', 'created_at desc')
+        return AssemblyList(mq)

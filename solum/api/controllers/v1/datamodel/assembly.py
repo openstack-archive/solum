@@ -12,6 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import datetime
+
 from wsme import types as wtypes
 
 from solum.api.controllers import common_types
@@ -56,6 +58,12 @@ class Assembly(api_types.Base):
     application_uri = common_types.Uri
     """The uri of the deployed application."""
 
+    updated_at = datetime.datetime
+    """The last time a change was made to the assembly's status."""
+
+    created_at = datetime.datetime
+    """The time the assembly initially created."""
+
     @classmethod
     def from_db_model(cls, m, host_url):
         obj = super(Assembly, cls).from_db_model(m, host_url)
@@ -65,6 +73,7 @@ class Assembly(api_types.Base):
 
     @classmethod
     def sample(cls):
+        now = datetime.datetime.utcnow()
         return cls(uri='http://example.com/v1/assemblies/x4',
                    name='database',
                    type='assembly',
@@ -76,4 +85,6 @@ class Assembly(api_types.Base):
                    trigger_uri='http://example.com/v1/triggers/1abc234',
                    components=[],
                    operations=[],
+                   created_at=now,
+                   updated_at=now,
                    sensors=[])
