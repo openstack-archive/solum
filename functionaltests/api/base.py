@@ -70,8 +70,7 @@ CONF.register_opts(SolumGroup, group=solum_group.name)
 class SolumClient(rest_client.RestClient):
 
     def __init__(self, auth_provider, service='application_deployment'):
-        super(SolumClient, self).__init__(auth_provider)
-        self.service = service
+        super(SolumClient, self).__init__(auth_provider, service)
         self.endpoint_url = 'publicURL'
         self.created_assemblies = []
         self.created_plans = []
