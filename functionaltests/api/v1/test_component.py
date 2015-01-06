@@ -20,7 +20,7 @@ from tempest import exceptions as tempest_exceptions
 
 from functionaltests.api import base
 
-sample_data = {'name': 'test_service',
+sample_data = {'name': 'test_component',
                'description': 'desc'}
 
 assembly_sample_data = {'name': 'test_assembly',
@@ -48,7 +48,7 @@ class TestComponentController(base.TestCase):
         self.assertIsNotNone(body_data['project_id'])
         self.assertIsNotNone(body_data['user_id'])
 
-    def _delete_component(self, uuid, assembly_uuid, plan_uuid):
+    def _delete_component(self, uuid):
         resp, body = self.client.delete('v1/components/%s' % uuid)
         self.assertEqual(resp.status, 204)
 
@@ -69,10 +69,14 @@ class TestComponentController(base.TestCase):
         return uuid, assembly_uuid, plan_uuid
 
     def test_components_get_all(self):
+        uuid, assembly_uuid, plan_uuid = self._create_component()
         resp, body = self.client.get('v1/components')
         data = json.loads(body)
         self.assertEqual(resp.status, 200)
-        self.assertEqual(data, [])
+        filtered = [com for com in data if com['uuid'] == uuid]
+        self.assertEqual(len(filtered), 1)
+        self.assertEqual(filtered[0]['uuid'], uuid)
+        self._delete_component(uuid)
 
     def test_components_create(self):
         plan_resp = self.client.create_plan()
@@ -90,7 +94,7 @@ class TestComponentController(base.TestCase):
         self.assertEqual(resp.status, 201)
         json_data = json.loads(body)
         self._assert_output_expected(json_data, sample_data)
-        self._delete_component(json_data['uuid'], assembly_uuid, plan_uuid)
+        self._delete_component(json_data['uuid'])
 
     def test_components_create_none(self):
         self.assertRaises(tempest_exceptions.BadRequest,
@@ -104,7 +108,7 @@ class TestComponentController(base.TestCase):
         self.assertEqual(resp.status, 200)
         json_data = json.loads(body)
         self._assert_output_expected(json_data, sample_data)
-        self._delete_component(uuid, assembly_uuid, plan_uuid)
+        self._delete_component(uuid)
 
     def test_components_get_not_found(self):
         self.assertRaises(tempest_exceptions.NotFound,
@@ -122,7 +126,7 @@ class TestComponentController(base.TestCase):
         self.assertEqual(resp.status, 200)
         json_data = json.loads(body)
         self._assert_output_expected(json_data, updated_data)
-        self._delete_component(uuid, assembly_uuid, plan_uuid)
+        self._delete_component(uuid)
 
     def test_components_put_not_found(self):
         updated_data = {'name': 'test_service_updated',
