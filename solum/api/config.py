@@ -15,13 +15,16 @@
 # under the License.
 
 from solum.api import auth
+from solum.api import release
 
 # Pecan Application Configurations
 app = {
     'root': 'solum.api.controllers.root.RootController',
     'modules': ['solum.api'],
     'debug': False,
-    'hooks': [auth.AuthInformationHook()]
+    'hooks': [auth.AuthInformationHook(),
+              release.ReleaseReporter(),
+              ]
 }
 
 # Custom Configurations must be in Python dictionary format::
