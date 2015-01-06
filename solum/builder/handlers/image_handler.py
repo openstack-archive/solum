@@ -44,6 +44,11 @@ class ImageHandler(handler.Handler):
         self._start_build(db_obj, lp_metadata)
         return db_obj
 
+    def delete(self, uuid):
+        """Delete an image."""
+        db_obj = objects.registry.Image.get_by_uuid(self.context, uuid)
+        return db_obj.destroy(self.context)
+
     def _start_build(self, image, lp_metadata):
         git_info = {
             'source_url': image.source_uri,
