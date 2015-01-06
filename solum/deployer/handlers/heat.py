@@ -72,11 +72,11 @@ class Handler(object):
                         assembly.uuid])
 
     def destroy(self, ctxt, assem_id):
-        osc = clients.OpenStackClients(ctxt)
         assem = objects.registry.Assembly.get_by_id(ctxt, assem_id)
-        stack_id = self._find_id_if_stack_exists(osc, assem)
+        stack_id = self._find_id_if_stack_exists(assem)
 
         if stack_id is not None:
+            osc = clients.OpenStackClients(ctxt)
             osc.heat().stacks.delete(stack_id)
 
             wait_interval = cfg.CONF.deployer.wait_interval
@@ -120,7 +120,7 @@ class Handler(object):
 
         stack_name = self._get_stack_name(assem)
 
-        stack_id = self._find_id_if_stack_exists(osc, assem)
+        stack_id = self._find_id_if_stack_exists(assem)
 
         if stack_id is not None:
             osc.heat().stacks.update(stack_id,
@@ -183,7 +183,7 @@ class Handler(object):
             return heat_output._info['outputs'][1]['output_value']
         return None
 
-    def _find_id_if_stack_exists(self, osc, assem):
+    def _find_id_if_stack_exists(self, assem):
         if assem.heat_stack_component is not None:
             return assem.heat_stack_component.heat_stack_id
         return None

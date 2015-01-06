@@ -183,13 +183,12 @@ class HandlerTest(base.BaseTestCase):
         host_url = handler._parse_server_url(heat_output)
         self.assertEqual(host_url, "http://192.168.78.21:5000")
 
-    @mock.patch('solum.common.clients.OpenStackClients')
-    def test_find_id_if_stack_exists(self, mock_clients):
+    def test_find_id_if_stack_exists(self):
         handler = heat_handler.Handler()
         assem = mock.MagicMock
         assem.heat_stack_component = mock.MagicMock
         assem.heat_stack_component.heat_stack_id = '123'
-        id = handler._find_id_if_stack_exists(mock_clients, assem)
+        id = handler._find_id_if_stack_exists(assem)
         self.assertEqual(id, '123')
 
     @mock.patch('solum.objects.registry')
