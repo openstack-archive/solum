@@ -67,8 +67,8 @@ class HandlerTest(base.BaseTestCase):
         handler.build(self.ctx, build_id=5, git_info=git_info, name='new_app',
                       base_image_id='1-2-3-4', source_format='chef',
                       image_format='docker', assembly_id=44,
-                      test_cmd='faketests', source_creds_ref=None,
-                      artifact_type=None, lp_metadata=None)
+                      test_cmd='faketests', artifact_type=None,
+                      lp_metadata=None)
 
         expected = [
             mock.call(status_url, 'POST',
@@ -85,7 +85,7 @@ class HandlerTest(base.BaseTestCase):
 
         expected = [
             mock.call([u_script, 'git://example.com/foo', '',
-                       self.ctx.tenant, '', 'faketests'], env=test_env,
+                       self.ctx.tenant, 'faketests'], env=test_env,
                       stdout=-1)]
         self.assertEqual(expected, mock_popen.call_args_list)
 
@@ -117,8 +117,7 @@ class HandlerTest(base.BaseTestCase):
                       name='new_app', base_image_id='1-2-3-4',
                       source_format='chef', image_format='docker',
                       assembly_id=44, test_cmd='faketests',
-                      artifact_type=None, source_creds_ref=None,
-                      lp_metadata=None)
+                      artifact_type=None, lp_metadata=None)
 
         expected = [
             mock.call(status_url, 'POST',
@@ -134,7 +133,7 @@ class HandlerTest(base.BaseTestCase):
 
         expected = [
             mock.call([u_script, 'git://example.com/foo', '',
-                       self.ctx.tenant, '', 'faketests'], env=test_env,
+                       self.ctx.tenant, 'faketests'], env=test_env,
                       stdout=-1)]
         self.assertEqual(expected, mock_popen.call_args_list)
 

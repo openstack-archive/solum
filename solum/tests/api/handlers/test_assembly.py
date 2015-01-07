@@ -102,7 +102,7 @@ class TestAssemblyHandler(base.BaseTestCase):
             build_id=8, name='nodeus', assembly_id=8,
             git_info=git_info, test_cmd=None,
             base_image_id='auto', source_format='heroku',
-            source_creds_ref=None, image_format='qcow2')
+            image_format='qcow2')
 
         mock_kc.return_value.create_trust_context.assert_called_once_with()
 
@@ -180,7 +180,7 @@ class TestAssemblyHandler(base.BaseTestCase):
             build_id=8, name='nodeus', assembly_id=8,
             git_info=git_info,
             test_cmd=None, base_image_id='auto', source_format='heroku',
-            source_creds_ref='secret_ref_uri', image_format='qcow2')
+            image_format='qcow2')
 
         mock_kc.return_value.create_trust_context.assert_called_once_with()
 
@@ -218,8 +218,7 @@ class TestAssemblyHandler(base.BaseTestCase):
             assem=db_obj,
             artifact=artifacts[0],
             commit_sha='',
-            status_url=None,
-            deploy_keys_ref=plan_obj.deploy_keys_uri)
+            status_url=None)
         handler._context_from_trust_id.assert_called_once_with('trust_worthy')
         mock_registry.Assembly.get_by_trigger_id.assert_called_once_with(
             None, trigger_id)

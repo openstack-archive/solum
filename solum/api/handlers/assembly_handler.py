@@ -86,8 +86,7 @@ class AssemblyHandler(handler.Handler):
             if repo_utils.verify_artifact(arti, collab_url):
                 self._build_artifact(assem=db_obj, artifact=arti,
                                      commit_sha=commit_sha,
-                                     status_url=status_url,
-                                     deploy_keys_ref=plan_obj.deploy_keys_uri)
+                                     status_url=status_url)
 
     def update(self, id, data):
         """Modify a resource."""
@@ -133,12 +132,11 @@ class AssemblyHandler(handler.Handler):
 
         artifacts = plan_obj.raw_content.get('artifacts', [])
         for arti in artifacts:
-            self._build_artifact(assem=db_obj, artifact=arti,
-                                 deploy_keys_ref=plan_obj.deploy_keys_uri)
+            self._build_artifact(assem=db_obj, artifact=arti)
         return db_obj
 
     def _build_artifact(self, assem, artifact, verb='build', commit_sha='',
-                        status_url=None, deploy_keys_ref=None):
+                        status_url=None):
 
         # This is a tempory hack so we don't need the build client
         # in the requirments.
@@ -176,8 +174,7 @@ class AssemblyHandler(handler.Handler):
             source_format=image.source_format,
             image_format=image.image_format,
             assembly_id=assem.id,
-            test_cmd=test_cmd,
-            source_creds_ref=deploy_keys_ref)
+            test_cmd=test_cmd)
 
     def get_all(self):
         """Return all assemblies, based on the query provided."""

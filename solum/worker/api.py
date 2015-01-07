@@ -28,12 +28,10 @@ class API(service.API):
 
     def perform_action(self, verb, build_id, git_info, name, base_image_id,
                        source_format, image_format, assembly_id=None,
-                       test_cmd=None, source_creds_ref=None,
-                       artifact_type=None, lp_metadata=None):
+                       test_cmd=None, artifact_type=None, lp_metadata=None):
         self._cast(verb, build_id=build_id, git_info=git_info,
                    name=name, base_image_id=base_image_id,
                    source_format=source_format, image_format=image_format,
                    assembly_id=assembly_id, test_cmd=test_cmd,
-                   source_creds_ref=source_creds_ref,
                    artifact_type=artifact_type,
                    lp_metadata=lp_metadata)

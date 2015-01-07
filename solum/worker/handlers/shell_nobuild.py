@@ -34,21 +34,19 @@ update_assembly_status = shell_handler.update_assembly_status
 class Handler(shell_handler.Handler):
     def build(self, ctxt, build_id, git_info, name, base_image_id,
               source_format, image_format, assembly_id,
-              test_cmd, source_creds_ref=None,
-              artifact_type=None, lp_metadata=None):
+              test_cmd, artifact_type=None, lp_metadata=None):
 
         # TODO(datsun180b): This is only temporary, until Mistral becomes our
         # workflow engine.
         ret_code = self._run_unittest(ctxt, build_id, git_info, name,
                                       base_image_id, source_format,
-                                      image_format, assembly_id, test_cmd,
-                                      source_creds_ref)
+                                      image_format, assembly_id, test_cmd)
 
         # Deployer is normally in charge of declaring an assembly READY.
         if ret_code == 0:
             update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.READY)
 
-    def _get_environment(self, ctxt, assembly_id):
+    def _get_environment(self, ctxt, source_uri, assembly_id):
         # create a minimal environment
         user_env = {}
         for var in ['PATH', 'LOGNAME', 'LANG', 'HOME', 'USER', 'TERM']:
@@ -62,7 +60,7 @@ class Handler(shell_handler.Handler):
         user_env['BUILD_ID'] = uuidutils.generate_uuid()
         user_env['SOLUM_TASK_DIR'] = cfg.CONF.worker.task_log_dir
 
-        params_env = self._get_parameter_env(ctxt, assembly_id,
+        params_env = self._get_parameter_env(ctxt, source_uri, assembly_id,
                                              user_env['BUILD_ID'])
         user_env.update(params_env)
         return user_env

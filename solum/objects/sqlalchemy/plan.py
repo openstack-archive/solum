@@ -33,7 +33,6 @@ class Plan(sql.Base, abstract.Plan):
     name = sqlalchemy.Column(sqlalchemy.String(255))
     description = sqlalchemy.Column(sqlalchemy.String(255))
     raw_content = sqlalchemy.Column(sql.YAMLEncodedDict(2048))
-    deploy_keys_uri = sqlalchemy.Column(sqlalchemy.String(1024))
 
     def _non_updatable_fields(self):
         return set(('uuid', 'id', 'project_id'))
