@@ -12,6 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import datetime
+
 import mock
 
 from solum.openstack.common import uuidutils
@@ -205,6 +207,9 @@ class FakeAssembly(mock.Mock):
         self.status = 'BUILDING'
         self.application_uri = 'test_uri'
         self.trust_id = 'trust_worthy'
+        now = datetime.datetime.utcnow()
+        self.created_at = now
+        self.updated_at = now
 
     def as_dict(self):
         return dict(user_id=self.user_id,
@@ -213,6 +218,8 @@ class FakeAssembly(mock.Mock):
                     uuid=self.uuid,
                     id=self.id,
                     name=self.name,
+                    created_at=self.created_at,
+                    updated_at=self.updated_at,
                     status=self.status)
 
 

@@ -46,6 +46,8 @@ class TestAssemblyController(base.BaseTestCase):
         self.assertEqual(fake_assembly.user_id, resp['result'].user_id)
         self.assertEqual(fake_assembly.application_uri,
                          resp['result'].application_uri)
+        self.assertEqual(fake_assembly.created_at, resp['result'].created_at)
+        self.assertEqual(fake_assembly.updated_at, resp['result'].updated_at)
         hand_get.assert_called_with('test_id')
         self.assertEqual(200, resp_mock.status)
 
