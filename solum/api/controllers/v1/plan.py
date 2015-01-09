@@ -92,10 +92,8 @@ class PlanController(rest.RestController):
         handler = plan_handler.PlanHandler(pecan.request.security_context)
         try:
             handler.delete(self._id)
-        except db_exc.DBReferenceError:
+        except (db_exc.DBReferenceError, db_exc.DBError):
             raise exception.PlanStillReferenced(name=self._id)
-        except db_exc.DBError as dbe:
-            raise exception.SolumException(reason=dbe.message)
 
 
 class PlansController(rest.RestController):
