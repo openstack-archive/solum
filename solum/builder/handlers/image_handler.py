@@ -39,9 +39,12 @@ class ImageHandler(handler.Handler):
         db_obj.project_id = self.context.tenant
         db_obj.state = image.States.PENDING
         db_obj.artifact_type = 'language_pack'
+        if lp_metadata:
+            db_obj.tags = []
+            db_obj.tags.append(lp_metadata)
 
         db_obj.create(self.context)
-        self._start_build(db_obj, lp_metadata)
+        self._start_build(db_obj)
         return db_obj
 
     def delete(self, uuid):
@@ -49,7 +52,7 @@ class ImageHandler(handler.Handler):
         db_obj = objects.registry.Image.get_by_uuid(self.context, uuid)
         return db_obj.destroy(self.context)
 
-    def _start_build(self, image, lp_metadata):
+    def _start_build(self, image):
         git_info = {
             'source_url': image.source_uri,
         }
@@ -61,5 +64,4 @@ class ImageHandler(handler.Handler):
             base_image_id=image.base_image_id,
             source_format=image.source_format,
             image_format=image.image_format,
-            artifact_type=image.artifact_type,
-            lp_metadata=lp_metadata)
+            artifact_type=image.artifact_type)

@@ -39,6 +39,7 @@ class Image(sql.Base, abstract.Image):
     created_image_id = sa.Column(sa.String(36))
     image_format = sa.Column(sa.String(12))
     artifact_type = sa.Column(sa.String(36))
+    external_ref = sa.Column(sa.String(1024))
 
 
 class ImageList(abstract.ImageList):

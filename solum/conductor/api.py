@@ -35,3 +35,7 @@ class API(service.API):
     def update_assembly_status(self, assembly_id, status):
         self._cast('update_assembly_status', assembly_id=assembly_id,
                    status=status)
+
+    def update_image(self, image_id, status, external_ref=None):
+        self._cast('update_image', image_id=image_id, status=status,
+                   external_ref=external_ref)

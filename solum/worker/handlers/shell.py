@@ -90,12 +90,21 @@ def update_assembly_status(ctxt, assembly_id, status):
     conductor_api.API(context=ctxt).update_assembly_status(assembly_id, status)
 
 
+def update_lp_status(ctxt, image_id, status, external_ref=None):
+    if image_id is None:
+        return
+    LOG.debug('Updating languagepack %s status to %s and external_ref to %s'
+              % (image_id, status, external_ref))
+    conductor_api.API(context=ctxt).update_image(image_id, status,
+                                                 external_ref)
+
+
 class Handler(object):
     def echo(self, ctxt, message):
         LOG.debug("%s" % message)
 
     @exception.wrap_keystone_exception
-    def _get_environment(self, ctxt, source_uri, assembly_id):
+    def _get_environment(self, ctxt, source_uri, assembly_id=None):
         kc = solum_keystoneclient.KeystoneClientV3(ctxt)
         image_url = kc.client.service_catalog.url_for(
             service_type='image',
@@ -129,8 +138,7 @@ class Handler(object):
 
     def _get_build_command(self, ctxt, stage, source_uri, name,
                            base_image_id, source_format, image_format,
-                           commit_sha, test_cmd, artifact_type=None,
-                           lp_metadata=None):
+                           commit_sha, test_cmd, artifact_type=None):
         # map the input formats to script paths.
         # TODO(asalkeld) we need an "auto".
         pathm = {'heroku': 'lp-cedarish',
@@ -145,13 +153,9 @@ class Handler(object):
                                       pathm.get(source_format, 'lp-cedarish'),
                                       pathm.get(image_format, 'vm-slug'))
 
-        if lp_metadata is None:
-            lp_metadata = ''
-
         if artifact_type == 'language_pack':
             build_lp = os.path.join(build_app_path, 'build-lp')
-            return [build_lp, source_uri, name, ctxt.tenant,
-                    base_image_id, lp_metadata]
+            return [build_lp, source_uri, name, ctxt.tenant, base_image_id]
 
         if stage == 'unittest':
             build_app = os.path.join(build_app_path, 'unittest-app')
@@ -210,11 +214,10 @@ class Handler(object):
 
     def build(self, ctxt, build_id, git_info, name, base_image_id,
               source_format, image_format, assembly_id,
-              test_cmd, artifact_type=None, lp_metadata=None):
+              test_cmd, artifact_type=None):
         if artifact_type == 'language_pack':
-            self.build_lp(ctxt, git_info, name, base_image_id,
-                          source_format, image_format, test_cmd,
-                          artifact_type, lp_metadata)
+            self.build_lp(ctxt, build_id, git_info, name, source_format,
+                          image_format, artifact_type)
             return
 
         # TODO(datsun180b): This is only temporary, until Mistral becomes our
@@ -233,8 +236,7 @@ class Handler(object):
         build_cmd = self._get_build_command(ctxt, 'build', source_uri,
                                             name, base_image_id,
                                             source_format, image_format, '',
-                                            test_cmd, artifact_type,
-                                            lp_metadata)
+                                            test_cmd, artifact_type)
         solum.TLS.trace.support_info(build_cmd=' '.join(build_cmd),
                                      assembly_id=assembly_id)
 
@@ -396,23 +398,46 @@ class Handler(object):
                     source_private_key = dk['private_key']
         return source_private_key
 
-    def build_lp(self, ctxt, git_info, name, base_image_id,
-                 source_format, image_format, test_cmd, artifact_type=None,
-                 lp_metadata=None):
+    def build_lp(self, ctxt, image_id, git_info, name, source_format,
+                 image_format, artifact_type=None):
+        update_lp_status(ctxt, image_id, IMAGE_STATES.BUILDING)
         source_uri = git_info['source_url']
         build_cmd = self._get_build_command(ctxt, 'build', source_uri,
-                                            name, base_image_id,
-                                            source_format, image_format, '',
-                                            test_cmd, artifact_type,
-                                            lp_metadata)
+                                            name, str(image_id),
+                                            source_format, 'docker', '',
+                                            None,
+                                            artifact_type)
 
         try:
             user_env = self._get_environment(ctxt, source_uri)
         except exception.SolumException as env_ex:
+            LOG.exception(_("Failed to successfully get environment for "
+                            "building languagepack: `%s`"),
+                          image_id)
             LOG.exception(env_ex)
 
+        out = None
         try:
-            subprocess.Popen(build_cmd, env=user_env)
+            out = subprocess.Popen(build_cmd,
+                                   env=user_env,
+                                   stdout=subprocess.PIPE).communicate()[0]
         except OSError as subex:
+            update_lp_status(ctxt, image_id, IMAGE_STATES.ERROR)
+            LOG.exception(_("Failed to successfully build languagepack: `%s`"),
+                          image_id)
             LOG.exception(subex)
             return
+
+        # we expect one line in the output that looks like:
+        # created_image_id=<the glance_id>
+        glance_image_id = None
+        for line in out.split('\n'):
+            if 'glance_image_id' in line:
+                solum.TLS.trace.support_info(build_lp_out_line=line)
+                glance_image_id = line.split('=')[-1].strip()
+                break
+        if glance_image_id is not None:
+            update_lp_status(ctxt, image_id, IMAGE_STATES.COMPLETE,
+                             glance_image_id)
+        else:
+            update_lp_status(ctxt, image_id, IMAGE_STATES.ERROR)

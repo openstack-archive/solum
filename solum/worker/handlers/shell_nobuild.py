@@ -34,7 +34,7 @@ update_assembly_status = shell_handler.update_assembly_status
 class Handler(shell_handler.Handler):
     def build(self, ctxt, build_id, git_info, name, base_image_id,
               source_format, image_format, assembly_id,
-              test_cmd, artifact_type=None, lp_metadata=None):
+              test_cmd, artifact_type=None):
 
         # TODO(datsun180b): This is only temporary, until Mistral becomes our
         # workflow engine.

@@ -54,6 +54,6 @@ class TestImageHandler(base.BaseTestCase):
         mock_registry.Image.return_value = fi
         handler = image_handler.ImageHandler(self.ctx)
         res = handler.create(data, lp_metadata=None)
-        mock_build.assert_called_once_with(res, None)
+        mock_build.assert_called_once_with(res)
         fi.update.assert_called_once_with(data)
         fi.create.assert_called_once_with(self.ctx)

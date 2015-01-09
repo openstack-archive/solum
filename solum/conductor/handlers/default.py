@@ -60,3 +60,10 @@ class Handler(object):
         assem = objects.registry.Assembly.get_by_id(ctxt, assembly_id)
         assem.status = status
         assem.save(ctxt)
+
+    def update_image(self, ctxt, image_id, status, external_ref=None):
+        image = objects.registry.Image.get_by_id(ctxt, image_id)
+        image.state = status
+        if external_ref:
+            image.external_ref = external_ref
+        image.save(ctxt)

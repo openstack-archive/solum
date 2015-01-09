@@ -12,7 +12,7 @@ source $HERE/../../common/utils
 
 # Get the image_id of the image named $1
 function app_glance_id () {
-  glance image-list --name $1 --sort-key updated_at --sort-dir asc | grep -v "+--" | tail -1 | cut -d'|' -f2
+  glance --os-auth-token $OS_AUTH_TOKEN image-list --name $1 --sort-key updated_at --sort-dir asc | grep -v "+--" | tail -1 | cut -d'|' -f2
 }
 
 TLOG ===== Starting Language Pack Build Script $0 $*
@@ -24,15 +24,15 @@ if [[ -z $OS_AUTH_TOKEN ]]; then
 fi
 
 # Check command line arguments
-if [ $# -lt 5 ]; then
-  TLOG Usage: $0 git_url lpname project_id [base_image] lp_metadata
+if [ $# -lt 4 ]; then
+  TLOG Usage: $0 git_url lpname project_id base_image
   exit 1
 fi
 
 PRUN silent docker ps
 [[ $? != 0 ]] && TLOG cannot talk to docker. && exit 1
 
-PRUN silent glance image-list
+PRUN silent glance --os-auth-token $OS_AUTH_TOKEN image-list
 if [ $? != 0 ]; then
   TLOG Cannot talk to Glance. Check your OpenStack credentials. && exit 1
 fi
@@ -44,8 +44,6 @@ shift
 TENANT=$1
 shift
 BASE_IMAGE=$1
-shift
-LP_METADATA=$1
 shift
 
 BASE_DIR=/dev/shm
@@ -60,7 +58,7 @@ if [ -d "$APP_DIR/build" ] ; then
   cd $APP_DIR/build
   PRUN sudo docker build -t $LPNAME .
   TLOG ===== finished docker build
-  sudo docker save "$LPNAME" | glance image-create --container-format=docker --disk-format=raw --name "$LPNAME"
+  sudo docker save "$LPNAME" | glance --os-auth-token $OS_AUTH_TOKEN image-create --container-format=docker --disk-format=raw --name "$LPNAME"
   TLOG ===== finished uploading to glance
 fi
 
@@ -68,16 +66,15 @@ image_id=$(app_glance_id $LPNAME)
 
 # Tag the glance image as a solum language pack
 TLOG ===== tagging glace image $image_id
-glance --os-image-api-version 2 image-tag-update $image_id 'solum::lp'
-glance --os-image-api-version 2 image-tag-update $image_id $LP_METADATA
+glance --os-auth-token $OS_AUTH_TOKEN --os-image-api-version 2 image-tag-update $image_id 'solum::lp'
 
 TOTAL_TIME=$(elapsed $SCRIPT_START_TIME)
 TLOG ===== Total elapsed time: $TOTAL_TIME sec
 
-TLOG created_image_id=$image_id
+TLOG glance_image_id=$image_id
 
-# We don't set created_image_id so that
-# the deploy step is skipped in workers/handlers/shell.py
-# echo created_image_id=$image_id
+# Need stdout for solum-worker to parse the image_id
+echo glance_image_id=$image_id
+
 
 exit 0

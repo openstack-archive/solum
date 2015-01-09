@@ -35,7 +35,7 @@ class HandlerTest(base.BaseTestCase):
     def test_build(self, fake_LOG):
         git_info = test_shell.mock_git_info()
         args = [5, git_info, 'new_app', '1-2-3-4', 'heroku', 'docker',
-                44, None, None, None]
+                44, None, None]
         noop_handler.Handler().build(self.ctx, *args)
         message = 'Build ' + ', '.join([str(a) for a in args])
         fake_LOG.debug.assert_called_once_with(_("%s") % message)

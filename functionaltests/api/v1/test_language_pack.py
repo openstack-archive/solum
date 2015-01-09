@@ -38,8 +38,7 @@ sample_data = {"name": "test_language_pack",
                "type": "language_pack"}
 
 sample_lp = {"name": "test_language_pack",
-             "git_url": "https://github.com/murali44/Solum-lp-Go.git",
-             "lp_metadata": "test_metadata"}
+             "git_url": "https://github.com/murali44/Solum-lp-Go.git"}
 
 
 class TestLanguagePackController(base.TestCase):
