@@ -35,8 +35,8 @@ class Handler(object):
                          created_image_id, assembly_id):
         image = objects.registry.Image.get_by_id(ctxt, build_id)
         image.state = state
-        image.description = description
         image.created_image_id = created_image_id
+        image.description = str(description)
         image.save(ctxt)
 
         # create the component if needed.

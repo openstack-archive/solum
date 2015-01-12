@@ -52,6 +52,8 @@ SOLUM_GROWTH_FACTOR=${SOLUM_GROWTH_FACTOR:-1.1}
 SOLUM_DRONE_URL=${SOLUM_DRONE_URL:-http://downloads.drone.io/master/drone.deb}
 SOLUM_INSTALL_DRONE=${SOLUM_INSTALL_DRONE:-False}
 
+SOLUM_PROJ_DIR=${SOLUM_PROJ_DIR:-/opt/stack/solum}
+
 # Support entry points installation of console scripts
 if [[ -d $SOLUM_DIR/bin ]]; then
     SOLUM_BIN_DIR=$SOLUM_DIR/bin
@@ -164,7 +166,7 @@ function configure_solum() {
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE deployer handler heat
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE worker topic solum-worker
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE worker handler shell
-    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE worker proj_dir /opt/stack/solum
+    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE worker proj_dir $SOLUM_PROJ_DIR
 
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE deployer max_attempts $SOLUM_MAX_ATTEMPTS
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE deployer wait_interval $SOLUM_WAIT_INTERVAL

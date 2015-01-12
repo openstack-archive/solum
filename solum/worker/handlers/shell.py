@@ -267,7 +267,8 @@ class Handler(object):
         except (OSError, ValueError) as subex:
             LOG.exception(subex)
             job_update_notification(ctxt, build_id, IMAGE_STATES.ERROR,
-                                    description=subex, assembly_id=assembly_id)
+                                    description=str(subex),
+                                    assembly_id=assembly_id)
             update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.ERROR)
             return
 
