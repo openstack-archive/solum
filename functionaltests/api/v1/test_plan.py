@@ -53,6 +53,13 @@ class TestPlanController(base.TestCase):
         super(TestPlanController, self).tearDown()
         self.client.delete_created_plans()
 
+    def _delete_all(self):
+        resp, body = self.client.get(
+            'v1/plans', headers={'accept-type': 'application/x-yaml'})
+        data = yaml.load(body)
+        self.assertEqual(resp.status, 200)
+        [self._delete_plan(pl['uuid']) for pl in data]
+
     def _assert_output_expected(self, body_data, data):
         self.assertEqual(body_data['description'], data['description'])
         self.assertEqual(body_data['name'], data['name'])

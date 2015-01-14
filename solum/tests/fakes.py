@@ -43,6 +43,7 @@ class FakePecanRequest(mock.Mock):
         self.context = {}
         self.body = ''
         self.content_type = 'text/unicode'
+        self.accept = None
         self.params = {}
         self.path = '/v1/services'
         self.headers = fakeAuthTokenHeaders
