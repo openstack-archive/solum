@@ -16,5 +16,6 @@
 # This script is executed inside gate_hook function in devstack gate.
 
 export KEEP_LOCALRC=1
+export DEVSTACK_LOCAL_CONFIG="SOLUM_PROJ_DIR=/opt/stack/new/solum"
 
 $BASE/new/devstack-gate/devstack-vm-gate.sh
