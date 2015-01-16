@@ -62,13 +62,20 @@ class PlanController(rest.RestController):
         self._id = plan_id
 
     @exception.wrap_pecan_controller_exception
-    @pecan.expose(content_type='application/x-yaml')
+    @pecan.expose()
     def get(self):
         """Return this plan."""
         handler = plan_handler.PlanHandler(pecan.request.security_context)
-        plan_yml = yamlutils.dump(yaml_content(handler.get(self._id)))
+
+        if pecan.request.accept is not None and 'yaml' in pecan.request.accept:
+            plan_serialized = yamlutils.dump(
+                yaml_content(handler.get(self._id)))
+        else:
+            plan_model = plan.Plan.from_db_model(
+                handler.get(self._id), pecan.request.host_url)
+            plan_serialized = wsme_json.encode_result(plan_model, plan.Plan)
         pecan.response.status = 200
-        return plan_yml
+        return plan_serialized
 
     @exception.wrap_pecan_controller_exception
     @pecan.expose(content_type='application/x-yaml')

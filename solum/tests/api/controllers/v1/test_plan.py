@@ -74,7 +74,8 @@ class TestPlanController(base.BaseTestCase):
         super(TestPlanController, self).setUp()
         objects.load()
 
-    def test_plan_get(self, PlanHandler, resp_mock, request_mock):
+    def test_plan_get_yaml(self, PlanHandler, resp_mock, request_mock):
+        request_mock.accept = 'application/x-yaml'
         hand_get = PlanHandler.return_value.get
         fake_plan = fakes.FakePlan()
         hand_get.return_value = fake_plan
@@ -86,7 +87,33 @@ class TestPlanController(base.BaseTestCase):
         hand_get.assert_called_with('test_id')
         self.assertEqual(200, resp_mock.status)
 
-    def test_plan_get_not_found(self, PlanHandler, resp_mock, request_mock):
+    def test_plan_get_json(self, PlanHandler, resp_mock, request_mock):
+        hand_get = PlanHandler.return_value.get
+        fake_plan = fakes.FakePlan()
+        hand_get.return_value = fake_plan
+        cont = plan.PlanController('test_id')
+        resp = cont.get()
+        self.assertIsNotNone(resp)
+        resp_json = json.loads(resp)
+        self.assertEqual(fake_plan.name, resp_json['name'])
+        self.assertEqual(fake_plan.project_id,
+                         resp_json['project_id'])
+        self.assertEqual(fake_plan.uuid, resp_json['uuid'])
+        hand_get.assert_called_with('test_id')
+        self.assertEqual(200, resp_mock.status)
+
+    def test_plan_get_not_found_yaml(self, PlanHandler,
+                                     resp_mock, request_mock):
+        request_mock.accept = 'application/x-yaml'
+        hand_get = PlanHandler.return_value.get
+        hand_get.side_effect = exception.ResourceNotFound(name='plan',
+                                                          id='test_id')
+        plan.PlanController('test_id').get()
+        hand_get.assert_called_with('test_id')
+        self.assertEqual(404, resp_mock.status)
+
+    def test_plan_get_not_found_json(self, PlanHandler,
+                                     resp_mock, request_mock):
         hand_get = PlanHandler.return_value.get
         hand_get.side_effect = exception.ResourceNotFound(name='plan',
                                                           id='test_id')
