@@ -153,30 +153,27 @@ class TestPlanController(base.TestCase):
         self._assert_output_expected(yaml_data, updated_data)
 
     def test_plans_put_not_found(self):
-        # NOTE(stannie): see test_plans_get_not_found note
         updated_data = {"name": "test_plan updated",
                         "description": "A test to create plan updated",
                         "type": "plan",
                         "artifacts": []}
         updated_yaml = yaml.dump(updated_data)
-        self.assertRaises(tempest_exceptions.InvalidContentType,
+        self.assertRaises(tempest_exceptions.BadRequest,
                           self.client.put, 'v1/plans/not_found', updated_yaml,
                           headers={'content-type': 'application/x-yaml'})
 
     def test_plans_put_empty_yaml(self):
-        # NOTE(stannie): see test_plans_create_empty_yaml note
-        self.assertRaises(tempest_exceptions.InvalidContentType,
+        self.assertRaises(tempest_exceptions.BadRequest,
                           self.client.put, 'v1/plans/any', '{}',
                           headers={'content-type': 'application/x-yaml'})
 
     def test_plans_put_invalid_yaml_type(self):
-        # NOTE(stannie): see test_plans_create_empty_yaml note
-        self.assertRaises(tempest_exceptions.InvalidContentType,
+        self.assertRaises(tempest_exceptions.BadRequest,
                           self.client.put, 'v1/plans/any', 'invalid type',
                           headers={'content-type': 'application/x-yaml'})
 
     def test_plans_put_invalid_yaml_syntax(self):
-        self.assertRaises(tempest_exceptions.InvalidContentType,
+        self.assertRaises(tempest_exceptions.BadRequest,
                           self.client.put, 'v1/plans/any', "}invalid: y'm'l3!",
                           headers={'content-type': 'application/x-yaml'})
 

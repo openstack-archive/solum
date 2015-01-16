@@ -97,19 +97,23 @@ class PlanController(rest.RestController):
         return plan_serialized
 
     @exception.wrap_pecan_controller_exception
-    @pecan.expose(content_type='application/x-yaml')
+    @pecan.expose()
     def put(self):
         """Modify this plan."""
         if not pecan.request.body or len(pecan.request.body) < 1:
             raise exception.BadRequest
-        try:
-            yml_input_plan = yamlutils.load(pecan.request.body)
-        except ValueError as excp:
-            raise exception.BadRequest(reason='Plan is invalid. '
-                                              + excp.message)
-        handler, data = init_plan_by_version(yml_input_plan)
-        updated_plan_yml = yamlutils.dump(yaml_content(handler.update(
-            self._id, data.as_dict(objects.registry.Plan))))
+
+        if (pecan.request.content_type is not None and
+                'yaml' in pecan.request.content_type):
+            handler, data = init_yml_plan_by_version()
+            updated_plan_yml = yamlutils.dump(yaml_content(handler.update(
+                self._id, data.as_dict(objects.registry.Plan))))
+        else:
+            handler, data = init_json_plan_by_version()
+            plan_obj = handler.update(self._id,
+                                      data.as_dict(objects.registry.Plan))
+            updated_plan_yml = wsme_json.encode_result(plan.Plan.from_db_model(
+                plan_obj, pecan.request.host_url), plan.Plan)
         pecan.response.status = 200
         return updated_plan_yml
 
