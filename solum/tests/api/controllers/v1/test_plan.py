@@ -246,7 +246,7 @@ class TestPlansController(base.BaseTestCase):
         self.assertEqual(200, resp_mock.status)
         hand_get.assert_called_with()
 
-    def test_plans_post(self, PlanHandler, resp_mock, request_mock):
+    def test_plans_post_yaml(self, PlanHandler, resp_mock, request_mock):
         request_mock.body = 'version: 1\nname: ex_plan1\ndescription: dsc1.'
         request_mock.content_type = 'application/x-yaml'
         hand_create = PlanHandler.return_value.create
@@ -256,10 +256,49 @@ class TestPlansController(base.BaseTestCase):
                                         'description': 'dsc1.'})
         self.assertEqual(201, resp_mock.status)
 
-    def test_plans_post_version_not_found(self, PlanHandler,
-                                          resp_mock, request_mock):
-        request_mock.body = 'version: 2\nname: ex_plan1\ndescription: dsc1.'
+    def test_plans_post_json(self, PlanHandler, resp_mock, request_mock):
+        json_update = {'name': 'foo', 'version': '1'}
+        request_mock.body = json.dumps(json_update)
+        request_mock.content_type = 'application/json'
+        hand_create = PlanHandler.return_value.create
+        hand_create.return_value = fakes.FakePlan()
+        plan.PlansController().post()
+        hand_create.assert_called_with({'name': 'foo'})
+        self.assertEqual(201, resp_mock.status)
+
+    def test_plans_post_wrong_version_yaml(self, PlanHandler,
+                                           resp_mock, request_mock):
+        request_mock.body = 'version: 42\nname: ex_plan1\ndescription: dsc1.'
         request_mock.content_type = 'application/x-yaml'
+        hand_create = PlanHandler.return_value.create
+        hand_create.return_value = fakes.FakePlan()
+        plan.PlansController().post()
+        self.assertEqual(400, resp_mock.status)
+
+    def test_plans_post_version_not_found_yaml(self, PlanHandler,
+                                               resp_mock, request_mock):
+        request_mock.body = 'name: ex_plan1\ndescription: dsc1.'
+        request_mock.content_type = 'application/x-yaml'
+        hand_create = PlanHandler.return_value.create
+        hand_create.return_value = fakes.FakePlan()
+        plan.PlansController().post()
+        self.assertEqual(400, resp_mock.status)
+
+    def test_plans_post_wrong_version_json(self, PlanHandler,
+                                           resp_mock, request_mock):
+        json_update = {'name': 'foo', 'version': '42'}
+        request_mock.body = json.dumps(json_update)
+        request_mock.content_type = 'application/json'
+        hand_create = PlanHandler.return_value.create
+        hand_create.return_value = fakes.FakePlan()
+        plan.PlansController().post()
+        self.assertEqual(400, resp_mock.status)
+
+    def test_plans_post_version_not_found_json(self, PlanHandler,
+                                               resp_mock, request_mock):
+        json_update = {'name': 'foo'}
+        request_mock.body = json.dumps(json_update)
+        request_mock.content_type = 'application/json'
         hand_create = PlanHandler.return_value.create
         hand_create.return_value = fakes.FakePlan()
         plan.PlansController().post()
@@ -276,7 +315,7 @@ class TestPlansController(base.BaseTestCase):
     def test_plans_post_invalid_yaml(self, handler_mock,
                                      resp_mock, request_mock):
         request_mock.body = 'invalid yaml file'
-        request_mock.content_type = 'application/json'
+        request_mock.content_type = 'application/x-yaml'
         handler_create = handler_mock.return_value.create
         handler_create.return_value = fakes.FakePlan()
         plan.PlansController().post()
@@ -285,7 +324,7 @@ class TestPlansController(base.BaseTestCase):
     def test_plans_post_empty_yaml(self, handler_mock,
                                    resp_mock, request_mock):
         request_mock.body = '{}'
-        request_mock.content_type = 'application/json'
+        request_mock.content_type = 'application/x-yaml'
         handler_create = handler_mock.return_value.create
         handler_create.return_value = fakes.FakePlan()
         plan.PlansController().post()
