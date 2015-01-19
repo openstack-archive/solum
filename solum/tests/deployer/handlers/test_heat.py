@@ -16,6 +16,7 @@ import json
 
 import mock
 from oslo.config import cfg
+import yaml
 
 from solum.deployer.handlers import heat as heat_handler
 from solum.objects import assembly
@@ -42,40 +43,27 @@ class HandlerTest(base.BaseTestCase):
     @mock.patch('solum.common.catalog.get')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.common.clients.OpenStackClients')
-    def test_deploy(self, mock_clients, mock_registry,
-                    mock_get_templ, mock_cond):
+    def test_deploy_docker_on_vm(self, mock_clients, mock_registry,
+                                 mock_get_templ, mock_cond):
         handler = heat_handler.Handler()
 
         fake_assembly = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
-        fake_template = json.dumps({'description': 'test'})
-        mock_get_templ.return_value = fake_template
+        fake_template = self._get_fake_template()
+        template = self._get_tmpl_for_docker_reg(fake_assembly, fake_template)
+        cfg.CONF.api.image_format = "vm"
+        cfg.CONF.worker.image_storage = "docker_registry"
+        mock_get_templ.return_value = template
         handler._find_id_if_stack_exists = mock.MagicMock(return_value=(None))
         stacks = mock_clients.return_value.heat.return_value.stacks
         stacks.create.return_value = {"stack": {
             "id": "fake_id",
             "links": [{"href": "http://fake.ref",
                        "rel": "self"}]}}
-        neutron = mock_clients.return_value.neutron
-        neutron.return_value.list_networks.return_value = {
-            "networks": [{"router:external": True,
-                          "id": "public_net_id"},
-                         {"router:external": False,
-                          "id": "private_net_id",
-                          "subnets": ["private_subnet_id"]}]}
         handler._check_stack_status = mock.MagicMock()
         handler.deploy(self.ctx, 77, 'created_image_id')
-        parameters = {'image': 'created_image_id',
-                      'app_name': 'faker',
-                      'private_net': 'private_net_id',
-                      'public_net': 'public_net_id',
-                      'private_subnet': 'private_subnet_id'}
         stacks = mock_clients.return_value.heat.return_value.stacks
-        stacks.create.assert_called_once_with(stack_name='faker-test_uuid',
-                                              template=fake_template,
-                                              parameters=parameters)
-        neutron = mock_clients.return_value.neutron
-        neutron.return_value.list_networks.assert_called_once_with()
+        stacks.create.assert_called_once()
         assign_and_create_mock = mock_registry.Component.assign_and_create
         comp_name = 'Heat_Stack_for_%s' % fake_assembly.name
         assign_and_create_mock.assert_called_once_with(self.ctx,
@@ -116,13 +104,14 @@ class HandlerTest(base.BaseTestCase):
     @mock.patch('solum.common.catalog.get')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.common.clients.OpenStackClients')
-    @mock.patch('solum.deployer.handlers.heat.cfg.CONF.api.image_format')
-    def test_deploy_docker(self, image_format, mock_clients, mock_registry,
+    def test_deploy_docker(self, mock_clients, mock_registry,
                            mock_get_templ, mock_cond):
         handler = heat_handler.Handler()
-        image_format.return_value = "docker"
         fake_assembly = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
+
+        cfg.CONF.api.image_format = "docker"
+
         fake_template = json.dumps({'description': 'test'})
         mock_get_templ.return_value = fake_template
         handler._find_id_if_stack_exists = mock.MagicMock(return_value=(None))
@@ -150,18 +139,36 @@ class HandlerTest(base.BaseTestCase):
 
     @mock.patch('solum.conductor.api.API.update_assembly')
     @mock.patch('solum.common.clients.OpenStackClients')
-    def test_update_assembly_status(self, mock_clients, mock_ua):
+    @mock.patch('httplib2.Http')
+    def test_update_assembly_status(self, mock_http, mock_clients, mock_ua):
         handler = heat_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
         stack = mock.MagicMock()
         stack.status = 'COMPLETE'
         mock_clients.heat().stacks.get.return_value = stack
+
+        resp = {'status': '200'}
+        conn = mock.MagicMock()
+        conn.request.return_value = [resp, '']
+        mock_http.return_value = conn
+
+        cfg.CONF.deployer.du_attempts = 1
+
         handler._parse_server_url = mock.MagicMock(return_value=('xyz'))
         handler._check_stack_status(self.ctx, fake_assembly.id, mock_clients,
                                     'fake_id')
-        mock_ua.assert_called_once_with(fake_assembly.id,
-                                        {'status': 'READY',
-                                         'application_uri': 'xyz'})
+
+        c1 = mock.call(fake_assembly.id,
+                       {'status': STATES.WAITING_FOR_DOCKER_DU,
+                        'application_uri': 'xyz'})
+
+        c2 = mock.call(fake_assembly.id,
+                       {'status': 'READY',
+                        'application_uri': 'xyz'})
+
+        calls = [c1, c2]
+
+        mock_ua.assert_has_calls(calls, any_order=False)
 
     @mock.patch('solum.conductor.api.API.update_assembly')
     @mock.patch('solum.common.clients.OpenStackClients')
@@ -173,7 +180,9 @@ class HandlerTest(base.BaseTestCase):
         mock_clients.heat().stacks.get.return_value = stack
         handler._check_stack_status(self.ctx, fake_assembly.id, mock_clients,
                                     'fake_id')
-        mock_ua.assert_called_once_with(fake_assembly.id, {'status': 'ERROR'})
+        mock_ua.assert_called_once_with(fake_assembly.id,
+                                        {'status':
+                                         STATES.ERROR_STACK_CREATE_FAILED})
 
     def test_parse_server_url(self):
         handler = heat_handler.Handler()
@@ -249,3 +258,31 @@ class HandlerTest(base.BaseTestCase):
 
         assert not mock_client.heat.stacks.delete.called
         fake_assem.destroy.assert_called_once()
+
+    def _get_fake_template(self):
+        t = "description: test\n"
+        t += "resources:\n"
+        t += "  compute_instance:\n"
+        t += "    properties:\n"
+        t += "      user_data:\n"
+        t += "        str_replace:\n"
+        t += "          {template:"
+        t += "            #!/bin/bash -x\n"
+        t += "            #Invoke the container\n"
+        t += "}\n"
+        return t
+
+    def _get_tmpl_for_docker_reg(self, assem, template):
+        template_bdy = yaml.safe_load(template)
+        run_docker = "#!/bin/bash -x\n #Invoke the container\n"
+        docker_endpt = "127.0.0.1"
+        run_docker += "docker run -p 80:5000 -d "
+        run_docker += docker_endpt + ":5042/"
+        run_docker += str(assem.uuid)
+        comp_instance = template_bdy['resources']['compute_instance']
+        user_data = comp_instance['properties']['user_data']
+        user_data['str_replace']['template'] = run_docker
+        comp_instance['properties']['user_data'] = user_data
+        template_bdy['resources']['compute_instance'] = comp_instance
+        template = yaml.dump(template_bdy)
+        return template

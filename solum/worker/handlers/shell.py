@@ -17,7 +17,9 @@
 import ast
 import base64
 import os
+import random
 import shelve
+import string
 import subprocess
 
 from oslo.config import cfg
@@ -36,6 +38,7 @@ from solum.openstack.common import uuidutils
 import solum.uploaders.common as uploader_common
 import solum.uploaders.local as local_uploader
 import solum.uploaders.swift as swift_uploader
+
 
 LOG = logging.getLogger(__name__)
 
@@ -120,6 +123,24 @@ class Handler(object):
         user_env['OS_AUTH_URL'] = ctxt.auth_url
         user_env['OS_IMAGE_URL'] = image_url
 
+        if assembly_id is not None:
+            assem = get_assembly_by_id(ctxt, assembly_id)
+            user_env['ASSEMBLY_ID'] = str(assem.uuid)
+        else:
+            str_assem = (''.join(random.choice(string.ascii_uppercase)
+                         for i in range(10)))
+            user_env['ASSEMBLY_ID'] = str_assem
+
+        user_env['IMAGE_STORAGE'] = cfg.CONF.worker.image_storage
+
+        if cfg.CONF.worker.image_storage == 'docker_registry':
+            if cfg.CONF.worker.docker_reg_endpoint is None:
+                LOG.debug("DU upload set to docker registry,")
+                LOG.debug("but docker registry endpoint is not set.")
+                LOG.debug("Setting it to 127.0.0.1")
+                cfg.CONF.worker.docker_reg_endpoint = '127.0.0.1'
+            user_env['DOCKER_REGISTRY'] = cfg.CONF.worker.docker_reg_endpoint
+
         user_env['PROJECT_ID'] = ctxt.tenant
 
         user_env['BUILD_ID'] = uuidutils.generate_uuid()
@@ -147,12 +168,13 @@ class Handler(object):
                  'dockerfile': 'lp-dockerfile',
                  'chef': 'lp-chef',
                  'docker': 'docker',
-                 'qcow2': 'vm-slug'}
+                 'qcow2': 'docker',
+                 'vm': 'docker'}
         if base_image_id == 'auto' and image_format == 'qcow2':
             base_image_id = 'cedarish'
         build_app_path = os.path.join(self.proj_dir, 'contrib',
                                       pathm.get(source_format, 'lp-cedarish'),
-                                      pathm.get(image_format, 'vm-slug'))
+                                      pathm.get(image_format, 'docker'))
 
         if artifact_type == 'language_pack':
             build_lp = os.path.join(build_app_path, 'build-lp')
@@ -292,7 +314,7 @@ class Handler(object):
             if 'created_image_id' in line:
                 solum.TLS.trace.support_info(build_out_line=line)
                 created_image_id = line.split('=')[-1].strip()
-        if not uuidutils.is_uuid_like(created_image_id):
+        if not created_image_id:
             job_update_notification(ctxt, build_id, IMAGE_STATES.ERROR,
                                     description='image not created',
                                     assembly_id=assembly_id)

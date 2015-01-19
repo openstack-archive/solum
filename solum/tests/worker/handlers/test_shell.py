@@ -266,7 +266,7 @@ class HandlerTest(base.BaseTestCase):
         fake_assembly = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
         mock_popen.return_value.communicate.return_value = [
-            'foo\ncreated_image_id= \n', None]
+            'foo\ncreated_image_id=\n', None]
         test_env = mock_environment()
         mock_get_env.return_value = test_env
         git_info = mock_git_info()
@@ -507,21 +507,11 @@ class TestBuildCommand(base.BaseTestCase):
               base_image_id='auto', artifact_type=None,
               expect_b='lp-cedarish/docker/build-app',
               expect_u='lp-cedarish/docker/unittest-app')),
-        ('vmslug',
-         dict(source_format='heroku', image_format='qcow2',
-              base_image_id='auto', artifact_type=None,
-              expect_b='lp-cedarish/vm-slug/build-app',
-              expect_u='lp-cedarish/vm-slug/unittest-app')),
         ('dockerfile',
          dict(source_format='dockerfile', image_format='docker',
               base_image_id='auto', artifact_type=None,
               expect_b='lp-dockerfile/docker/build-app',
               expect_u='lp-dockerfile/docker/unittest-app')),
-        ('dib',
-         dict(source_format='dib', image_format='qcow2',
-              base_image_id='xyz', artifact_type=None,
-              expect_b='diskimage-builder/vm-slug/build-app',
-              expect_u='diskimage-builder/vm-slug/unittest-app')),
         ('chef',
          dict(source_format='chef', image_format='docker',
               base_image_id='xyz', artifact_type=None,

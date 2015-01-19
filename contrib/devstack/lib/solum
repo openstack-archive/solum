@@ -43,7 +43,7 @@ SOLUM_SERVICE_HOST=${SOLUM_SERVICE_HOST:-$SERVICE_HOST}
 SOLUM_SERVICE_PORT=${SOLUM_SERVICE_PORT:-9777}
 SOLUM_BUILDER_SERVICE_PORT=${SOLUM_BUILDER_SERVICE_PORT:-9778}
 SOLUM_SERVICE_PROTOCOL=${SOLUM_SERVICE_PROTOCOL:-$SERVICE_PROTOCOL}
-SOLUM_IMAGE_FORMAT=${SOLUM_IMAGE_FORMAT:-'qcow2'}
+SOLUM_IMAGE_FORMAT=${SOLUM_IMAGE_FORMAT:-'docker'}
 
 SOLUM_MAX_ATTEMPTS=${SOLUM_MAX_ATTEMPTS:-2000}
 SOLUM_WAIT_INTERVAL=${SOLUM_WAIT_INTERVAL:-1}
@@ -53,6 +53,9 @@ SOLUM_DRONE_URL=${SOLUM_DRONE_URL:-http://downloads.drone.io/master/drone.deb}
 SOLUM_INSTALL_DRONE=${SOLUM_INSTALL_DRONE:-False}
 
 SOLUM_PROJ_DIR=${SOLUM_PROJ_DIR:-/opt/stack/solum}
+
+SOLUM_INSTALL_DOCKER_REGISTRY=${SOLUM_INSTALL_DOCKER_REGISTRY:-False}
+SOLUM_DEPLOYMENT_MECHANISM=${SOLUM_DEPLOYMENT_MECHANISM:-'docker_on_nova'}
 
 # Support entry points installation of console scripts
 if [[ -d $SOLUM_DIR/bin ]]; then
@@ -176,12 +179,19 @@ function configure_solum() {
 
 #register solum user in Keystone
 function add_solum_user() {
+
+    local SERVICE_TENANT=$(openstack project list | awk "/ $SERVICE_TENANT_NAME / { print \$2 }")
+    echo "SERVICE_TENANT=$SERVICE_TENANT"
+
     # Register new service user as other services do
     SOLUM_USER_ID=$(keystone user-create --name=$SOLUM_USER \
        --pass=$ADMIN_PASSWORD \
        --tenant_id $SERVICE_TENANT \
        --email=$SOLUM_USER@example.com \
        | grep " id " | get_field 2)
+
+    local ADMIN_ROLE=$(keystone role-list | awk "/ admin / { print \$2 }")
+    echo "ADMIN_ROLE=$ADMIN_ROLE"
 
      keystone user-role-add \
        --user-id $SOLUM_USER_ID \
@@ -284,13 +294,16 @@ function install_drone() {
     fi
 }
 
+# install_docker() - Install Docker
+function install_docker() {
+    chmod +x $SOLUM_DIR/contrib/lp-cedarish/docker/get_docker_io.sh
+    sudo $SOLUM_DIR/contrib/lp-cedarish/docker/get_docker_io.sh
+    solum_install_docker_registry
+}
+
 # install_lp-cedarish() - Install tooling to support cedarish LP
 function install_lp-cedarish() {
-    if [[ $SOLUM_IMAGE_FORMAT == 'docker' ]]; then
-        $SOLUM_DIR/contrib/lp-cedarish/docker/prepare
-    else
-        $SOLUM_DIR/contrib/lp-cedarish/vm-slug/prepare
-    fi
+    $SOLUM_DIR/contrib/lp-cedarish/docker/prepare
     install_drone
 }
 
@@ -323,6 +336,12 @@ function start_solum() {
     screen_it solum-conductor "cd $SOLUM_DIR && $SOLUM_BIN_DIR/solum-conductor --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE"
     screen_it solum-deployer "cd $SOLUM_DIR && $SOLUM_BIN_DIR/solum-deployer --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE"
     screen_it solum-worker "cd $SOLUM_DIR && $SOLUM_BIN_DIR/solum-worker --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE"
+
+    if [[ $SOLUM_IMAGE_FORMAT == 'vm' ]]; then
+        install_docker
+        solum_install_start_docker_registry
+        solum_install_core_os
+    fi
 }
 
 # stop_solum() - Stop running processes
@@ -333,6 +352,26 @@ function stop_solum() {
     screen -S $SCREEN_NAME -p solum-conductor -X kill
     screen -S $SCREEN_NAME -p solum-deployer -X kill
     screen -S $SCREEN_NAME -p solum-worker -X kill
+
+    if [[ $SOLUM_IMAGE_FORMAT == 'vm' ]]; then
+        solum_stop_docker_registry
+    fi
+}
+
+# install_docker_registry() - Install and Start Docker Registry
+solum_install_start_docker_registry() {
+     sudo $SOLUM_DIR/contrib/devstack/install-start-docker-reg.sh
+}
+
+solum_stop_docker_registry() {
+    screen -S $SCREEN_NAME -p docker-registry -X kill
+}
+
+solum_install_core_os() {
+  sudo apt-get install libguestfs-tools
+  wget http://alpha.release.core-os.net/amd64-usr/current/coreos_production_openstack_image.img.bz2
+  bunzip2 coreos_production_openstack_image.img.bz2
+  glance image-create --name coreos --container-format bare --disk-format qcow2 --file coreos_production_openstack_image.img
 }
 
 # Restore xtrace
