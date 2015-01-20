@@ -109,7 +109,8 @@ class Handler(object):
         LOG.debug("%s" % message)
 
     @exception.wrap_keystone_exception
-    def _get_environment(self, ctxt, source_uri, assembly_id=None):
+    def _get_environment(self, ctxt, source_uri, assembly_id=None,
+                         test_cmd=None, run_cmd=None):
         kc = solum_keystoneclient.KeystoneClientV3(ctxt)
         image_url = kc.client.service_catalog.url_for(
             service_type='image',
@@ -142,6 +143,11 @@ class Handler(object):
                 cfg.CONF.worker.docker_reg_endpoint = '127.0.0.1'
             user_env['DOCKER_REGISTRY'] = cfg.CONF.worker.docker_reg_endpoint
 
+        if test_cmd is not None:
+            user_env['TEST_CMD'] = test_cmd
+        if run_cmd is not None:
+            user_env['RUN_CMD'] = run_cmd
+
         user_env['PROJECT_ID'] = ctxt.tenant
 
         user_env['BUILD_ID'] = uuidutils.generate_uuid()
@@ -161,7 +167,7 @@ class Handler(object):
 
     def _get_build_command(self, ctxt, stage, source_uri, name,
                            base_image_id, source_format, image_format,
-                           commit_sha, test_cmd, artifact_type=None):
+                           commit_sha, artifact_type=None):
 
         # map the input formats to script paths.
         # TODO(asalkeld) we need an "auto".
@@ -184,7 +190,7 @@ class Handler(object):
 
         if stage == 'unittest':
             build_app = os.path.join(build_app_path, 'unittest-app')
-            return [build_app, source_uri, commit_sha, ctxt.tenant, test_cmd]
+            return [build_app, source_uri, commit_sha, ctxt.tenant]
         elif stage == 'build':
             build_app = os.path.join(build_app_path, 'build-app')
             return [build_app, source_uri, name, ctxt.tenant, base_image_id]
@@ -239,7 +245,7 @@ class Handler(object):
 
     def build(self, ctxt, build_id, git_info, name, base_image_id,
               source_format, image_format, assembly_id,
-              test_cmd, artifact_type=None):
+              test_cmd, run_cmd, artifact_type=None):
         if artifact_type == 'language_pack':
             self.build_lp(ctxt, build_id, git_info, name, source_format,
                           image_format, artifact_type)
@@ -261,12 +267,15 @@ class Handler(object):
         build_cmd = self._get_build_command(ctxt, 'build', source_uri,
                                             name, base_image_id,
                                             source_format, image_format, '',
-                                            test_cmd, artifact_type)
+                                            artifact_type)
         solum.TLS.trace.support_info(build_cmd=' '.join(build_cmd),
                                      assembly_id=assembly_id)
 
         try:
-            user_env = self._get_environment(ctxt, source_uri, assembly_id)
+            user_env = self._get_environment(ctxt, source_uri,
+                                             assembly_id=assembly_id,
+                                             test_cmd=test_cmd,
+                                             run_cmd=run_cmd)
         except exception.SolumException as env_ex:
             LOG.exception(env_ex)
             job_update_notification(ctxt, build_id, IMAGE_STATES.ERROR,
@@ -350,12 +359,14 @@ class Handler(object):
         command = self._get_build_command(ctxt, 'unittest', git_url, name,
                                           base_image_id,
                                           source_format, image_format,
-                                          commit_sha, test_cmd)
+                                          commit_sha)
 
         solum.TLS.trace.clear()
         solum.TLS.trace.import_context(ctxt)
 
-        user_env = self._get_environment(ctxt, git_url, assembly_id)
+        user_env = self._get_environment(ctxt, git_url,
+                                         assembly_id=assembly_id,
+                                         test_cmd=test_cmd)
         log_env = user_env.copy()
         if 'OS_AUTH_TOKEN' in log_env:
             del log_env['OS_AUTH_TOKEN']
@@ -440,7 +451,6 @@ class Handler(object):
         build_cmd = self._get_build_command(ctxt, 'build', source_uri,
                                             name, str(image_id),
                                             source_format, 'docker', '',
-                                            None,
                                             artifact_type)
 
         try:

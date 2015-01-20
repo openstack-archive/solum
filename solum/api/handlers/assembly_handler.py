@@ -152,6 +152,7 @@ class AssemblyHandler(handler.Handler):
         image.state = IMAGE_STATES.PENDING
         image.create(self.context)
         test_cmd = artifact.get('unittest_cmd')
+        run_cmd = artifact.get('run_cmd')
         repo_token = artifact.get('repo_token')
 
         git_info = {
@@ -173,7 +174,8 @@ class AssemblyHandler(handler.Handler):
             source_format=image.source_format,
             image_format=image.image_format,
             assembly_id=assem.id,
-            test_cmd=test_cmd)
+            test_cmd=test_cmd,
+            run_cmd=run_cmd)
 
     def get_all(self):
         """Return all assemblies, based on the query provided."""

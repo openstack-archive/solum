@@ -98,7 +98,7 @@ class TestAssemblyHandler(base.BaseTestCase):
             build_id=8, name='nodeus', assembly_id=8,
             git_info=git_info, test_cmd=None,
             base_image_id='auto', source_format='heroku',
-            image_format='qcow2')
+            image_format='qcow2', run_cmd=None)
 
         mock_kc.return_value.create_trust_context.assert_called_once_with()
 
@@ -176,7 +176,7 @@ class TestAssemblyHandler(base.BaseTestCase):
             build_id=8, name='nodeus', assembly_id=8,
             git_info=git_info,
             test_cmd=None, base_image_id='auto', source_format='heroku',
-            image_format='qcow2')
+            image_format='qcow2', run_cmd=None)
 
         mock_kc.return_value.create_trust_context.assert_called_once_with()
 

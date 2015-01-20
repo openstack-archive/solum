@@ -8,3 +8,4 @@ artifacts:
     href: https://github.com/jamesyli/cherrypy-helloworld.git
   language_pack: auto
   unittest_cmd: ./unit_tests.sh
+  run_cmd: python app.py
