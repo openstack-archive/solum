@@ -48,8 +48,10 @@ SERVICE_OPTS = [
                default='/tmp/solum',
                help='The path of param files to save to.'),
     cfg.StrOpt('image_storage',
-               default="docker_registry",
-               help='Option that indicates where to store DUs'),
+               default='docker_registry',
+               help='Image storage backend. This includes images created '
+               'for LanguagePacks and Deployment Units. Possible values are '
+               'docker_registry, swift and glance.'),
     cfg.StrOpt('docker_reg_endpoint',
                default="127.0.0.1",
                help='Docker registry endpoint'),

@@ -5,6 +5,7 @@ SCRIPT_START_TIME=`date +'%s'`
 LOG=${SOLUM_BUILD_LOG:="/opt/stack/logs/solum_build.log"}
 REUSE_IMAGES_IF_REPO_UNCHANGED=${REUSE_IMAGES_IF_REPO_UNCHANGED:="1"}
 GIT_PRIVATE_KEY=${REPO_DEPLOY_KEYS:-''}
+IMAGE_STORAGE=${IMAGE_STORAGE:-null}
 
 # TLOG, PRUN, etc. defined in common/utils
 HERE=$(dirname $0)
@@ -24,8 +25,8 @@ if [[ -z $OS_AUTH_TOKEN ]]; then
 fi
 
 # Check command line arguments
-if [ $# -lt 4 ]; then
-  TLOG Usage: $0 git_url lpname project_id base_image
+if [ $# -lt 3 ]; then
+  TLOG Usage: $0 git_url lpname project_id
   exit 1
 fi
 
@@ -42,9 +43,6 @@ shift
 LPNAME=$1
 shift
 TENANT=$1
-shift
-BASE_IMAGE=$1
-shift
 
 BASE_DIR=/dev/shm
 GIT_CHECKSUM=$(echo $GIT | md5sum | awk '{print $1;}')
@@ -58,23 +56,44 @@ if [ -d "$APP_DIR/build" ] ; then
   cd $APP_DIR/build
   PRUN sudo docker build -t $LPNAME .
   TLOG ===== finished docker build
-  sudo docker save "$LPNAME" | glance --os-auth-token $OS_AUTH_TOKEN image-create --container-format=docker --disk-format=raw --name "$LPNAME"
-  TLOG ===== finished uploading to glance
+  TLOG Uploading LP image to $IMAGE_STORAGE
+  if [[ $IMAGE_STORAGE == "glance" ]]; then
+    sudo docker save "$LPNAME" | glance --os-auth-token $OS_AUTH_TOKEN image-create --container-format=docker --disk-format=raw --name "$LPNAME"
+    TLOG ===== finished uploading LP to $IMAGE_STORAGE
+    image_id=$(app_glance_id $LPNAME)
+    # Tag the glance image as a solum language pack
+    TLOG ===== tagging glace image $image_id
+    glance --os-auth-token $OS_AUTH_TOKEN --os-image-api-version 2 image-tag-update $image_id 'solum::lp'
+  elif [[ $IMAGE_STORAGE == "swift" ]]; then
+    sudo docker save --output "$LPNAME" "$LPNAME"
+    swift --os-auth-token $OS_AUTH_TOKEN upload solum_lp --name "$LPNAME".tar
+    TLOG ===== finished uploading LP to $IMAGE_STORAGE
+    image_id=$LPNAME
+    sudo rm "$LPNAME".tar
+  elif [[ $IMAGE_STORAGE == "docker_registry" ]]; then
+    DOCKER_REGISTRY=${DOCKER_REGISTRY:-'10.0.2.15:5042'}
+    APP_NAME=$DOCKER_REGISTRY/$LPNAME
+    TLOG "APP_NAME=$APP_NAME"
+    PRUN sudo docker tag $LPNAME $APP_NAME .
+    sudo docker push $APP_NAME
+    TLOG ===== finished uploading LP to $IMAGE_STORAGE
+    image_id=$APP_NAME
+    PRUN sudo docker rmi $APP_NAME
+  else
+    TLOG Unsupported Image storage backend - $IMAGE_STORAGE
+    exit 1
+  fi
+
+  # Delete the local image once we've uploaded the image.
+  PRUN sudo docker rmi $LPNAME
 fi
-
-image_id=$(app_glance_id $LPNAME)
-
-# Tag the glance image as a solum language pack
-TLOG ===== tagging glace image $image_id
-glance --os-auth-token $OS_AUTH_TOKEN --os-image-api-version 2 image-tag-update $image_id 'solum::lp'
 
 TOTAL_TIME=$(elapsed $SCRIPT_START_TIME)
 TLOG ===== Total elapsed time: $TOTAL_TIME sec
 
-TLOG glance_image_id=$image_id
+TLOG image_external_ref=$image_id
 
 # Need stdout for solum-worker to parse the image_id
-echo glance_image_id=$image_id
-
+echo image_external_ref=$image_id
 
 exit 0
