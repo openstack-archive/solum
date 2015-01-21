@@ -27,10 +27,9 @@ class ComponentHandler(handler.Handler):
 
     def update(self, id, data):
         """Modify a resource."""
-        db_obj = objects.registry.Component.get_by_uuid(self.context, id)
-        db_obj.update(data)
-        db_obj.save(self.context)
-        return db_obj
+        updated = objects.registry.Component.safe_update(self.context,
+                                                         id, data)
+        return updated
 
     def delete(self, id):
         """Delete a resource."""

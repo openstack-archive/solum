@@ -21,6 +21,7 @@ from solum.common import context
 from solum.common import exception
 from solum.common import repo_utils
 from solum.common import solum_keystoneclient
+from solum.conductor import api as conductor_api
 from solum.deployer import api as deploy_api
 from solum import objects
 from solum.objects import assembly
@@ -90,10 +91,8 @@ class AssemblyHandler(handler.Handler):
 
     def update(self, id, data):
         """Modify a resource."""
-        db_obj = objects.registry.Assembly.get_by_uuid(self.context, id)
-        db_obj.update(data)
-        db_obj.save(self.context)
-        return db_obj
+        updated = objects.registry.Assembly.safe_update(self.context, id, data)
+        return updated
 
     def delete(self, id):
         """Delete a resource."""
@@ -103,8 +102,8 @@ class AssemblyHandler(handler.Handler):
         ksc = solum_keystoneclient.KeystoneClientV3(self.context)
         ksc.delete_trust(db_obj.trust_id)
 
-        db_obj.status = ASSEMBLY_STATES.DELETING
-        db_obj.save(self.context)
+        conductor_api.API(context=self.context).update_assembly(
+            db_obj.id, {'status': ASSEMBLY_STATES.DELETING})
 
         deploy_api.API(context=self.context).destroy(
             assem_id=db_obj.id)

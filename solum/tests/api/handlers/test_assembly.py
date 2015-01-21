@@ -52,15 +52,11 @@ class TestAssemblyHandler(base.BaseTestCase):
     def test_update(self, mock_registry):
         data = {'user_id': 'new_user_id',
                 'plan_uuid': 'input_plan_uuid'}
-        db_obj = fakes.FakeAssembly()
-        mock_registry.Assembly.get_by_uuid.return_value = db_obj
         handler = assembly_handler.AssemblyHandler(self.ctx)
-        res = handler.update('test_id', data)
-        self.assertEqual(db_obj.user_id, res.user_id)
-        db_obj.save.assert_called_once_with(self.ctx)
-        db_obj.update.assert_called_once_with(data)
-        mock_registry.Assembly.get_by_uuid.assert_called_once_with(self.ctx,
-                                                                   'test_id')
+        handler.update('test_id', data)
+        mock_registry.Assembly.safe_update.assert_called_once_with(self.ctx,
+                                                                   'test_id',
+                                                                   data)
 
     @mock.patch('solum.worker.api.API.perform_action')
     @mock.patch('solum.common.solum_keystoneclient.KeystoneClientV3')
@@ -186,18 +182,18 @@ class TestAssemblyHandler(base.BaseTestCase):
 
     @mock.patch('solum.common.solum_keystoneclient.KeystoneClientV3')
     @mock.patch('solum.deployer.api.API.destroy')
-    def test_delete(self, mock_deploy, mock_kc, mock_registry):
+    @mock.patch('solum.conductor.api.API.update_assembly')
+    def test_delete(self, mock_cond, mock_deploy, mock_kc, mock_registry):
         db_obj = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_uuid.return_value = db_obj
         handler = assembly_handler.AssemblyHandler(self.ctx)
         handler.delete('test_id')
-        db_obj.save.assert_called_once_with(self.ctx)
         mock_registry.Assembly.get_by_uuid.assert_called_once_with(self.ctx,
                                                                    'test_id')
         mock_kc.return_value.delete_trust.assert_called_once_with(
             'trust_worthy')
+        mock_cond.assert_called_once_with(db_obj.id, {'status': 'DELETING'})
         mock_deploy.assert_called_once_with(assem_id=db_obj.id)
-        self.assertEqual(STATES.DELETING, db_obj.status)
 
     def test_trigger_workflow(self, mock_registry):
         trigger_id = 1

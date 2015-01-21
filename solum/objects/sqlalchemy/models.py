@@ -32,6 +32,7 @@ from solum.common import exception
 from solum.common import yamlutils
 from solum import objects
 from solum.objects import sqlalchemy as object_sqla
+from solum.openstack.common import uuidutils
 
 
 def table_args():
@@ -128,10 +129,31 @@ class SolumBase(models.TimestampMixin, models.ModelBase):
         return any(name in d for d in (self.__dict__,
                                        self.__class__.__dict__))
 
+    def _is_updatable(self):
+        return True
+
     def update(self, data):
         for field in set(six.iterkeys(data)) - self._non_updatable_fields():
             if self._lazyhasattr(field):
                 setattr(self, field, data[field])
+
+    @classmethod
+    def safe_update(cls, context, id_or_uuid, data):
+        is_uuid = uuidutils.is_uuid_like(id_or_uuid)
+        try:
+            session = SolumBase.get_session()
+            with session.begin():
+                if is_uuid:
+                    query = session.query(cls).filter_by(uuid=id_or_uuid)
+                else:
+                    query = session.query(cls).filter_by(id=id_or_uuid)
+                obj = filter_by_project(context, query).one()
+                if obj._is_updatable():
+                    obj.update(data)
+                    session.merge(obj)
+            return obj
+        except exc.NoResultFound:
+            cls._raise_not_found(id_or_uuid)
 
     def save(self, context):
         if objects.transition_schema():

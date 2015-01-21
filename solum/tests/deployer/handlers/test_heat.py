@@ -38,10 +38,12 @@ class HandlerTest(base.BaseTestCase):
         handler.echo({}, 'foo')
         handler.echo.assert_called_once_with({}, 'foo')
 
+    @mock.patch('solum.conductor.api.API.update_assembly')
     @mock.patch('solum.common.catalog.get')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.common.clients.OpenStackClients')
-    def test_deploy(self, mock_clients, mock_registry, mock_get_templ):
+    def test_deploy(self, mock_clients, mock_registry,
+                    mock_get_templ, mock_cond):
         handler = heat_handler.Handler()
 
         fake_assembly = fakes.FakeAssembly()
@@ -61,7 +63,7 @@ class HandlerTest(base.BaseTestCase):
                          {"router:external": False,
                           "id": "private_net_id",
                           "subnets": ["private_subnet_id"]}]}
-        handler._update_assembly_status = mock.MagicMock()
+        handler._check_stack_status = mock.MagicMock()
         handler.deploy(self.ctx, 77, 'created_image_id')
         parameters = {'image': 'created_image_id',
                       'app_name': 'faker',
@@ -84,11 +86,12 @@ class HandlerTest(base.BaseTestCase):
                                                        'http://fake.ref',
                                                        'fake_id')
 
+    @mock.patch('solum.conductor.api.API.update_assembly')
     @mock.patch('solum.common.catalog.get')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.common.clients.OpenStackClients')
     def test_comp_name_error(self, mock_clients, mock_registry,
-                             mock_get_templ):
+                             mock_get_templ, mock_cond):
         handler = heat_handler.Handler()
 
         fake_assembly = fakes.FakeAssembly()
@@ -101,7 +104,7 @@ class HandlerTest(base.BaseTestCase):
             "id": "fake_id",
             "links": [{"href": "http://fake.ref",
                        "rel": "self"}]}}
-        handler._update_assembly_status = mock.MagicMock()
+        handler._check_stack_status = mock.MagicMock()
         handler.deploy(self.ctx, 77, 'created_image_id')
         assign_and_create_mock = mock_registry.Component.assign_and_create
         comp_name = 'Heat Stack for %s' % fake_assembly.name
@@ -109,12 +112,13 @@ class HandlerTest(base.BaseTestCase):
                           assign_and_create_mock.assert_called_once_with,
                           comp_name)
 
+    @mock.patch('solum.conductor.api.API.update_assembly')
     @mock.patch('solum.common.catalog.get')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.common.clients.OpenStackClients')
     @mock.patch('solum.deployer.handlers.heat.cfg.CONF.api.image_format')
     def test_deploy_docker(self, image_format, mock_clients, mock_registry,
-                           mock_get_templ):
+                           mock_get_templ, mock_cond):
         handler = heat_handler.Handler()
         image_format.return_value = "docker"
         fake_assembly = fakes.FakeAssembly()
@@ -127,7 +131,7 @@ class HandlerTest(base.BaseTestCase):
             "id": "fake_id",
             "links": [{"href": "http://fake.ref",
                        "rel": "self"}]}}
-        handler._update_assembly_status = mock.MagicMock()
+        handler._check_stack_status = mock.MagicMock()
         handler.deploy(self.ctx, 77, 'created_image_id')
         parameters = {'image': 'created_image_id',
                       'app_name': 'faker'}
@@ -144,30 +148,32 @@ class HandlerTest(base.BaseTestCase):
                                                        'http://fake.ref',
                                                        'fake_id')
 
+    @mock.patch('solum.conductor.api.API.update_assembly')
     @mock.patch('solum.common.clients.OpenStackClients')
-    def test_update_assembly_status(self, mock_clients):
+    def test_update_assembly_status(self, mock_clients, mock_ua):
         handler = heat_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
         stack = mock.MagicMock()
         stack.status = 'COMPLETE'
         mock_clients.heat().stacks.get.return_value = stack
         handler._parse_server_url = mock.MagicMock(return_value=('xyz'))
-        handler._update_assembly_status(self.ctx, fake_assembly, mock_clients,
-                                        'fake_id')
-        self.assertEqual(fake_assembly.status, 'READY')
-        fake_assembly.save.assert_called_once_with(self.ctx)
+        handler._check_stack_status(self.ctx, fake_assembly.id, mock_clients,
+                                    'fake_id')
+        mock_ua.assert_called_once_with(fake_assembly.id,
+                                        {'status': 'READY',
+                                         'application_uri': 'xyz'})
 
+    @mock.patch('solum.conductor.api.API.update_assembly')
     @mock.patch('solum.common.clients.OpenStackClients')
-    def test_update_assembly_status_failed(self, mock_clients):
+    def test_update_assembly_status_failed(self, mock_clients, mock_ua):
         handler = heat_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
         stack = mock.MagicMock()
         stack.status = 'FAILED'
         mock_clients.heat().stacks.get.return_value = stack
-        handler._update_assembly_status(self.ctx, fake_assembly, mock_clients,
-                                        'fake_id')
-        self.assertEqual(fake_assembly.status, 'ERROR')
-        fake_assembly.save.assert_called_once_with(self.ctx)
+        handler._check_stack_status(self.ctx, fake_assembly.id, mock_clients,
+                                    'fake_id')
+        mock_ua.assert_called_once_with(fake_assembly.id, {'status': 'ERROR'})
 
     def test_parse_server_url(self):
         handler = heat_handler.Handler()
@@ -211,9 +217,10 @@ class HandlerTest(base.BaseTestCase):
         mock_client.heat.stacks.delete.assert_called_once()
         fake_assem.destroy.assert_called_once()
 
+    @mock.patch('solum.conductor.api.API.update_assembly')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.common.clients.OpenStackClients')
-    def test_destroy_error(self, mock_client, mock_registry):
+    def test_destroy_error(self, mock_client, mock_registry, mock_cond):
         fake_assem = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assem
 
@@ -227,8 +234,8 @@ class HandlerTest(base.BaseTestCase):
         handler.destroy(self.ctx, fake_assem.id)
 
         mock_client.heat.stacks.delete.assert_called_once()
-        fake_assem.save.assert_called_once_with(self.ctx)
-        self.assertEqual(STATES.ERROR_STACK_DELETE_FAILED, fake_assem.status)
+        mock_cond.assert_called_once_with(
+            fake_assem.id, {'status': STATES.ERROR_STACK_DELETE_FAILED})
 
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.common.clients.OpenStackClients')

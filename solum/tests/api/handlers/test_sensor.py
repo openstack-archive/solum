@@ -43,23 +43,11 @@ class TestSensorHandler(base.BaseTestCase):
 
     def test_sensor_update(self, mock_registry):
         data = {'name': 'new_user_name'}
-        db_obj = fakes.FakeSensor()
-        mock_registry.Sensor.get_by_uuid.return_value = db_obj
         handler = sensor.SensorHandler(self.ctx)
-        res = handler.update('test_id', data)
-        self.assertEqual(db_obj.user_id, res.user_id)
-        self.assertEqual(db_obj.project_id, res.project_id)
-        self.assertEqual(db_obj.name, res.name)
-        self.assertEqual(db_obj.value, res.value)
-        self.assertEqual(db_obj.sensor_type, res.sensor_type)
-        self.assertEqual(db_obj.target_resource, res.target_resource)
-        self.assertEqual(db_obj.uuid, res.uuid)
-        self.assertEqual(db_obj.uri, res.uri)
-        self.assertEqual(db_obj.type, res.type)
-        db_obj.update.assert_called_once_with(data)
-        db_obj.save.assert_called_once_with(self.ctx)
-        mock_registry.Sensor.get_by_uuid.assert_called_once_with(self.ctx,
-                                                                 'test_id')
+        handler.update('test_id', data)
+        mock_registry.Sensor.safe_update.assert_called_once_with(self.ctx,
+                                                                 'test_id',
+                                                                 data)
 
     def test_sensor_create(self, mock_registry):
         data = {'name': 'new_name',

@@ -14,13 +14,15 @@
 
 """Solum Conductor default handler."""
 
+from sqlalchemy import exc as sqla_exc
+
 from solum import objects
-from solum.objects import image
+from solum.objects import assembly
 from solum.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
 
-IMAGE_STATES = image.States
+ASSEMBLY_STATES = assembly.States
 
 
 class Handler(object):
@@ -33,16 +35,23 @@ class Handler(object):
 
     def build_job_update(self, ctxt, build_id, state, description,
                          created_image_id, assembly_id):
-        image = objects.registry.Image.get_by_id(ctxt, build_id)
-        image.state = state
-        image.created_image_id = created_image_id
-        image.description = str(description)
-        image.save(ctxt)
+        to_update = {'state': state,
+                     'created_image_id': created_image_id,
+                     'description': str(description)}
+        try:
+            objects.registry.Image.safe_update(ctxt, build_id, to_update)
+        except sqla_exc.SQLAlchemyError as ex:
+            LOG.error("Failed to update image, ID: %s" % build_id)
+            LOG.exception(ex)
 
         # create the component if needed.
-        if assembly_id is not None:
+        if assembly_id is None:
+            return
+        try:
             assem = objects.registry.Assembly.get_by_id(ctxt,
                                                         assembly_id)
+            if assem.status == ASSEMBLY_STATES.DELETING:
+                return
             if not any([comp for comp in assem.components
                         if 'Image_Build' in comp.description]):
                 comp_name = "Heat_Stack_for_%s" % assem.name
@@ -55,15 +64,23 @@ class Handler(object):
                                                              'Image Build job',
                                                              created_image_id,
                                                              stack_id)
+        except sqla_exc.IntegrityError:
+            LOG.error("IntegrityError in creating Image_Build component,"
+                      " assembly %s may be deleted" % assembly_id)
 
-    def update_assembly_status(self, ctxt, assembly_id, status):
-        assem = objects.registry.Assembly.get_by_id(ctxt, assembly_id)
-        assem.status = status
-        assem.save(ctxt)
+    def update_assembly(self, ctxt, assembly_id, data):
+        try:
+            objects.registry.Assembly.safe_update(ctxt, assembly_id, data)
+        except sqla_exc.SQLAlchemyError as ex:
+            LOG.error("Failed to update assembly status, ID: %s" % assembly_id)
+            LOG.exception(ex)
 
     def update_image(self, ctxt, image_id, status, external_ref=None):
-        image = objects.registry.Image.get_by_id(ctxt, image_id)
-        image.state = status
+        to_update = {'state': status}
         if external_ref:
-            image.external_ref = external_ref
-        image.save(ctxt)
+            to_update['external_ref'] = external_ref
+        try:
+            objects.registry.Image.safe_update(ctxt, image_id, to_update)
+        except sqla_exc.SQLAlchemyError as ex:
+            LOG.error("Failed to update image, ID: %s" % image_id)
+            LOG.exception(ex)

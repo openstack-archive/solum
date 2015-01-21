@@ -87,7 +87,8 @@ def update_assembly_status(ctxt, assembly_id, status):
     if assembly_id is None:
         return
     LOG.debug('Updating assembly %s status to %s' % (assembly_id, status))
-    conductor_api.API(context=ctxt).update_assembly_status(assembly_id, status)
+    data = {'status': status}
+    conductor_api.API(context=ctxt).update_assembly(assembly_id, data)
 
 
 def update_lp_status(ctxt, image_id, status, external_ref=None):
@@ -262,6 +263,12 @@ class Handler(object):
                                     user_env['BUILD_ID'])
         LOG.debug("Build logs stored at %s" % logpath)
         out = None
+        assem = None
+        if assembly_id is not None:
+            assem = get_assembly_by_id(ctxt, assembly_id)
+            if assem.status == ASSEMBLY_STATES.DELETING:
+                return
+
         try:
             out = subprocess.Popen(build_cmd,
                                    env=user_env,
@@ -274,8 +281,7 @@ class Handler(object):
             update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.ERROR)
             return
 
-        if assembly_id is not None:
-            assem = get_assembly_by_id(ctxt, assembly_id)
+        if assem is not None:
             upload_task_log(ctxt, logpath, assem, user_env['BUILD_ID'],
                             'build')
 
@@ -337,6 +343,12 @@ class Handler(object):
         LOG.debug("Unittest logs stored at %s" % logpath)
 
         returncode = -1
+        assem = None
+        if assembly_id is not None:
+            assem = get_assembly_by_id(ctxt, assembly_id)
+            if assem.status == ASSEMBLY_STATES.DELETING:
+                return returncode
+
         try:
             runtest = subprocess.Popen(command, env=user_env,
                                        stdout=subprocess.PIPE)
@@ -345,8 +357,7 @@ class Handler(object):
             LOG.exception("Exception running unit tests:")
             LOG.exception(subex)
 
-        if assembly_id is not None:
-            assem = get_assembly_by_id(ctxt, assembly_id)
+        if assem is not None:
             upload_task_log(ctxt, logpath, assem, user_env['BUILD_ID'],
                             'unittest')
 

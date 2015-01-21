@@ -49,15 +49,10 @@ class TestInfrastructureStackHandler(base.BaseTestCase):
         data = {'user_id': 'new_user_id',
                 'image_id': 'new_image_id',
                 'heat_stack_id': 'new_stack_id'}
-        db_obj = fakes.FakeInfrastructureStack()
-        mock_registry.InfrastructureStack.get_by_uuid.return_value = db_obj
         handler = infra.InfrastructureStackHandler(self.ctx)
-        res = handler.update('test_id', data)
-        self.assertEqual(db_obj.user_id, res.user_id)
-        db_obj.save.assert_called_once_with(self.ctx)
-        db_obj.update.assert_called_once_with(data)
-        mock_registry.InfrastructureStack.get_by_uuid.assert_called_once_with(
-            self.ctx, 'test_id')
+        handler.update('test_id', data)
+        mock_registry.InfrastructureStack.safe_update.assert_called_once_with(
+            self.ctx, 'test_id', data)
 
     @mock.patch('solum.common.clients.OpenStackClients')
     @mock.patch('solum.common.catalog.get')

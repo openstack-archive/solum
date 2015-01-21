@@ -55,12 +55,15 @@ class PlanHandler(handler.Handler):
     def update(self, id, data):
         """Modify existing plan."""
         db_obj = objects.registry.Plan.get_by_uuid(self.context, id)
-        if 'name' in data:
-            db_obj.name = data['name']
         db_obj.raw_content.update(dict((k, v) for k, v in data.items()
                                        if k != 'parameters'))
-        db_obj.save(self.context)
-        return db_obj
+        to_update = {'raw_content': db_obj.raw_content}
+        if 'name' in data:
+            to_update['name'] = data['name']
+
+        updated = objects.registry.Plan.safe_update(self.context,
+                                                    id, to_update)
+        return updated
 
     def delete(self, id):
         """Delete existing plan."""

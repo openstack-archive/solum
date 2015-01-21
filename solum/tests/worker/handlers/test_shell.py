@@ -110,7 +110,7 @@ class HandlerTest(base.BaseTestCase):
 
     @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
     @mock.patch('solum.objects.registry')
-    @mock.patch('solum.conductor.api.API.update_assembly_status')
+    @mock.patch('solum.conductor.api.API.update_assembly')
     @mock.patch('solum.conductor.api.API.build_job_update')
     @mock.patch('solum.deployer.api.API.deploy')
     @mock.patch('subprocess.Popen')
@@ -144,7 +144,7 @@ class HandlerTest(base.BaseTestCase):
 
         self.assertEqual(expected, mock_b_update.call_args_list)
 
-        expected = [mock.call(44, 'BUILDING')]
+        expected = [mock.call(44, {'status': 'BUILDING'})]
         self.assertEqual(expected, mock_uas.call_args_list)
 
         expected = [mock.call(assembly_id=44, image_id=fake_glance_id)]
@@ -153,7 +153,7 @@ class HandlerTest(base.BaseTestCase):
     @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.conductor.api.API.build_job_update')
-    @mock.patch('solum.conductor.api.API.update_assembly_status')
+    @mock.patch('solum.conductor.api.API.update_assembly')
     @mock.patch('solum.deployer.api.API.deploy')
     @mock.patch('subprocess.Popen')
     @mock.patch('ast.literal_eval')
@@ -192,7 +192,7 @@ class HandlerTest(base.BaseTestCase):
 
         self.assertEqual(expected, mock_b_update.call_args_list)
 
-        expected = [mock.call(44, 'BUILDING')]
+        expected = [mock.call(44, {'status': 'BUILDING'})]
         self.assertEqual(expected, mock_uas.call_args_list)
 
         expected = [mock.call(assembly_id=44, image_id=fake_glance_id)]
@@ -201,7 +201,7 @@ class HandlerTest(base.BaseTestCase):
     @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.conductor.api.API.build_job_update')
-    @mock.patch('solum.conductor.api.API.update_assembly_status')
+    @mock.patch('solum.conductor.api.API.update_assembly')
     @mock.patch('solum.deployer.api.API.deploy')
     @mock.patch('subprocess.Popen')
     @mock.patch('shelve.open')
@@ -249,7 +249,7 @@ class HandlerTest(base.BaseTestCase):
 
         self.assertEqual(expected, mock_b_update.call_args_list)
 
-        expected = [mock.call(44, 'BUILDING')]
+        expected = [mock.call(44, {'status': 'BUILDING'})]
         self.assertEqual(expected, mock_uas.call_args_list)
 
         expected = [mock.call(assembly_id=44, image_id=fake_glance_id)]
@@ -258,7 +258,7 @@ class HandlerTest(base.BaseTestCase):
     @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.conductor.api.API.build_job_update')
-    @mock.patch('solum.conductor.api.API.update_assembly_status')
+    @mock.patch('solum.conductor.api.API.update_assembly')
     @mock.patch('subprocess.Popen')
     def test_build_fail(self, mock_popen, mock_uas, mock_b_update,
                         mock_registry, mock_get_env):
@@ -288,14 +288,14 @@ class HandlerTest(base.BaseTestCase):
 
         self.assertEqual(expected, mock_b_update.call_args_list)
 
-        expected = [mock.call(44, 'BUILDING'),
-                    mock.call(44, 'ERROR')]
+        expected = [mock.call(44, {'status': 'BUILDING'}),
+                    mock.call(44, {'status': 'ERROR'})]
         self.assertEqual(expected, mock_uas.call_args_list)
 
     @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.conductor.api.API.build_job_update')
-    @mock.patch('solum.conductor.api.API.update_assembly_status')
+    @mock.patch('solum.conductor.api.API.update_assembly')
     @mock.patch('subprocess.Popen')
     def test_build_error(self, mock_popen, mock_uas, mock_b_update,
                          mock_registry, mock_get_env):
@@ -324,8 +324,8 @@ class HandlerTest(base.BaseTestCase):
 
         self.assertEqual(expected, mock_b_update.call_args_list)
 
-        expected = [mock.call(44, 'BUILDING'),
-                    mock.call(44, 'ERROR')]
+        expected = [mock.call(44, {'status': 'BUILDING'}),
+                    mock.call(44, {'status': 'ERROR'})]
         self.assertEqual(expected, mock_uas.call_args_list)
 
     @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
@@ -481,7 +481,7 @@ class TestNotifications(base.BaseTestCase):
         self.ctx = utils.dummy_context()
         self.db = self.useFixture(utils.Database())
 
-    @mock.patch('solum.conductor.api.API.update_assembly_status')
+    @mock.patch('solum.conductor.api.API.update_assembly')
     @mock.patch('solum.objects.registry')
     def test_update_assembly_status(self, mock_registry, mock_uas):
         mock_assembly = mock.MagicMock()
@@ -492,7 +492,7 @@ class TestNotifications(base.BaseTestCase):
         self.assertEqual(mock_registry.save.call_count, 0)
         self.assertEqual(mock_uas.call_count, 1)
 
-    @mock.patch('solum.conductor.api.API.update_assembly_status')
+    @mock.patch('solum.conductor.api.API.update_assembly')
     @mock.patch('solum.objects.registry')
     def test_update_assembly_status_pass(self, mock_registry, mock_uas):
         shell_handler.update_assembly_status(self.ctx, None,

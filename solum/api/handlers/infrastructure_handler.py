@@ -34,11 +34,9 @@ class InfrastructureStackHandler(handler.Handler):
 
     def update(self, id, data):
         """Modify a stack."""
-        db_obj = objects.registry.InfrastructureStack.get_by_uuid(
-            self.context, id)
-        db_obj.update(data)
-        db_obj.save(self.context)
-        return db_obj
+        updated = objects.registry.InfrastructureStack.safe_update(
+            self.context, id, data)
+        return updated
 
     def delete(self, id):
         """Delete a stack."""

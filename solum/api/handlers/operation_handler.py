@@ -25,10 +25,9 @@ class OperationHandler(handler.Handler):
 
     def update(self, uuid, data):
         """Modify the operation."""
-        db_obj = objects.registry.Operation.get_by_uuid(self.context, uuid)
-        db_obj.update(data)
-        db_obj.save(self.context)
-        return db_obj
+        updated = objects.registry.Operation.safe_update(self.context,
+                                                         uuid, data)
+        return updated
 
     def delete(self, uuid):
         """Delete the operation."""

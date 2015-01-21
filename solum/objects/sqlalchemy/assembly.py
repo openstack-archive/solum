@@ -20,6 +20,8 @@ from solum.objects import assembly as abstract
 from solum.objects.sqlalchemy import component
 from solum.objects.sqlalchemy import models as sql
 
+ASSEMBLY_STATES = abstract.States
+
 
 class Assembly(sql.Base, abstract.Assembly):
     """Represent an assembly in sqlalchemy."""
@@ -57,6 +59,12 @@ class Assembly(sql.Base, abstract.Assembly):
 
     def _non_updatable_fields(self):
         return set(('uuid', 'id', 'project_id'))
+
+    def _is_updatable(self):
+        if self.status == ASSEMBLY_STATES.DELETING:
+            return False
+        else:
+            return True
 
     @property
     def plan_uuid(self):

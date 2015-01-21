@@ -43,15 +43,11 @@ class TestServiceHandler(base.BaseTestCase):
 
     def test_update(self, mock_registry):
         data = {'name': 'new_name'}
-        db_obj = fakes.FakeService()
-        mock_registry.Service.get_by_uuid.return_value = db_obj
         handler = service_handler.ServiceHandler(self.ctx)
-        res = handler.update('test_id', data)
-        self.assertEqual(db_obj.user_id, res.user_id)
-        db_obj.update.assert_called_once_with(data)
-        db_obj.save.assert_called_once_with(self.ctx)
-        mock_registry.Service.get_by_uuid.assert_called_once_with(self.ctx,
-                                                                  'test_id')
+        handler.update('test_id', data)
+        mock_registry.Service.safe_update.assert_called_once_with(self.ctx,
+                                                                  'test_id',
+                                                                  data)
 
     def test_create(self, mock_registry):
         data = {'name': 'new_name',

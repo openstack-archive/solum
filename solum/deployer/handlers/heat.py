@@ -18,12 +18,14 @@ import time
 
 from heatclient import exc
 from oslo.config import cfg
+from sqlalchemy import exc as sqla_exc
 import yaml
 
 from solum.common import catalog
 from solum.common import clients
 from solum.common import exception
 from solum.common import heat_utils
+from solum.conductor import api as conductor_api
 from solum import objects
 from solum.objects import assembly
 from solum.openstack.common import log as logging
@@ -55,6 +57,10 @@ cfg.CONF.register_group(OPT_GROUP)
 cfg.CONF.register_opts(SERVICE_OPTS, OPT_GROUP)
 cfg.CONF.import_opt('image_format', 'solum.api.handlers.assembly_handler',
                     group='api')
+
+
+def update_assembly(ctxt, assembly_id, data):
+    conductor_api.API(context=ctxt).update_assembly(assembly_id, data)
 
 
 class Handler(object):
@@ -94,8 +100,8 @@ class Handler(object):
             return
 
         if stack_id is not None:
-            assem.status = STATES.ERROR_STACK_DELETE_FAILED
-            assem.save(ctxt)
+            update_assembly(ctxt, assem_id,
+                            {'status': STATES.ERROR_STACK_DELETE_FAILED})
 
     def deploy(self, ctxt, assembly_id, image_id):
         osc = clients.OpenStackClients(ctxt)
@@ -114,13 +120,14 @@ class Handler(object):
             template = catalog.get('templates', template_flavor)
         except exception.ObjectNotFound as onf_ex:
             LOG.excepion(onf_ex)
-            assem.status = STATES.ERROR
-            assem.save(ctxt)
+            update_assembly(ctxt, assembly_id, {'status': STATES.ERROR})
             return
 
         stack_name = self._get_stack_name(assem)
-
         stack_id = self._find_id_if_stack_exists(assem)
+
+        if assem.status == STATES.DELETING:
+            return
 
         if stack_id is not None:
             osc.heat().stacks.update(stack_id,
@@ -136,19 +143,20 @@ class Handler(object):
             comp_name = 'Heat_Stack_for_%s' % assem.name
             comp_description = 'Heat Stack %s' % (
                 yaml.load(template).get('description'))
-            objects.registry.Component.assign_and_create(ctxt, assem,
-                                                         comp_name,
-                                                         'Heat Stack',
-                                                         comp_description,
-                                                         created_stack['stack']
-                                                         ['links'][0]['href'],
-                                                         stack_id)
-        assem.status = STATES.DEPLOYING
-        assem.save(ctxt)
+            try:
+                objects.registry.Component.assign_and_create(
+                    ctxt, assem, comp_name, 'Heat Stack', comp_description,
+                    created_stack['stack']['links'][0]['href'], stack_id)
+            except sqla_exc.IntegrityError:
+                LOG.error("IntegrityError in creating Heat Stack component,"
+                          " assembly %s may be deleted" % assembly_id)
+                update_assembly(ctxt, assembly_id, {'status': STATES.ERROR})
+                return
+        update_assembly(ctxt, assembly_id, {'status': STATES.DEPLOYING})
 
-        self._update_assembly_status(ctxt, assem, osc, stack_id)
+        self._check_stack_status(ctxt, assembly_id, osc, stack_id)
 
-    def _update_assembly_status(self, ctxt, assem, osc, stack_id):
+    def _check_stack_status(self, ctxt, assembly_id, osc, stack_id):
 
         wait_interval = cfg.CONF.deployer.wait_interval
         growth_factor = cfg.CONF.deployer.growth_factor
@@ -159,14 +167,13 @@ class Handler(object):
             if stack.status == 'COMPLETE':
                 host_url = self._parse_server_url(stack)
                 if host_url is not None:
-                    assem.status = STATES.READY
-                    assem.application_uri = host_url
-                    assem.save(ctxt)
+                    to_update = {'status': STATES.READY,
+                                 'application_uri': host_url}
+                    update_assembly(ctxt, assembly_id, to_update)
                     got_stack_status = True
                     break
             elif stack.status == 'FAILED':
-                assem.status = STATES.ERROR
-                assem.save(ctxt)
+                update_assembly(ctxt, assembly_id, {'status': STATES.ERROR})
                 got_stack_status = True
                 break
 
@@ -174,8 +181,8 @@ class Handler(object):
             wait_interval *= growth_factor
 
         if not got_stack_status:
-            assem.status = STATES.ERROR_STACK_CREATE_FAILED
-            assem.save(ctxt)
+            update_assembly(ctxt, assembly_id,
+                            {'status': STATES.ERROR_STACK_CREATE_FAILED})
 
     def _parse_server_url(self, heat_output):
         """Parse server url from heat-stack-show output."""

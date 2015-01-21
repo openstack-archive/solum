@@ -44,15 +44,11 @@ class TestComponentHandler(base.BaseTestCase):
     def test_update(self, mock_registry):
         data = {'user_id': 'new_user_id',
                 'assembly_id': 'new_assembly_id'}
-        db_obj = fakes.FakeComponent()
-        mock_registry.Component.get_by_uuid.return_value = db_obj
         handler = component_handler.ComponentHandler(self.ctx)
-        res = handler.update('test_id', data)
-        self.assertEqual(db_obj.user_id, res.user_id)
-        db_obj.update.assert_called_once_with(data)
-        db_obj.save.assert_called_once_with(self.ctx)
-        mock_registry.Component.get_by_uuid.assert_called_once_with(self.ctx,
-                                                                    'test_id')
+        handler.update('test_id', data)
+        mock_registry.Component.safe_update.assert_called_once_with(self.ctx,
+                                                                    'test_id',
+                                                                    data)
 
     def test_create(self, mock_registry):
         data = {'name': 'new_name',

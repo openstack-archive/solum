@@ -51,15 +51,11 @@ class TestPipelineHandler(base.BaseTestCase):
     def test_update(self, mock_registry):
         data = {'user_id': 'new_user_id',
                 'plan_uuid': 'input_plan_uuid'}
-        db_obj = fakes.FakePipeline()
-        mock_registry.Pipeline.get_by_uuid.return_value = db_obj
         handler = pipeline_handler.PipelineHandler(self.ctx)
-        res = handler.update('test_id', data)
-        self.assertEqual(db_obj.user_id, res.user_id)
-        db_obj.save.assert_called_once_with(self.ctx)
-        db_obj.update.assert_called_once_with(data)
-        mock_registry.Pipeline.get_by_uuid.assert_called_once_with(self.ctx,
-                                                                   'test_id')
+        handler.update('test_id', data)
+        mock_registry.Pipeline.safe_update.assert_called_once_with(self.ctx,
+                                                                   'test_id',
+                                                                   data)
 
     @mock.patch('solum.common.solum_keystoneclient.KeystoneClientV3')
     def test_create(self, mock_kc, mock_registry):

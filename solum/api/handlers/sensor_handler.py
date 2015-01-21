@@ -25,10 +25,8 @@ class SensorHandler(handler.Handler):
 
     def update(self, id, data):
         """Modify the sensor."""
-        db_obj = objects.registry.Sensor.get_by_uuid(self.context, id)
-        db_obj.update(data)
-        db_obj.save(self.context)
-        return db_obj
+        updated = objects.registry.Sensor.safe_update(self.context, id, data)
+        return updated
 
     def delete(self, id):
         """Delete the sensor."""

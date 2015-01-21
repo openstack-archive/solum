@@ -25,10 +25,9 @@ class ExtensionHandler(handler.Handler):
 
     def update(self, id, data):
         """Modify the extension."""
-        db_obj = objects.registry.Extension.get_by_uuid(self.context, id)
-        db_obj.update(data)
-        db_obj.save(self.context)
-        return db_obj
+        updated = objects.registry.Extension.safe_update(self.context,
+                                                         id, data)
+        return updated
 
     def delete(self, id):
         """Delete the extension."""

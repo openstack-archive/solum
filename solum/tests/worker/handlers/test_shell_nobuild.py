@@ -45,7 +45,7 @@ class HandlerTest(base.BaseTestCase):
     @mock.patch('solum.objects.registry')
     @mock.patch('subprocess.Popen')
     @mock.patch('solum.conductor.api.API.build_job_update')
-    @mock.patch('solum.conductor.api.API.update_assembly_status')
+    @mock.patch('solum.conductor.api.API.update_assembly')
     def test_unittest_and_build(self, mock_uas, mock_b_update, mock_popen,
                                 mock_registry, mock_req, mock_get_env):
         handler = shell_handler.Handler()
@@ -88,14 +88,14 @@ class HandlerTest(base.BaseTestCase):
                       stdout=-1)]
         self.assertEqual(expected, mock_popen.call_args_list)
 
-        expected = [mock.call(44, 'UNIT_TESTING'),
-                    mock.call(44, 'READY')]
+        expected = [mock.call(44, {'status': 'UNIT_TESTING'}),
+                    mock.call(44, {'status': 'READY'})]
         self.assertEqual(expected, mock_uas.call_args_list)
 
     @mock.patch('solum.worker.handlers.shell_nobuild.Handler._get_environment')
     @mock.patch('httplib2.Http.request')
     @mock.patch('subprocess.Popen')
-    @mock.patch('solum.conductor.api.API.update_assembly_status')
+    @mock.patch('solum.conductor.api.API.update_assembly')
     @mock.patch('solum.objects.registry')
     def test_unittest_no_build(self, mock_registry, mock_uas,
                                mock_popen, mock_req, mock_get_env):
@@ -136,8 +136,8 @@ class HandlerTest(base.BaseTestCase):
                       stdout=-1)]
         self.assertEqual(expected, mock_popen.call_args_list)
 
-        expected = [mock.call(44, 'UNIT_TESTING'),
-                    mock.call(44, 'UNIT_TESTING_FAILED')]
+        expected = [mock.call(44, {'status': 'UNIT_TESTING'}),
+                    mock.call(44, {'status': 'UNIT_TESTING_FAILED'})]
         self.assertEqual(expected, mock_uas.call_args_list)
 
 
@@ -147,7 +147,7 @@ class TestNotifications(base.BaseTestCase):
         self.ctx = utils.dummy_context()
         self.db = self.useFixture(utils.Database())
 
-    @mock.patch('solum.conductor.api.API.update_assembly_status')
+    @mock.patch('solum.conductor.api.API.update_assembly')
     @mock.patch('solum.objects.registry')
     def test_update_assembly_status(self, mock_registry, mock_uas):
         mock_assembly = mock.MagicMock()
@@ -158,7 +158,7 @@ class TestNotifications(base.BaseTestCase):
         self.assertEqual(mock_registry.save.call_count, 0)
         self.assertEqual(mock_uas.call_count, 1)
 
-    @mock.patch('solum.conductor.api.API.update_assembly_status')
+    @mock.patch('solum.conductor.api.API.update_assembly')
     @mock.patch('solum.objects.registry')
     def test_update_assembly_status_pass(self, mock_registry, mock_uas):
         shell_handler.update_assembly_status(self.ctx, None,

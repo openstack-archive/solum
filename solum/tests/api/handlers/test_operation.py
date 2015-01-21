@@ -44,15 +44,11 @@ class TestOperationHandler(base.BaseTestCase):
 
     def test_update(self, mock_registry):
         data = {'user_id': 'new_user_id'}
-        db_obj = fakes.FakeOperation()
-        mock_registry.Operation.get_by_uuid.return_value = db_obj
         handler = operation.OperationHandler(self.ctx)
-        res = handler.update('test_id', data)
-        self.assertEqual(db_obj.user_id, res.user_id)
-        db_obj.save.assert_called_once_with(self.ctx)
-        db_obj.update.assert_called_once_with(data)
-        mock_registry.Operation.get_by_uuid.assert_called_once_with(self.ctx,
-                                                                    'test_id')
+        handler.update('test_id', data)
+        mock_registry.Operation.safe_update.assert_called_once_with(self.ctx,
+                                                                    'test_id',
+                                                                    data)
 
     def test_create(self, mock_registry):
         data = {'user_id': 'new_user_id'}
