@@ -143,9 +143,10 @@ class Handler(object):
             comp_name = 'Heat_Stack_for_%s' % assem.name
             comp_description = 'Heat Stack %s' % (
                 yaml.load(template).get('description'))
+
             try:
                 objects.registry.Component.assign_and_create(
-                    ctxt, assem, comp_name, 'Heat Stack', comp_description,
+                    ctxt, assem, comp_name, 'heat_stack', comp_description,
                     created_stack['stack']['links'][0]['href'], stack_id)
             except sqla_exc.IntegrityError:
                 LOG.error("IntegrityError in creating Heat Stack component,"

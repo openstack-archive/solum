@@ -81,7 +81,7 @@ class HandlerTest(base.BaseTestCase):
         assign_and_create_mock.assert_called_once_with(self.ctx,
                                                        fake_assembly,
                                                        comp_name,
-                                                       'Heat Stack',
+                                                       'heat_stack',
                                                        'Heat Stack test',
                                                        'http://fake.ref',
                                                        'fake_id')
@@ -143,7 +143,7 @@ class HandlerTest(base.BaseTestCase):
         assign_and_create_mock.assert_called_once_with(self.ctx,
                                                        fake_assembly,
                                                        comp_name,
-                                                       'Heat Stack',
+                                                       'heat_stack',
                                                        'Heat Stack test',
                                                        'http://fake.ref',
                                                        'fake_id')
