@@ -49,8 +49,8 @@ if [[ -z "$OS_AUTH_TOKEN" ]]; then
 fi
 
 # Check command line arguments
-if [ $# -lt 4 ]; then
-  TLOG Usage: $0 git_url appname project_id base_image
+if [ $# -lt 5 ]; then
+  TLOG Usage: $0 git_url appname project_id img_external_ref lp_name
   exit 1
 fi
 
@@ -68,7 +68,10 @@ APP=$1
 shift
 TENANT=$1
 shift
-BASE_IMAGE=$1
+IMG_EXTERNAL_REF=$1
+shift
+LP_NAME=$1
+
 
 BASE_DIR=/dev/shm
 GIT_CHECKSUM=$(git ls-remote $GIT | head -1 | awk '{print $1}')
@@ -104,24 +107,55 @@ else
 fi
 
 
-# Build the application slug
-TLOG "===>" Building App
-cd $APP_DIR/build
-COMMIT_ID=$(git log -1 --pretty=%H)
-BUILD_ID=$(git archive master | sudo docker run -i -a stdin \
-           -v /opt/solum/cache:/tmp/cache:rw  \
-           -v /opt/solum/buildpacks:/tmp/buildpacks:rw  \
-           solum/slugbuilder)
+# If languagepack is 'auto', build the application slug
+if [[ $IMG_EXTERNAL_REF == "auto" ]]; then
+  TLOG "===>" Building App
+  cd $APP_DIR/build
+  COMMIT_ID=$(git log -1 --pretty=%H)
+  BUILD_ID=$(git archive master | sudo docker run -i -a stdin \
+             -v /opt/solum/cache:/tmp/cache:rw  \
+             -v /opt/solum/buildpacks:/tmp/buildpacks:rw  \
+             solum/slugbuilder)
 
-PRUN sudo docker logs --tail=all -f $BUILD_ID
+  PRUN sudo docker logs --tail=all -f $BUILD_ID
 
-cd $APP_DIR
-PRUN sudo docker cp $BUILD_ID:/tmp/slug.tgz $APP_DIR/
-if [ ! -f "$APP_DIR/slug.tgz" ] ; then
-  TLOG Slug build failed see container: $BUILD_ID
-  exit
+  cd $APP_DIR
+  PRUN sudo docker cp $BUILD_ID:/tmp/slug.tgz $APP_DIR/
+  if [ ! -f "$APP_DIR/slug.tgz" ] ; then
+    TLOG Slug build failed see container: $BUILD_ID
+    exit
+  fi
+  PRUN sudo docker rm $BUILD_ID
+else
+  # download base image (languagepack) if it is not 'Auto'
+  TLOG downloading LP image from $IMAGE_STORAGE
+  if [[ $IMAGE_STORAGE == "glance" ]]; then
+    glance image-download --file $LP_NAME $IMG_EXTERNAL_REF
+    if [ $? != 0 ]; then
+      TLOG Failed to download image $IMG_EXTERNAL_REF from glance. && exit 1
+    fi
+    docker load -i $LP_NAME
+    sudo rm $LP_NAME
+    BASE_IMG=$LP_NAME
+  elif [[ $IMAGE_STORAGE == "swift" ]]; then
+    swift --os-auth-token $OS_AUTH_TOKEN download solum_lp $LP_NAME --output $IMG_EXTERNAL_REF
+    if [ $? != 0 ]; then
+      TLOG Failed to download image $IMG_EXTERNAL_REF from swift. && exit 1
+    fi
+    docker load -i $LP_NAME
+    BASE_IMG=${LP_NAME%%.tar}
+  elif [[ $IMAGE_STORAGE == "docker_registry" ]]; then
+    docker pull $IMG_EXTERNAL_REF
+    if [ $? != 0 ]; then
+      TLOG Failed to download image $IMG_EXTERNAL_REF from docker registry. && exit 1
+    fi
+    BASE_IMG=$IMG_EXTERNAL_REF
+  else
+    TLOG Unsupported Image storage backend - $IMAGE_STORAGE
+    exit 1
+  fi
 fi
-PRUN sudo docker rm $BUILD_ID
+
 remove_ssh_creds "$GIT_PRIVATE_KEY"
 
 # copy params to the working dir
@@ -133,25 +167,42 @@ if [[ $SOLUM_PARAMS != null ]]; then
   cp $SOLUM_PARAMS $APP_DIR/params/solum_params
 fi
 
+
 # Build the application image by injecting slug into runner
 # and push to docker-registry ( which is tied to glance )
-
-TLOG Creating Dockerfile
-cat << EOF > $APP_DIR/Dockerfile
-# SOLUM APP BUILDER
-FROM solum/slugrunner
-ADD slug.tgz /app
-ADD params /root/params
-EXPOSE 5000
-ENV port 5000
-ENTRYPOINT ["/runner/init"]
-CMD ["start","web"]
+if [[ $IMG_EXTERNAL_REF == "auto" ]]; then
+  TLOG Creating Dockerfile
+  cat << EOF > $APP_DIR/Dockerfile
+  # SOLUM APP BUILDER
+  FROM solum/slugrunner
+  ADD slug.tgz /app
+  ADD params /root/params
+  EXPOSE 5000
+  ENV port 5000
+  ENTRYPOINT ["/runner/init"]
+  CMD ["start","web"]
 EOF
+else
+  TLOG Creating Dockerfile
+  cat << EOF > $APP_DIR/Dockerfile
+  FROM $BASE_IMG
+  ADD build /app
+  ADD params /root/params
+  EXPOSE 5000
+  ENV port 5000
+  WORKDIR /solum/bin
+  RUN chmod +x build.sh
+  RUN ./build.sh
+  WORKDIR /app
+  CMD $RUN_CMD
+EOF
+fi
 
 cd $APP_DIR
 
 if [[ $IMAGE_STORAGE == "glance" ]]; then
   PRUN sudo docker build -t $APP .
+  [[ $? != 0 ]] && TLOG Docker build failed. && exit 1
   sudo docker save "$APP" | glance image-create --container-format=docker --disk-format=raw --name "$APP" > /dev/null
   image_id=$(app_glance_id $APP)
   sudo docker rmi $APP
@@ -161,12 +212,14 @@ elif [[ $IMAGE_STORAGE == "docker_registry" ]]; then
   APP_NAME=$DOCKER_REGISTRY/$ASSEMBLY_ID
   echo "APP_NAME=$APP_NAME"
   PRUN sudo docker build -t $APP_NAME .
+  [[ $? != 0 ]] && TLOG Docker build failed. && exit 1
   sudo docker push $APP_NAME
   image_id=$APP_NAME
   sudo docker rmi $APP_NAME
   TLOG ===== finished uploading DU to $IMAGE_STORAGE
 elif [[ $IMAGE_STORAGE == "swift" ]]; then
   PRUN sudo docker build -t $APP .
+  [[ $? != 0 ]] && TLOG Docker build failed. && exit 1
   sudo docker save --output "$APP" "$APP"
   swift --os-auth-token $OS_AUTH_TOKEN upload solum_du "$APP".tar
   image_id=$APP

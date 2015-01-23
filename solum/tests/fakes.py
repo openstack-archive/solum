@@ -294,7 +294,7 @@ class FakeImage(mock.Mock):
         self.source_format = 'dib'
         self.artifact_type = None
         self.state = 'PENDING'
-        self.external_ref = None
+        self.external_ref = 'docker_registry/image'
 
     def as_dict(self):
         return dict(user_id=self.user_id,
