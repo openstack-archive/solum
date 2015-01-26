@@ -13,6 +13,7 @@
 # under the License.
 
 import json
+import socket
 
 import httplib2
 from oslo.config import cfg
@@ -23,7 +24,21 @@ from solum.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
 
-cfg.CONF.import_opt('log_url_prefix', 'solum.worker.config', group='worker')
+http_timeout_opt = [
+    cfg.IntOpt('http_request_timeout',
+               default=2,
+               help='Timeout value in seconds for sending http requests')
+]
+
+CONF = cfg.CONF
+CONF.register_opts(http_timeout_opt, group='api')
+
+CONF.import_opt('log_url_prefix', 'solum.worker.config', group='worker')
+http_req_timeout = CONF.api.http_request_timeout
+
+
+def get_http_connection():
+    return httplib2.Http(timeout=http_req_timeout)
 
 
 def send_status(test_result, status_url, repo_token, pending=False):
@@ -46,15 +61,16 @@ def send_status(test_result, status_url, repo_token, pending=False):
                     'target_url': log_url}
 
         try:
-            http = httplib2.Http()
-            resp, _ = http.request(status_url, 'POST', headers=headers,
+            conn = get_http_connection()
+            resp, _ = conn.request(status_url, 'POST', headers=headers,
                                    body=json.dumps(data))
             if resp['status'] != '201':
                 LOG.debug("Failed to send back status. Error code %s,"
                           "status_url %s, repo_token %s" %
                           (resp['status'], status_url, repo_token))
-        except httplib2.HttpLib2Error as ex:
-            LOG.debug("Error in sending status %s" % ex)
+        except (httplib2.HttpLib2Error, socket.error) as ex:
+            LOG.warn("Error in sending status, status url: %s, repo token: %s,"
+                     " error: %s" % (status_url, repo_token, ex))
     else:
         LOG.debug("No url or token available to send back status")
 
@@ -70,13 +86,15 @@ def verify_artifact(artifact, collab_url):
 
     headers = {'Authorization': 'token ' + repo_token}
     try:
-        resp, _ = httplib2.Http().request(collab_url, headers=headers)
+        conn = get_http_connection()
+        resp, _ = conn.request(collab_url, headers=headers)
         if resp['status'] == '204':
             return True
         elif resp['status'] == '404':
             raise exception.RequestForbidden(
                 reason="User %s not allowed to do rebuild" %
                        collab_url.split('/')[-1])
-    except httplib2.HttpLib2Error as ex:
-        LOG.info("Error in verifying collaborator %s" % ex)
+    except (httplib2.HttpLib2Error, socket.error) as ex:
+        LOG.warn("Error in verifying collaborator, collab url: %s,"
+                 " error: %s" % (collab_url, ex))
     return False
