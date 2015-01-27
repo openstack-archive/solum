@@ -35,7 +35,7 @@ JSON_FORMAT_NAME_STR = 'JSON'
 PARAM_DEF_URI_STR = '%s/camp/v1_1/parameter_definition/%s'
 PARAM_DEFS_URI_STR = '%s/camp/v1_1/parameter_definitions/%s'
 
-PLAN_URI_STR = '%s/v1/plans/%s'
+PLAN_URI_STR = '%s/camp/v1_1/plans/%s'
 
 PLANS_URI_STR = '%s/camp/v1_1/plans'
 

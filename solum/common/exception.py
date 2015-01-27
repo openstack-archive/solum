@@ -147,11 +147,30 @@ def wrap_pecan_controller_exception(func):
         pecan.response.status = status_code
         pecan.response.text = six.text_type(OBFUSCATED_MSG %
                                             log_correlation_id)
+        # message body for errors is just a plain text message
+        # The following code is functionally equivalent to calling:
+        #
+        #     pecan.override_template(None, "text/plain")
+        #
+        # We do it this way to work around a bug in our unit-test framework
+        # in which the mocked request object isn't properly mocked in the pecan
+        # core module (gilbert.plz@oracle.com)
+        pecan.request.pecan['override_template'] = None
+        pecan.request.pecan['override_content_type'] = 'text/plain'
 
     def _func_client_error(excp, status_code):
         pecan.response.status = status_code
         pecan.response.text = six.text_type(excp)
-        pecan.response.content_type = None
+
+        # The following code is functionally equivalent to calling:
+        #
+        #     pecan.override_template(None, "text/plain")
+        #
+        # We do it this way to work around a bug in our unit-test framework
+        # in which the mocked request object isn't properly mocked in the pecan
+        # core module (gilbert.plz@oracle.com)
+        pecan.request.pecan['override_template'] = None
+        pecan.request.pecan['override_content_type'] = 'text/plain'
 
     return wrap_controller_exception(func,
                                      _func_server_error,
@@ -250,6 +269,17 @@ class ResourceStillReferenced(SolumException):
     msg_fmt = _("The %(name)s resource cannot be deleted because one or more"
                 " resources reference it.")
     code = 409
+
+
+class UnsupportedMediaType(SolumException):
+    msg_fmt = _("\'%(name)s\' is not a supported media type for the %(method)s"
+                " method of this resource")
+    code = 415
+
+
+class Unprocessable(SolumException):
+    msg_fmt = _("Server is incapable of processing the specified request.")
+    code = 422
 
 
 class PlanStillReferenced(ResourceStillReferenced):

@@ -21,7 +21,6 @@ import yaml
 
 from solum.api.controllers.v1.datamodel import plan as planmodel
 from solum.api.controllers.v1 import plan
-from solum.api.handlers import plan_handler
 from solum.common import exception
 from solum import objects
 from solum.tests import base
@@ -61,8 +60,7 @@ class TestPlanModuleFunctions(base.BaseTestCase):
     @mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
     def test_init_plan_v1(self, mock_req):
         yml_input_plan = {'version': 1, 'name': 'plan1', 'description': 'dsc'}
-        hand_v1, plan_v1 = plan.init_plan_v1(yml_input_plan)
-        self.assertIsInstance(hand_v1, plan_handler.PlanHandler)
+        plan_v1 = plan.init_plan_v1(yml_input_plan)
         self.assertIsInstance(plan_v1, planmodel.Plan)
 
 
