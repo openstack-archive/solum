@@ -32,7 +32,7 @@ trust_opts = [
                 help=_('Subset of trustor roles to be delegated to solum.')),
 ]
 cfg.CONF.register_opts(trust_opts)
-cfg.CONF.import_opt('auth_uri', 'keystoneclient.middleware.auth_token',
+cfg.CONF.import_opt('auth_uri', 'keystonemiddleware.auth_token',
                     group='keystone_authtoken')
 
 
@@ -59,7 +59,7 @@ class KeystoneClientV3(object):
             self.v3_endpoint = self.context.auth_url.replace('v2.0', 'v3')
         else:
             # Import auth_token to have keystone_authtoken settings setup.
-            importutils.import_module('keystoneclient.middleware.auth_token')
+            importutils.import_module('keystonemiddleware.auth_token')
             self.v3_endpoint = cfg.CONF.keystone_authtoken.auth_uri.replace(
                 'v2.0', 'v3')
 
@@ -144,7 +144,7 @@ class KeystoneClientV3(object):
 
     def _service_admin_creds(self):
         # Import auth_token to have keystone_authtoken settings setup.
-        importutils.import_module('keystoneclient.middleware.auth_token')
+        importutils.import_module('keystonemiddleware.auth_token')
         creds = {
             'username': cfg.CONF.keystone_authtoken.admin_user,
             'password': cfg.CONF.keystone_authtoken.admin_password,

@@ -36,7 +36,7 @@ class BarbicanClient(object):
 
     def _barbican_admin_init(self):
         # Import auth_token to have keystone_authtoken settings setup.
-        importutils.import_module('keystoneclient.middleware.auth_token')
+        importutils.import_module('keystonemiddleware.auth_token')
         auth = identity.v2.Password(
             auth_url=cfg.CONF.keystone_authtoken.auth_uri,
             username=cfg.CONF.keystone_authtoken.admin_user,

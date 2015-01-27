@@ -15,7 +15,7 @@
 
 import re
 
-from keystoneclient.middleware import auth_token
+from keystonemiddleware import auth_token
 from oslo.config import cfg
 from pecan import hooks
 
@@ -38,7 +38,6 @@ AUTH_OPTS = [
 
 CONF = cfg.CONF
 CONF.register_opts(AUTH_OPTS)
-CONF.register_opts(auth_token.opts, group=OPT_GROUP_NAME)
 
 PUBLIC_ENDPOINTS = [
     '^/?$',
@@ -84,7 +83,7 @@ class AuthProtocolWrapper(auth_token.AuthProtocol):
     def __call__(self, env, start_response):
         path = env.get('PATH_INFO')
         if AUTH.is_endpoint_public(path):
-            return self.app(env, start_response)
+            return self._app(env, start_response)
         return super(AuthProtocolWrapper, self).__call__(env, start_response)
 
 
@@ -122,7 +121,7 @@ class AuthInformationHook(hooks.PecanHook):
             raise Exception('Not authorized')
         auth_url = headers.get('X-Auth-Url')
         if auth_url is None:
-            importutils.import_module('keystoneclient.middleware.auth_token')
+            importutils.import_module('keystonemiddleware.auth_token')
             auth_url = cfg.CONF.keystone_authtoken.auth_uri
 
         auth_token_info = state.request.environ.get('keystone.token_info')
