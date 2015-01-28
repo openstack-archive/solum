@@ -18,6 +18,8 @@
 
 SCRIPT_START_TIME=$(date +"%s")
 
+IMAGE_STORAGE=${IMAGE_STORAGE:-null}
+ASSEMBLY_ID=${ASSEMBLY_ID:-null}
 PROJECT_ID=${PROJECT_ID:-null}
 BUILD_ID=${BUILD_ID:-null}
 TASKNAME=build
@@ -66,10 +68,9 @@ shift
 TENANT=$1
 shift
 BASE_IMAGE=$1
-shift
 
 BASE_DIR=/dev/shm
-GIT_CHECKSUM=$(echo $GIT | md5sum | awk '{print $1;}')
+GIT_CHECKSUM=$(git ls-remote $GIT | head -1 | awk '{print $1}')
 APP_DIR=$BASE_DIR/apps/$TENANT/$GIT_CHECKSUM
 PRUN silent mkdir -p $APP_DIR
 add_ssh_creds "$GIT_PRIVATE_KEY" "$APP_DIR"
@@ -147,10 +148,24 @@ CMD ["start","web"]
 EOF
 
 cd $APP_DIR
-PRUN sudo docker build -t $APP .
-sudo docker save "$APP" | glance image-create --container-format=docker --disk-format=raw --name "$APP" > /dev/null
+if [[ $IMAGE_STORAGE == "glance" ]]; then
+  PRUN sudo docker build -t $APP .
+  sudo docker save "$APP" | glance image-create --container-format=docker --disk-format=raw --name "$APP" > /dev/null
+  image_id=$(app_glance_id $APP)
+  echo "Done uploading DU to glance"
+elif [[ $IMAGE_STORAGE == "docker_registry" ]]; then
+  DOCKER_REGISTRY=${DOCKER_REGISTRY:-'10.0.2.15:5042'}
+  APP_NAME=$DOCKER_REGISTRY/$ASSEMBLY_ID
+  echo "APP_NAME=$APP_NAME"
+  PRUN sudo docker build -t $APP_NAME .
+  sudo docker push $APP_NAME
+  image_id=$APP_NAME
+  echo "Done uploading DU to Docker registry"
+else
+  echo "Unsupported DU storage backend."
+  exit 1
+fi
 
-image_id=$(app_glance_id $APP)
 
 TOTAL_TIME=$(elapsed $SCRIPT_START_TIME)
 TLOG ===== Total elapsed time: $TOTAL_TIME sec

@@ -1,0 +1,34 @@
+---
+heat_template_version: 2013-05-23
+outputs:
+  public_ip:
+    description: "public IP address of the deployed compute instance"
+    value:
+      get_attr:
+        - compute_instance
+        - accessIPv4
+parameters:
+  name:
+    default: CoreOS-Stack
+    description: "Name of booted CoreOS machine"
+    type: string
+  count:
+    type: number
+  flavor:
+    type: string
+resources:
+  compute_instance:
+    properties:
+      config_drive: "true"
+      flavor:
+        get_param: flavor
+      image: coreos
+      name: "CoreOS Stack"
+      user_data:
+        str_replace:
+          params:
+            count:
+              get_param: count
+          template: |
+      user_data_format: RAW
+    type: "OS::Nova::Server"

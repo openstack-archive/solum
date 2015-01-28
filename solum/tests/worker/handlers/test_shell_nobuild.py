@@ -172,18 +172,11 @@ class TestBuildCommand(base.BaseTestCase):
          dict(source_format='heroku', image_format='docker',
               base_image_id='auto',
               expect='lp-cedarish/docker/build-app')),
-        ('vmslug',
-         dict(source_format='heroku', image_format='qcow2',
-              base_image_id='auto',
-              expect='lp-cedarish/vm-slug/build-app')),
         ('dockerfile',
          dict(source_format='dockerfile', image_format='docker',
               base_image_id='auto',
               expect='lp-dockerfile/docker/build-app')),
-        ('dib',
-         dict(source_format='dib', image_format='qcow2',
-              base_image_id='xyz',
-              expect='diskimage-builder/vm-slug/build-app'))]
+    ]
 
     def test_build_cmd(self):
         ctx = utils.dummy_context()

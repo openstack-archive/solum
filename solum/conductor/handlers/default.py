@@ -36,7 +36,7 @@ class Handler(object):
     def build_job_update(self, ctxt, build_id, state, description,
                          created_image_id, assembly_id):
         to_update = {'state': state,
-                     'created_image_id': created_image_id,
+                     'external_ref': created_image_id,
                      'description': str(description)}
         try:
             objects.registry.Image.safe_update(ctxt, build_id, to_update)
