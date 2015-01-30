@@ -75,8 +75,425 @@ def mock_http_response():
 
 
 class HandlerTest(base.BaseTestCase):
+    scenarios = [
+        ('auto_lp_id',
+         dict(base_image_id='auto',
+              expected_img_id='auto',
+              img_name='')),
+        ('lp_id',
+         dict(base_image_id='1-2-3-4',
+              expected_img_id='docker_registry/image',
+              img_name='faker'))]
+
     def setUp(self):
         super(HandlerTest, self).setUp()
+        self.ctx = utils.dummy_context()
+
+    @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
+    @mock.patch('solum.objects.registry')
+    @mock.patch('solum.conductor.api.API.update_assembly')
+    @mock.patch('solum.conductor.api.API.build_job_update')
+    @mock.patch('solum.deployer.api.API.deploy')
+    @mock.patch('subprocess.Popen')
+    def test_build(self, mock_popen, mock_deploy, mock_b_update, mock_uas,
+                   mock_registry, mock_get_env):
+        handler = shell_handler.Handler()
+        fake_assembly = fakes.FakeAssembly()
+        fake_glance_id = str(uuid.uuid4())
+        mock_registry.Assembly.get_by_id.return_value = fake_assembly
+        fake_image = fakes.FakeImage()
+        mock_registry.Image.get_by_uuid.return_value = fake_image
+        mock_popen.return_value.communicate.return_value = [
+            'foo\ncreated_image_id=%s' % fake_glance_id, None]
+        test_env = mock_environment()
+        mock_get_env.return_value = test_env
+        git_info = mock_git_info()
+        handler.build(self.ctx, build_id=5, git_info=git_info,
+                      name='new_app', base_image_id=self.base_image_id,
+                      source_format='heroku', image_format='docker',
+                      assembly_id=44, test_cmd=None, run_cmd=None)
+
+        proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                '..', '..', '..', '..'))
+        script = os.path.join(proj_dir, 'contrib/lp-cedarish/docker/build-app')
+        mock_popen.assert_called_once_with([script, 'git://example.com/foo',
+                                            'new_app', self.ctx.tenant,
+                                            self.expected_img_id,
+                                            self.img_name],
+                                           env=test_env,
+                                           stdout=-1)
+        expected = [mock.call(5, 'BUILDING', 'Starting the image build',
+                              None, 44),
+                    mock.call(5, 'COMPLETE', 'built successfully',
+                              fake_glance_id, 44)]
+
+        self.assertEqual(expected, mock_b_update.call_args_list)
+
+        expected = [mock.call(44, {'status': 'BUILDING'})]
+        self.assertEqual(expected, mock_uas.call_args_list)
+
+        expected = [mock.call(assembly_id=44, image_id=fake_glance_id)]
+        self.assertEqual(expected, mock_deploy.call_args_list)
+
+    @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
+    @mock.patch('solum.objects.registry')
+    @mock.patch('solum.conductor.api.API.build_job_update')
+    @mock.patch('solum.conductor.api.API.update_assembly')
+    @mock.patch('solum.deployer.api.API.deploy')
+    @mock.patch('subprocess.Popen')
+    @mock.patch('ast.literal_eval')
+    def test_build_with_private_github_repo(
+            self, mock_ast, mock_popen, mock_deploy, mock_uas, mock_b_update,
+            mock_registry, mock_get_env):
+        handler = shell_handler.Handler()
+        fake_assembly = fakes.FakeAssembly()
+        fake_glance_id = str(uuid.uuid4())
+        mock_registry.Assembly.get_by_id.return_value = fake_assembly
+        fake_image = fakes.FakeImage()
+        mock_registry.Image.get_by_uuid.return_value = fake_image
+        handler._update_assembly_status = mock.MagicMock()
+        mock_popen.return_value.communicate.return_value = [
+            'foo\ncreated_image_id=%s' % fake_glance_id, None]
+        test_env = mock_environment()
+        mock_get_env.return_value = test_env
+        mock_ast.return_value = [{'source_url': 'git://example.com/foo',
+                                  'private_key': 'some-private-key'}]
+        git_info = mock_git_info()
+        handler.build(self.ctx, build_id=5,
+                      git_info=git_info, name='new_app',
+                      base_image_id=self.base_image_id, source_format='heroku',
+                      image_format='docker', assembly_id=44,
+                      test_cmd=None, run_cmd=None)
+
+        proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                '..', '..', '..', '..'))
+        script = os.path.join(proj_dir, 'contrib/lp-cedarish/docker/build-app')
+        mock_popen.assert_called_once_with([script, 'git://example.com/foo',
+                                            'new_app', self.ctx.tenant,
+                                            self.expected_img_id,
+                                            self.img_name],
+                                           env=test_env, stdout=-1)
+        expected = [mock.call(5, 'BUILDING', 'Starting the image build',
+                              None, 44),
+                    mock.call(5, 'COMPLETE', 'built successfully',
+                              fake_glance_id, 44)]
+
+        self.assertEqual(expected, mock_b_update.call_args_list)
+
+        expected = [mock.call(44, {'status': 'BUILDING'})]
+        self.assertEqual(expected, mock_uas.call_args_list)
+
+        expected = [mock.call(assembly_id=44, image_id=fake_glance_id)]
+        self.assertEqual(expected, mock_deploy.call_args_list)
+
+    @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
+    @mock.patch('solum.objects.registry')
+    @mock.patch('solum.conductor.api.API.build_job_update')
+    @mock.patch('solum.conductor.api.API.update_assembly')
+    @mock.patch('solum.deployer.api.API.deploy')
+    @mock.patch('subprocess.Popen')
+    @mock.patch('shelve.open')
+    @mock.patch('ast.literal_eval')
+    def test_build_with_private_github_repo_with_shelve(
+            self, mock_ast, mock_shelve, mock_popen,
+            mock_deploy, mock_uas, mock_b_update, mock_registry, mock_get_env):
+        handler = shell_handler.Handler()
+        fake_assembly = fakes.FakeAssembly()
+        fake_glance_id = str(uuid.uuid4())
+        mock_registry.Assembly.get_by_id.return_value = fake_assembly
+        fake_image = fakes.FakeImage()
+        mock_registry.Image.get_by_uuid.return_value = fake_image
+        handler._update_assembly_status = mock.MagicMock()
+        mock_popen.return_value.communicate.return_value = [
+            'foo\ncreated_image_id=%s' % fake_glance_id, None]
+        test_env = mock_environment()
+        mock_get_env.return_value = test_env
+        cfg.CONF.set_override('system_param_store', 'local_file',
+                              group='api')
+        cfg.CONF.set_override('system_param_file', 'some_file_path',
+                              group='api')
+        mock_shelve.return_value = mock.MagicMock()
+        base64.b64decode = mock.MagicMock()
+        mock_ast.return_value = [{'source_url': 'git://example.com/foo',
+                                  'private_key': 'some-private-key'}]
+
+        git_info = mock_git_info()
+        handler.build(self.ctx, build_id=5,
+                      git_info=git_info, name='new_app',
+                      base_image_id=self.base_image_id, source_format='heroku',
+                      image_format='docker', assembly_id=44,
+                      test_cmd=None, run_cmd=None)
+
+        proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                '..', '..', '..', '..'))
+        script = os.path.join(proj_dir, 'contrib/lp-cedarish/docker/build-app')
+        mock_shelve.call().__setitem__.assert_called_once()
+        mock_popen.assert_called_once_with([script, 'git://example.com/foo',
+                                            'new_app', self.ctx.tenant,
+                                            self.expected_img_id,
+                                            self.img_name],
+                                           env=test_env, stdout=-1)
+        expected = [mock.call(5, 'BUILDING', 'Starting the image build',
+                              None, 44),
+                    mock.call(5, 'COMPLETE', 'built successfully',
+                              fake_glance_id, 44)]
+
+        self.assertEqual(expected, mock_b_update.call_args_list)
+
+        expected = [mock.call(44, {'status': 'BUILDING'})]
+        self.assertEqual(expected, mock_uas.call_args_list)
+
+        expected = [mock.call(assembly_id=44, image_id=fake_glance_id)]
+        self.assertEqual(expected, mock_deploy.call_args_list)
+
+    @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
+    @mock.patch('solum.objects.registry')
+    @mock.patch('solum.conductor.api.API.build_job_update')
+    @mock.patch('solum.conductor.api.API.update_assembly')
+    @mock.patch('subprocess.Popen')
+    def test_build_fail(self, mock_popen, mock_uas, mock_b_update,
+                        mock_registry, mock_get_env):
+        handler = shell_handler.Handler()
+        fake_assembly = fakes.FakeAssembly()
+        mock_registry.Assembly.get_by_id.return_value = fake_assembly
+        fake_image = fakes.FakeImage()
+        mock_registry.Image.get_by_uuid.return_value = fake_image
+        mock_popen.return_value.communicate.return_value = [
+            'foo\ncreated_image_id=\n', None]
+        test_env = mock_environment()
+        mock_get_env.return_value = test_env
+        git_info = mock_git_info()
+        handler.build(self.ctx, build_id=5, git_info=git_info, name='new_app',
+                      base_image_id=self.base_image_id, source_format='heroku',
+                      image_format='docker', assembly_id=44, test_cmd=None,
+                      run_cmd=None)
+
+        proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                '..', '..', '..', '..'))
+        script = os.path.join(proj_dir, 'contrib/lp-cedarish/docker/build-app')
+        mock_popen.assert_called_once_with([script, 'git://example.com/foo',
+                                            'new_app', self.ctx.tenant,
+                                            self.expected_img_id,
+                                            self.img_name],
+                                           env=test_env, stdout=-1)
+
+        expected = [mock.call(5, 'BUILDING', 'Starting the image build',
+                              None, 44),
+                    mock.call(5, 'ERROR', 'image not created', None, 44)]
+
+        self.assertEqual(expected, mock_b_update.call_args_list)
+
+        expected = [mock.call(44, {'status': 'BUILDING'}),
+                    mock.call(44, {'status': 'ERROR'})]
+        self.assertEqual(expected, mock_uas.call_args_list)
+
+    @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
+    @mock.patch('solum.objects.registry')
+    @mock.patch('solum.conductor.api.API.build_job_update')
+    @mock.patch('solum.conductor.api.API.update_assembly')
+    @mock.patch('subprocess.Popen')
+    def test_build_error(self, mock_popen, mock_uas, mock_b_update,
+                         mock_registry, mock_get_env):
+        handler = shell_handler.Handler()
+        fake_assembly = fakes.FakeAssembly()
+        mock_registry.Assembly.get_by_id.return_value = fake_assembly
+        fake_image = fakes.FakeImage()
+        mock_registry.Image.get_by_uuid.return_value = fake_image
+        mock_popen.call.return_value = ValueError
+        test_env = mock_environment()
+        mock_get_env.return_value = test_env
+        git_info = mock_git_info()
+        handler.build(self.ctx, build_id=5, git_info=git_info, name='new_app',
+                      base_image_id=self.base_image_id, source_format='heroku',
+                      image_format='docker', assembly_id=44, test_cmd=None,
+                      run_cmd=None)
+
+        proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                '..', '..', '..', '..'))
+        script = os.path.join(proj_dir, 'contrib/lp-cedarish/docker/build-app')
+        mock_popen.assert_called_once_with([script, 'git://example.com/foo',
+                                            'new_app', self.ctx.tenant,
+                                            self.expected_img_id,
+                                            self.img_name],
+                                           env=test_env, stdout=-1)
+
+        expected = [mock.call(5, 'BUILDING', 'Starting the image build',
+                              None, 44),
+                    mock.call(5, 'ERROR', 'image not created', None, 44)]
+
+        self.assertEqual(expected, mock_b_update.call_args_list)
+
+        expected = [mock.call(44, {'status': 'BUILDING'}),
+                    mock.call(44, {'status': 'ERROR'})]
+        self.assertEqual(expected, mock_uas.call_args_list)
+
+    @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
+    @mock.patch('solum.objects.registry')
+    @mock.patch('subprocess.Popen')
+    @mock.patch('solum.worker.handlers.shell.update_assembly_status')
+    def test_unittest(self, mock_a_update, mock_popen, mock_registry,
+                      mock_get_env):
+        handler = shell_handler.Handler()
+        fake_assembly = fakes.FakeAssembly()
+        mock_registry.Assembly.get_by_id.return_value = fake_assembly
+        fake_image = fakes.FakeImage()
+        mock_registry.Image.get_by_uuid.return_value = fake_image
+        test_env = mock_environment()
+        mock_get_env.return_value = test_env
+        mock_popen.return_value.wait.return_value = 0
+        git_info = mock_git_info()
+        handler.unittest(self.ctx, build_id=5, name='new_app',
+                         base_image_id=self.base_image_id,
+                         source_format='chef',
+                         image_format='docker', assembly_id=fake_assembly.id,
+                         git_info=git_info, test_cmd='tox')
+
+        proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                '..', '..', '..', '..'))
+        script = os.path.join(proj_dir,
+                              'contrib/lp-chef/docker/unittest-app')
+        mock_popen.assert_called_once_with([script, 'git://example.com/foo',
+                                            '', self.ctx.tenant,
+                                            self.expected_img_id,
+                                            self.img_name],
+                                           env=test_env, stdout=-1)
+        expected = [mock.call(self.ctx, 8, 'UNIT_TESTING')]
+
+        self.assertEqual(expected, mock_a_update.call_args_list)
+
+    @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
+    @mock.patch('solum.objects.registry')
+    @mock.patch('subprocess.Popen')
+    @mock.patch('solum.worker.handlers.shell.update_assembly_status')
+    def test_unittest_failure(self, mock_a_update, mock_popen,
+                              mock_registry, mock_get_env):
+        handler = shell_handler.Handler()
+        fake_assembly = fakes.FakeAssembly()
+        mock_registry.Assembly.get_by_id.return_value = fake_assembly
+        fake_image = fakes.FakeImage()
+        mock_registry.Image.get_by_uuid.return_value = fake_image
+        test_env = mock_environment()
+        mock_get_env.return_value = test_env
+        mock_popen.return_value.wait.return_value = 1
+        git_info = mock_git_info()
+        handler.unittest(self.ctx, build_id=5, name='new_app',
+                         assembly_id=fake_assembly.id,
+                         base_image_id=self.base_image_id,
+                         source_format='chef',
+                         image_format='docker',
+                         git_info=git_info, test_cmd='tox')
+
+        proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                '..', '..', '..', '..'))
+        script = os.path.join(proj_dir,
+                              'contrib/lp-chef/docker/unittest-app')
+        mock_popen.assert_called_once_with([script, 'git://example.com/foo',
+                                            '', self.ctx.tenant,
+                                            self.expected_img_id,
+                                            self.img_name],
+                                           env=test_env, stdout=-1)
+        expected = [mock.call(self.ctx, 8, 'UNIT_TESTING'),
+                    mock.call(self.ctx, 8, 'UNIT_TESTING_FAILED')]
+
+        self.assertEqual(expected, mock_a_update.call_args_list)
+
+    @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
+    @mock.patch('solum.objects.registry')
+    @mock.patch('subprocess.Popen')
+    @mock.patch('solum.conductor.api.API.build_job_update')
+    @mock.patch('solum.worker.handlers.shell.update_assembly_status')
+    @mock.patch('solum.deployer.api.API.deploy')
+    def test_unittest_and_build(self, mock_deploy, mock_a_update,
+                                mock_b_update, mock_popen, mock_registry,
+                                mock_get_env):
+
+        handler = shell_handler.Handler()
+        fake_assembly = fakes.FakeAssembly()
+        fake_glance_id = str(uuid.uuid4())
+        mock_registry.Assembly.get_by_id.return_value = fake_assembly
+        fake_image = fakes.FakeImage()
+        mock_registry.Image.get_by_uuid.return_value = fake_image
+        mock_popen.return_value.wait.return_value = 0
+        mock_popen.return_value.communicate.return_value = [
+            'foo\ncreated_image_id=%s' % fake_glance_id, None]
+        test_env = mock_environment()
+        mock_get_env.return_value = test_env
+        git_info = mock_git_info()
+        handler.build(self.ctx, build_id=5, git_info=git_info, name='new_app',
+                      base_image_id=self.base_image_id, source_format='heroku',
+                      image_format='docker', assembly_id=44,
+                      test_cmd='faketests', run_cmd=None, artifact_type=None)
+
+        proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                '..', '..', '..', '..'))
+        util_dir = os.path.join(proj_dir, 'contrib', 'lp-cedarish', 'docker')
+        u_script = os.path.join(util_dir, 'unittest-app')
+        b_script = os.path.join(util_dir, 'build-app')
+
+        expected = [
+            mock.call([u_script, 'git://example.com/foo', '',
+                       self.ctx.tenant, self.expected_img_id,
+                       self.img_name], env=test_env,
+                      stdout=-1),
+            mock.call([b_script, 'git://example.com/foo', 'new_app',
+                       self.ctx.tenant, self.expected_img_id,
+                       self.img_name], env=test_env,
+                      stdout=-1)]
+        self.assertEqual(expected, mock_popen.call_args_list)
+
+        expected = [mock.call(5, 'BUILDING', 'Starting the image build',
+                              None, 44),
+                    mock.call(5, 'COMPLETE', 'built successfully',
+                              fake_glance_id, 44)]
+        self.assertEqual(expected, mock_b_update.call_args_list)
+
+        expected = [mock.call(self.ctx, 44, 'UNIT_TESTING'),
+                    mock.call(self.ctx, 44, 'BUILDING')]
+        self.assertEqual(expected, mock_a_update.call_args_list)
+
+        expected = [mock.call(assembly_id=44, image_id=fake_glance_id)]
+        self.assertEqual(expected, mock_deploy.call_args_list)
+
+    @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
+    @mock.patch('subprocess.Popen')
+    @mock.patch('solum.worker.handlers.shell.update_assembly_status')
+    @mock.patch('solum.objects.registry')
+    def test_unittest_no_build(self, mock_registry, mock_a_update, mock_popen,
+                               mock_get_env):
+        handler = shell_handler.Handler()
+        mock_assembly = mock.MagicMock()
+        mock_registry.Assembly.get_by_id.return_value = mock_assembly
+        fake_image = fakes.FakeImage()
+        mock_registry.Image.get_by_uuid.return_value = fake_image
+        mock_popen.return_value.wait.return_value = 1
+        test_env = mock_environment()
+        mock_get_env.return_value = test_env
+        git_info = mock_git_info()
+        handler.build(self.ctx, build_id=5, git_info=git_info, name='new_app',
+                      base_image_id=self.base_image_id, source_format='chef',
+                      image_format='docker', assembly_id=44,
+                      test_cmd='faketests', run_cmd=None)
+
+        proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                '..', '..', '..', '..'))
+        util_dir = os.path.join(proj_dir, 'contrib', 'lp-chef', 'docker')
+        u_script = os.path.join(util_dir, 'unittest-app')
+
+        expected = [
+            mock.call([u_script, 'git://example.com/foo', '',
+                       self.ctx.tenant, self.expected_img_id,
+                       self.img_name], env=test_env,
+                      stdout=-1)]
+        self.assertEqual(expected, mock_popen.call_args_list)
+
+        expected = [mock.call(self.ctx, 44, 'UNIT_TESTING'),
+                    mock.call(self.ctx, 44, 'UNIT_TESTING_FAILED')]
+        self.assertEqual(expected, mock_a_update.call_args_list)
+
+
+class HandlerUtilityTest(base.BaseTestCase):
+    def setUp(self):
+        super(HandlerUtilityTest, self).setUp()
         self.ctx = utils.dummy_context()
 
     @mock.patch('solum.worker.handlers.shell.LOG')
@@ -107,374 +524,6 @@ class HandlerTest(base.BaseTestCase):
                            mock.call('export key="ab\\"cd"\n'),
                            mock.call('#!/bin/bash\n')]
         self.assertEqual(expected_params, mock_file.write.call_args_list)
-
-    @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
-    @mock.patch('solum.objects.registry')
-    @mock.patch('solum.conductor.api.API.update_assembly')
-    @mock.patch('solum.conductor.api.API.build_job_update')
-    @mock.patch('solum.deployer.api.API.deploy')
-    @mock.patch('subprocess.Popen')
-    def test_build(self, mock_popen, mock_deploy, mock_b_update, mock_uas,
-                   mock_registry, mock_get_env):
-        handler = shell_handler.Handler()
-        fake_assembly = fakes.FakeAssembly()
-        fake_glance_id = str(uuid.uuid4())
-        mock_registry.Assembly.get_by_id.return_value = fake_assembly
-        mock_popen.return_value.communicate.return_value = [
-            'foo\ncreated_image_id=%s' % fake_glance_id, None]
-        test_env = mock_environment()
-        mock_get_env.return_value = test_env
-        git_info = mock_git_info()
-        handler.build(self.ctx, build_id=5, git_info=git_info,
-                      name='new_app', base_image_id='1-2-3-4',
-                      source_format='heroku', image_format='docker',
-                      assembly_id=44, test_cmd=None, run_cmd=None)
-
-        proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                '..', '..', '..', '..'))
-        script = os.path.join(proj_dir, 'contrib/lp-cedarish/docker/build-app')
-        mock_popen.assert_called_once_with([script, 'git://example.com/foo',
-                                            'new_app', self.ctx.tenant,
-                                            '1-2-3-4'], env=test_env,
-                                           stdout=-1)
-        expected = [mock.call(5, 'BUILDING', 'Starting the image build',
-                              None, 44),
-                    mock.call(5, 'COMPLETE', 'built successfully',
-                              fake_glance_id, 44)]
-
-        self.assertEqual(expected, mock_b_update.call_args_list)
-
-        expected = [mock.call(44, {'status': 'BUILDING'})]
-        self.assertEqual(expected, mock_uas.call_args_list)
-
-        expected = [mock.call(assembly_id=44, image_id=fake_glance_id)]
-        self.assertEqual(expected, mock_deploy.call_args_list)
-
-    @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
-    @mock.patch('solum.objects.registry')
-    @mock.patch('solum.conductor.api.API.build_job_update')
-    @mock.patch('solum.conductor.api.API.update_assembly')
-    @mock.patch('solum.deployer.api.API.deploy')
-    @mock.patch('subprocess.Popen')
-    @mock.patch('ast.literal_eval')
-    def test_build_with_private_github_repo(
-            self, mock_ast, mock_popen, mock_deploy, mock_uas, mock_b_update,
-            mock_registry, mock_get_env):
-        handler = shell_handler.Handler()
-        fake_assembly = fakes.FakeAssembly()
-        fake_glance_id = str(uuid.uuid4())
-        mock_registry.Assembly.get_by_id.return_value = fake_assembly
-        handler._update_assembly_status = mock.MagicMock()
-        mock_popen.return_value.communicate.return_value = [
-            'foo\ncreated_image_id=%s' % fake_glance_id, None]
-        test_env = mock_environment()
-        mock_get_env.return_value = test_env
-        mock_ast.return_value = [{'source_url': 'git://example.com/foo',
-                                  'private_key': 'some-private-key'}]
-        git_info = mock_git_info()
-        handler.build(self.ctx, build_id=5,
-                      git_info=git_info, name='new_app',
-                      base_image_id='1-2-3-4', source_format='heroku',
-                      image_format='docker', assembly_id=44,
-                      test_cmd=None, run_cmd=None)
-
-        proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                '..', '..', '..', '..'))
-        script = os.path.join(proj_dir, 'contrib/lp-cedarish/docker/build-app')
-        mock_popen.assert_called_once_with([script, 'git://example.com/foo',
-                                            'new_app', self.ctx.tenant,
-                                            '1-2-3-4'],
-                                           env=test_env, stdout=-1)
-        expected = [mock.call(5, 'BUILDING', 'Starting the image build',
-                              None, 44),
-                    mock.call(5, 'COMPLETE', 'built successfully',
-                              fake_glance_id, 44)]
-
-        self.assertEqual(expected, mock_b_update.call_args_list)
-
-        expected = [mock.call(44, {'status': 'BUILDING'})]
-        self.assertEqual(expected, mock_uas.call_args_list)
-
-        expected = [mock.call(assembly_id=44, image_id=fake_glance_id)]
-        self.assertEqual(expected, mock_deploy.call_args_list)
-
-    @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
-    @mock.patch('solum.objects.registry')
-    @mock.patch('solum.conductor.api.API.build_job_update')
-    @mock.patch('solum.conductor.api.API.update_assembly')
-    @mock.patch('solum.deployer.api.API.deploy')
-    @mock.patch('subprocess.Popen')
-    @mock.patch('shelve.open')
-    @mock.patch('ast.literal_eval')
-    def test_build_with_private_github_repo_with_shelve(
-            self, mock_ast, mock_shelve, mock_popen,
-            mock_deploy, mock_uas, mock_b_update, mock_registry, mock_get_env):
-        handler = shell_handler.Handler()
-        fake_assembly = fakes.FakeAssembly()
-        fake_glance_id = str(uuid.uuid4())
-        mock_registry.Assembly.get_by_id.return_value = fake_assembly
-        handler._update_assembly_status = mock.MagicMock()
-        mock_popen.return_value.communicate.return_value = [
-            'foo\ncreated_image_id=%s' % fake_glance_id, None]
-        test_env = mock_environment()
-        mock_get_env.return_value = test_env
-        cfg.CONF.set_override('system_param_store', 'local_file',
-                              group='api')
-        cfg.CONF.set_override('system_param_file', 'some_file_path',
-                              group='api')
-        mock_shelve.return_value = mock.MagicMock()
-        base64.b64decode = mock.MagicMock()
-        mock_ast.return_value = [{'source_url': 'git://example.com/foo',
-                                  'private_key': 'some-private-key'}]
-
-        git_info = mock_git_info()
-        handler.build(self.ctx, build_id=5,
-                      git_info=git_info, name='new_app',
-                      base_image_id='1-2-3-4', source_format='heroku',
-                      image_format='docker', assembly_id=44,
-                      test_cmd=None, run_cmd=None)
-
-        proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                '..', '..', '..', '..'))
-        script = os.path.join(proj_dir, 'contrib/lp-cedarish/docker/build-app')
-        mock_shelve.call().__setitem__.assert_called_once()
-        mock_popen.assert_called_once_with([script, 'git://example.com/foo',
-                                            'new_app', self.ctx.tenant,
-                                            '1-2-3-4'],
-                                           env=test_env, stdout=-1)
-        expected = [mock.call(5, 'BUILDING', 'Starting the image build',
-                              None, 44),
-                    mock.call(5, 'COMPLETE', 'built successfully',
-                              fake_glance_id, 44)]
-
-        self.assertEqual(expected, mock_b_update.call_args_list)
-
-        expected = [mock.call(44, {'status': 'BUILDING'})]
-        self.assertEqual(expected, mock_uas.call_args_list)
-
-        expected = [mock.call(assembly_id=44, image_id=fake_glance_id)]
-        self.assertEqual(expected, mock_deploy.call_args_list)
-
-    @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
-    @mock.patch('solum.objects.registry')
-    @mock.patch('solum.conductor.api.API.build_job_update')
-    @mock.patch('solum.conductor.api.API.update_assembly')
-    @mock.patch('subprocess.Popen')
-    def test_build_fail(self, mock_popen, mock_uas, mock_b_update,
-                        mock_registry, mock_get_env):
-        handler = shell_handler.Handler()
-        fake_assembly = fakes.FakeAssembly()
-        mock_registry.Assembly.get_by_id.return_value = fake_assembly
-        mock_popen.return_value.communicate.return_value = [
-            'foo\ncreated_image_id=\n', None]
-        test_env = mock_environment()
-        mock_get_env.return_value = test_env
-        git_info = mock_git_info()
-        handler.build(self.ctx, build_id=5, git_info=git_info, name='new_app',
-                      base_image_id='1-2-3-4', source_format='heroku',
-                      image_format='docker', assembly_id=44, test_cmd=None,
-                      run_cmd=None)
-
-        proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                '..', '..', '..', '..'))
-        script = os.path.join(proj_dir, 'contrib/lp-cedarish/docker/build-app')
-        mock_popen.assert_called_once_with([script, 'git://example.com/foo',
-                                            'new_app', self.ctx.tenant,
-                                            '1-2-3-4'],
-                                           env=test_env, stdout=-1)
-
-        expected = [mock.call(5, 'BUILDING', 'Starting the image build',
-                              None, 44),
-                    mock.call(5, 'ERROR', 'image not created', None, 44)]
-
-        self.assertEqual(expected, mock_b_update.call_args_list)
-
-        expected = [mock.call(44, {'status': 'BUILDING'}),
-                    mock.call(44, {'status': 'ERROR'})]
-        self.assertEqual(expected, mock_uas.call_args_list)
-
-    @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
-    @mock.patch('solum.objects.registry')
-    @mock.patch('solum.conductor.api.API.build_job_update')
-    @mock.patch('solum.conductor.api.API.update_assembly')
-    @mock.patch('subprocess.Popen')
-    def test_build_error(self, mock_popen, mock_uas, mock_b_update,
-                         mock_registry, mock_get_env):
-        handler = shell_handler.Handler()
-        fake_assembly = fakes.FakeAssembly()
-        mock_registry.Assembly.get_by_id.return_value = fake_assembly
-        mock_popen.call.return_value = ValueError
-        test_env = mock_environment()
-        mock_get_env.return_value = test_env
-        git_info = mock_git_info()
-        handler.build(self.ctx, build_id=5, git_info=git_info, name='new_app',
-                      base_image_id='1-2-3-4', source_format='heroku',
-                      image_format='docker', assembly_id=44, test_cmd=None,
-                      run_cmd=None)
-
-        proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                '..', '..', '..', '..'))
-        script = os.path.join(proj_dir, 'contrib/lp-cedarish/docker/build-app')
-        mock_popen.assert_called_once_with([script, 'git://example.com/foo',
-                                            'new_app', self.ctx.tenant,
-                                            '1-2-3-4'],
-                                           env=test_env, stdout=-1)
-
-        expected = [mock.call(5, 'BUILDING', 'Starting the image build',
-                              None, 44),
-                    mock.call(5, 'ERROR', 'image not created', None, 44)]
-
-        self.assertEqual(expected, mock_b_update.call_args_list)
-
-        expected = [mock.call(44, {'status': 'BUILDING'}),
-                    mock.call(44, {'status': 'ERROR'})]
-        self.assertEqual(expected, mock_uas.call_args_list)
-
-    @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
-    @mock.patch('solum.objects.registry')
-    @mock.patch('subprocess.Popen')
-    @mock.patch('solum.worker.handlers.shell.update_assembly_status')
-    def test_unittest(self, mock_a_update, mock_popen, mock_registry,
-                      mock_get_env):
-        handler = shell_handler.Handler()
-        fake_assembly = fakes.FakeAssembly()
-        mock_registry.Assembly.get_by_id.return_value = fake_assembly
-        test_env = mock_environment()
-        mock_get_env.return_value = test_env
-        mock_popen.return_value.wait.return_value = 0
-        git_info = mock_git_info()
-        handler.unittest(self.ctx, build_id=5, name='new_app',
-                         base_image_id='1-2-3-4', source_format='chef',
-                         image_format='docker', assembly_id=fake_assembly.id,
-                         git_info=git_info, test_cmd='tox')
-
-        proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                '..', '..', '..', '..'))
-        script = os.path.join(proj_dir,
-                              'contrib/lp-chef/docker/unittest-app')
-        mock_popen.assert_called_once_with([script, 'git://example.com/foo',
-                                            '', self.ctx.tenant],
-                                           env=test_env, stdout=-1)
-        expected = [mock.call(self.ctx, 8, 'UNIT_TESTING')]
-
-        self.assertEqual(expected, mock_a_update.call_args_list)
-
-    @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
-    @mock.patch('solum.objects.registry')
-    @mock.patch('subprocess.Popen')
-    @mock.patch('solum.worker.handlers.shell.update_assembly_status')
-    def test_unittest_failure(self, mock_a_update, mock_popen,
-                              mock_registry, mock_get_env):
-        handler = shell_handler.Handler()
-        fake_assembly = fakes.FakeAssembly()
-        mock_registry.Assembly.get_by_id.return_value = fake_assembly
-        test_env = mock_environment()
-        mock_get_env.return_value = test_env
-        mock_popen.return_value.wait.return_value = 1
-        git_info = mock_git_info()
-        handler.unittest(self.ctx, build_id=5, name='new_app',
-                         assembly_id=fake_assembly.id,
-                         base_image_id='1-2-3-4', source_format='chef',
-                         image_format='docker',
-                         git_info=git_info, test_cmd='tox')
-
-        proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                '..', '..', '..', '..'))
-        script = os.path.join(proj_dir,
-                              'contrib/lp-chef/docker/unittest-app')
-        mock_popen.assert_called_once_with([script, 'git://example.com/foo',
-                                            '', self.ctx.tenant],
-                                           env=test_env, stdout=-1)
-        expected = [mock.call(self.ctx, 8, 'UNIT_TESTING'),
-                    mock.call(self.ctx, 8, 'UNIT_TESTING_FAILED')]
-
-        self.assertEqual(expected, mock_a_update.call_args_list)
-
-    @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
-    @mock.patch('solum.objects.registry')
-    @mock.patch('subprocess.Popen')
-    @mock.patch('solum.conductor.api.API.build_job_update')
-    @mock.patch('solum.worker.handlers.shell.update_assembly_status')
-    @mock.patch('solum.deployer.api.API.deploy')
-    def test_unittest_and_build(self, mock_deploy, mock_a_update,
-                                mock_b_update, mock_popen, mock_registry,
-                                mock_get_env):
-
-        handler = shell_handler.Handler()
-        fake_assembly = fakes.FakeAssembly()
-        fake_glance_id = str(uuid.uuid4())
-        mock_registry.Assembly.get_by_id.return_value = fake_assembly
-        mock_popen.return_value.wait.return_value = 0
-        mock_popen.return_value.communicate.return_value = [
-            'foo\ncreated_image_id=%s' % fake_glance_id, None]
-        test_env = mock_environment()
-        mock_get_env.return_value = test_env
-        git_info = mock_git_info()
-        handler.build(self.ctx, build_id=5, git_info=git_info, name='new_app',
-                      base_image_id='1-2-3-4', source_format='heroku',
-                      image_format='docker', assembly_id=44,
-                      test_cmd='faketests', run_cmd=None, artifact_type=None)
-
-        proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                '..', '..', '..', '..'))
-        util_dir = os.path.join(proj_dir, 'contrib', 'lp-cedarish', 'docker')
-        u_script = os.path.join(util_dir, 'unittest-app')
-        b_script = os.path.join(util_dir, 'build-app')
-
-        expected = [
-            mock.call([u_script, 'git://example.com/foo', '',
-                       self.ctx.tenant], env=test_env,
-                      stdout=-1),
-            mock.call([b_script, 'git://example.com/foo', 'new_app',
-                       self.ctx.tenant, '1-2-3-4'], env=test_env,
-                      stdout=-1)]
-        self.assertEqual(expected, mock_popen.call_args_list)
-
-        expected = [mock.call(5, 'BUILDING', 'Starting the image build',
-                              None, 44),
-                    mock.call(5, 'COMPLETE', 'built successfully',
-                              fake_glance_id, 44)]
-        self.assertEqual(expected, mock_b_update.call_args_list)
-
-        expected = [mock.call(self.ctx, 44, 'UNIT_TESTING'),
-                    mock.call(self.ctx, 44, 'BUILDING')]
-        self.assertEqual(expected, mock_a_update.call_args_list)
-
-        expected = [mock.call(assembly_id=44, image_id=fake_glance_id)]
-        self.assertEqual(expected, mock_deploy.call_args_list)
-
-    @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
-    @mock.patch('subprocess.Popen')
-    @mock.patch('solum.worker.handlers.shell.update_assembly_status')
-    @mock.patch('solum.objects.registry')
-    def test_unittest_no_build(self, mock_registry, mock_a_update, mock_popen,
-                               mock_get_env):
-        handler = shell_handler.Handler()
-        mock_assembly = mock.MagicMock()
-        mock_registry.Assembly.get_by_id.return_value = mock_assembly
-        mock_popen.return_value.wait.return_value = 1
-        test_env = mock_environment()
-        mock_get_env.return_value = test_env
-        git_info = mock_git_info()
-        handler.build(self.ctx, build_id=5, git_info=git_info, name='new_app',
-                      base_image_id='1-2-3-4', source_format='chef',
-                      image_format='docker', assembly_id=44,
-                      test_cmd='faketests', run_cmd=None)
-
-        proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                '..', '..', '..', '..'))
-        util_dir = os.path.join(proj_dir, 'contrib', 'lp-chef', 'docker')
-        u_script = os.path.join(util_dir, 'unittest-app')
-
-        expected = [
-            mock.call([u_script, 'git://example.com/foo', '',
-                       self.ctx.tenant], env=test_env,
-                      stdout=-1)]
-        self.assertEqual(expected, mock_popen.call_args_list)
-
-        expected = [mock.call(self.ctx, 44, 'UNIT_TESTING'),
-                    mock.call(self.ctx, 44, 'UNIT_TESTING_FAILED')]
-        self.assertEqual(expected, mock_a_update.call_args_list)
 
 
 class TestNotifications(base.BaseTestCase):

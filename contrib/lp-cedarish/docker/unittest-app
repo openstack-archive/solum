@@ -27,6 +27,7 @@ SOLUM_PARAMS=${SOLUM_PARAMS:-null}
 USE_DRONE=${_SYSTEM_USE_DRONE:-null}
 GIT_PRIVATE_KEY=${REPO_DEPLOY_KEYS:-''}
 ENTRYPOINT=${TEST_CMD:-null}
+IMAGE_STORAGE=${IMAGE_STORAGE:-null}
 
 # TLOG, PRUN, ENSURE_LOGFILE, and elapsed defined in app-common
 HERE=$(dirname $0)
@@ -41,8 +42,8 @@ LOG_FILE=$(GET_LOGFILE)
 TLOG ===== Starting Test Script $0 $*
 
 # Check command line arguments
-if [ $# -lt 3 ]; then
-  TLOG Usage: $0 git_url commit_sha tenant
+if [ $# -lt 5 ]; then
+  TLOG Usage: $0 git_url commit_sha tenant img_external_ref lp_name
   exit 1
 fi
 
@@ -54,8 +55,45 @@ shift
 COMMIT_SHA=$1
 shift
 TENANT=$1
+shift
+IMG_EXTERNAL_REF=$1
+shift
+LP_NAME=$1
 
 TLOG "Executing test command $ENTRYPOINT"
+
+# Set base docker image to solum/slugtester for the 'auto' option
+BASE_IMG="solum/slugtester"
+
+# download base image if it is not 'Auto'
+if [[ $IMG_EXTERNAL_REF != "auto" ]]; then
+  TLOG downloading LP image from $IMAGE_STORAGE
+  if [[ $IMAGE_STORAGE == "glance" ]]; then
+    glance image-download --file $LP_NAME $IMG_EXTERNAL_REF
+    if [ $? != 0 ]; then
+      TLOG Failed to download image $IMG_EXTERNAL_REF from glance. && exit 1
+    fi
+    docker load -i $LP_NAME
+    BASE_IMG=${LP_NAME%%.tar}
+  elif [[ $IMAGE_STORAGE == "swift" ]]; then
+    swift --os-auth-token $OS_AUTH_TOKEN download solum_lp $LP_NAME --output $IMG_EXTERNAL_REF
+    if [ $? != 0 ]; then
+      TLOG Failed to download image $IMG_EXTERNAL_REF from swift. && exit 1
+    fi
+    docker load -i $LP_NAME
+    BASE_IMG=${LP_NAME%%.tar}
+  elif [[ $IMAGE_STORAGE == "docker_registry" ]]; then
+    docker pull $IMG_EXTERNAL_REF
+    if [ $? != 0 ]; then
+      TLOG Failed to download image $IMG_EXTERNAL_REF from docker registry. && exit 1
+    fi
+    BASE_IMG=$IMG_EXTERNAL_REF
+  else
+    TLOG Unsupported Image storage backend - $IMAGE_STORAGE
+    exit 1
+  fi
+fi
+
 
 BASE_DIR=/dev/shm
 DIR_NAME=$(mktemp -u XXXXXXXXXXXXXXXXXXXXXXX | tr '[:upper:]' '[:lower:]' | head -n 1)
@@ -115,14 +153,13 @@ EOF
 else
   TLOG Creating Dockerfile
   cat << EOF > $APP_DIR/Dockerfile
-# SOLUM APP BUILDER
-FROM solum/slugtester
-ADD code /code
-ADD code/id_rsa /root/.ssh/id_rsa
-RUN chmod 0600 /root/.ssh/id_rsa
-RUN echo "Host *\n\tStrictHostKeyChecking no\n\tUserKnownHostsFile=/dev/null" > /root/.ssh/config
-WORKDIR /code
-RUN ${DOCKER_ENTRYPOINT}
+  FROM $BASE_IMG
+  ADD code /code
+  ADD code/id_rsa /root/.ssh/id_rsa
+  RUN chmod 0600 /root/.ssh/id_rsa
+  RUN echo "Host *\n\tStrictHostKeyChecking no\n\tUserKnownHostsFile=/dev/null" > /root/.ssh/config
+  WORKDIR /code
+  RUN ${DOCKER_ENTRYPOINT}
 EOF
 
   cd $APP_DIR

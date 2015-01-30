@@ -31,6 +31,7 @@ from solum.common import repo_utils
 from solum.common import solum_keystoneclient
 from solum.conductor import api as conductor_api
 from solum.deployer import api as deployer_api
+from solum import objects
 from solum.objects import assembly
 from solum.objects import image
 from solum.openstack.common import log as logging
@@ -167,7 +168,7 @@ class Handler(object):
 
     def _get_build_command(self, ctxt, stage, source_uri, name,
                            base_image_id, source_format, image_format,
-                           commit_sha, artifact_type=None):
+                           commit_sha, artifact_type=None, lp_name=None):
 
         # map the input formats to script paths.
         # TODO(asalkeld) we need an "auto".
@@ -190,10 +191,12 @@ class Handler(object):
 
         if stage == 'unittest':
             build_app = os.path.join(build_app_path, 'unittest-app')
-            return [build_app, source_uri, commit_sha, ctxt.tenant]
+            return [build_app, source_uri, commit_sha, ctxt.tenant,
+                    base_image_id, lp_name]
         elif stage == 'build':
             build_app = os.path.join(build_app_path, 'build-app')
-            return [build_app, source_uri, name, ctxt.tenant, base_image_id]
+            return [build_app, source_uri, name, ctxt.tenant, base_image_id,
+                    lp_name]
 
     def _get_parameter_env(self, ctxt, source_uri, assembly_id, build_id):
         param_env = {}
@@ -264,10 +267,17 @@ class Handler(object):
         solum.TLS.trace.import_context(ctxt)
 
         source_uri = git_info['source_url']
+
+        lp_name = ''
+        if base_image_id is not 'auto':
+            image = objects.registry.Image.get_by_uuid(ctxt, base_image_id)
+            base_image_id = image.external_ref
+            lp_name = image.name
+
         build_cmd = self._get_build_command(ctxt, 'build', source_uri,
                                             name, base_image_id,
                                             source_format, image_format, '',
-                                            artifact_type)
+                                            artifact_type, lp_name=lp_name)
         solum.TLS.trace.support_info(build_cmd=' '.join(build_cmd),
                                      assembly_id=assembly_id)
 
@@ -355,11 +365,17 @@ class Handler(object):
         LOG.debug("Running unittests.")
         update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.UNIT_TESTING)
 
+        lp_name = ''
+        if base_image_id is not 'auto':
+            image = objects.registry.Image.get_by_uuid(ctxt, base_image_id)
+            base_image_id = image.external_ref
+            lp_name = image.name
+
         git_url = git_info['source_url']
         command = self._get_build_command(ctxt, 'unittest', git_url, name,
                                           base_image_id,
                                           source_format, image_format,
-                                          commit_sha)
+                                          commit_sha, lp_name=lp_name)
 
         solum.TLS.trace.clear()
         solum.TLS.trace.import_context(ctxt)

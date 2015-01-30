@@ -35,6 +35,16 @@ def mock_environment():
 
 
 class HandlerTest(base.BaseTestCase):
+    scenarios = [
+        ('auto_img_id',
+         dict(base_image_id='auto',
+              expected_img_id='auto',
+              img_name='')),
+        ('lp_id',
+         dict(base_image_id='1-2-3-4',
+              expected_img_id='docker_registry/image',
+              img_name='faker'))]
+
     def setUp(self):
         super(HandlerTest, self).setUp()
         self.ctx = utils.dummy_context()
@@ -52,6 +62,8 @@ class HandlerTest(base.BaseTestCase):
         fake_assembly = fakes.FakeAssembly()
         fake_glance_id = str(uuid.uuid4())
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
+        fake_image = fakes.FakeImage()
+        mock_registry.Image.get_by_uuid.return_value = fake_image
         mock_popen.return_value.wait.return_value = 0
         mock_popen.return_value.communicate.return_value = [
             'foo\ncreated_image_id=%s' % fake_glance_id, None]
@@ -65,7 +77,7 @@ class HandlerTest(base.BaseTestCase):
                               group='worker')
 
         handler.build(self.ctx, build_id=5, git_info=git_info, name='new_app',
-                      base_image_id='1-2-3-4', source_format='chef',
+                      base_image_id=self.base_image_id, source_format='chef',
                       image_format='docker', assembly_id=44,
                       test_cmd='faketests', artifact_type=None)
 
@@ -84,7 +96,8 @@ class HandlerTest(base.BaseTestCase):
 
         expected = [
             mock.call([u_script, 'git://example.com/foo', '',
-                       self.ctx.tenant], env=test_env,
+                       self.ctx.tenant, self.expected_img_id,
+                       self.img_name], env=test_env,
                       stdout=-1)]
         self.assertEqual(expected, mock_popen.call_args_list)
 
@@ -102,6 +115,8 @@ class HandlerTest(base.BaseTestCase):
         handler = shell_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
+        fake_image = fakes.FakeImage()
+        mock_registry.Image.get_by_uuid.return_value = fake_image
         mock_popen.return_value.wait.return_value = 1
         test_env = test_shell.mock_environment()
         mock_get_env.return_value = test_env
@@ -113,7 +128,7 @@ class HandlerTest(base.BaseTestCase):
                               group='worker')
 
         handler.build(self.ctx, build_id=5, git_info=git_info,
-                      name='new_app', base_image_id='1-2-3-4',
+                      name='new_app', base_image_id=self.base_image_id,
                       source_format='chef', image_format='docker',
                       assembly_id=44, test_cmd='faketests',
                       artifact_type=None)
@@ -132,7 +147,8 @@ class HandlerTest(base.BaseTestCase):
 
         expected = [
             mock.call([u_script, 'git://example.com/foo', '',
-                       self.ctx.tenant], env=test_env,
+                       self.ctx.tenant, self.expected_img_id,
+                       self.img_name], env=test_env,
                       stdout=-1)]
         self.assertEqual(expected, mock_popen.call_args_list)
 
