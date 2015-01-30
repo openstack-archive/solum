@@ -62,6 +62,9 @@ SERVICE_OPTS = [
     cfg.StrOpt('flavor',
                default="m1.tiny",
                help='VM Flavor'),
+    cfg.StrOpt('image',
+               default="coreos",
+               help='Image id'),
 ]
 
 cfg.CONF.register_group(OPT_GROUP)
@@ -131,14 +134,15 @@ class Handler(object):
             # this could also be stored in glance.
             template_flavor = 'basic'
         elif cfg.CONF.api.image_format == 'vm':
-            # use coreos
             parameters = {}
             parameters['name'] = str(assem.uuid)
 
-            # TODO(devkulkarni): optimized for devstack
-            # We would read these from config files
+            # (devkulkarni): Default values optimized for devstack
             parameters['count'] = 1
             parameters['flavor'] = cfg.CONF.deployer.flavor
+            parameters['image'] = cfg.CONF.deployer.image
+
+            # use coreos
             template_flavor = 'coreos'
         else:
             image_fmt = cfg.CONF.api.image_format
@@ -270,7 +274,7 @@ class Handler(object):
     def _parse_server_url(self, heat_output):
         """Parse server url from heat-stack-show output."""
         if 'outputs' in heat_output._info:
-            return heat_output._info['outputs'][1]['output_value']
+            return heat_output._info['outputs'][0]['output_value']
         return None
 
     def _find_id_if_stack_exists(self, assem):
@@ -291,7 +295,7 @@ class Handler(object):
         run_docker = "#!/bin/bash -x\n #Invoke the container\n"
         docker_endpt = cfg.CONF.worker.docker_reg_endpoint
         run_docker += "docker run -p 80:5000 -d "
-        run_docker += docker_endpt + ":5042/"
+        run_docker += docker_endpt + "/"
         run_docker += str(assem.uuid)
         LOG.debug("run_docker:%s" % run_docker)
         comp_instance = template_bdy['resources']['compute_instance']

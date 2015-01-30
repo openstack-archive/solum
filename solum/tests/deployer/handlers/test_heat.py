@@ -196,7 +196,7 @@ class HandlerTest(base.BaseTestCase):
                                           "description": "URL", "output_key":
                                           "URL"}]}
         host_url = handler._parse_server_url(heat_output)
-        self.assertEqual(host_url, "http://192.168.78.21:5000")
+        self.assertEqual(host_url, "192.168.78.21")
 
     def test_find_id_if_stack_exists(self):
         handler = heat_handler.Handler()

@@ -54,13 +54,9 @@ if [ $# -lt 5 ]; then
   exit 1
 fi
 
-PRUN silent docker ps
+PRUN silent sudo docker ps
 [[ $? != 0 ]] && TLOG cannot talk to docker. && exit 1
 
-PRUN silent glance image-list
-if [ $? != 0 ]; then
-  TLOG Cannot talk to Glance. Check your OpenStack credentials. && exit 1
-fi
 
 GIT=$1
 shift
@@ -130,6 +126,10 @@ else
   # download base image (languagepack) if it is not 'Auto'
   TLOG downloading LP image from $IMAGE_STORAGE
   if [[ $IMAGE_STORAGE == "glance" ]]; then
+    PRUN silent glance image-list
+    if [ $? != 0 ]; then
+      TLOG Cannot talk to Glance. Check your OpenStack credentials. && exit 1
+    fi
     glance image-download --file $LP_NAME $IMG_EXTERNAL_REF
     if [ $? != 0 ]; then
       TLOG Failed to download image $IMG_EXTERNAL_REF from glance. && exit 1

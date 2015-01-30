@@ -16,14 +16,16 @@ parameters:
     type: number
   flavor:
     type: string
+  image:
+    type: string
 resources:
   compute_instance:
     properties:
       config_drive: "true"
       flavor:
         get_param: flavor
-      image: coreos
-      name: "CoreOS Stack"
+      image: {get_param: image}
+      name: {get_param: name}
       user_data:
         str_replace:
           params:
