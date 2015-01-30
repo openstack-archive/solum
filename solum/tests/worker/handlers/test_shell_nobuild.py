@@ -84,7 +84,7 @@ class HandlerTest(base.BaseTestCase):
 
         expected = [
             mock.call([u_script, 'git://example.com/foo', '',
-                       self.ctx.tenant, 'faketests'], env=test_env,
+                       self.ctx.tenant], env=test_env,
                       stdout=-1)]
         self.assertEqual(expected, mock_popen.call_args_list)
 
@@ -132,7 +132,7 @@ class HandlerTest(base.BaseTestCase):
 
         expected = [
             mock.call([u_script, 'git://example.com/foo', '',
-                       self.ctx.tenant, 'faketests'], env=test_env,
+                       self.ctx.tenant], env=test_env,
                       stdout=-1)]
         self.assertEqual(expected, mock_popen.call_args_list)
 
@@ -187,7 +187,7 @@ class TestBuildCommand(base.BaseTestCase):
                                          'testa',
                                          self.base_image_id,
                                          self.source_format,
-                                         self.image_format, '', '',
+                                         self.image_format, '',
                                          None)
         self.assertIn(self.expect, cmd[0])
         self.assertEqual('http://example.com/a.git', cmd[1])

@@ -28,9 +28,9 @@ class API(service.API):
 
     def perform_action(self, verb, build_id, git_info, name, base_image_id,
                        source_format, image_format, assembly_id=None,
-                       test_cmd=None, artifact_type=None):
+                       test_cmd=None, artifact_type=None, run_cmd=None):
         self._cast(verb, build_id=build_id, git_info=git_info,
                    name=name, base_image_id=base_image_id,
                    source_format=source_format, image_format=image_format,
                    assembly_id=assembly_id, test_cmd=test_cmd,
-                   artifact_type=artifact_type)
+                   artifact_type=artifact_type, run_cmd=run_cmd)

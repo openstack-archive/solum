@@ -128,7 +128,7 @@ class HandlerTest(base.BaseTestCase):
         handler.build(self.ctx, build_id=5, git_info=git_info,
                       name='new_app', base_image_id='1-2-3-4',
                       source_format='heroku', image_format='docker',
-                      assembly_id=44, test_cmd=None)
+                      assembly_id=44, test_cmd=None, run_cmd=None)
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
@@ -176,7 +176,7 @@ class HandlerTest(base.BaseTestCase):
                       git_info=git_info, name='new_app',
                       base_image_id='1-2-3-4', source_format='heroku',
                       image_format='docker', assembly_id=44,
-                      test_cmd=None)
+                      test_cmd=None, run_cmd=None)
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
@@ -232,7 +232,7 @@ class HandlerTest(base.BaseTestCase):
                       git_info=git_info, name='new_app',
                       base_image_id='1-2-3-4', source_format='heroku',
                       image_format='docker', assembly_id=44,
-                      test_cmd=None)
+                      test_cmd=None, run_cmd=None)
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
@@ -272,7 +272,8 @@ class HandlerTest(base.BaseTestCase):
         git_info = mock_git_info()
         handler.build(self.ctx, build_id=5, git_info=git_info, name='new_app',
                       base_image_id='1-2-3-4', source_format='heroku',
-                      image_format='docker', assembly_id=44, test_cmd=None)
+                      image_format='docker', assembly_id=44, test_cmd=None,
+                      run_cmd=None)
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
@@ -308,7 +309,8 @@ class HandlerTest(base.BaseTestCase):
         git_info = mock_git_info()
         handler.build(self.ctx, build_id=5, git_info=git_info, name='new_app',
                       base_image_id='1-2-3-4', source_format='heroku',
-                      image_format='docker', assembly_id=44, test_cmd=None)
+                      image_format='docker', assembly_id=44, test_cmd=None,
+                      run_cmd=None)
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
@@ -351,7 +353,7 @@ class HandlerTest(base.BaseTestCase):
         script = os.path.join(proj_dir,
                               'contrib/lp-chef/docker/unittest-app')
         mock_popen.assert_called_once_with([script, 'git://example.com/foo',
-                                            '', self.ctx.tenant, 'tox'],
+                                            '', self.ctx.tenant],
                                            env=test_env, stdout=-1)
         expected = [mock.call(self.ctx, 8, 'UNIT_TESTING')]
 
@@ -381,7 +383,7 @@ class HandlerTest(base.BaseTestCase):
         script = os.path.join(proj_dir,
                               'contrib/lp-chef/docker/unittest-app')
         mock_popen.assert_called_once_with([script, 'git://example.com/foo',
-                                            '', self.ctx.tenant, 'tox'],
+                                            '', self.ctx.tenant],
                                            env=test_env, stdout=-1)
         expected = [mock.call(self.ctx, 8, 'UNIT_TESTING'),
                     mock.call(self.ctx, 8, 'UNIT_TESTING_FAILED')]
@@ -411,7 +413,7 @@ class HandlerTest(base.BaseTestCase):
         handler.build(self.ctx, build_id=5, git_info=git_info, name='new_app',
                       base_image_id='1-2-3-4', source_format='heroku',
                       image_format='docker', assembly_id=44,
-                      test_cmd='faketests', artifact_type=None)
+                      test_cmd='faketests', run_cmd=None, artifact_type=None)
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
@@ -421,7 +423,7 @@ class HandlerTest(base.BaseTestCase):
 
         expected = [
             mock.call([u_script, 'git://example.com/foo', '',
-                       self.ctx.tenant, 'faketests'], env=test_env,
+                       self.ctx.tenant], env=test_env,
                       stdout=-1),
             mock.call([b_script, 'git://example.com/foo', 'new_app',
                        self.ctx.tenant, '1-2-3-4'], env=test_env,
@@ -457,7 +459,7 @@ class HandlerTest(base.BaseTestCase):
         handler.build(self.ctx, build_id=5, git_info=git_info, name='new_app',
                       base_image_id='1-2-3-4', source_format='chef',
                       image_format='docker', assembly_id=44,
-                      test_cmd='faketests')
+                      test_cmd='faketests', run_cmd=None)
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
@@ -466,7 +468,7 @@ class HandlerTest(base.BaseTestCase):
 
         expected = [
             mock.call([u_script, 'git://example.com/foo', '',
-                       self.ctx.tenant, 'faketests'], env=test_env,
+                       self.ctx.tenant], env=test_env,
                       stdout=-1)]
         self.assertEqual(expected, mock_popen.call_args_list)
 
@@ -527,7 +529,7 @@ class TestBuildCommand(base.BaseTestCase):
                                          'testa',
                                          self.base_image_id,
                                          self.source_format,
-                                         self.image_format, '', '',
+                                         self.image_format, '',
                                          self.artifact_type)
         self.assertIn(self.expect_b, cmd[0])
         self.assertEqual('http://example.com/a.git', cmd[1])
@@ -547,13 +549,12 @@ class TestBuildCommand(base.BaseTestCase):
                                          'testa',
                                          self.base_image_id,
                                          self.source_format,
-                                         self.image_format, 'asdf', 'pep8',
+                                         self.image_format, 'asdf',
                                          self.artifact_type)
         self.assertIn(self.expect_u, cmd[0])
         self.assertEqual('http://example.com/a.git', cmd[1])
         self.assertEqual('asdf', cmd[2])
         self.assertEqual(ctx.tenant, cmd[3])
-        self.assertEqual('pep8', cmd[4])
 
 
 class TestLanguagePackBuildCommand(base.BaseTestCase):
@@ -570,7 +571,7 @@ class TestLanguagePackBuildCommand(base.BaseTestCase):
                                          'testa',
                                          'auto',
                                          'heroku',
-                                         'docker', '', '',
+                                         'docker', '',
                                          'language_pack')
         self.assertIn('lp-cedarish/docker/build-lp', cmd[0])
         self.assertEqual('http://example.com/a.git', cmd[1])

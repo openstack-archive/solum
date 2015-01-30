@@ -65,6 +65,9 @@ class Artifact(wtypes.Base):
     unittest_cmd = wtypes.text
     "Optional unit test command for the artifact."
 
+    run_cmd = wtypes.text
+    "The command for starting up user code when a DU is deployed."
+
     repo_token = wtypes.text
     "The OAuth token to access repository"
 

@@ -26,6 +26,7 @@ USER_PARAMS=${USER_PARAMS:-null}
 SOLUM_PARAMS=${SOLUM_PARAMS:-null}
 USE_DRONE=${_SYSTEM_USE_DRONE:-null}
 GIT_PRIVATE_KEY=${REPO_DEPLOY_KEYS:-''}
+ENTRYPOINT=${TEST_CMD:-null}
 
 # TLOG, PRUN, ENSURE_LOGFILE, and elapsed defined in app-common
 HERE=$(dirname $0)
@@ -40,8 +41,8 @@ LOG_FILE=$(GET_LOGFILE)
 TLOG ===== Starting Test Script $0 $*
 
 # Check command line arguments
-if [ $# -lt 4 ]; then
-  TLOG Usage: $0 git_url commit_sha tenant unit_test_entry_point
+if [ $# -lt 3 ]; then
+  TLOG Usage: $0 git_url commit_sha tenant
   exit 1
 fi
 
@@ -53,10 +54,6 @@ shift
 COMMIT_SHA=$1
 shift
 TENANT=$1
-shift
-
-ENTRYPOINT="$@"
-shift
 
 TLOG "Executing test command $ENTRYPOINT"
 
