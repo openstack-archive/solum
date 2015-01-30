@@ -50,6 +50,7 @@ cfg.CONF.import_opt('proj_dir', 'solum.worker.config', group='worker')
 cfg.CONF.import_opt('param_file_path', 'solum.worker.config', group='worker')
 cfg.CONF.import_opt('log_upload_strategy', 'solum.worker.config',
                     group='worker')
+cfg.CONF.import_opt('image_storage', 'solum.worker.config', group='worker')
 
 
 def upload_task_log(ctxt, original_path, assembly, build_id, stage):
@@ -161,6 +162,7 @@ class Handler(object):
     def _get_build_command(self, ctxt, stage, source_uri, name,
                            base_image_id, source_format, image_format,
                            commit_sha, test_cmd, artifact_type=None):
+
         # map the input formats to script paths.
         # TODO(asalkeld) we need an "auto".
         pathm = {'heroku': 'lp-cedarish',
@@ -178,7 +180,7 @@ class Handler(object):
 
         if artifact_type == 'language_pack':
             build_lp = os.path.join(build_app_path, 'build-lp')
-            return [build_lp, source_uri, name, ctxt.tenant, base_image_id]
+            return [build_lp, source_uri, name, ctxt.tenant]
 
         if stage == 'unittest':
             build_app = os.path.join(build_app_path, 'unittest-app')
@@ -462,15 +464,15 @@ class Handler(object):
             return
 
         # we expect one line in the output that looks like:
-        # created_image_id=<the glance_id>
-        glance_image_id = None
+        # image_external_ref=<external storage ref>
+        image_external_ref = None
         for line in out.split('\n'):
-            if 'glance_image_id' in line:
+            if 'image_external_ref' in line:
                 solum.TLS.trace.support_info(build_lp_out_line=line)
-                glance_image_id = line.split('=')[-1].strip()
+                image_external_ref = line.split('=')[-1].strip()
                 break
-        if glance_image_id is not None:
+        if image_external_ref is not None:
             update_lp_status(ctxt, image_id, IMAGE_STATES.COMPLETE,
-                             glance_image_id)
+                             image_external_ref)
         else:
             update_lp_status(ctxt, image_id, IMAGE_STATES.ERROR)

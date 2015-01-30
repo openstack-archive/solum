@@ -148,11 +148,13 @@ CMD ["start","web"]
 EOF
 
 cd $APP_DIR
+
 if [[ $IMAGE_STORAGE == "glance" ]]; then
   PRUN sudo docker build -t $APP .
   sudo docker save "$APP" | glance image-create --container-format=docker --disk-format=raw --name "$APP" > /dev/null
   image_id=$(app_glance_id $APP)
-  echo "Done uploading DU to glance"
+  sudo docker rmi $APP
+  TLOG ===== finished uploading DU to $IMAGE_STORAGE
 elif [[ $IMAGE_STORAGE == "docker_registry" ]]; then
   DOCKER_REGISTRY=${DOCKER_REGISTRY:-'10.0.2.15:5042'}
   APP_NAME=$DOCKER_REGISTRY/$ASSEMBLY_ID
@@ -160,9 +162,18 @@ elif [[ $IMAGE_STORAGE == "docker_registry" ]]; then
   PRUN sudo docker build -t $APP_NAME .
   sudo docker push $APP_NAME
   image_id=$APP_NAME
-  echo "Done uploading DU to Docker registry"
+  sudo docker rmi $APP_NAME
+  TLOG ===== finished uploading DU to $IMAGE_STORAGE
+elif [[ $IMAGE_STORAGE == "swift" ]]; then
+  PRUN sudo docker build -t $APP .
+  sudo docker save --output "$APP" "$APP"
+  swift --os-auth-token $OS_AUTH_TOKEN upload solum_du "$APP".tar
+  image_id=$APP
+  sudo rm "$APP".tar
+  sudo docker rmi $APP
+  TLOG ===== finished uploading DU to $IMAGE_STORAGE
 else
-  echo "Unsupported DU storage backend."
+  TLOG Unsupported Image storage backend - $IMAGE_STORAGE
   exit 1
 fi
 

@@ -576,7 +576,6 @@ class TestLanguagePackBuildCommand(base.BaseTestCase):
         self.assertEqual('http://example.com/a.git', cmd[1])
         self.assertEqual('testa', cmd[2])
         self.assertEqual(ctx.tenant, cmd[3])
-        self.assertEqual('auto', cmd[4])
 
     @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
     @mock.patch('solum.objects.registry')
@@ -589,7 +588,7 @@ class TestLanguagePackBuildCommand(base.BaseTestCase):
         fake_glance_id = str(uuid.uuid4())
         mock_registry.Image.get_by_id.return_value = fake_image
         mock_popen.return_value.communicate.return_value = [
-            'foo\nglance_image_id=%s' % fake_glance_id, None]
+            'foo\image_external_ref=%s\n' % fake_glance_id, None]
         test_env = mock_environment()
         mock_get_env.return_value = test_env
         git_info = mock_git_info()
@@ -601,8 +600,8 @@ class TestLanguagePackBuildCommand(base.BaseTestCase):
                                                 '..', '..', '..', '..'))
         script = os.path.join(proj_dir, 'contrib/lp-cedarish/docker/build-lp')
         mock_popen.assert_called_once_with([script, 'git://example.com/foo',
-                                            'lp_name', self.ctx.tenant,
-                                            '5'], env=test_env,
+                                            'lp_name', self.ctx.tenant],
+                                           env=test_env,
                                            stdout=-1)
 
         expected = [mock.call(5, 'BUILDING', None),
