@@ -138,12 +138,13 @@ else
     sudo rm $LP_NAME
     BASE_IMG=$LP_NAME
   elif [[ $IMAGE_STORAGE == "swift" ]]; then
-    swift --os-auth-token $OS_AUTH_TOKEN download solum_lp $LP_NAME --output $IMG_EXTERNAL_REF
+    swift --os-auth-token $OS_AUTH_TOKEN download solum_lp $IMG_EXTERNAL_REF --output $LP_NAME
     if [ $? != 0 ]; then
       TLOG Failed to download image $IMG_EXTERNAL_REF from swift. && exit 1
     fi
     docker load -i $LP_NAME
-    BASE_IMG=${LP_NAME%%.tar}
+    sudo rm $LP_NAME
+    BASE_IMG=$LP_NAME
   elif [[ $IMAGE_STORAGE == "docker_registry" ]]; then
     docker pull $IMG_EXTERNAL_REF
     if [ $? != 0 ]; then
@@ -220,10 +221,10 @@ elif [[ $IMAGE_STORAGE == "docker_registry" ]]; then
 elif [[ $IMAGE_STORAGE == "swift" ]]; then
   PRUN sudo docker build -t $APP .
   [[ $? != 0 ]] && TLOG Docker build failed. && exit 1
-  sudo docker save --output "$APP" "$APP"
-  swift --os-auth-token $OS_AUTH_TOKEN upload solum_du "$APP".tar
+  sudo docker save --output $APP $APP
+  swift --os-auth-token $OS_AUTH_TOKEN upload solum_du $APP
   image_id=$APP
-  sudo rm "$APP".tar
+  sudo rm $APP
   sudo docker rmi $APP
   TLOG ===== finished uploading DU to $IMAGE_STORAGE
 else
