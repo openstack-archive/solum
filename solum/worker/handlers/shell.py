@@ -269,7 +269,7 @@ class Handler(object):
         source_uri = git_info['source_url']
 
         lp_name = ''
-        if base_image_id is not 'auto':
+        if base_image_id != 'auto':
             image = objects.registry.Image.get_by_uuid(ctxt, base_image_id)
             base_image_id = image.external_ref
             lp_name = image.name
@@ -366,7 +366,7 @@ class Handler(object):
         update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.UNIT_TESTING)
 
         lp_name = ''
-        if base_image_id is not 'auto':
+        if base_image_id != 'auto':
             image = objects.registry.Image.get_by_uuid(ctxt, base_image_id)
             base_image_id = image.external_ref
             lp_name = image.name
