@@ -47,4 +47,11 @@ class ImageList(abstract.ImageList):
 
     @classmethod
     def get_all(cls, context):
+        """Return all images."""
         return ImageList(sql.model_query(context, Image))
+
+    @classmethod
+    def get_all_languagepacks(cls, context):
+        """Return all images that are languagepacks."""
+        return ImageList(sql.model_query(
+            context, Image).filter_by(artifact_type='language_pack'))

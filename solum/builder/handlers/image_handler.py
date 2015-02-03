@@ -54,7 +54,7 @@ class ImageHandler(handler.Handler):
 
     def get_all(self):
         """Return all images."""
-        return objects.registry.ImageList.get_all(self.context)
+        return objects.registry.ImageList.get_all_languagepacks(self.context)
 
     def _start_build(self, image):
         git_info = {
