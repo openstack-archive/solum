@@ -103,6 +103,7 @@ class ImagesController(rest.RestController):
             remainder = remainder[:-1]
         return ImageController(image_id), remainder
 
+    @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(Image, body=Image, status_code=201)
     def post(self, data):
         """Create a new image."""
@@ -112,3 +113,12 @@ class ImagesController(rest.RestController):
         return Image.from_db_model(
             handler.create(data.as_dict(objects.registry.Image),
                            data.lp_metadata), host_url)
+
+    @exception.wrap_wsme_controller_exception
+    @wsme_pecan.wsexpose([Image])
+    def get_all(self):
+        """Return all images, based on the query provided."""
+        handler = image_handler.ImageHandler(
+            pecan.request.security_context)
+        return [Image.from_db_model(img, pecan.request.host_url)
+                for img in handler.get_all()]

@@ -52,6 +52,10 @@ class ImageHandler(handler.Handler):
         db_obj = objects.registry.Image.get_by_uuid(self.context, uuid)
         return db_obj.destroy(self.context)
 
+    def get_all(self):
+        """Return all images."""
+        return objects.registry.ImageList.get_all(self.context)
+
     def _start_build(self, image):
         git_info = {
             'source_url': image.source_uri,
