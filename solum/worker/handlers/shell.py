@@ -112,11 +112,6 @@ class Handler(object):
     @exception.wrap_keystone_exception
     def _get_environment(self, ctxt, source_uri, assembly_id=None,
                          test_cmd=None, run_cmd=None):
-        kc = solum_keystoneclient.KeystoneClientV3(ctxt)
-        image_url = kc.client.service_catalog.url_for(
-            service_type='image',
-            endpoint_type='publicURL')
-
         # create a minimal environment
         user_env = {}
         for var in ['PATH', 'LOGNAME', 'LANG', 'HOME', 'USER', 'TERM']:
@@ -124,7 +119,6 @@ class Handler(object):
                 user_env[var] = os.environ[var]
         user_env['OS_AUTH_TOKEN'] = ctxt.auth_token
         user_env['OS_AUTH_URL'] = ctxt.auth_url
-        user_env['OS_IMAGE_URL'] = image_url
 
         if assembly_id is not None:
             assem = get_assembly_by_id(ctxt, assembly_id)
@@ -143,6 +137,14 @@ class Handler(object):
                 LOG.debug("Setting it to 127.0.0.1")
                 cfg.CONF.worker.docker_reg_endpoint = '127.0.0.1'
             user_env['DOCKER_REGISTRY'] = cfg.CONF.worker.docker_reg_endpoint
+        else:
+            kc = solum_keystoneclient.KeystoneClientV3(ctxt)
+            user_env['OS_IMAGE_URL'] = kc.client.service_catalog.url_for(
+                service_type='image',
+                endpoint_type='publicURL')
+            user_env['OS_STORAGE_URL'] = kc.client.service_catalog.url_for(
+                service_type='object-store',
+                endpoint_type='publicURL')
 
         if test_cmd is not None:
             user_env['TEST_CMD'] = test_cmd
