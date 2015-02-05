@@ -133,6 +133,7 @@ class Handler(object):
             user_env['ASSEMBLY_ID'] = str_assem
 
         user_env['IMAGE_STORAGE'] = cfg.CONF.worker.image_storage
+        user_env['DELETE_LOCAL_CACHE'] = cfg.CONF.worker.delete_local_cache
 
         if cfg.CONF.worker.image_storage == 'docker_registry':
             if cfg.CONF.worker.docker_reg_endpoint is None:

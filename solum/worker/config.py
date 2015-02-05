@@ -55,6 +55,11 @@ SERVICE_OPTS = [
     cfg.StrOpt('docker_reg_endpoint',
                default="127.0.0.1",
                help='Docker registry endpoint'),
+    cfg.StrOpt('delete_local_cache',
+               default="false",
+               help='Delete cached docker images and git repos from '
+               'the worker node after building languagepacks and deployment '
+               'units. Valid options are true or false.'),
 ]
 
 opt_group = cfg.OptGroup(

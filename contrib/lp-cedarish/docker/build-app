@@ -28,6 +28,7 @@ USER_PARAMS=${USER_PARAMS:-null}
 SOLUM_PARAMS=${SOLUM_PARAMS:-null}
 GIT_PRIVATE_KEY=${REPO_DEPLOY_KEYS:-''}
 RUN_CMD=${RUN_CMD:-''}
+DELETE_LOCAL_CACHE=${DELETE_LOCAL_CACHE:-null}
 
 # TLOG, PRUN, etc. defined in common/utils
 HERE=$(dirname $0)
@@ -232,6 +233,11 @@ else
   exit 1
 fi
 
+
+if [[ $DELETE_LOCAL_CACHE == "true" ]]; then
+  # Delete local languagepack image after building the DU
+  sudo docker rmi -f $BASE_IMG
+fi
 
 TOTAL_TIME=$(elapsed $SCRIPT_START_TIME)
 TLOG ===== Total elapsed time: $TOTAL_TIME sec
