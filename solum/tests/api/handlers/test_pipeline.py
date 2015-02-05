@@ -53,9 +53,8 @@ class TestPipelineHandler(base.BaseTestCase):
                 'plan_uuid': 'input_plan_uuid'}
         handler = pipeline_handler.PipelineHandler(self.ctx)
         handler.update('test_id', data)
-        mock_registry.Pipeline.safe_update.assert_called_once_with(self.ctx,
-                                                                   'test_id',
-                                                                   data)
+        mock_registry.Pipeline.update_and_save.assert_called_once_with(
+            self.ctx, 'test_id', data)
 
     @mock.patch('solum.common.solum_keystoneclient.KeystoneClientV3')
     def test_create(self, mock_kc, mock_registry):

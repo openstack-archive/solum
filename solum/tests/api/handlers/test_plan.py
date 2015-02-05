@@ -51,7 +51,7 @@ class TestPlanHandler(base.BaseTestCase):
                           'raw_content': db_obj.raw_content}
         handler = plan_handler.PlanHandler(self.ctx)
         handler.update('test_id', data)
-        mock_registry.Plan.safe_update.assert_called_once_with(
+        mock_registry.Plan.update_and_save.assert_called_once_with(
             self.ctx, 'test_id', to_update_data)
 
     def test_plan_create(self, mock_registry):

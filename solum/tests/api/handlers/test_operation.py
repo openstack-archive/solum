@@ -46,9 +46,8 @@ class TestOperationHandler(base.BaseTestCase):
         data = {'user_id': 'new_user_id'}
         handler = operation.OperationHandler(self.ctx)
         handler.update('test_id', data)
-        mock_registry.Operation.safe_update.assert_called_once_with(self.ctx,
-                                                                    'test_id',
-                                                                    data)
+        mock_registry.Operation.update_and_save.assert_called_once_with(
+            self.ctx, 'test_id', data)
 
     def test_create(self, mock_registry):
         data = {'user_id': 'new_user_id'}

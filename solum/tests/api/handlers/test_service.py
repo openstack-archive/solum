@@ -45,9 +45,8 @@ class TestServiceHandler(base.BaseTestCase):
         data = {'name': 'new_name'}
         handler = service_handler.ServiceHandler(self.ctx)
         handler.update('test_id', data)
-        mock_registry.Service.safe_update.assert_called_once_with(self.ctx,
-                                                                  'test_id',
-                                                                  data)
+        mock_registry.Service.update_and_save.assert_called_once_with(
+            self.ctx, 'test_id', data)
 
     def test_create(self, mock_registry):
         data = {'name': 'new_name',

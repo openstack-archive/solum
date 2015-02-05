@@ -45,13 +45,13 @@ class TestInfrastructureStackHandler(base.BaseTestCase):
         mock_registry.InfrastructureStackList.get_all.assert_called_once_with(
             self.ctx)
 
-    def test_update(self, mock_registry):
+    def test_update(self, mock_reg):
         data = {'user_id': 'new_user_id',
                 'image_id': 'new_image_id',
                 'heat_stack_id': 'new_stack_id'}
         handler = infra.InfrastructureStackHandler(self.ctx)
         handler.update('test_id', data)
-        mock_registry.InfrastructureStack.safe_update.assert_called_once_with(
+        mock_reg.InfrastructureStack.update_and_save.assert_called_once_with(
             self.ctx, 'test_id', data)
 
     @mock.patch('solum.common.clients.OpenStackClients')

@@ -39,7 +39,7 @@ class Handler(object):
                      'external_ref': created_image_id,
                      'description': str(description)}
         try:
-            objects.registry.Image.safe_update(ctxt, build_id, to_update)
+            objects.registry.Image.update_and_save(ctxt, build_id, to_update)
         except sqla_exc.SQLAlchemyError as ex:
             LOG.error("Failed to update image, ID: %s" % build_id)
             LOG.exception(ex)
@@ -70,7 +70,7 @@ class Handler(object):
 
     def update_assembly(self, ctxt, assembly_id, data):
         try:
-            objects.registry.Assembly.safe_update(ctxt, assembly_id, data)
+            objects.registry.Assembly.update_and_save(ctxt, assembly_id, data)
         except sqla_exc.SQLAlchemyError as ex:
             LOG.error("Failed to update assembly status, ID: %s" % assembly_id)
             LOG.exception(ex)
@@ -80,7 +80,7 @@ class Handler(object):
         if external_ref:
             to_update['external_ref'] = external_ref
         try:
-            objects.registry.Image.safe_update(ctxt, image_id, to_update)
+            objects.registry.Image.update_and_save(ctxt, image_id, to_update)
         except sqla_exc.SQLAlchemyError as ex:
             LOG.error("Failed to update image, ID: %s" % image_id)
             LOG.exception(ex)

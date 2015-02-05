@@ -91,7 +91,8 @@ class AssemblyHandler(handler.Handler):
 
     def update(self, id, data):
         """Modify a resource."""
-        updated = objects.registry.Assembly.safe_update(self.context, id, data)
+        updated = objects.registry.Assembly.update_and_save(self.context,
+                                                            id, data)
         return updated
 
     def delete(self, id):

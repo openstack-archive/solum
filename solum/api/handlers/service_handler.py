@@ -27,7 +27,8 @@ class ServiceHandler(handler.Handler):
 
     def update(self, id, data):
         """Modify a resource."""
-        updated = objects.registry.Service.safe_update(self.context, id, data)
+        updated = objects.registry.Service.update_and_save(self.context,
+                                                           id, data)
         return updated
 
     def delete(self, id):

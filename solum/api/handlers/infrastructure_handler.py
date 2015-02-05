@@ -34,7 +34,7 @@ class InfrastructureStackHandler(handler.Handler):
 
     def update(self, id, data):
         """Modify a stack."""
-        updated = objects.registry.InfrastructureStack.safe_update(
+        updated = objects.registry.InfrastructureStack.update_and_save(
             self.context, id, data)
         return updated
 

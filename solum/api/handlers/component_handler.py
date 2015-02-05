@@ -27,8 +27,8 @@ class ComponentHandler(handler.Handler):
 
     def update(self, id, data):
         """Modify a resource."""
-        updated = objects.registry.Component.safe_update(self.context,
-                                                         id, data)
+        updated = objects.registry.Component.update_and_save(self.context,
+                                                             id, data)
         return updated
 
     def delete(self, id):
