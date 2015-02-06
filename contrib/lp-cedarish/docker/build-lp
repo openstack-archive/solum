@@ -6,6 +6,7 @@ TASKNAME=languagepack
 REUSE_IMAGES_IF_REPO_UNCHANGED=${REUSE_IMAGES_IF_REPO_UNCHANGED:="1"}
 GIT_PRIVATE_KEY=${REPO_DEPLOY_KEYS:-''}
 IMAGE_STORAGE=${IMAGE_STORAGE:-null}
+DELETE_LOCAL_CACHE=${DELETE_LOCAL_CACHE:-null}
 
 # TLOG, PRUN, etc. defined in common/utils
 HERE=$(dirname $0)
@@ -43,14 +44,14 @@ TENANT=$1
 
 BASE_DIR=/dev/shm
 GIT_CHECKSUM=$(echo $GIT | md5sum | awk '{print $1;}')
-APP_DIR=$BASE_DIR/apps/$TENANT/$GIT_CHECKSUM
-PRUN mkdir -p $APP_DIR
+LP_DIR=$BASE_DIR/apps/$TENANT/$GIT_CHECKSUM
+PRUN mkdir -p $LP_DIR
 
 TLOG ===== Cloning repo
-PRUN git clone $GIT $APP_DIR/build
+PRUN git clone $GIT $LP_DIR/build
 
-if [ -d "$APP_DIR/build" ] ; then
-  cd $APP_DIR/build
+if [ -d "$LP_DIR/build" ] ; then
+  cd $LP_DIR/build
   TLOG Uploading LP image to $IMAGE_STORAGE
   if [[ $IMAGE_STORAGE == "glance" ]]; then
     PRUN silent glance --os-auth-token $OS_AUTH_TOKEN image-list
@@ -104,6 +105,12 @@ if [ -d "$APP_DIR/build" ] ; then
 
   # Delete the local image once we've uploaded the image.
   PRUN sudo docker rmi $LPNAME
+fi
+
+
+if [[ $DELETE_LOCAL_CACHE == "true" ]]; then
+  # Delete the cloned git repo
+  PRUN silent rm -rf $LP_DIR
 fi
 
 TOTAL_TIME=$(elapsed $SCRIPT_START_TIME)

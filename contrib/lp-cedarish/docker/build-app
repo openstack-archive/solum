@@ -237,6 +237,8 @@ fi
 if [[ $DELETE_LOCAL_CACHE == "true" ]]; then
   # Delete local languagepack image after building the DU
   sudo docker rmi -f $BASE_IMG
+  # Delete the cloned git repo
+  PRUN silent rm -rf $APP_DIR
 fi
 
 TOTAL_TIME=$(elapsed $SCRIPT_START_TIME)
