@@ -129,7 +129,8 @@ class HandlerTest(base.BaseTestCase):
 
         self.assertEqual(expected, mock_b_update.call_args_list)
 
-        expected = [mock.call(44, {'status': 'BUILDING'})]
+        expected = [mock.call(44, {'status': 'BUILDING'}),
+                    mock.call(44, {'status': 'BUILT'})]
         self.assertEqual(expected, mock_uas.call_args_list)
 
         expected = [mock.call(assembly_id=44, image_id=fake_glance_id)]
@@ -180,7 +181,8 @@ class HandlerTest(base.BaseTestCase):
 
         self.assertEqual(expected, mock_b_update.call_args_list)
 
-        expected = [mock.call(44, {'status': 'BUILDING'})]
+        expected = [mock.call(44, {'status': 'BUILDING'}),
+                    mock.call(44, {'status': 'BUILT'})]
         self.assertEqual(expected, mock_uas.call_args_list)
 
         expected = [mock.call(assembly_id=44, image_id=fake_glance_id)]
@@ -240,7 +242,8 @@ class HandlerTest(base.BaseTestCase):
 
         self.assertEqual(expected, mock_b_update.call_args_list)
 
-        expected = [mock.call(44, {'status': 'BUILDING'})]
+        expected = [mock.call(44, {'status': 'BUILDING'}),
+                    mock.call(44, {'status': 'BUILT'})]
         self.assertEqual(expected, mock_uas.call_args_list)
 
         expected = [mock.call(assembly_id=44, image_id=fake_glance_id)]
@@ -448,7 +451,8 @@ class HandlerTest(base.BaseTestCase):
         self.assertEqual(expected, mock_b_update.call_args_list)
 
         expected = [mock.call(self.ctx, 44, 'UNIT_TESTING'),
-                    mock.call(self.ctx, 44, 'BUILDING')]
+                    mock.call(self.ctx, 44, 'BUILDING'),
+                    mock.call(self.ctx, 44, 'BUILT')]
         self.assertEqual(expected, mock_a_update.call_args_list)
 
         expected = [mock.call(assembly_id=44, image_id=fake_glance_id)]

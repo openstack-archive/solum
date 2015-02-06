@@ -331,26 +331,24 @@ class Handler(object):
                             'build')
 
         # we expect one line in the output that looks like:
-        # created_image_id=<the glance_id>
+        # created_image_id=<ID>
         created_image_id = None
         for line in out.split('\n'):
             if 'created_image_id' in line:
                 solum.TLS.trace.support_info(build_out_line=line)
                 created_image_id = line.split('=')[-1].strip()
-        if not created_image_id:
-            job_update_notification(ctxt, build_id, IMAGE_STATES.ERROR,
-                                    description='image not created',
+        if created_image_id:
+            job_update_notification(ctxt, build_id, IMAGE_STATES.COMPLETE,
+                                    description='built successfully',
+                                    created_image_id=created_image_id,
                                     assembly_id=assembly_id)
-            update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.ERROR)
-            return
-        job_update_notification(ctxt, build_id, IMAGE_STATES.COMPLETE,
-                                description='built successfully',
-                                created_image_id=created_image_id,
-                                assembly_id=assembly_id)
-        if created_image_id is not None:
+            update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.BUILT)
             deployer_api.API(context=ctxt).deploy(assembly_id=assembly_id,
                                                   image_id=created_image_id)
         else:
+            job_update_notification(ctxt, build_id, IMAGE_STATES.ERROR,
+                                    description='image not created',
+                                    assembly_id=assembly_id)
             update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.ERROR)
 
     def _run_unittest(self, ctxt, build_id, git_info, name, base_image_id,
