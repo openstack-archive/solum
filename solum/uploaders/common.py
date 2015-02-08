@@ -24,17 +24,17 @@ LOG = logging.getLogger(__name__)
 class UploaderBase(object):
     context = None
     original_file_path = None
-    assembly = None
+    resource = None
     build_id = None
     stage_name = None
     strategy = None
 
-    def __init__(self, context, original_file_path, assembly, build_id,
+    def __init__(self, context, original_file_path, resource, build_id,
                  stage_name):
         self.context = context
         self.original_file_path = original_file_path
         self.transformed_path = original_file_path + '.tf'
-        self.assembly = assembly
+        self.resource = resource
         self.build_id = build_id
         self.stage_name = stage_name
 
@@ -64,8 +64,9 @@ class UploaderBase(object):
         now = datetime.datetime.utcnow()
         ulog.created_at = now
         ulog.updated_at = now
-        ulog.assembly_uuid = self.assembly.uuid
-        ulog.project_id = self.assembly.project_id
+        ulog.resource_type = self.resource.type
+        ulog.resource_uuid = self.resource.uuid
+        ulog.project_id = self.resource.project_id
         ulog.location = location
         ulog.strategy = self.strategy
         if strategy_info is None:

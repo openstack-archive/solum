@@ -28,7 +28,8 @@ class TestUserlog(base.BaseTestCase):
         a_id = uuid.uuid4()
 
         self.data = [{'id': 12,
-                      'assembly_uuid': '%s' % a_id,
+                      'resource_uuid': '%s' % a_id,
+                      'resource_type': 'app',
                       'strategy': 'local',
                       'location': '/dev/null',
                       'project_id': self.ctx.tenant,

@@ -26,12 +26,13 @@ class Userlog(sql.Base, abstract.Userlog):
     __table_args__ = sql.table_args()
 
     id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
-    assembly_uuid = sa.Column(sa.String(36), nullable=False)
+    resource_uuid = sa.Column(sa.String(36), nullable=False)
     project_id = sa.Column(sa.String(36))
     created_at = sa.Column(sa.DateTime)
     location = sa.Column(sa.String(255))
     strategy = sa.Column(sa.String(255))
     strategy_info = sa.Column(sa.String(1024))
+    resource_type = sa.Column(sa.String(36))
 
 
 class UserlogList(abstract.UserlogList):
@@ -42,8 +43,8 @@ class UserlogList(abstract.UserlogList):
         return UserlogList(sql.model_query(context, Userlog))
 
     @classmethod
-    def get_all_by_assembly_id(cls, context, assembly_uuid):
+    def get_all_by_id(cls, context, resource_uuid):
         session = sql.Base.get_session()
         logs = session.query(Userlog).filter_by(project_id=context.tenant)
-        logs = logs.filter_by(assembly_uuid=assembly_uuid)
+        logs = logs.filter_by(resource_uuid=resource_uuid)
         return logs.order_by(Userlog.created_at).all()

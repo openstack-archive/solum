@@ -54,7 +54,7 @@ cfg.CONF.import_opt('log_upload_strategy', 'solum.worker.config',
 cfg.CONF.import_opt('image_storage', 'solum.worker.config', group='worker')
 
 
-def upload_task_log(ctxt, original_path, assembly, build_id, stage):
+def upload_task_log(ctxt, original_path, resource, build_id, stage):
     strategy = cfg.CONF.worker.log_upload_strategy
     LOG.debug("User log upload strategy: %s" % strategy)
 
@@ -62,7 +62,7 @@ def upload_task_log(ctxt, original_path, assembly, build_id, stage):
         'local': local_uploader.LocalStorage,
         'swift': swift_uploader.SwiftUpload,
     }.get(strategy, uploader_common.UploaderBase)
-    uploader(ctxt, original_path, assembly, build_id, stage).upload()
+    uploader(ctxt, original_path, resource, build_id, stage).upload()
 
 
 def job_update_notification(ctxt, build_id, state=None, description=None,
@@ -79,6 +79,10 @@ def job_update_notification(ctxt, build_id, state=None, description=None,
 
 def get_assembly_by_id(ctxt, assembly_id):
     return solum.objects.registry.Assembly.get_by_id(ctxt, assembly_id)
+
+
+def get_image_by_id(ctxt, image_id):
+    return solum.objects.registry.Image.get_by_id(ctxt, image_id)
 
 
 def get_parameter_by_assem_id(ctxt, assembly_id):
@@ -327,6 +331,7 @@ class Handler(object):
             return
 
         if assem is not None:
+            assem.type = 'app'
             upload_task_log(ctxt, logpath, assem, user_env['BUILD_ID'],
                             'build')
 
@@ -411,6 +416,7 @@ class Handler(object):
             LOG.exception(subex)
 
         if assem is not None:
+            assem.type = 'app'
             upload_task_log(ctxt, logpath, assem, user_env['BUILD_ID'],
                             'unittest')
 
@@ -465,6 +471,10 @@ class Handler(object):
     def build_lp(self, ctxt, image_id, git_info, name, source_format,
                  image_format, artifact_type=None):
         update_lp_status(ctxt, image_id, IMAGE_STATES.BUILDING)
+
+        solum.TLS.trace.clear()
+        solum.TLS.trace.import_context(ctxt)
+
         source_uri = git_info['source_url']
         build_cmd = self._get_build_command(ctxt, 'build', source_uri,
                                             name, str(image_id),
@@ -479,28 +489,45 @@ class Handler(object):
                           image_id)
             LOG.exception(env_ex)
 
+        log_env = user_env.copy()
+        if 'OS_AUTH_TOKEN' in log_env:
+            del log_env['OS_AUTH_TOKEN']
+        solum.TLS.trace.support_info(environment=log_env)
+
+        logpath = "%s/%s-%s.log" % (user_env['SOLUM_TASK_DIR'],
+                                    'languagepack',
+                                    user_env['BUILD_ID'])
+        LOG.debug("Languagepack logs stored at %s" % logpath)
+
         out = None
+        status = IMAGE_STATES.ERROR
+        image_external_ref = None
+
         try:
             out = subprocess.Popen(build_cmd,
                                    env=user_env,
                                    stdout=subprocess.PIPE).communicate()[0]
+
+            # we expect one line in the output that looks like:
+            # image_external_ref=<external storage ref>
+
+            for line in out.split('\n'):
+                if 'image_external_ref' in line:
+                    solum.TLS.trace.support_info(build_lp_out_line=line)
+                    image_external_ref = line.split('=')[-1].strip()
+                    break
+            if image_external_ref is not None:
+                status = IMAGE_STATES.COMPLETE
+            else:
+                status = IMAGE_STATES.ERROR
         except OSError as subex:
-            update_lp_status(ctxt, image_id, IMAGE_STATES.ERROR)
+
             LOG.exception(_("Failed to successfully build languagepack: `%s`"),
                           image_id)
             LOG.exception(subex)
-            return
 
-        # we expect one line in the output that looks like:
-        # image_external_ref=<external storage ref>
-        image_external_ref = None
-        for line in out.split('\n'):
-            if 'image_external_ref' in line:
-                solum.TLS.trace.support_info(build_lp_out_line=line)
-                image_external_ref = line.split('=')[-1].strip()
-                break
-        if image_external_ref is not None:
-            update_lp_status(ctxt, image_id, IMAGE_STATES.COMPLETE,
-                             image_external_ref)
-        else:
-            update_lp_status(ctxt, image_id, IMAGE_STATES.ERROR)
+        img = get_image_by_id(ctxt, image_id)
+        img.type = 'languagepack'
+        upload_task_log(ctxt, logpath, img,
+                        user_env['BUILD_ID'], 'languagepack')
+        update_lp_status(ctxt, image_id, status, image_external_ref)
