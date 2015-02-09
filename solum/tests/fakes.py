@@ -372,7 +372,8 @@ class FakeAttributeDefinition(mock.Mock):
 class FakeUserlog(mock.Mock):
     def __init__(self, **kwargs):
         super(FakeUserlog, self).__init__(**kwargs)
-        self.assembly_uuid = uuidutils.generate_uuid()
+        self.resource_uuid = uuidutils.generate_uuid()
+        self.resource_type = 'app'
         self.location = 'fake location'
         self.strategy = 'local'
         self.strategy_info = '{}'

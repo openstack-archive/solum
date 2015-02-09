@@ -2,7 +2,7 @@
 # Solum script for building custom languagepacks
 
 SCRIPT_START_TIME=`date +'%s'`
-LOG=${SOLUM_BUILD_LOG:="/opt/stack/logs/solum_build.log"}
+TASKNAME=languagepack
 REUSE_IMAGES_IF_REPO_UNCHANGED=${REUSE_IMAGES_IF_REPO_UNCHANGED:="1"}
 GIT_PRIVATE_KEY=${REPO_DEPLOY_KEYS:-''}
 IMAGE_STORAGE=${IMAGE_STORAGE:-null}
@@ -10,6 +10,8 @@ IMAGE_STORAGE=${IMAGE_STORAGE:-null}
 # TLOG, PRUN, etc. defined in common/utils
 HERE=$(dirname $0)
 source $HERE/../../common/utils
+
+LOG_FILE=$(GET_LOGFILE)
 
 # Get the image_id of the image named $1
 function app_glance_id () {

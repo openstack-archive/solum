@@ -24,9 +24,9 @@ from solum.common import exception
 class UserlogsController(rest.RestController):
     """Manages operations on the Userlogs collection."""
 
-    def __init__(self, assembly_id):
+    def __init__(self, resource_id):
         super(UserlogsController, self).__init__()
-        self._assembly_id = assembly_id
+        self._resource_id = resource_id
 
     @exception.wrap_pecan_controller_exception
     @wsme_pecan.wsexpose([userlog.Userlog])
@@ -34,6 +34,6 @@ class UserlogsController(rest.RestController):
         """Return all Userlogs, based on the query provided."""
         handler = userlog_handler.UserlogHandler(
             pecan.request.security_context)
-        ulogs = handler.get_all_by_assembly_id(self._assembly_id)
+        ulogs = handler.get_all_by_id(self._resource_id)
         return [userlog.Userlog.from_db_model(ulog, pecan.request.host_url)
                 for ulog in ulogs]

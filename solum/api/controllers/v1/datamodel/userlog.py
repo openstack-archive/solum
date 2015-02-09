@@ -17,7 +17,8 @@ from wsme import types as wtypes
 
 class Userlog(wtypes.Base):
 
-    assembly_uuid = wtypes.text
+    resource_uuid = wtypes.text
+    resource_type = wtypes.text
     created_at = wtypes.text
     location = wtypes.text
     strategy = wtypes.text
@@ -29,7 +30,8 @@ class Userlog(wtypes.Base):
     @classmethod
     def from_db_model(cls, m, host_url):
         return cls(
-            assembly_uuid=m.assembly_uuid,
+            resource_uuid=m.resource_uuid,
+            resource_type=m.resource_type,
             created_at=str(m.created_at),
             location=m.location,
             strategy=m.strategy,
