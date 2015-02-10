@@ -138,6 +138,61 @@ class HandlerTest(base.BaseTestCase):
 
     @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
     @mock.patch('solum.objects.registry')
+    @mock.patch('solum.conductor.api.API.update_assembly')
+    @mock.patch('solum.conductor.api.API.build_job_update')
+    @mock.patch('solum.deployer.api.API.deploy')
+    @mock.patch('subprocess.Popen')
+    def test_build_swft(self, mock_popen, mock_deploy, mock_b_update, mock_uas,
+                        mock_registry, mock_get_env):
+        handler = shell_handler.Handler()
+        fake_assembly = fakes.FakeAssembly()
+        fake_glance_id = str(uuid.uuid4())
+        mock_registry.Assembly.get_by_id.return_value = fake_assembly
+        fake_image = fakes.FakeImage()
+        mock_registry.Image.get_by_uuid.return_value = fake_image
+        mock_registry.Image.get_lp_by_name_or_uuid = fake_image
+
+        cfg.CONF.set_override('image_storage', 'swift',
+                              group='worker')
+
+        mock_popen.return_value.communicate.return_value = [
+            'foo\ncreated_image_id=%s' % fake_glance_id, None]
+        test_env = mock_environment()
+        mock_get_env.return_value = test_env
+        git_info = mock_git_info()
+
+        image_id = fake_glance_id + "APP_NAME=new_app"
+
+        handler.build(self.ctx, build_id=5, git_info=git_info,
+                      name='new_app', base_image_id=fake_image.base_image_id,
+                      source_format='heroku', image_format='docker',
+                      assembly_id=44, test_cmd=None, run_cmd=None)
+
+        proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                '..', '..', '..', '..'))
+        script = os.path.join(proj_dir, 'contrib/lp-cedarish/docker/build-app')
+        mock_popen.assert_called_once_with([script, 'git://example.com/foo',
+                                            'new_app', self.ctx.tenant,
+                                            fake_image.external_ref,
+                                            fake_image.name],
+                                           env=test_env,
+                                           stdout=-1)
+        expected = [mock.call(5, 'BUILDING', 'Starting the image build',
+                              None, 44),
+                    mock.call(5, 'COMPLETE', 'built successfully',
+                              image_id, 44)]
+
+        self.assertEqual(expected, mock_b_update.call_args_list)
+
+        expected = [mock.call(44, {'status': 'BUILDING'}),
+                    mock.call(44, {'status': 'BUILT'})]
+        self.assertEqual(expected, mock_uas.call_args_list)
+
+        expected = [mock.call(assembly_id=44, image_id=image_id)]
+        self.assertEqual(expected, mock_deploy.call_args_list)
+
+    @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
+    @mock.patch('solum.objects.registry')
     @mock.patch('solum.conductor.api.API.build_job_update')
     @mock.patch('solum.conductor.api.API.update_assembly')
     @mock.patch('solum.deployer.api.API.deploy')

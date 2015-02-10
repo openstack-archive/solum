@@ -60,7 +60,7 @@ SERVICE_OPTS = [
                  help=('Factor by which sleep time interval increases. '
                        'This value should be >= 1.0')),
     cfg.StrOpt('flavor',
-               default="m1.tiny",
+               default="m1.small",
                help='VM Flavor'),
     cfg.StrOpt('image',
                default="coreos",

@@ -118,11 +118,13 @@ class Handler(object):
                          test_cmd=None, run_cmd=None):
         # create a minimal environment
         user_env = {}
+
         for var in ['PATH', 'LOGNAME', 'LANG', 'HOME', 'USER', 'TERM']:
             if var in os.environ:
                 user_env[var] = os.environ[var]
         user_env['OS_AUTH_TOKEN'] = ctxt.auth_token
         user_env['OS_AUTH_URL'] = ctxt.auth_url
+        user_env['OS_REGION_NAME'] = cfg.CONF.worker.region_name
 
         if assembly_id is not None:
             assem = get_assembly_by_id(ctxt, assembly_id)
@@ -338,13 +340,39 @@ class Handler(object):
                             'build')
 
         # we expect one line in the output that looks like:
-        # created_image_id=<ID>
+        # created_image_id=<id of the image>
+        # If image_storage is 'glance', this will be glance_id
+        # If image_storage is 'docker_registry', this will be URL:PORT/APP
+        # If image_storage is 'swift', this will be swift tempUrl for the DU
         created_image_id = None
+
         for line in out.split('\n'):
             if 'created_image_id' in line:
                 solum.TLS.trace.support_info(build_out_line=line)
-                created_image_id = line.split('=')[-1].strip()
-        if created_image_id:
+                # (devkulkarni): When the image_storage is swift, the form
+                # of the tempUrl is like so:
+                # https://<>/<app-name>?temp_url_sig=val&temp_url_expires=val
+                # Because of the presence of the query string, we cannot use
+                # splitting on '=' like we do for others. Hence the special
+                # logic below.
+                if cfg.CONF.worker.image_storage == 'swift':
+                    img_id = line.replace("created_image_id=", '')
+                    # (devkulkarni): We need the APP_NAME in deployer
+                    # Appending it to the created_image_id for now (below).
+                    # TODO(devkulkarni): Store the APP_NAME in assembly
+                    # in deployer
+                    img_id += "APP_NAME=" + name
+                    created_image_id = img_id
+                else:
+                    created_image_id = line.split('=')[-1].strip()
+                LOG.debug("created_image_id:%s" % created_image_id)
+        if not created_image_id:
+            job_update_notification(ctxt, build_id, IMAGE_STATES.ERROR,
+                                    description='image not created',
+                                    assembly_id=assembly_id)
+            update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.ERROR)
+            return
+        else:
             job_update_notification(ctxt, build_id, IMAGE_STATES.COMPLETE,
                                     description='built successfully',
                                     created_image_id=created_image_id,
@@ -352,11 +380,6 @@ class Handler(object):
             update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.BUILT)
             deployer_api.API(context=ctxt).deploy(assembly_id=assembly_id,
                                                   image_id=created_image_id)
-        else:
-            job_update_notification(ctxt, build_id, IMAGE_STATES.ERROR,
-                                    description='image not created',
-                                    assembly_id=assembly_id)
-            update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.ERROR)
 
     def _run_unittest(self, ctxt, build_id, git_info, name, base_image_id,
                       source_format, image_format, assembly_id,

@@ -16,6 +16,7 @@
 
 # Solum Build Script for Docker and lp-cedarish
 
+
 SCRIPT_START_TIME=$(date +"%s")
 
 IMAGE_STORAGE=${IMAGE_STORAGE:-null}
@@ -29,6 +30,10 @@ SOLUM_PARAMS=${SOLUM_PARAMS:-null}
 GIT_PRIVATE_KEY=${REPO_DEPLOY_KEYS:-''}
 RUN_CMD=${RUN_CMD:-''}
 DELETE_LOCAL_CACHE=${DELETE_LOCAL_CACHE:-null}
+
+OS_AUTH_TOKEN=${OS_AUTH_TOKEN:-null}
+OS_REGION_NAME=${OS_REGION_NAME:-null}
+OS_STORAGE_URL=${OS_STORAGE_URL:-null}
 
 # TLOG, PRUN, etc. defined in common/utils
 HERE=$(dirname $0)
@@ -139,7 +144,9 @@ else
     sudo rm $LP_NAME
     BASE_IMG=$LP_NAME
   elif [[ $IMAGE_STORAGE == "swift" ]]; then
-    swift --os-auth-token $OS_AUTH_TOKEN download solum_lp $IMG_EXTERNAL_REF --output $LP_NAME
+
+    swift --os-region-name $OS_REGION_NAME --os-auth-token $OS_AUTH_TOKEN --os-storage-url $OS_STORAGE_URL download solum_lp $IMG_EXTERNAL_REF --output $LP_NAME
+
     if [ $? != 0 ]; then
       TLOG Failed to download image $IMG_EXTERNAL_REF from swift. && exit 1
     fi
@@ -220,11 +227,30 @@ elif [[ $IMAGE_STORAGE == "docker_registry" ]]; then
   sudo docker rmi $APP_NAME
   TLOG ===== finished uploading DU to $IMAGE_STORAGE
 elif [[ $IMAGE_STORAGE == "swift" ]]; then
+
   PRUN sudo docker build -t $APP .
   [[ $? != 0 ]] && TLOG Docker build failed. && exit 1
   sudo docker save --output $APP $APP
-  swift --os-auth-token $OS_AUTH_TOKEN upload solum_du $APP
-  image_id=$APP
+
+  #TODO(devkulkarni): Read the SECRET and TTL from config file
+  SECRET=secret
+  TTL=604800
+
+  swift --os-region-name $OS_REGION_NAME --os-auth-token $OS_AUTH_TOKEN --os-storage-url $OS_STORAGE_URL upload solum_du $APP
+
+  ACCOUNT=`echo $OS_STORAGE_URL | sed 's/\// /'g | awk '{print $4}'`
+  TLOG "ACCOUNT=$ACCOUNT"
+  STORAGE_HOST=`echo $OS_STORAGE_URL | sed 's/\// /'g | awk '{print $2}'`
+  TLOG "STORAGE_HOST=$STORAGE_HOST"
+  curl -i -X POST -H X-Auth-Token:$OS_AUTH_TOKEN -H X-Account-Meta-Temp-URL-Key:$SECRET https://$STORAGE_HOST/v1/$ACCOUNT
+  CWD=`pwd`
+  TLOG "CWD:$CWD"
+  TLOG "HERE:$HERE"
+
+  TEMP_URL=`python $HERE/get-temp-url.py $STORAGE_HOST solum_du $APP $ACCOUNT $SECRET $TTL`
+  TLOG "TEMP_URL:$TEMP_URL"
+
+  image_id=$TEMP_URL
   sudo rm $APP
   sudo docker rmi $APP
   TLOG ===== finished uploading DU to $IMAGE_STORAGE

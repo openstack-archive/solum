@@ -29,6 +29,10 @@ GIT_PRIVATE_KEY=${REPO_DEPLOY_KEYS:-''}
 ENTRYPOINT=${TEST_CMD:-:}
 IMAGE_STORAGE=${IMAGE_STORAGE:-null}
 
+OS_AUTH_TOKEN=${OS_AUTH_TOKEN:-null}
+OS_REGION_NAME=${OS_REGION_NAME:-null}
+OS_STORAGE_URL=${OS_STORAGE_URL:-null}
+
 # TLOG, PRUN, ENSURE_LOGFILE, and elapsed defined in app-common
 HERE=$(dirname $0)
 source $HERE/../../common/utils
@@ -62,6 +66,7 @@ LP_NAME=$1
 
 TLOG "Executing test command $ENTRYPOINT"
 
+
 # Set base docker image to solum/slugtester for the 'auto' option
 BASE_IMG="solum/slugtester"
 
@@ -76,11 +81,13 @@ if [[ $IMG_EXTERNAL_REF != "auto" ]]; then
     docker load -i $LP_NAME
     BASE_IMG=${LP_NAME%%.tar}
   elif [[ $IMAGE_STORAGE == "swift" ]]; then
-    swift --os-auth-token $OS_AUTH_TOKEN download solum_lp $LP_NAME --output $IMG_EXTERNAL_REF
+
+    swift --os-region-name $OS_REGION_NAME --os-auth-token $OS_AUTH_TOKEN --os-storage-url $OS_STORAGE_URL download solum_lp $LP_NAME --output $IMG_EXTERNAL_REF
+
     if [ $? != 0 ]; then
       TLOG Failed to download image $IMG_EXTERNAL_REF from swift. && exit 1
     fi
-    docker load -i $LP_NAME
+    sudo docker load -i $LP_NAME
     BASE_IMG=${LP_NAME%%.tar}
   elif [[ $IMAGE_STORAGE == "docker_registry" ]]; then
     docker pull $IMG_EXTERNAL_REF

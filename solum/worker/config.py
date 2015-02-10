@@ -60,6 +60,10 @@ SERVICE_OPTS = [
                help='Delete cached docker images and git repos from '
                'the worker node after building languagepacks and deployment '
                'units. Valid options are true or false.'),
+    cfg.StrOpt('region_name',
+               default="RegionOne",
+               help='Region name to use'),
+
 ]
 
 opt_group = cfg.OptGroup(

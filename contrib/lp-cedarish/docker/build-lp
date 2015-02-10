@@ -8,6 +8,10 @@ GIT_PRIVATE_KEY=${REPO_DEPLOY_KEYS:-''}
 IMAGE_STORAGE=${IMAGE_STORAGE:-null}
 DELETE_LOCAL_CACHE=${DELETE_LOCAL_CACHE:-null}
 
+OS_AUTH_TOKEN=${OS_AUTH_TOKEN:-null}
+OS_REGION_NAME=${OS_REGION_NAME:-null}
+OS_STORAGE_URL=${OS_STORAGE_URL:-null}
+
 # TLOG, PRUN, etc. defined in common/utils
 HERE=$(dirname $0)
 source $HERE/../../common/utils
@@ -33,7 +37,7 @@ if [ $# -lt 3 ]; then
   exit 1
 fi
 
-PRUN silent docker ps
+PRUN silent sudo docker ps
 [[ $? != 0 ]] && TLOG cannot talk to docker. && exit 1
 
 GIT=$1
@@ -77,7 +81,8 @@ if [ -d "$LP_DIR/build" ] ; then
     PRUN sudo docker build -t $LPNAME .
     TLOG ===== finished docker build
     sudo docker save --output $LPNAME $LPNAME
-    swift --os-auth-token $OS_AUTH_TOKEN upload solum_lp $LPNAME
+    swift --os-region-name $OS_REGION_NAME --os-auth-token $OS_AUTH_TOKEN --os-storage-url $OS_STORAGE_URL upload solum_lp $LPNAME
+
     if [ $? != 0 ]; then
       TLOG Failed to upload languagepack to swift. && exit 1
     fi
