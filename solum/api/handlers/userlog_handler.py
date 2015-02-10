@@ -26,6 +26,6 @@ class UserlogHandler(handler.Handler):
         """Return all userlogs, based on the query provided."""
         return objects.registry.UserlogList.get_all(self.context)
 
-    def get_all_by_assembly_id(self, assembly_uuid):
-        return objects.registry.UserlogList.get_all_by_assembly_id(
-            self.context, assembly_uuid=assembly_uuid)
+    def get_all_by_id(self, resource_uuid):
+        return objects.registry.UserlogList.get_all_by_id(
+            self.context, resource_uuid=resource_uuid)

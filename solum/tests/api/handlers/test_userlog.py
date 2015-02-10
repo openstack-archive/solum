@@ -33,11 +33,11 @@ class TestUserlogHandler(base.BaseTestCase):
         self.assertIsNotNone(res)
         mock_registry.UserlogList.get_all.assert_called_once_with(self.ctx)
 
-    def test_userlog_get_all_by_assembly_id(self, mock_registry):
-        mock_registry.UserlogList.get_all_by_assembly_id.return_value = {}
+    def test_userlog_get_all_by_id(self, mock_registry):
+        mock_registry.UserlogList.get_all_by_id.return_value = {}
         handler = userlog_handler.UserlogHandler(self.ctx)
         assembly = fakes.FakeAssembly()
-        res = handler.get_all_by_assembly_id(assembly.id)
+        res = handler.get_all_by_id(assembly.id)
         self.assertIsNotNone(res)
-        all_by_id = mock_registry.UserlogList.get_all_by_assembly_id
-        all_by_id.assert_called_once_with(self.ctx, assembly_uuid=assembly.id)
+        all_by_id = mock_registry.UserlogList.get_all_by_id
+        all_by_id.assert_called_once_with(self.ctx, resource_uuid=assembly.id)
