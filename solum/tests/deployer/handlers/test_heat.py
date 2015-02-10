@@ -43,8 +43,8 @@ class HandlerTest(base.BaseTestCase):
     @mock.patch('solum.common.catalog.get')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.common.clients.OpenStackClients')
-    def test_deploy_docker_on_vm(self, mock_clients, mock_registry,
-                                 mock_get_templ, mock_cond):
+    def test_deploy_docker_on_vm_with_dreg(self, mock_clients, mock_registry,
+                                           mock_get_templ, mock_cond):
         handler = heat_handler.Handler()
 
         fake_assembly = fakes.FakeAssembly()
@@ -64,6 +64,52 @@ class HandlerTest(base.BaseTestCase):
         handler.deploy(self.ctx, 77, 'created_image_id')
         stacks = mock_clients.return_value.heat.return_value.stacks
         stacks.create.assert_called_once()
+        assign_and_create_mock = mock_registry.Component.assign_and_create
+        comp_name = 'Heat_Stack_for_%s' % fake_assembly.name
+        assign_and_create_mock.assert_called_once_with(self.ctx,
+                                                       fake_assembly,
+                                                       comp_name,
+                                                       'heat_stack',
+                                                       'Heat Stack test',
+                                                       'http://fake.ref',
+                                                       'fake_id')
+
+    @mock.patch('solum.conductor.api.API.update_assembly')
+    @mock.patch('solum.common.catalog.get')
+    @mock.patch('solum.objects.registry')
+    @mock.patch('solum.common.clients.OpenStackClients')
+    def test_deploy_docker_on_vm_swift(self, mock_clients, mock_registry,
+                                       mock_get_templ, mock_cond):
+        handler = heat_handler.Handler()
+
+        fake_assembly = fakes.FakeAssembly()
+        mock_registry.Assembly.get_by_id.return_value = fake_assembly
+        fake_template = self._get_fake_template()
+        img = "http://a.b.c/d?temp_url_sig=v&temp_url_expires=vAPP_NAME=d"
+        template = self._get_tmpl_for_swift(fake_assembly, fake_template, img)
+        cfg.CONF.api.image_format = "vm"
+        cfg.CONF.worker.image_storage = "swift"
+        cfg.CONF.deployer.flavor = "flavor"
+        cfg.CONF.deployer.image = "coreos"
+        mock_get_templ.return_value = template
+        handler._find_id_if_stack_exists = mock.MagicMock(return_value=(None))
+        stacks = mock_clients.return_value.heat.return_value.stacks
+        stacks.create.return_value = {"stack": {
+            "id": "fake_id",
+            "links": [{"href": "http://fake.ref",
+                       "rel": "self"}]}}
+        handler._check_stack_status = mock.MagicMock()
+        handler.deploy(self.ctx, 77, img)
+        stacks = mock_clients.return_value.heat.return_value.stacks
+
+        parameters = {'name': fake_assembly.uuid,
+                      'count': 1,
+                      'flavor': "flavor",
+                      'image': "coreos"}
+
+        stacks.create.assert_called_once_with(stack_name='faker-test_uuid',
+                                              template=template,
+                                              parameters=parameters)
         assign_and_create_mock = mock_registry.Component.assign_and_create
         comp_name = 'Heat_Stack_for_%s' % fake_assembly.name
         assign_and_create_mock.assert_called_once_with(self.ctx,
@@ -285,4 +331,27 @@ class HandlerTest(base.BaseTestCase):
         comp_instance['properties']['user_data'] = user_data
         template_bdy['resources']['compute_instance'] = comp_instance
         template = yaml.dump(template_bdy)
+        return template
+
+    def _get_tmpl_for_swift(self, assem, template, image_tar_location):
+        template_bdy = yaml.safe_load(template)
+
+        image_loc_and_du_name = image_tar_location.split("APP_NAME=")
+        image_tar_location = image_loc_and_du_name[0]
+        du_name = image_loc_and_du_name[1]
+
+        run_docker = "#!/bin/bash -x\n #Invoke the container\n"
+        run_docker += "wget " + '\"' + image_tar_location
+        run_docker += '\"' + " --output-document=" + du_name + "\n"
+        run_docker += "docker load < " + du_name + "\n"
+        run_docker += "docker run -p 80:5000 -d " + du_name
+
+        comp_instance = template_bdy['resources']['compute_instance']
+        user_data = comp_instance['properties']['user_data']
+        user_data['str_replace']['template'] = run_docker
+        comp_instance['properties']['user_data'] = user_data
+        template_bdy['resources']['compute_instance'] = comp_instance
+        template = yaml.safe_dump(template_bdy,
+                                  encoding='utf-8',
+                                  allow_unicode=True)
         return template
