@@ -14,6 +14,9 @@
 
 import uuid
 
+import mock
+from sqlalchemy.orm import exc as sqla_ex
+
 from solum.common import exception
 from solum.objects import registry
 from solum.objects.sqlalchemy import assembly
@@ -86,3 +89,18 @@ class TestAssembly(base.BaseTestCase):
                                             {'status': 'READY'})
         updated = assembly.Assembly().get_by_id(self.ctx, self.data[0]['id'])
         self.assertEqual('DELETING', getattr(updated, 'status'))
+
+    @mock.patch('solum.objects.sqlalchemy.models.SolumBase.get_session')
+    @mock.patch('solum.objects.sqlalchemy.models.LOG')
+    def test_update_and_save_raise_exp(self, mock_log, mock_sess):
+        mock_sess.return_value.merge.side_effect = sqla_ex.StaleDataError
+        self.assertRaises(sqla_ex.StaleDataError,
+                          assembly.Assembly().update_and_save,
+                          self.ctx, self.data[0]['id'], {'status': 'DELETING'})
+        expected = [mock.call("Failed DB call update_and_save. "
+                              "Retrying 2 more times."),
+                    mock.call("Failed DB call update_and_save. "
+                              "Retrying 1 more times."),
+                    mock.call("Failed DB call update_and_save. "
+                              "Retrying 0 more times.")]
+        self.assertEqual(expected, mock_log.warning.call_args_list)

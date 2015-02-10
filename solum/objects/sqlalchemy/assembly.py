@@ -21,6 +21,7 @@ from solum.objects.sqlalchemy import component
 from solum.objects.sqlalchemy import models as sql
 
 ASSEMBLY_STATES = abstract.States
+retry = sql.retry
 
 
 class Assembly(sql.Base, abstract.Assembly):
@@ -85,6 +86,7 @@ class Assembly(sql.Base, abstract.Assembly):
         return session.query(component.Component).filter_by(
             assembly_id=self.id).all()
 
+    @retry
     def destroy(self, context):
         session = sql.Base.get_session()
         with session.begin():

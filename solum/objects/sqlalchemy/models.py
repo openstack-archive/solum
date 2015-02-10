@@ -16,7 +16,9 @@
 SQLAlchemy models for application data.
 """
 
+import functools
 import json
+import time
 
 from oslo.config import cfg
 from oslo.db import exception as db_exc
@@ -32,7 +34,28 @@ from solum.common import exception
 from solum.common import yamlutils
 from solum import objects
 from solum.objects import sqlalchemy as object_sqla
+from solum.openstack.common import log as logging
 from solum.openstack.common import uuidutils
+
+LOG = logging.getLogger(__name__)
+
+
+def retry(fun):
+    """Decorator to retry a DB call if certain exception was received."""
+    @functools.wraps(fun)
+    def _wrapper(*args, **kwargs):
+        max_retries = kwargs.pop('max_retries', 3)
+        for tries in range(max_retries):
+            try:
+                return fun(*args, **kwargs)
+            except (db_exc.DBDeadlock, exc.StaleDataError):
+                LOG.warning("Failed DB call %s. Retrying %s more times." %
+                            (fun.__name__, max_retries - tries - 1))
+                if tries + 1 >= max_retries:
+                    raise
+
+                time.sleep(0.5)
+    return _wrapper
 
 
 def table_args():
@@ -137,7 +160,8 @@ class SolumBase(models.TimestampMixin, models.ModelBase):
             if self._lazyhasattr(field):
                 setattr(self, field, data[field])
 
-    @classmethod
+    @classmethod  # Must be top most
+    @retry
     def update_and_save(cls, context, id_or_uuid, data):
         is_uuid = uuidutils.is_uuid_like(id_or_uuid)
         try:
@@ -155,6 +179,7 @@ class SolumBase(models.TimestampMixin, models.ModelBase):
         except exc.NoResultFound:
             cls._raise_not_found(id_or_uuid)
 
+    @retry
     def save(self, context):
         if objects.transition_schema():
             self.add_forward_schema_changes()
@@ -171,6 +196,7 @@ class SolumBase(models.TimestampMixin, models.ModelBase):
         except (db_exc.DBDuplicateEntry):
             self.__class__._raise_duplicate_object()
 
+    @retry
     def destroy(self, context):
         session = SolumBase.get_session()
         with session.begin():
