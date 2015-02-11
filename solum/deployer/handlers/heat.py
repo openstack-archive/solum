@@ -241,7 +241,7 @@ class Handler(object):
             update_assembly(ctxt, assembly_id, to_upd)
             du_url = "http://" + host_url
             LOG.debug("DU URL:%s" % du_url)
-            for count1 in range(cfg.CONF.deployer.du_attempts):
+            for count in range(cfg.CONF.deployer.du_attempts):
                 time.sleep(1)
                 try:
                     conn = repo_utils.get_http_connection()
@@ -251,7 +251,8 @@ class Handler(object):
                             du_is_up = True
                             break
                 except socket.timeout:
-                    pass
+                    LOG.debug("Connection to %s timed out, assembly ID: %s" %
+                              (du_url, assembly_id))
                 except (httplib2.HttpLib2Error, socket.error) as serr:
                     LOG.exception(serr)
                 except Exception as exp:
