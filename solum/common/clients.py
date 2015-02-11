@@ -46,7 +46,11 @@ glance_client_opts = [
                default='publicURL',
                help=_(
                    'Type of endpoint in Identity service catalog to use '
-                   'for communication with the Glance service.'))]
+                   'for communication with the Glance service.')),
+    cfg.StrOpt('region_name',
+               default='RegionOne',
+               help=_(
+                   'Region of endpoint in Identity service catalog to use.'))]
 
 heat_client_opts = [
     cfg.StrOpt('endpoint_type',
@@ -54,6 +58,10 @@ heat_client_opts = [
                help=_(
                    'Type of endpoint in Identity service catalog to use '
                    'for communication with the OpenStack service.')),
+    cfg.StrOpt('region_name',
+               default='RegionOne',
+               help=_(
+                   'Region of endpoint in Identity service catalog to use.')),
     cfg.StrOpt('ca_file',
                help=_('Optional CA cert file to use in SSL connections.')),
     cfg.StrOpt('cert_file',
@@ -72,6 +80,10 @@ zaqar_client_opts = [
                help=_(
                    'Type of endpoint in Queue service catalog to use '
                    'for communication with the Zaqar service.')),
+    cfg.StrOpt('region_name',
+               default='RegionOne',
+               help=_(
+                   'Region of endpoint in Identity service catalog to use.')),
     cfg.BoolOpt('insecure',
                 default=False,
                 help=_("If set, then the server's certificate for zaqar "
@@ -83,6 +95,10 @@ neutron_client_opts = [
                help=_(
                    'Type of endpoint in Identity service catalog to use '
                    'for communication with the Neutron service.')),
+    cfg.StrOpt('region_name',
+               default='RegionOne',
+               help=_(
+                   'Region of endpoint in Identity service catalog to use.')),
     cfg.StrOpt('ca_cert',
                help=_('Optional CA bundle file to use in SSL connections.')),
     cfg.BoolOpt('insecure',
@@ -96,6 +112,10 @@ swift_client_opts = [
                help=_(
                    'Type of endpoint in Identity service catalog to use '
                    'for communication with the Swift service.')),
+    cfg.StrOpt('region_name',
+               default='RegionOne',
+               help=_(
+                   'Region of endpoint in Identity service catalog to use.')),
     cfg.StrOpt('cacert',
                help=_('Optional CA cert file to use in SSL connections.')),
     cfg.BoolOpt('insecure',
@@ -108,6 +128,10 @@ mistral_client_opts = [
                help=_(
                    'Type of endpoint in Identity service catalog to use '
                    'for communication with the mistral service.')),
+    cfg.StrOpt('region_name',
+               default='RegionOne',
+               help=_(
+                   'Region of endpoint in Identity service catalog to use.')),
     cfg.StrOpt('cacert',
                help=_('Optional CA cert file to use in SSL connections '
                       'with Mistral.')),
@@ -173,8 +197,10 @@ class OpenStackClients(object):
             return self._zaqar
 
         endpoint_type = self._get_client_option('zaqar', 'endpoint_type')
+        region_name = self._get_client_option('zaqar', 'region_name')
         endpoint_url = self.url_for(service_type='queuing',
-                                    endpoint_type=endpoint_type)
+                                    endpoint_type=endpoint_type,
+                                    region_name=region_name)
         conf = {'auth_opts':
                 {'backend': 'keystone',
                  'options': {'os_auth_token': self.auth_token,
@@ -192,8 +218,10 @@ class OpenStackClients(object):
             return self._neutron
 
         endpoint_type = self._get_client_option('neutron', 'endpoint_type')
+        region_name = self._get_client_option('neutron', 'region_name')
         endpoint_url = self.url_for(service_type='network',
-                                    endpoint_type=endpoint_type)
+                                    endpoint_type=endpoint_type,
+                                    region_name=region_name)
         args = {
             'auth_url': self.auth_url,
             'endpoint_url': endpoint_url,
@@ -218,8 +246,10 @@ class OpenStackClients(object):
             'token': self.auth_token,
         }
         endpoint_type = self._get_client_option('glance', 'endpoint_type')
+        region_name = self._get_client_option('glance', 'region_name')
         endpoint = self.url_for(service_type='image',
-                                endpoint_type=endpoint_type)
+                                endpoint_type=endpoint_type,
+                                region_name=region_name)
         self._glance = glanceclient.Client('2', endpoint, **args)
 
         return self._glance
@@ -233,8 +263,10 @@ class OpenStackClients(object):
             'auth_token': self.auth_token,
         }
         endpoint_type = self._get_client_option('mistral', 'endpoint_type')
+        region_name = self._get_client_option('mistral', 'region_name')
         endpoint = self.url_for(service_type='workflow',
-                                endpoint_type=endpoint_type)
+                                endpoint_type=endpoint_type,
+                                region_name=region_name)
         self._mistral = mistralclient.client(mistral_url=endpoint, **args)
 
         return self._mistral
@@ -256,8 +288,10 @@ class OpenStackClients(object):
             'insecure': self._get_client_option('heat', 'insecure')
         }
 
+        region_name = self._get_client_option('heat', 'region_name')
         endpoint = self.url_for(service_type='orchestration',
-                                endpoint_type=endpoint_type)
+                                endpoint_type=endpoint_type,
+                                region_name=region_name)
         self._heat = heatclient.Client('1', endpoint, **args)
 
         return self._heat
@@ -268,12 +302,15 @@ class OpenStackClients(object):
             return self._swift
 
         endpoint_type = self._get_client_option('swift', 'endpoint_type')
+        region_name = self._get_client_option('swift', 'region_name')
         args = {
             'auth_version': '2.0',
             'preauthtoken': self.auth_token,
             'preauthurl': self.url_for(service_type='object-store',
-                                       endpoint_type=endpoint_type),
-            'os_options': {'endpoint_type': endpoint_type},
+                                       endpoint_type=endpoint_type,
+                                       region_name=region_name),
+            'os_options': {'endpoint_type': endpoint_type,
+                           'region_name': region_name},
             'cacert': self._get_client_option('swift', 'cacert'),
             'insecure': self._get_client_option('swift', 'insecure')
         }

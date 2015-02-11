@@ -33,11 +33,13 @@ class ClientsTest(base.BaseTestCase):
     @mock.patch.object(clients.OpenStackClients, 'keystone')
     def test_url_for(self, mock_keystone):
         obj = clients.OpenStackClients(None)
-        obj.url_for(service_type='fake_service', endpoint_type='fake_endpoint')
+        obj.url_for(service_type='fake_service', endpoint_type='fake_endpoint',
+                    region_name='FakeRegion')
 
         mock_cat = mock_keystone.return_value.client.service_catalog
         mock_cat.url_for.assert_called_once_with(service_type='fake_service',
-                                                 endpoint_type='fake_endpoint')
+                                                 endpoint_type='fake_endpoint',
+                                                 region_name='FakeRegion')
 
     @mock.patch.object(barbicanclient, 'Client')
     @mock.patch.object(session, 'Session')
@@ -90,7 +92,8 @@ class ClientsTest(base.BaseTestCase):
         mock_call.assert_called_once_with(
             '2', 'url_from_keystone', token='3bcc3d3a03f44e3d8377f9247b0ad155')
         mock_url.assert_called_once_with(service_type='image',
-                                         endpoint_type='publicURL')
+                                         endpoint_type='publicURL',
+                                         region_name='RegionOne')
 
     def test_clients_glance_noauth(self):
         con = mock.MagicMock()
@@ -133,7 +136,8 @@ class ClientsTest(base.BaseTestCase):
             auth_url='keystone_url', ca_file=None, key_file=None,
             password=None, insecure=False)
         mock_url.assert_called_once_with(service_type='orchestration',
-                                         endpoint_type='publicURL')
+                                         endpoint_type='publicURL',
+                                         region_name='RegionOne')
 
     def test_clients_heat_noauth(self):
         con = mock.MagicMock()
@@ -175,7 +179,9 @@ class ClientsTest(base.BaseTestCase):
         obj._swift = None
         obj.swift()
         mock_call.assert_called_once_with(
-            auth_version="2.0", os_options={'endpoint_type': 'publicURL'},
+            auth_version="2.0",
+            os_options={'endpoint_type': 'publicURL',
+                        'region_name': 'RegionOne'},
             cacert=None, preauthurl="url_from_keystone", insecure=False,
             preauthtoken="3bcc3d3a03f44e3d8377f9247b0ad155")
 
@@ -267,7 +273,8 @@ class ClientsTest(base.BaseTestCase):
             mistral_url='url_from_keystone',
             auth_token='3bcc3d3a03f44e3d8377f9247b0ad155')
         mock_url.assert_called_once_with(service_type='workflow',
-                                         endpoint_type='publicURL')
+                                         endpoint_type='publicURL',
+                                         region_name='RegionOne')
 
     def test_clients_mistral_noauth(self):
         con = mock.MagicMock()
