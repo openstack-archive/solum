@@ -25,8 +25,8 @@ class OperationHandler(handler.Handler):
 
     def update(self, uuid, data):
         """Modify the operation."""
-        updated = objects.registry.Operation.safe_update(self.context,
-                                                         uuid, data)
+        updated = objects.registry.Operation.update_and_save(self.context,
+                                                             uuid, data)
         return updated
 
     def delete(self, uuid):

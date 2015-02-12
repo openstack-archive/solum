@@ -178,7 +178,8 @@ class PipelineHandler(handler.Handler):
 
     def update(self, id, data):
         """Modify a resource."""
-        updated = objects.registry.Pipeline.safe_update(self.context, id, data)
+        updated = objects.registry.Pipeline.update_and_save(self.context,
+                                                            id, data)
         return updated
 
     def delete(self, id):

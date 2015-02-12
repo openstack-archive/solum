@@ -54,9 +54,8 @@ class TestAssemblyHandler(base.BaseTestCase):
                 'plan_uuid': 'input_plan_uuid'}
         handler = assembly_handler.AssemblyHandler(self.ctx)
         handler.update('test_id', data)
-        mock_registry.Assembly.safe_update.assert_called_once_with(self.ctx,
-                                                                   'test_id',
-                                                                   data)
+        mock_registry.Assembly.update_and_save.assert_called_once_with(
+            self.ctx, 'test_id', data)
 
     @mock.patch('solum.worker.api.API.perform_action')
     @mock.patch('solum.common.solum_keystoneclient.KeystoneClientV3')

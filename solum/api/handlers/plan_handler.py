@@ -61,8 +61,8 @@ class PlanHandler(handler.Handler):
         if 'name' in data:
             to_update['name'] = data['name']
 
-        updated = objects.registry.Plan.safe_update(self.context,
-                                                    id, to_update)
+        updated = objects.registry.Plan.update_and_save(self.context,
+                                                        id, to_update)
         return updated
 
     def delete(self, id):

@@ -138,7 +138,7 @@ class SolumBase(models.TimestampMixin, models.ModelBase):
                 setattr(self, field, data[field])
 
     @classmethod
-    def safe_update(cls, context, id_or_uuid, data):
+    def update_and_save(cls, context, id_or_uuid, data):
         is_uuid = uuidutils.is_uuid_like(id_or_uuid)
         try:
             session = SolumBase.get_session()

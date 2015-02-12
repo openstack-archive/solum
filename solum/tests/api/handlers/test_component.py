@@ -46,9 +46,8 @@ class TestComponentHandler(base.BaseTestCase):
                 'assembly_id': 'new_assembly_id'}
         handler = component_handler.ComponentHandler(self.ctx)
         handler.update('test_id', data)
-        mock_registry.Component.safe_update.assert_called_once_with(self.ctx,
-                                                                    'test_id',
-                                                                    data)
+        mock_registry.Component.update_and_save.assert_called_once_with(
+            self.ctx, 'test_id', data)
 
     def test_create(self, mock_registry):
         data = {'name': 'new_name',

@@ -45,9 +45,8 @@ class TestExtensionHandler(base.BaseTestCase):
         data = {'name': 'new_name'}
         handler = extension.ExtensionHandler(self.ctx)
         handler.update('test_id', data)
-        mock_registry.Extension.safe_update.assert_called_once_with(self.ctx,
-                                                                    'test_id',
-                                                                    data)
+        mock_registry.Extension.update_and_save.assert_called_once_with(
+            self.ctx, 'test_id', data)
 
     def test_extension_create(self, mock_registry):
         data = {'name': 'new_name',

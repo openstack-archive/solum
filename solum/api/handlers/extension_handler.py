@@ -25,8 +25,8 @@ class ExtensionHandler(handler.Handler):
 
     def update(self, id, data):
         """Modify the extension."""
-        updated = objects.registry.Extension.safe_update(self.context,
-                                                         id, data)
+        updated = objects.registry.Extension.update_and_save(self.context,
+                                                             id, data)
         return updated
 
     def delete(self, id):

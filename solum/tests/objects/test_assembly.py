@@ -73,3 +73,16 @@ class TestAssembly(base.BaseTestCase):
                           self.ctx, self.data[0]['id'])
         self.assertRaises(exception.ResourceNotFound,
                           registry.Component().get_by_id, self.ctx, comp_id)
+
+    def test_update_and_save(self):
+        # first update
+        assembly.Assembly().update_and_save(self.ctx, self.data[0]['id'],
+                                            {'status': 'DELETING'})
+        updated = assembly.Assembly().get_by_id(self.ctx, self.data[0]['id'])
+        self.assertEqual('DELETING', getattr(updated, 'status'))
+
+        # second update, 'DELETING' status is not updatable
+        assembly.Assembly().update_and_save(self.ctx, self.data[0]['id'],
+                                            {'status': 'READY'})
+        updated = assembly.Assembly().get_by_id(self.ctx, self.data[0]['id'])
+        self.assertEqual('DELETING', getattr(updated, 'status'))
