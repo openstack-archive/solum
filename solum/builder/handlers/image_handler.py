@@ -15,6 +15,7 @@
 import uuid
 
 from solum.api.handlers import handler
+from solum.common import exception as exc
 from solum import objects
 from solum.objects import image
 from solum.openstack.common import log as logging
@@ -32,20 +33,27 @@ class ImageHandler(handler.Handler):
 
     def create(self, data, lp_metadata):
         """Create a new resource."""
-        db_obj = objects.registry.Image()
-        db_obj.update(data)
-        db_obj.uuid = str(uuid.uuid4())
-        db_obj.user_id = self.context.user
-        db_obj.project_id = self.context.tenant
-        db_obj.state = image.States.PENDING
-        db_obj.artifact_type = 'language_pack'
-        if lp_metadata:
-            db_obj.tags = []
-            db_obj.tags.append(lp_metadata)
+        try:
+            # Check if an LP with the same name exists.
+            objects.registry.Image.get_lp_by_name_or_uuid(self.context,
+                                                          data['name'])
+        except exc.ResourceNotFound:
+            db_obj = objects.registry.Image()
+            db_obj.update(data)
+            db_obj.uuid = str(uuid.uuid4())
+            db_obj.user_id = self.context.user
+            db_obj.project_id = self.context.tenant
+            db_obj.state = image.States.PENDING
+            db_obj.artifact_type = 'language_pack'
+            if lp_metadata:
+                db_obj.tags = []
+                db_obj.tags.append(lp_metadata)
 
-        db_obj.create(self.context)
-        self._start_build(db_obj)
-        return db_obj
+            db_obj.create(self.context)
+            self._start_build(db_obj)
+            return db_obj
+        else:
+            raise exc.ResourceExists(name=data['name'])
 
     def delete(self, uuid):
         """Delete an image."""

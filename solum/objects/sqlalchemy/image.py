@@ -13,9 +13,11 @@
 # under the License.
 
 import sqlalchemy as sa
+from sqlalchemy.orm import exc
 
 from solum.objects import image as abstract
 from solum.objects.sqlalchemy import models as sql
+from solum.openstack.common import uuidutils
 
 
 class Image(sql.Base, abstract.Image):
@@ -40,6 +42,29 @@ class Image(sql.Base, abstract.Image):
     image_format = sa.Column(sa.String(12))
     artifact_type = sa.Column(sa.String(36))
     external_ref = sa.Column(sa.String(1024))
+
+    @classmethod
+    def get_lp_by_name_or_uuid(cls, context, name_or_uuid):
+        if uuidutils.is_uuid_like(name_or_uuid):
+            try:
+                session = Image.get_session()
+                result = session.query(cls).filter_by(uuid=name_or_uuid)
+                result = result.filter_by(artifact_type='language_pack')
+                return sql.filter_by_project(context, result).one()
+            except exc.NoResultFound:
+                cls.get_by_name(context, name_or_uuid)
+        else:
+            cls.get_by_name(context, name_or_uuid)
+
+    @classmethod
+    def get_by_name(cls, context, name):
+        try:
+            session = Image.get_session()
+            result = session.query(cls).filter_by(name=name)
+            result = result.filter_by(artifact_type='language_pack')
+            return sql.filter_by_project(context, result).one()
+        except exc.NoResultFound:
+            cls._raise_not_found(name)
 
 
 class ImageList(abstract.ImageList):

@@ -102,7 +102,7 @@ class HandlerTest(base.BaseTestCase):
         fake_glance_id = str(uuid.uuid4())
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
         fake_image = fakes.FakeImage()
-        mock_registry.Image.get_by_uuid.return_value = fake_image
+        mock_registry.Image.get_lp_by_name_or_uuid.return_value = fake_image
         mock_popen.return_value.communicate.return_value = [
             'foo\ncreated_image_id=%s' % fake_glance_id, None]
         test_env = mock_environment()
@@ -151,7 +151,7 @@ class HandlerTest(base.BaseTestCase):
         fake_glance_id = str(uuid.uuid4())
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
         fake_image = fakes.FakeImage()
-        mock_registry.Image.get_by_uuid.return_value = fake_image
+        mock_registry.Image.get_lp_by_name_or_uuid.return_value = fake_image
         handler._update_assembly_status = mock.MagicMock()
         mock_popen.return_value.communicate.return_value = [
             'foo\ncreated_image_id=%s' % fake_glance_id, None]
@@ -198,13 +198,14 @@ class HandlerTest(base.BaseTestCase):
     @mock.patch('ast.literal_eval')
     def test_build_with_private_github_repo_with_shelve(
             self, mock_ast, mock_shelve, mock_popen,
-            mock_deploy, mock_uas, mock_b_update, mock_registry, mock_get_env):
+            mock_deploy, mock_uas, mock_b_update, mock_registry,
+            mock_get_env):
         handler = shell_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
         fake_glance_id = str(uuid.uuid4())
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
         fake_image = fakes.FakeImage()
-        mock_registry.Image.get_by_uuid.return_value = fake_image
+        mock_registry.Image.get_lp_by_name_or_uuid.return_value = fake_image
         handler._update_assembly_status = mock.MagicMock()
         mock_popen.return_value.communicate.return_value = [
             'foo\ncreated_image_id=%s' % fake_glance_id, None]
@@ -260,7 +261,7 @@ class HandlerTest(base.BaseTestCase):
         fake_assembly = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
         fake_image = fakes.FakeImage()
-        mock_registry.Image.get_by_uuid.return_value = fake_image
+        mock_registry.Image.get_lp_by_name_or_uuid.return_value = fake_image
         mock_popen.return_value.communicate.return_value = [
             'foo\ncreated_image_id=\n', None]
         test_env = mock_environment()
@@ -301,7 +302,7 @@ class HandlerTest(base.BaseTestCase):
         fake_assembly = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
         fake_image = fakes.FakeImage()
-        mock_registry.Image.get_by_uuid.return_value = fake_image
+        mock_registry.Image.get_lp_by_name_or_uuid.return_value = fake_image
         mock_popen.call.return_value = ValueError
         test_env = mock_environment()
         mock_get_env.return_value = test_env
@@ -340,7 +341,7 @@ class HandlerTest(base.BaseTestCase):
         fake_assembly = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
         fake_image = fakes.FakeImage()
-        mock_registry.Image.get_by_uuid.return_value = fake_image
+        mock_registry.Image.get_lp_by_name_or_uuid.return_value = fake_image
         test_env = mock_environment()
         mock_get_env.return_value = test_env
         mock_popen.return_value.wait.return_value = 0
@@ -374,7 +375,7 @@ class HandlerTest(base.BaseTestCase):
         fake_assembly = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
         fake_image = fakes.FakeImage()
-        mock_registry.Image.get_by_uuid.return_value = fake_image
+        mock_registry.Image.get_lp_by_name_or_uuid.return_value = fake_image
         test_env = mock_environment()
         mock_get_env.return_value = test_env
         mock_popen.return_value.wait.return_value = 1
@@ -415,7 +416,7 @@ class HandlerTest(base.BaseTestCase):
         fake_glance_id = str(uuid.uuid4())
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
         fake_image = fakes.FakeImage()
-        mock_registry.Image.get_by_uuid.return_value = fake_image
+        mock_registry.Image.get_lp_by_name_or_uuid.return_value = fake_image
         mock_popen.return_value.wait.return_value = 0
         mock_popen.return_value.communicate.return_value = [
             'foo\ncreated_image_id=%s' % fake_glance_id, None]
@@ -468,7 +469,7 @@ class HandlerTest(base.BaseTestCase):
         mock_assembly = mock.MagicMock()
         mock_registry.Assembly.get_by_id.return_value = mock_assembly
         fake_image = fakes.FakeImage()
-        mock_registry.Image.get_by_uuid.return_value = fake_image
+        mock_registry.Image.get_lp_by_name_or_uuid.return_value = fake_image
         mock_popen.return_value.wait.return_value = 1
         test_env = mock_environment()
         mock_get_env.return_value = test_env
@@ -635,12 +636,11 @@ class TestLanguagePackBuildCommand(base.BaseTestCase):
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.conductor.api.API.update_image')
     @mock.patch('subprocess.Popen')
-    def test_build_lp(self, mock_popen, mock_ui,
-                      mock_registry, mock_get_env):
+    def test_build_lp(self, mock_popen, mock_ui, mock_registry, mock_get_env):
         handler = shell_handler.Handler()
         fake_image = fakes.FakeImage()
         fake_glance_id = str(uuid.uuid4())
-        mock_registry.Image.get_by_id.return_value = fake_image
+        mock_registry.Image.get_lp_by_name_or_uuid.return_value = fake_image
         mock_popen.return_value.communicate.return_value = [
             'foo\image_external_ref=%s\n' % fake_glance_id, None]
         test_env = mock_environment()
