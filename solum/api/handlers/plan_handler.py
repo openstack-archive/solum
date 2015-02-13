@@ -125,7 +125,8 @@ class PlanHandler(handler.Handler):
         db_obj.create(self.context)
 
         user_params = data.get('parameters')
-        self._create_params(db_obj.id, user_params, sys_params)
+        if user_params or sys_params:
+            self._create_params(db_obj.id, user_params, sys_params)
         return db_obj
 
     def get_all(self):
