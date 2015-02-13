@@ -18,6 +18,7 @@ from wsme import types as wtypes
 import wsmeext.pecan as wsme_pecan
 
 from solum.api.controllers.v1.datamodel import types as api_types
+import solum.api.controllers.v1.userlog as userlog_controller
 from solum.builder.handlers import image_handler
 from solum.common import exception
 from solum import objects
@@ -74,6 +75,14 @@ class ImageController(rest.RestController):
     def __init__(self, image_id):
         super(ImageController, self).__init__()
         self._id = image_id
+
+    @pecan.expose()
+    def _lookup(self, primary_key, *remainder):
+        if remainder and not remainder[-1]:
+            remainder = remainder[:-1]
+        if primary_key == 'logs':
+            logs = userlog_controller.UserlogsController(self._id)
+            return logs, remainder
 
     @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(Image)
