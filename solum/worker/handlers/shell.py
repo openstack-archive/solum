@@ -277,7 +277,8 @@ class Handler(object):
 
         lp_name = ''
         if base_image_id != 'auto':
-            image = objects.registry.Image.get_by_uuid(ctxt, base_image_id)
+            image = objects.registry.Image.get_lp_by_name_or_uuid(
+                ctxt, base_image_id)
             base_image_id = image.external_ref
             lp_name = image.name
 
@@ -373,7 +374,8 @@ class Handler(object):
 
         lp_name = ''
         if base_image_id != 'auto':
-            image = objects.registry.Image.get_by_uuid(ctxt, base_image_id)
+            image = objects.registry.Image.get_lp_by_name_or_uuid(
+                ctxt, base_image_id)
             base_image_id = image.external_ref
             lp_name = image.name
 

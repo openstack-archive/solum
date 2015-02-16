@@ -63,7 +63,7 @@ class HandlerTest(base.BaseTestCase):
         fake_glance_id = str(uuid.uuid4())
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
         fake_image = fakes.FakeImage()
-        mock_registry.Image.get_by_uuid.return_value = fake_image
+        mock_registry.Image.get_lp_by_name_or_uuid.return_value = fake_image
         mock_popen.return_value.wait.return_value = 0
         mock_popen.return_value.communicate.return_value = [
             'foo\ncreated_image_id=%s' % fake_glance_id, None]
@@ -116,7 +116,7 @@ class HandlerTest(base.BaseTestCase):
         fake_assembly = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
         fake_image = fakes.FakeImage()
-        mock_registry.Image.get_by_uuid.return_value = fake_image
+        mock_registry.Image.get_lp_by_name_or_uuid.return_value = fake_image
         mock_popen.return_value.wait.return_value = 1
         test_env = test_shell.mock_environment()
         mock_get_env.return_value = test_env
