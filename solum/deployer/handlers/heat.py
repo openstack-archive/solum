@@ -47,7 +47,7 @@ SERVICE_OPTS = [
                      'finding out the status of the created stack and '
                      'getting url of the DU created in the stack')),
     cfg.IntOpt('du_attempts',
-               default=240,
+               default=500,
                help=('Number of attempts to query the Docker DU for '
                      'finding out the status of the created app and '
                      'getting url of the DU created in the stack')),
@@ -219,6 +219,7 @@ class Handler(object):
 
         for count in range(cfg.CONF.deployer.max_attempts):
             stack = osc.heat().stacks.get(stack_id)
+
             if stack.status == 'COMPLETE':
                 break
             elif stack.status == 'FAILED':
@@ -254,7 +255,10 @@ class Handler(object):
                     LOG.debug("Connection to %s timed out, assembly ID: %s" %
                               (du_url, assembly_id))
                 except (httplib2.HttpLib2Error, socket.error) as serr:
-                    LOG.exception(serr)
+                    if count % 5 == 0:
+                        LOG.exception(serr)
+                    else:
+                        LOG.debug(".")
                 except Exception as exp:
                     LOG.exception(exp)
                     update_assembly(ctxt, assembly_id,
@@ -309,19 +313,42 @@ class Handler(object):
 
     def _get_template_for_swift(self, assem, template, image_tar_location):
         template_bdy = yaml.safe_load(template)
-        # TODO(devkulkarni): extract below DU values from assembly
-        du_tar_file_name = "du_tar_file_name"
-        du_name = "du_name"
+
+        LOG.debug("Image tar location and name:%s" % image_tar_location)
+
+        # TODO(devkulkarni): extract du_name from assembly
+        image_loc_and_du_name = image_tar_location.split("APP_NAME=")
+        image_tar_location = image_loc_and_du_name[0]
+        du_name = image_loc_and_du_name[1]
+
+        LOG.debug("DU Name:%s" % du_name)
+        LOG.debug("Image tar loc:%s" % image_tar_location)
+
+        # TODO(devkulkarni): Change the assembly state to ERROR
+        if du_name is None:
+            LOG.debug("DU not created..")
+
+        # TODO(devkulkarni): Change the assembly state to ERROR
+        if image_tar_location is None:
+            LOG.debug("DU image not available..")
 
         run_docker = "#!/bin/bash -x\n #Invoke the container\n"
-        run_docker += "wget -q --tries=3 " + image_tar_location
-        run_docker += "docker load < " + du_tar_file_name
-        run_docker += "docker run -p 8080:5000 -d " + du_name
-        run_docker += str(assem.uuid)
+        run_docker += "wget " + '\"' + image_tar_location
+        run_docker += '\"' + " --output-document=" + du_name + "\n"
+        run_docker += "docker load < " + du_name + "\n"
+        run_docker += "docker run -p 80:5000 -d " + du_name
+
+        LOG.debug("run_docker:%s" % run_docker)
+
         comp_instance = template_bdy['resources']['compute_instance']
         user_data = comp_instance['properties']['user_data']
         user_data['str_replace']['template'] = run_docker
         comp_instance['properties']['user_data'] = user_data
         template_bdy['resources']['compute_instance'] = comp_instance
-        template = yaml.dump(template_bdy)
+
+        template = yaml.safe_dump(template_bdy,
+                                  encoding='utf-8',
+                                  allow_unicode=True)
+        LOG.debug("template:%s" % template)
+
         return template
