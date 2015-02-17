@@ -123,7 +123,7 @@ class Handler(object):
             if var in os.environ:
                 user_env[var] = os.environ[var]
         user_env['OS_AUTH_TOKEN'] = ctxt.auth_token
-        user_env['OS_AUTH_URL'] = ctxt.auth_url
+        user_env['OS_AUTH_URL'] = ctxt.auth_url or ''
         user_env['OS_REGION_NAME'] = cfg.CONF.worker.region_name
 
         if assembly_id is not None:
