@@ -18,6 +18,7 @@ from solum.common import clients
 from solum.openstack.common import log as logging
 import solum.uploaders.common
 
+from swiftclient import client as swiftclient
 from swiftclient import exceptions as swiftexceptions
 
 LOG = logging.getLogger(__name__)
@@ -29,7 +30,7 @@ cfg.CONF.import_opt('log_upload_swift_container', 'solum.worker.config',
 class SwiftUpload(solum.uploaders.common.UploaderBase):
     strategy = "swift"
 
-    def upload(self):
+    def upload_log(self):
         container = cfg.CONF.worker.log_upload_swift_container
         filename = "%s-%s/%s-%s.log" % (self.resource.name, self.resource.uuid,
                                         self.stage_name, self.build_id)
@@ -52,3 +53,20 @@ class SwiftUpload(solum.uploaders.common.UploaderBase):
         }
 
         self.write_userlog_row(filename, swift_info)
+
+    def upload_image(self):
+        with open(self.path, 'r') as du_file:
+            try:
+                client_args = {
+                    'auth_version': '2.0',
+                    'preauthtoken': self.auth_token,
+                    'preauthurl': self.storage_url,
+                    'os_options': {'region_name': self.region_name},
+                }
+                swift = swiftclient.Connection(**client_args)
+                swift.put_container(self.container)
+                swift.put_object(self.container, self.name, du_file)
+            except swiftexceptions.ClientException as e:
+                LOG.exception("Failed to upload %s to Swift." % self.name)
+                raise e
+        LOG.debug("Upload complete.")

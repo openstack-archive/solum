@@ -33,6 +33,6 @@ class LocalStorageTest(base.BaseTestCase):
                                              assembly, build_id,
                                              "fakestage")
         localstorage.write_userlog_row = mock.MagicMock()
-        localstorage.upload()
+        localstorage.upload_log()
 
         localstorage.write_userlog_row.assert_called_once_with(orig_path)

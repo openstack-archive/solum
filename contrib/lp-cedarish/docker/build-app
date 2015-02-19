@@ -110,7 +110,6 @@ else
   PRUN git clone $GIT $APP_DIR/build
 fi
 
-
 # If languagepack is 'auto', build the application slug
 if [[ $IMG_EXTERNAL_REF == "auto" ]]; then
   TLOG "===>" Building App
@@ -234,7 +233,13 @@ elif [[ $IMAGE_STORAGE == "swift" ]]; then
   SECRET=secret
   TTL=604800
 
-  swift --os-region-name $OS_REGION_NAME --os-auth-token $OS_AUTH_TOKEN --os-storage-url $OS_STORAGE_URL upload solum_du $APP_DU_FILE --object-name $APP
+  echo "APP_DIR:$APP_DIR"
+  upload_status=`python $HERE/swift-handler.py $OS_REGION_NAME $OS_AUTH_TOKEN $OS_STORAGE_URL upload solum_du $APP $APP_DU_FILE`
+  echo "Upload_status:$upload_status"
+
+  if [ "$upload_status" != "0" ]; then
+    TLOG Swift upload failed. && exit 1
+  fi
 
   ACCOUNT=`echo $OS_STORAGE_URL | sed 's/\// /'g | awk '{print $4}'`
   TLOG "ACCOUNT=$ACCOUNT"

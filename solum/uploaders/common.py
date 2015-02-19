@@ -29,8 +29,17 @@ class UploaderBase(object):
     stage_name = None
     strategy = None
 
-    def __init__(self, context, original_file_path, resource, build_id,
-                 stage_name):
+    # below are kwargs
+    region_name = ''
+    auth_token = None
+    storage_url = ''
+    container = ''
+    name = ''
+    path = ''
+
+    def __init__(self, context=None, original_file_path='',
+                 resource=None, build_id=None,
+                 stage_name=None, **kwargs):
         self.context = context
         self.original_file_path = original_file_path
         self.transformed_path = original_file_path + '.tf'
@@ -38,7 +47,18 @@ class UploaderBase(object):
         self.build_id = build_id
         self.stage_name = stage_name
 
-    def upload(self):
+        if kwargs:
+            self.region_name = kwargs['region_name']
+            self.auth_token = kwargs['auth_token']
+            self.storage_url = kwargs['storage_url']
+            self.container = kwargs['container']
+            self.name = kwargs['name']
+            self.path = str(kwargs['path'])
+
+    def upload_log(self):
+        pass
+
+    def upload_image(self):
         pass
 
     def transform_jsonlog(self):

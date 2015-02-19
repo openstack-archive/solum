@@ -62,7 +62,7 @@ def upload_task_log(ctxt, original_path, resource, build_id, stage):
         'local': local_uploader.LocalStorage,
         'swift': swift_uploader.SwiftUpload,
     }.get(strategy, uploader_common.UploaderBase)
-    uploader(ctxt, original_path, resource, build_id, stage).upload()
+    uploader(ctxt, original_path, resource, build_id, stage).upload_log()
 
 
 def job_update_notification(ctxt, build_id, state=None, description=None,

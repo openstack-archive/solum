@@ -21,7 +21,7 @@ LOG = logging.getLogger(__name__)
 class LocalStorage(solum.uploaders.common.UploaderBase):
     strategy = "local"
 
-    def upload(self):
+    def upload_log(self):
         LOG.debug("Log already stored locally at %s." %
                   self.original_file_path)
         self.write_userlog_row(self.original_file_path)

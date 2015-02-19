@@ -43,11 +43,34 @@ class SwiftUploadTest(base.BaseTestCase):
                                            "fakestage")
         swiftupload.transform_jsonlog = mock.MagicMock()
         swiftupload.write_userlog_row = mock.MagicMock()
-        swiftupload.upload()
+        swiftupload.upload_log()
         swift_info = {'container': container}
 
         swiftupload.write_userlog_row.assert_called_once_with(orig_path,
                                                               swift_info)
         swiftupload.transform_jsonlog.assert_called_once()
         mock_swift.put_container.assert_called_once_with(container)
-        mock_swift.put_object.assembly_id(container, orig_path, fake_file)
+        mock_swift.put_object.assert_called_once_with(container,
+                                                      orig_path,
+                                                      fake_file)
+
+    @mock.patch('open')
+    @mock.patch('swiftclient.Connection')
+    def test_upload_image(self, mock_conn, mock_open):
+        mock_swift = mock.MagicMock()
+        fake_file = mock.MagicMock()
+        mock_open.return_value = fake_file
+        mock_conn.return_value = mock_swift
+        container = "solum_du"
+        name = "test_file"
+        client_args = {"region_name": "RegionOne",
+                       "auth_token": "token123",
+                       "storage_url": "http://storehere",
+                       "container": container,
+                       "name": name,
+                       "path": "http://path123"}
+        swiftupload = uploader.SwiftUpload(**client_args)
+        swiftupload.upload_image()
+        mock_swift.put_container.assert_called_once_with(container)
+        mock_swift.put_object.assert_called_once_with(container,
+                                                      name, fake_file)
