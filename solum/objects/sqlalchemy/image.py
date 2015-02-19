@@ -52,9 +52,9 @@ class Image(sql.Base, abstract.Image):
                 result = result.filter_by(artifact_type='language_pack')
                 return sql.filter_by_project(context, result).one()
             except exc.NoResultFound:
-                cls.get_by_name(context, name_or_uuid)
+                return cls.get_by_name(context, name_or_uuid)
         else:
-            cls.get_by_name(context, name_or_uuid)
+            return cls.get_by_name(context, name_or_uuid)
 
     @classmethod
     def get_by_name(cls, context, name):

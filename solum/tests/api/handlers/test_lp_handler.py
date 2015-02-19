@@ -15,74 +15,55 @@
 import mock
 
 from solum.api.handlers import language_pack_handler
+from solum.common import exception as exc
 from solum.tests import base
+from solum.tests import fakes
 from solum.tests import utils
 
-image_sample = {"status": "active",
-                "name": "nodeus",
-                "tags": [
-                    "solum::lp",
-                    "solum::lp::name::fake_name",
-                    "solum::lp::type::fake_type",
-                    "solum::lp::compiler_version::1.3",
-                    "solum::lp::compiler_version::1.4",
-                    "solum::lp::compiler_version::1.5",
-                    "solum::lp::runtime_version::1.4",
-                    "solum::lp::runtime_version::1.5",
-                    "solum::lp::runtime_version::1.6",
-                    "solum::lp::implementation::Sun",
-                    "solum::lp::build_tool::maven::3.0",
-                    "solum::lp::build_tool::ant::2.1",
-                    "solum::lp::os_platform::Ubuntu::12.04",
-                    "solum::lp::attribute::attr1key::attr1value",
-                    "solum::lp::attribute::attr2key::attr2value"
-                ],
-                "self": "/v2/images/bc68cd73",
-                "id": "bc68cd73"}
 
-
-@mock.patch('solum.common.clients.OpenStackClients')
+@mock.patch('solum.objects.registry.Image')
 class TestLanguagePackHandler(base.BaseTestCase):
     def setUp(self):
         super(TestLanguagePackHandler, self).setUp()
         self.ctx = utils.dummy_context()
 
-    def test_language_pack_get(self, mock_clients):
-        images_get = mock_clients.return_value.glance.return_value.images.get
-        images_get.return_value = image_sample
+    def test_languagepack_get(self, mock_img):
+        mock_img.get_lp_by_name_or_uuid.return_value = {}
         handler = language_pack_handler.LanguagePackHandler(self.ctx)
-        resp = handler.get('test_id')
-        self.assertIsNotNone(resp)
-        images_get.assert_called_once_with('test_id')
+        res = handler.get('test_id')
+        self.assertIsNotNone(res)
+        mock_img.get_lp_by_name_or_uuid.assert_called_once_with(
+            self.ctx, 'test_id')
 
-    def test_language_pack_get_all(self, mock_clients):
-        images_list = mock_clients.return_value.glance.return_value.images.list
-        images_list.return_value = [image_sample]
+    @mock.patch('solum.objects.registry.ImageList')
+    def test_languagepack_get_all(self, mock_img_list, mock_img):
+        mock_img.get_by_uuid.return_value = {}
         handler = language_pack_handler.LanguagePackHandler(self.ctx)
-        resp = handler.get_all()
-        self.assertIsNotNone(resp)
-        images_list.assert_called_once_with(filters={'tag': ['solum::lp']})
+        res = handler.get_all()
+        self.assertIsNotNone(res)
+        mock_img_list.get_all_languagepacks.assert_called_once_with(
+            self.ctx)
 
-    def test_create(self, mock_clients):
-        data = {'name': 'new_name'}
-        img_mock = mock_clients.return_value.glance.return_value.images.create
-        img_mock.return_value = image_sample
+    @mock.patch('solum.api.handlers.language_pack_handler.'
+                'LanguagePackHandler._start_build')
+    def test_languagepack_create(self, mock_lp_build, mock_img):
+        data = {'name': 'new app',
+                'source_uri': 'git://example.com/foo'}
+        fi = fakes.FakeImage()
+        mock_img.get_lp_by_name_or_uuid.side_effect = exc.ResourceNotFound()
+        mock_img.return_value = fi
         handler = language_pack_handler.LanguagePackHandler(self.ctx)
-        res = handler.create(data)
-        img_mock.assert_called_once_with(**data)
-        self.assertEqual(res, image_sample)
+        res = handler.create(data, lp_metadata=None)
+        mock_lp_build.assert_called_once_with(res)
+        fi.update.assert_called_once_with(data)
+        fi.create.assert_called_once_with(self.ctx)
 
-    def test_update(self, mock_clients):
-        data = {'name': 'new_name'}
-        img_mock = mock_clients.return_value.glance.return_value.images.update
-        img_mock.return_value = image_sample
-        handler = language_pack_handler.LanguagePackHandler(self.ctx)
-        res = handler.update('fake_id', data)
-        img_mock.assert_called_once_with('fake_id', **data)
-        self.assertEqual(res, image_sample)
-
-    def test_delete(self, mock_clients):
-        img_mock = mock_clients.return_value.glance.return_value.images.delete
+    def test_languagepack_delete(self, mock_img):
+        fi = fakes.FakeImage()
+        mock_img.get_lp_by_name_or_uuid.return_value = fi
+        mock_img.destroy.return_value = {}
         handler = language_pack_handler.LanguagePackHandler(self.ctx)
         handler.delete('test_id')
-        img_mock.assert_called_once_with('test_id')
+        mock_img.get_lp_by_name_or_uuid.assert_called_once_with(
+            self.ctx, 'test_id')
+        fi.destroy.assert_called_once_with(self.ctx)

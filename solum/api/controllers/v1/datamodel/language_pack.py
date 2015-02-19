@@ -16,6 +16,7 @@ import wsme
 from wsme import types as wtypes
 
 from solum.api.controllers.v1.datamodel import types as api_types
+from solum import objects
 
 TAGS = (TYPE, COMPILER_VERSION, RUNTIME_VERSION, IMPLEMENTATION,
         BUILD_TOOL, OS_PLATFORM, ATTRIBUTE, DESCRIPTION) = (
@@ -23,6 +24,12 @@ TAGS = (TYPE, COMPILER_VERSION, RUNTIME_VERSION, IMPLEMENTATION,
             'solum::lp::runtime_version::', 'solum::lp::implementation::',
             'solum::lp::build_tool::', 'solum::lp::os_platform::',
             'solum::lp::attribute::', 'solum::lp::description::')
+
+
+STATE_KIND = wtypes.Enum(str, *objects.image.States.values())
+IMAGE_KIND = wtypes.Enum(str, 'auto', 'qcow2', 'docker')
+SOURCE_KIND = wtypes.Enum(str, 'auto', 'heroku',
+                          'dib', 'dockerfile')
 
 
 class BuildTool(wtypes.Base):
@@ -90,6 +97,27 @@ class LanguagePack(api_types.Base):
     """Additional section attributes will be used to expose custom
     attributes designed by language pack creator.
     """
+
+    source_uri = wtypes.text
+    """The URI of the app/element."""
+
+    source_format = SOURCE_KIND
+    """The source repository format."""
+
+    state = STATE_KIND
+    """The state of the image. """
+
+    base_image_id = wtypes.text
+    """The id (in glance) of the image to customize."""
+
+    image_format = IMAGE_KIND
+    """The image format."""
+
+    created_image_id = wtypes.text
+    """The id of the created image in glance."""
+
+    lp_metadata = wtypes.text
+    """The languagepack meta data."""
 
     @classmethod
     def from_image(cls, image, host_url):
@@ -161,14 +189,18 @@ class LanguagePack(api_types.Base):
 
     @classmethod
     def sample(cls):
-        return cls(uri='http://example.com/v1/language_packs/123456abcdef',
-                   name='language-pack',
-                   type='service',
-                   description=('Base Java LP with Java version 1.4-1.7.'
-                                ' Supports ant, maven.'),
+        return cls(uri='http://example.com/v1/images/b3e0d79',
+                   source_uri='git://example.com/project/app.git',
+                   source_format='heroku',
+                   name='php-web-app',
+                   type='languagepack',
+                   description='A php web application',
+                   tags=['group_xyz'],
                    project_id='1dae5a09ef2b4d8cbf3594b0eb4f6b94',
                    user_id='55f41cf46df74320b9486a35f5d28a11',
-                   tags=['group_xyz'],
+                   base_image_id='4dae5a09ef2b4d8cbf3594b0eb4f6b94',
+                   created_image_id='4afasa09ef2b4d8cbf3594b0ec4f6b94',
+                   image_format='docker',
                    language_pack_name='java-1.4-1.7',
                    language_pack_type='org.openstack.solum.Java',
                    language_pack_id='123456789abcdef',

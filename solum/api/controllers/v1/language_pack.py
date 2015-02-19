@@ -1,4 +1,4 @@
-# Copyright 2014 - Rackspace
+# Copyright 2014 - Rackspace Hosting
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -16,69 +16,76 @@ import pecan
 from pecan import rest
 import wsmeext.pecan as wsme_pecan
 
-from solum.api.controllers.v1.datamodel import language_pack as lp
-from solum.api.handlers import language_pack_handler as lp_handler
+from solum.api.controllers.v1.datamodel import language_pack
+import solum.api.controllers.v1.userlog as userlog_controller
+from solum.api.handlers import language_pack_handler
 from solum.common import exception
+from solum import objects
 
 
 class LanguagePackController(rest.RestController):
-    """Manages operations on a single language_pack."""
+    """Manages operations on a single languagepack."""
 
-    def __init__(self, language_pack_id):
+    def __init__(self, lp_id):
         super(LanguagePackController, self).__init__()
-        self._id = language_pack_id
+        self._id = lp_id
+
+    @pecan.expose()
+    def _lookup(self, primary_key, *remainder):
+        if remainder and not remainder[-1]:
+            remainder = remainder[:-1]
+        if primary_key == 'logs':
+            logs = userlog_controller.UserlogsController(self._id)
+            return logs, remainder
 
     @exception.wrap_wsme_controller_exception
-    @wsme_pecan.wsexpose(lp.LanguagePack)
+    @wsme_pecan.wsexpose(language_pack.LanguagePack)
     def get(self):
-        """Return a language_pack."""
-        handler = lp_handler.LanguagePackHandler(
+        """Return a languagepack."""
+        handler = language_pack_handler.LanguagePackHandler(
             pecan.request.security_context)
-        return lp.LanguagePack.from_image(
-            handler.get(self._id), pecan.request.host_url)
 
-    @exception.wrap_wsme_controller_exception
-    @wsme_pecan.wsexpose(lp.LanguagePack, body=lp.LanguagePack)
-    def put(self, data):
-        """Modify this language_pack."""
-        handler = lp_handler.LanguagePackHandler(
-            pecan.request.security_context)
-        res = handler.update(self._id, data.as_image_dict())
-        return lp.LanguagePack.from_image(res, pecan.request.host_url)
+        host_url = pecan.request.host_url
+        return language_pack.LanguagePack.from_db_model(handler.get(self._id),
+                                                        host_url)
 
     @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(status_code=204)
     def delete(self):
-        """Delete this language_pack."""
-        handler = lp_handler.LanguagePackHandler(
+        """Delete a languagepack."""
+        handler = language_pack_handler.LanguagePackHandler(
             pecan.request.security_context)
         return handler.delete(self._id)
 
 
 class LanguagePacksController(rest.RestController):
-    """Manages operations on the language packs collection."""
+    """Manages operations on the languagepack collection."""
 
     @pecan.expose()
-    def _lookup(self, language_pack_id, *remainder):
+    def _lookup(self, lp_id, *remainder):
         if remainder and not remainder[-1]:
             remainder = remainder[:-1]
-        return LanguagePackController(language_pack_id), remainder
+        return LanguagePackController(lp_id), remainder
 
     @exception.wrap_wsme_controller_exception
-    @wsme_pecan.wsexpose(lp.LanguagePack, body=lp.LanguagePack,
+    @wsme_pecan.wsexpose(language_pack.LanguagePack,
+                         body=language_pack.LanguagePack,
                          status_code=201)
     def post(self, data):
-        """Create a new language_pack."""
-        handler = lp_handler.LanguagePackHandler(
+        """Create a new languagepack."""
+        handler = language_pack_handler.LanguagePackHandler(
             pecan.request.security_context)
-        return lp.LanguagePack.from_image(handler.create(data.as_image_dict()),
-                                          pecan.request.host_url)
+        host_url = pecan.request.host_url
+        return language_pack.LanguagePack.from_db_model(
+            handler.create(data.as_dict(objects.registry.Image),
+                           data.lp_metadata), host_url)
 
     @exception.wrap_wsme_controller_exception
-    @wsme_pecan.wsexpose([lp.LanguagePack])
+    @wsme_pecan.wsexpose([language_pack.LanguagePack])
     def get_all(self):
-        """Return all language_packs, based on the query provided."""
-        handler = lp_handler.LanguagePackHandler(
+        """Return all languagepacks, based on the query provided."""
+        handler = language_pack_handler.LanguagePackHandler(
             pecan.request.security_context)
-        return [lp.LanguagePack.from_image(langpack, pecan.request.host_url)
-                for langpack in handler.get_all()]
+        host_url = pecan.request.host_url
+        return [language_pack.LanguagePack.from_db_model(img, host_url)
+                for img in handler.get_all()]

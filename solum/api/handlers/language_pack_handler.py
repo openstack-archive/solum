@@ -12,34 +12,69 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import uuid
+
 from solum.api.handlers import handler
-from solum.common import clients
+from solum.common import exception as exc
+from solum import objects
+from solum.objects import image
+from solum.openstack.common import log as logging
+from solum.worker import api
+
+LOG = logging.getLogger(__name__)
 
 
 class LanguagePackHandler(handler.Handler):
-    """Fulfills a request on the language_pack resource."""
+    """Fulfills a request on the languagepack resource."""
 
     def get(self, id):
-        """Return a language_pack image."""
-        osc = clients.OpenStackClients(self.context)
-        return osc.glance().images.get(id)
+        """Return a languagepack."""
+        return objects.registry.Image.get_lp_by_name_or_uuid(self.context, id)
 
     def get_all(self):
-        """Return all language_packs images."""
-        osc = clients.OpenStackClients(self.context)
-        return osc.glance().images.list(filters={'tag': ['solum::lp']})
+        """Return all languagepacks."""
+        return objects.registry.ImageList.get_all_languagepacks(self.context)
 
-    def create(self, data):
-        """Create a new language_pack."""
-        osc = clients.OpenStackClients(self.context)
-        return osc.glance().images.create(**data)
+    def create(self, data, lp_metadata):
+        """Create a new languagepack."""
+        try:
+            # Check if an LP with the same name exists.
+            objects.registry.Image.get_lp_by_name_or_uuid(self.context,
+                                                          data['name'])
+        except exc.ResourceNotFound:
+            db_obj = objects.registry.Image()
+            db_obj.update(data)
+            db_obj.uuid = str(uuid.uuid4())
+            db_obj.user_id = self.context.user
+            db_obj.project_id = self.context.tenant
+            db_obj.state = image.States.PENDING
+            db_obj.artifact_type = 'language_pack'
+            if lp_metadata:
+                db_obj.tags = []
+                db_obj.tags.append(lp_metadata)
 
-    def update(self, uuid, data):
-        """Modify a language_pack."""
-        osc = clients.OpenStackClients(self.context)
-        return osc.glance().images.update(uuid, **data)
+            db_obj.create(self.context)
+            self._start_build(db_obj)
+            return db_obj
+        else:
+            raise exc.ResourceExists(name=data['name'])
 
     def delete(self, uuid):
-        """Delete a language_pack."""
-        osc = clients.OpenStackClients(self.context)
-        return osc.glance().images.delete(uuid)
+        """Delete a languagepack."""
+        db_obj = objects.registry.Image.get_lp_by_name_or_uuid(self.context,
+                                                               uuid)
+        return db_obj.destroy(self.context)
+
+    def _start_build(self, image):
+        git_info = {
+            'source_url': image.source_uri,
+        }
+        api.API(context=self.context).perform_action(
+            verb='build',
+            build_id=image.id,
+            git_info=git_info,
+            name=image.name,
+            base_image_id=image.base_image_id,
+            source_format=image.source_format,
+            image_format=image.image_format,
+            artifact_type=image.artifact_type)
