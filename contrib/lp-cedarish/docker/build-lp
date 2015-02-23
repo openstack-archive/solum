@@ -49,7 +49,9 @@ TENANT=$1
 BASE_DIR=/dev/shm
 GIT_CHECKSUM=$(echo $GIT | md5sum | awk '{print $1;}')
 LP_DIR=$BASE_DIR/apps/$TENANT/$GIT_CHECKSUM
+TMP_LP_DIR=/tmp/apps/$TENANT/$GIT_CHECKSUM
 PRUN mkdir -p $LP_DIR
+PRUN mkdir -p $TMP_LP_DIR
 
 TLOG ===== Cloning repo
 PRUN git clone $GIT $LP_DIR/build
@@ -74,21 +76,22 @@ if [ -d "$LP_DIR/build" ] ; then
     TLOG ===== tagging glace image $image_id
     glance --os-auth-token $OS_AUTH_TOKEN --os-image-api-version 2 image-tag-update $image_id 'solum::lp'
   elif [[ $IMAGE_STORAGE == "swift" ]]; then
+    LP_FILE=$TMP_LP_DIR/$LP_NAME
     PRUN silent swift --os-auth-token $OS_AUTH_TOKEN list
     if [ $? != 0 ]; then
       TLOG Cannot talk to Swift. Check your OpenStack credentials. && exit 1
     fi
     PRUN sudo docker build -t $LPNAME .
     TLOG ===== finished docker build
-    sudo docker save --output $LPNAME $LPNAME
-    swift --os-region-name $OS_REGION_NAME --os-auth-token $OS_AUTH_TOKEN --os-storage-url $OS_STORAGE_URL upload solum_lp $LPNAME
+    sudo docker save --output $LP_FILE $LPNAME
+    swift --os-region-name $OS_REGION_NAME --os-auth-token $OS_AUTH_TOKEN --os-storage-url $OS_STORAGE_URL upload solum_lp $LP_FILE --object-name $LPNAME
 
     if [ $? != 0 ]; then
       TLOG Failed to upload languagepack to swift. && exit 1
     fi
     TLOG ===== finished uploading LP to $IMAGE_STORAGE
     image_id=$LPNAME
-    sudo rm $LPNAME
+
   elif [[ $IMAGE_STORAGE == "docker_registry" ]]; then
     DOCKER_REGISTRY=${DOCKER_REGISTRY:-'10.0.2.15:5042'}
     APP_NAME=$DOCKER_REGISTRY/$LPNAME
@@ -116,6 +119,9 @@ fi
 if [[ $DELETE_LOCAL_CACHE == "true" ]]; then
   # Delete the cloned git repo
   PRUN silent rm -rf $LP_DIR
+  if [[ -e $LP_FILE ]]; then
+    PRUN silent rm -f $LP_FILE
+  fi
 fi
 
 TOTAL_TIME=$(elapsed $SCRIPT_START_TIME)
