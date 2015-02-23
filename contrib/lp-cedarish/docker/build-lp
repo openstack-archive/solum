@@ -76,11 +76,12 @@ if [ -d "$LP_DIR/build" ] ; then
     TLOG ===== tagging glace image $image_id
     glance --os-auth-token $OS_AUTH_TOKEN --os-image-api-version 2 image-tag-update $image_id 'solum::lp'
   elif [[ $IMAGE_STORAGE == "swift" ]]; then
-    LP_FILE=$TMP_LP_DIR/$LP_NAME
-    PRUN silent swift --os-auth-token $OS_AUTH_TOKEN list
+    PRUN silent swift --os-region-name $OS_REGION_NAME --os-auth-token $OS_AUTH_TOKEN --os-storage-url $OS_STORAGE_URL list
     if [ $? != 0 ]; then
       TLOG Cannot talk to Swift. Check your OpenStack credentials. && exit 1
     fi
+
+    LP_FILE=$TMP_LP_DIR/$LPNAME
     PRUN sudo docker build -t $LPNAME .
     TLOG ===== finished docker build
     sudo docker save --output $LP_FILE $LPNAME
