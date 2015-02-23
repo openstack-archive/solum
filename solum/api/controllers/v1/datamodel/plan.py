@@ -56,6 +56,10 @@ class Artifact(wtypes.Base):
                                                 six.types.BooleanType)}
     "Type specific content as a flat dict."
 
+    ports = api_types.MultiType(api_types.PortType, [api_types.PortType],
+                                {wtypes.text: api_types.PortType})
+    "Type of ports which an app listens on"
+
     language_pack = wtypes.text
     "The Language pack required for this artifact."
 
