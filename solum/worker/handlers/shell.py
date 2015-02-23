@@ -227,7 +227,9 @@ class Handler(object):
             return param_env
 
         def _sanitize_param(s):
-            if type(s) in [str, unicode]:
+            if s is None:
+                return ''
+            elif type(s) in [str, unicode]:
                 # Handles the case of exporting a var with a multi-line string
                 return ''.join(['"', s.strip('\n').replace('"', '\\"'), '"'])
             else:
