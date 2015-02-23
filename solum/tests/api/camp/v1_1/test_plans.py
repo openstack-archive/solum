@@ -22,7 +22,7 @@ from solum.tests import fakes
 
 @mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
 @mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
-@mock.patch('solum.api.handlers.plan_handler.PlanHandler')
+@mock.patch('solum.api.handlers.camp.plan_handler.PlanHandler')
 class TestPlans(base.BaseTestCase):
     def setUp(self):
         super(TestPlans, self).setUp()
@@ -33,8 +33,7 @@ class TestPlans(base.BaseTestCase):
         fake_plan = fakes.FakePlan()
         hand_get_all.return_value = [fake_plan]
 
-        cont = plans.PlansController()
-        resp = cont.get()
+        resp = plans.PlansController().get()
         self.assertIsNotNone(resp)
         self.assertEqual(200, resp_mock.status)
         self.assertIsNotNone(resp['result'].plan_links)

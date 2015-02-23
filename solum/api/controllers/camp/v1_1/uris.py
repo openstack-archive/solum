@@ -12,8 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-# TODO(gilbert.pilz) - change this to point to CAMP-style assembly resource
-ASSEM_URI_STR = '%s/v1/assemblies/%s'
+ASSEM_URI_STR = '%s/camp/v1_1/assemblies/%s'
 
 ASSEMS_URI_STR = '%s/camp/v1_1/assemblies'
 

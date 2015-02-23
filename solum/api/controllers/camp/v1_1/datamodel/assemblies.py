@@ -12,8 +12,45 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import datetime
+
+from wsme import types as wtypes
+
+from solum.api.controllers.camp.v1_1 import uris
 from solum.api.controllers import common_types
 from solum.api.controllers.v1.datamodel import types as api_types
+
+
+class Assembly(api_types.Base):
+    """CAMP v1.1 assembly resource model."""
+
+    components = [common_types.Link]
+    """CAMP-defined, not currently used."""
+
+    plan_uri = common_types.Uri
+    """CAMP-defined, also used by Solum."""
+
+    operations_uri = common_types.Uri
+    """CAMP-defined, not currently used."""
+
+    sensors_uri = common_types.Uri
+    """CAMP-defined, not currently used."""
+
+    status = wtypes.text
+    """Solum extension."""
+
+    updated_at = datetime.datetime
+    """Solum extension."""
+
+    created_at = datetime.datetime
+    """Solum extension."""
+
+    @classmethod
+    def from_db_model(cls, m, host_url):
+        obj = super(Assembly, cls).from_db_model(m, host_url)
+        obj.plan_uri = uris.PLAN_URI_STR % (host_url, m.plan_uuid)
+        obj.uri = uris.ASSEM_URI_STR % (host_url, m.uuid)
+        return obj
 
 
 class Assemblies(api_types.Base):
