@@ -14,6 +14,8 @@
 
 import uuid
 
+from oslo.config import cfg
+
 from solum.api.handlers import handler
 from solum.common import exception as exc
 from solum import objects
@@ -22,6 +24,16 @@ from solum.openstack.common import log as logging
 from solum.worker import api
 
 LOG = logging.getLogger(__name__)
+
+# Register options for the service
+API_SERVICE_OPTS = [
+    cfg.StrOpt('operator_project_id',
+               default='',
+               help='Tenant id of the operator account used to create LPs'),
+]
+
+CONF = cfg.CONF
+CONF.register_opts(API_SERVICE_OPTS, group='api')
 
 
 class LanguagePackHandler(handler.Handler):
@@ -33,7 +45,7 @@ class LanguagePackHandler(handler.Handler):
 
     def get_all(self):
         """Return all languagepacks."""
-        return objects.registry.ImageList.get_all_languagepacks(self.context)
+        return objects.registry.Image.get_all_languagepacks(self.context)
 
     def create(self, data, lp_metadata):
         """Create a new languagepack."""

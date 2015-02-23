@@ -12,12 +12,19 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from oslo.config import cfg
 import sqlalchemy as sa
 from sqlalchemy.orm import exc
 
 from solum.objects import image as abstract
 from solum.objects.sqlalchemy import models as sql
 from solum.openstack.common import uuidutils
+
+cfg.CONF.import_opt('operator_project_id',
+                    'solum.api.handlers.language_pack_handler',
+                    group='api')
+
+operator_id = cfg.CONF.api.operator_project_id
 
 
 class Image(sql.Base, abstract.Image):
@@ -65,6 +72,16 @@ class Image(sql.Base, abstract.Image):
             return sql.filter_by_project(context, result).one()
         except exc.NoResultFound:
             cls._raise_not_found(name)
+
+    @classmethod
+    def get_all_languagepacks(cls, context):
+        """Return all images that are languagepacks."""
+        session = Image.get_session()
+        result = session.query(cls)
+        result = result.filter_by(artifact_type='language_pack')
+        result = result.filter(
+            Image.project_id.in_([operator_id, context.tenant]))
+        return result.all()
 
 
 class ImageList(abstract.ImageList):

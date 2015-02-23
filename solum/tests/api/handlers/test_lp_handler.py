@@ -35,13 +35,12 @@ class TestLanguagePackHandler(base.BaseTestCase):
         mock_img.get_lp_by_name_or_uuid.assert_called_once_with(
             self.ctx, 'test_id')
 
-    @mock.patch('solum.objects.registry.ImageList')
-    def test_languagepack_get_all(self, mock_img_list, mock_img):
+    def test_languagepack_get_all(self, mock_img):
         mock_img.get_by_uuid.return_value = {}
         handler = language_pack_handler.LanguagePackHandler(self.ctx)
         res = handler.get_all()
         self.assertIsNotNone(res)
-        mock_img_list.get_all_languagepacks.assert_called_once_with(
+        mock_img.get_all_languagepacks.assert_called_once_with(
             self.ctx)
 
     @mock.patch('solum.api.handlers.language_pack_handler.'
