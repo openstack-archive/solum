@@ -106,14 +106,14 @@ if [ -d "$LP_DIR/build" ] ; then
     fi
     TLOG ===== finished uploading LP to $IMAGE_STORAGE
     image_id=$APP_NAME
-    PRUN sudo docker rmi $APP_NAME
+    PRUN sudo docker rmi -f $APP_NAME
   else
     TLOG Unsupported Image storage backend - $IMAGE_STORAGE
     exit 1
   fi
 
   # Delete the local image once we've uploaded the image.
-  PRUN sudo docker rmi $LPNAME
+  PRUN sudo docker rmi -f $LPNAME
 fi
 
 

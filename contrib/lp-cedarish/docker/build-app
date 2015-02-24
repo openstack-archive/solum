@@ -142,7 +142,7 @@ else
     if [ $? != 0 ]; then
       TLOG Failed to download image $IMG_EXTERNAL_REF from glance. && exit 1
     fi
-    docker load -i $LP_NAME
+    sudo docker load -i $LP_NAME
     sudo rm $LP_NAME
     BASE_IMG=$LP_NAME
   elif [[ $IMAGE_STORAGE == "swift" ]]; then
@@ -152,10 +152,10 @@ else
     if [ $? != 0 ]; then
       TLOG Failed to download image $IMG_EXTERNAL_REF from swift. && exit 1
     fi
-    docker load -i $LP_FILE
+    sudo docker load -i $LP_FILE
     BASE_IMG=$LP_NAME
   elif [[ $IMAGE_STORAGE == "docker_registry" ]]; then
-    docker pull $IMG_EXTERNAL_REF
+    sudo docker pull $IMG_EXTERNAL_REF
     if [ $? != 0 ]; then
       TLOG Failed to download image $IMG_EXTERNAL_REF from docker registry. && exit 1
     fi
@@ -215,7 +215,7 @@ if [[ $IMAGE_STORAGE == "glance" ]]; then
   [[ $? != 0 ]] && TLOG Docker build failed. && exit 1
   sudo docker save "$APP" | glance image-create --container-format=docker --disk-format=raw --name "$APP" > /dev/null
   image_id=$(app_glance_id $APP)
-  sudo docker rmi $APP
+  sudo docker rmi -f $APP
   TLOG ===== finished uploading DU to $IMAGE_STORAGE
 elif [[ $IMAGE_STORAGE == "docker_registry" ]]; then
   DOCKER_REGISTRY=${DOCKER_REGISTRY:-'10.0.2.15:5042'}
@@ -225,7 +225,7 @@ elif [[ $IMAGE_STORAGE == "docker_registry" ]]; then
   [[ $? != 0 ]] && TLOG Docker build failed. && exit 1
   sudo docker push $APP_NAME
   image_id=$APP_NAME
-  sudo docker rmi $APP_NAME
+  sudo docker rmi -f $APP_NAME
   TLOG ===== finished uploading DU to $IMAGE_STORAGE
 elif [[ $IMAGE_STORAGE == "swift" ]]; then
   APP_DU_FILE=$TMP_APP_DIR/$APP
@@ -253,7 +253,7 @@ elif [[ $IMAGE_STORAGE == "swift" ]]; then
 
   image_id=$TEMP_URL
   sudo rm $APP
-  sudo docker rmi $APP
+  sudo docker rmi -f $APP
   TLOG ===== finished uploading DU to $IMAGE_STORAGE
 else
   TLOG Unsupported Image storage backend - $IMAGE_STORAGE

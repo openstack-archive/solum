@@ -79,7 +79,7 @@ if [[ $IMG_EXTERNAL_REF != "auto" ]]; then
     if [ $? != 0 ]; then
       TLOG Failed to download image $IMG_EXTERNAL_REF from glance. && exit 1
     fi
-    docker load -i $LP_NAME
+    sudo docker load -i $LP_NAME
     BASE_IMG=${LP_NAME%%.tar}
   elif [[ $IMAGE_STORAGE == "swift" ]]; then
 
@@ -91,7 +91,7 @@ if [[ $IMG_EXTERNAL_REF != "auto" ]]; then
     sudo docker load -i $LP_NAME
     BASE_IMG=${LP_NAME%%.tar}
   elif [[ $IMAGE_STORAGE == "docker_registry" ]]; then
-    docker pull $IMG_EXTERNAL_REF
+    sudo docker pull $IMG_EXTERNAL_REF
     if [ $? != 0 ]; then
       TLOG Failed to download image $IMG_EXTERNAL_REF from docker registry. && exit 1
     fi
