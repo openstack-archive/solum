@@ -33,9 +33,9 @@ class HandlerTest(base.BaseTestCase):
 
     @mock.patch('solum.deployer.handlers.noop.LOG')
     def test_deploy(self, fake_LOG):
-        args = [77, 'created_image_id']
+        args = [77, 'created_image_id', [80]]
         noop_handler.Handler().deploy(self.ctx, *args)
-        message = 'Deploy %s %s' % tuple(args)
+        message = 'Deploy %s %s %s' % tuple(args)
         fake_LOG.debug.assert_called_once_with(_("%s") % message)
 
     @mock.patch('solum.objects.registry')

@@ -61,7 +61,7 @@ class HandlerTest(base.BaseTestCase):
             "links": [{"href": "http://fake.ref",
                        "rel": "self"}]}}
         handler._check_stack_status = mock.MagicMock()
-        handler.deploy(self.ctx, 77, 'created_image_id')
+        handler.deploy(self.ctx, 77, 'created_image_id', [80])
         stacks = mock_clients.return_value.heat.return_value.stacks
         stacks.create.assert_called_once()
         assign_and_create_mock = mock_registry.Component.assign_and_create
@@ -99,7 +99,7 @@ class HandlerTest(base.BaseTestCase):
             "links": [{"href": "http://fake.ref",
                        "rel": "self"}]}}
         handler._check_stack_status = mock.MagicMock()
-        handler.deploy(self.ctx, 77, img)
+        handler.deploy(self.ctx, 77, img, [80])
         stacks = mock_clients.return_value.heat.return_value.stacks
 
         parameters = {'name': fake_assembly.uuid,
@@ -139,7 +139,7 @@ class HandlerTest(base.BaseTestCase):
             "links": [{"href": "http://fake.ref",
                        "rel": "self"}]}}
         handler._check_stack_status = mock.MagicMock()
-        handler.deploy(self.ctx, 77, 'created_image_id')
+        handler.deploy(self.ctx, 77, 'created_image_id', [80])
         assign_and_create_mock = mock_registry.Component.assign_and_create
         comp_name = 'Heat Stack for %s' % fake_assembly.name
         self.assertRaises(AssertionError,
@@ -167,7 +167,7 @@ class HandlerTest(base.BaseTestCase):
             "links": [{"href": "http://fake.ref",
                        "rel": "self"}]}}
         handler._check_stack_status = mock.MagicMock()
-        handler.deploy(self.ctx, 77, 'created_image_id')
+        handler.deploy(self.ctx, 77, 'created_image_id', [80])
         parameters = {'image': 'created_image_id',
                       'app_name': 'faker'}
         stacks.create.assert_called_once_with(stack_name='faker-test_uuid',
@@ -202,7 +202,7 @@ class HandlerTest(base.BaseTestCase):
 
         handler._parse_server_url = mock.MagicMock(return_value=('xyz'))
         handler._check_stack_status(self.ctx, fake_assembly.id, mock_clients,
-                                    'fake_id')
+                                    'fake_id', [80])
 
         c1 = mock.call(fake_assembly.id,
                        {'status': STATES.WAITING_FOR_DOCKER_DU,
@@ -225,7 +225,7 @@ class HandlerTest(base.BaseTestCase):
         stack.status = 'FAILED'
         mock_clients.heat().stacks.get.return_value = stack
         handler._check_stack_status(self.ctx, fake_assembly.id, mock_clients,
-                                    'fake_id')
+                                    'fake_id', [80])
         mock_ua.assert_called_once_with(fake_assembly.id,
                                         {'status':
                                          STATES.ERROR_STACK_CREATE_FAILED})
@@ -320,9 +320,9 @@ class HandlerTest(base.BaseTestCase):
 
     def _get_tmpl_for_docker_reg(self, assem, template):
         template_bdy = yaml.safe_load(template)
-        run_docker = "#!/bin/bash -x\n #Invoke the container\n"
+        run_docker = "#!/bin/bash -x\n # Invoke the container\n"
         docker_endpt = "127.0.0.1"
-        run_docker += "docker run -p 80:5000 -d "
+        run_docker += "docker run -p 80:80 -d "
         run_docker += docker_endpt + ":5042/"
         run_docker += str(assem.uuid)
         comp_instance = template_bdy['resources']['compute_instance']
@@ -340,11 +340,13 @@ class HandlerTest(base.BaseTestCase):
         image_tar_location = image_loc_and_du_name[0]
         du_name = image_loc_and_du_name[1]
 
-        run_docker = "#!/bin/bash -x\n #Invoke the container\n"
-        run_docker += "wget " + '\"' + image_tar_location
-        run_docker += '\"' + " --output-document=" + du_name + "\n"
-        run_docker += "docker load < " + du_name + "\n"
-        run_docker += "docker run -p 80:5000 -d " + du_name
+        run_docker = ('#!/bin/bash -x\n'
+                      '# Invoke the container\n'
+                      'wget \"{image_tar_location}\" --output-document={du}\n'
+                      'docker load < {du}\n'
+                      'docker run -p 80:80 -d {du}')
+        run_docker = run_docker.format(image_tar_location=image_tar_location,
+                                       du=du_name)
 
         comp_instance = template_bdy['resources']['compute_instance']
         user_data = comp_instance['properties']['user_data']

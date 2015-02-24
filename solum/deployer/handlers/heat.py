@@ -118,7 +118,7 @@ class Handler(object):
             update_assembly(ctxt, assem_id,
                             {'status': STATES.ERROR_STACK_DELETE_FAILED})
 
-    def deploy(self, ctxt, assembly_id, image_id):
+    def deploy(self, ctxt, assembly_id, image_id, ports):
         osc = clients.OpenStackClients(ctxt)
 
         assem = objects.registry.Assembly.get_by_id(ctxt,
@@ -159,12 +159,12 @@ class Handler(object):
 
         if cfg.CONF.api.image_format == 'vm':
             if cfg.CONF.worker.image_storage == 'docker_registry':
-                template = self._get_template_for_docker_reg(assem, template)
+                template = self._get_template_for_docker_reg(assem, template,
+                                                             ports)
                 LOG.debug(template)
             elif cfg.CONF.worker.image_storage == 'swift':
-                template = self._get_template_for_swift(assem,
-                                                        template,
-                                                        image_id)
+                template = self._get_template_for_swift(assem, template,
+                                                        image_id, ports)
             else:
                 LOG.debug("DU storage option not recognized. Exiting..")
                 update_assembly(ctxt, assembly_id, {'status': STATES.ERROR})
@@ -210,9 +210,9 @@ class Handler(object):
                 return
         update_assembly(ctxt, assembly_id, {'status': STATES.DEPLOYING})
 
-        self._check_stack_status(ctxt, assembly_id, osc, stack_id)
+        self._check_stack_status(ctxt, assembly_id, osc, stack_id, ports)
 
-    def _check_stack_status(self, ctxt, assembly_id, osc, stack_id):
+    def _check_stack_status(self, ctxt, assembly_id, osc, stack_id, ports):
 
         wait_interval = cfg.CONF.deployer.wait_interval
         growth_factor = cfg.CONF.deployer.growth_factor
@@ -234,47 +234,47 @@ class Handler(object):
                             {'status': STATES.ERROR_STACK_CREATE_FAILED})
             return
 
-        host_url = self._parse_server_url(stack)
-        if host_url is not None:
-            du_is_up = False
-            to_upd = {'status': STATES.WAITING_FOR_DOCKER_DU,
-                      'application_uri': host_url}
-            update_assembly(ctxt, assembly_id, to_upd)
-            du_url = "http://" + host_url
-            LOG.debug("DU URL:%s" % du_url)
-            for count in range(cfg.CONF.deployer.du_attempts):
-                time.sleep(1)
-                try:
-                    conn = repo_utils.get_http_connection()
-                    resp, _ = conn.request(du_url, 'GET')
-                    if resp is not None:
-                        if resp['status'] == '200':
-                            du_is_up = True
-                            break
-                except socket.timeout:
-                    LOG.debug("Connection to %s timed out, assembly ID: %s" %
-                              (du_url, assembly_id))
-                except (httplib2.HttpLib2Error, socket.error) as serr:
-                    if count % 5 == 0:
-                        LOG.exception(serr)
-                    else:
-                        LOG.debug(".")
-                except Exception as exp:
-                    LOG.exception(exp)
-                    update_assembly(ctxt, assembly_id,
-                                    {'status': STATES.ERROR})
-                    return
-            if du_is_up:
-                to_update = {'status': STATES.READY,
-                             'application_uri': host_url}
-                update_assembly(ctxt, assembly_id, to_update)
-            else:
-                to_upd = {'status': STATES.ERROR_DU_CREATION}
-                update_assembly(ctxt, assembly_id, to_upd)
-        else:
+        host_ip = self._parse_server_url(stack)
+        if host_ip is None:
             LOG.exception("Could not parse url from heat stack.")
             update_assembly(ctxt, assembly_id,
                             {'status': STATES.ERROR})
+            return
+
+        du_is_up = False
+        to_upd = {'status': STATES.WAITING_FOR_DOCKER_DU,
+                  'application_uri': host_ip}
+        update_assembly(ctxt, assembly_id, to_upd)
+        LOG.debug("HOST IP:%s, PORTS:%s" % (host_ip, ports))
+        port_idx = 0
+        for count in range(cfg.CONF.deployer.du_attempts):
+            if port_idx > len(ports) - 1:
+                du_is_up = True
+                break
+
+            time.sleep(1)
+            du_url = 'http://{host}:{port}'.format(host=host_ip,
+                                                   port=ports[port_idx])
+            try:
+                if repo_utils.is_reachable(du_url):
+                    port_idx += 1
+            except socket.timeout:
+                LOG.debug("Connection to %s timed out, assembly ID: %s" %
+                          (du_url, assembly_id))
+            except (httplib2.HttpLib2Error, socket.error) as serr:
+                if count % 5 == 0:
+                    LOG.exception(serr)
+                else:
+                    LOG.debug(".")
+            except Exception as exp:
+                LOG.exception(exp)
+                update_assembly(ctxt, assembly_id, {'status': STATES.ERROR})
+                return
+        if du_is_up:
+            to_update = {'status': STATES.READY, 'application_uri': host_ip}
+        else:
+            to_update = {'status': STATES.ERROR_DU_CREATION}
+        update_assembly(ctxt, assembly_id, to_update)
 
     def _parse_server_url(self, heat_output):
         """Parse server url from heat-stack-show output."""
@@ -295,14 +295,21 @@ class Handler(object):
         except exc.HTTPNotFound:
             return None
 
-    def _get_template_for_docker_reg(self, assem, template):
-        template_bdy = yaml.safe_load(template)
-        run_docker = "#!/bin/bash -x\n #Invoke the container\n"
-        docker_endpt = cfg.CONF.worker.docker_reg_endpoint
-        run_docker += "docker run -p 80:5000 -d "
-        run_docker += docker_endpt + "/"
-        run_docker += str(assem.uuid)
+    def _get_template_for_docker_reg(self, assem, template, ports):
+        du_name = '/'.join([cfg.CONF.worker.docker_reg_endpoint,
+                            str(assem.uuid)])
+        ports_str = ''
+        for port in ports:
+            ports_str += ' -p {pt}:{pt}'.format(pt=port)
+        run_docker_str = ('#!/bin/bash -x\n'
+                          '# Invoke the container\n'
+                          'docker run {publish_ports} -d {du}')
+        run_docker = run_docker_str.format(publish_ports=ports_str.strip(),
+                                           du=du_name)
+
         LOG.debug("run_docker:%s" % run_docker)
+
+        template_bdy = yaml.safe_load(template)
         comp_instance = template_bdy['resources']['compute_instance']
         user_data = comp_instance['properties']['user_data']
         user_data['str_replace']['template'] = run_docker
@@ -311,13 +318,12 @@ class Handler(object):
         template = yaml.dump(template_bdy)
         return template
 
-    def _get_template_for_swift(self, assem, template, image_tar_location):
-        template_bdy = yaml.safe_load(template)
-
-        LOG.debug("Image tar location and name:%s" % image_tar_location)
+    def _get_template_for_swift(self, assem, template,
+                                origin_image_tar_location, ports):
+        LOG.debug("Image tar location and name:%s" % origin_image_tar_location)
 
         # TODO(devkulkarni): extract du_name from assembly
-        image_loc_and_du_name = image_tar_location.split("APP_NAME=")
+        image_loc_and_du_name = origin_image_tar_location.split("APP_NAME=")
         image_tar_location = image_loc_and_du_name[0]
         du_name = image_loc_and_du_name[1]
 
@@ -332,14 +338,21 @@ class Handler(object):
         if image_tar_location is None:
             LOG.debug("DU image not available..")
 
-        run_docker = "#!/bin/bash -x\n #Invoke the container\n"
-        run_docker += "wget " + '\"' + image_tar_location
-        run_docker += '\"' + " --output-document=" + du_name + "\n"
-        run_docker += "docker load < " + du_name + "\n"
-        run_docker += "docker run -p 80:5000 -d " + du_name
+        ports_str = ''
+        for port in ports:
+            ports_str += ' -p {pt}:{pt}'.format(pt=port)
+        run_docker_str = ('#!/bin/bash -x\n'
+                          '# Invoke the container\n'
+                          'wget \"{location}\" --output-document={du}\n'
+                          'docker load < {du}\n'
+                          'docker run {publish_ports} -d {du}')
+        run_docker = run_docker_str.format(location=image_tar_location,
+                                           publish_ports=ports_str.strip(),
+                                           du=du_name)
 
         LOG.debug("run_docker:%s" % run_docker)
 
+        template_bdy = yaml.safe_load(template)
         comp_instance = template_bdy['resources']['compute_instance']
         user_data = comp_instance['properties']['user_data']
         user_data['str_replace']['template'] = run_docker
@@ -350,5 +363,4 @@ class Handler(object):
                                   encoding='utf-8',
                                   allow_unicode=True)
         LOG.debug("template:%s" % template)
-
         return template

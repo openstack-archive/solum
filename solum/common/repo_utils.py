@@ -41,6 +41,15 @@ def get_http_connection():
     return httplib2.Http(timeout=http_req_timeout)
 
 
+def is_reachable(url):
+    reachable = False
+    conn = get_http_connection()
+    resp, _ = conn.request(url, 'GET')
+    if resp is not None and resp['status'] == '200':
+        reachable = True
+    return reachable
+
+
 def send_status(test_result, status_url, repo_token, pending=False):
     if status_url and repo_token:
         commit_id = status_url.rstrip('/').split('/')[-1]
