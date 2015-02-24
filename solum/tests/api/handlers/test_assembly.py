@@ -57,7 +57,7 @@ class TestAssemblyHandler(base.BaseTestCase):
         mock_registry.Assembly.update_and_save.assert_called_once_with(
             self.ctx, 'test_id', data)
 
-    @mock.patch('solum.worker.api.API.perform_action')
+    @mock.patch('solum.worker.api.API.build_app')
     @mock.patch('solum.common.solum_keystoneclient.KeystoneClientV3')
     def test_create(self, mock_kc, mock_pa, mock_registry):
         data = {'user_id': 'new_user_id',
@@ -95,7 +95,7 @@ class TestAssemblyHandler(base.BaseTestCase):
         mock_pa.assert_called_once_with(
             verb='build',
             build_id=8, name='nodeus', assembly_id=8,
-            git_info=git_info, test_cmd=None,
+            git_info=git_info, test_cmd=None, ports=[80],
             base_image_id='auto', source_format='heroku',
             image_format='qcow2', run_cmd=None)
 
@@ -133,7 +133,7 @@ class TestAssemblyHandler(base.BaseTestCase):
 
         self.assertEqual(res.username, '')
 
-    @mock.patch('solum.worker.api.API.perform_action')
+    @mock.patch('solum.worker.api.API.build_app')
     @mock.patch('solum.common.solum_keystoneclient.KeystoneClientV3')
     def test_create_with_private_github_repo(self, mock_kc, mock_pa,
                                              mock_registry):
@@ -173,7 +173,7 @@ class TestAssemblyHandler(base.BaseTestCase):
         mock_pa.assert_called_once_with(
             verb='build',
             build_id=8, name='nodeus', assembly_id=8,
-            git_info=git_info,
+            git_info=git_info, ports=[80],
             test_cmd=None, base_image_id='auto', source_format='heroku',
             image_format='qcow2', run_cmd=None)
 

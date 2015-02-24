@@ -168,43 +168,40 @@ fi
 
 remove_ssh_creds "$GIT_PRIVATE_KEY"
 
+DOCKER_RUN_CMD=$RUN_CMD
+
 # copy params to the working dir
-mkdir $APP_DIR/params
+EXT=$(mktemp -u XXX | head -n 1)
+mkdir $APP_DIR/build/params_$EXT
 if [[ $USER_PARAMS != null ]]; then
-  cp $USER_PARAMS $APP_DIR/params/user_params
+  cp $USER_PARAMS $APP_DIR/build/params_$EXT/user_params
+  DOCKER_RUN_CMD="[\"/bin/bash\", \"-c\", \"source params_$EXT/user_params && $RUN_CMD\"]"
 fi
 if [[ $SOLUM_PARAMS != null ]]; then
-  cp $SOLUM_PARAMS $APP_DIR/params/solum_params
+  cp $SOLUM_PARAMS $APP_DIR/build/params_$EXT/solum_params
 fi
 
-
-# Build the application image by injecting slug into runner
-# and push to docker-registry ( which is tied to glance )
 if [[ $IMG_EXTERNAL_REF == "auto" ]]; then
+# Build the application image by injecting slug into runner
   TLOG Creating Dockerfile
   cat << EOF > $APP_DIR/Dockerfile
-  # SOLUM APP BUILDER
-  FROM solum/slugrunner
-  ADD slug.tgz /app
-  ADD params /root/params
-  EXPOSE 5000
-  ENV port 5000
-  ENTRYPOINT ["/runner/init"]
-  CMD ["start","web"]
+# SOLUM APP BUILDER
+FROM solum/slugrunner
+ADD slug.tgz /app
+ADD build/params_$EXT /root/params
+ENTRYPOINT ["/runner/init"]
+CMD ["start","web"]
 EOF
 else
   TLOG Creating Dockerfile
   cat << EOF > $APP_DIR/Dockerfile
-  FROM $BASE_IMG
-  ADD build /app
-  ADD params /root/params
-  EXPOSE 5000
-  ENV port 5000
-  WORKDIR /solum/bin
-  RUN chmod +x build.sh
-  RUN ./build.sh
-  WORKDIR /app
-  CMD $RUN_CMD
+FROM $BASE_IMG
+ADD build /app
+WORKDIR /solum/bin
+RUN chmod +x build.sh
+RUN ./build.sh
+WORKDIR /app
+CMD $DOCKER_RUN_CMD
 EOF
 fi
 

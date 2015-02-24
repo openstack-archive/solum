@@ -255,14 +255,8 @@ class Handler(object):
         param_env['SOLUM_PARAMS'] = solum_param_file
         return param_env
 
-    def build(self, ctxt, build_id, git_info, name, base_image_id,
-              source_format, image_format, assembly_id,
-              test_cmd, run_cmd, artifact_type=None):
-        if artifact_type == 'language_pack':
-            self.build_lp(ctxt, build_id, git_info, name, source_format,
-                          image_format, artifact_type)
-            return
-
+    def build(self, ctxt, build_id, git_info, ports, name, base_image_id,
+              source_format, image_format, assembly_id, test_cmd, run_cmd):
         # TODO(datsun180b): This is only temporary, until Mistral becomes our
         # workflow engine.
         if self._run_unittest(ctxt, build_id, git_info, name, base_image_id,
@@ -287,7 +281,7 @@ class Handler(object):
         build_cmd = self._get_build_command(ctxt, 'build', source_uri,
                                             name, base_image_id,
                                             source_format, image_format, '',
-                                            artifact_type, lp_name=lp_name)
+                                            lp_name=lp_name)
         solum.TLS.trace.support_info(build_cmd=' '.join(build_cmd),
                                      assembly_id=assembly_id)
 
@@ -382,8 +376,7 @@ class Handler(object):
                                                   image_id=created_image_id)
 
     def _run_unittest(self, ctxt, build_id, git_info, name, base_image_id,
-                      source_format, image_format, assembly_id,
-                      test_cmd):
+                      source_format, image_format, assembly_id, test_cmd):
         if test_cmd is None:
             LOG.debug("Unit test command is None; skipping unittests.")
             return 0
@@ -456,12 +449,10 @@ class Handler(object):
 
         return returncode
 
-    def unittest(self, ctxt, build_id, git_info, name, base_image_id,
-                 source_format, image_format, assembly_id,
-                 test_cmd):
+    def unittest(self, ctxt, build_id, git_info, ports, name, base_image_id,
+                 source_format, image_format, assembly_id, test_cmd):
         self._run_unittest(ctxt, build_id, git_info, name, base_image_id,
-                           source_format, image_format, assembly_id,
-                           test_cmd)
+                           source_format, image_format, assembly_id, test_cmd)
 
     def _get_private_key(self, source_creds, source_url):
         source_private_key = ''
@@ -493,7 +484,7 @@ class Handler(object):
         return source_private_key
 
     def build_lp(self, ctxt, image_id, git_info, name, source_format,
-                 image_format, artifact_type=None):
+                 image_format, artifact_type):
         update_lp_status(ctxt, image_id, IMAGE_STATES.BUILDING)
 
         solum.TLS.trace.clear()

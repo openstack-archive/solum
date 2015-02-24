@@ -155,6 +155,7 @@ class AssemblyHandler(handler.Handler):
         test_cmd = artifact.get('unittest_cmd')
         run_cmd = artifact.get('run_cmd')
         repo_token = artifact.get('repo_token')
+        ports = artifact.get('ports', [80])
 
         git_info = {
             'source_url': image.source_uri,
@@ -166,10 +167,11 @@ class AssemblyHandler(handler.Handler):
         if test_cmd:
             repo_utils.send_status(0, status_url, repo_token, pending=True)
 
-        api.API(context=self.context).perform_action(
+        api.API(context=self.context).build_app(
             verb=verb,
             build_id=image.id,
             git_info=git_info,
+            ports=ports,
             name=image.name,
             base_image_id=image.base_image_id,
             source_format=image.source_format,

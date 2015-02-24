@@ -68,12 +68,10 @@ class ImageHandler(handler.Handler):
         git_info = {
             'source_url': image.source_uri,
         }
-        api.API(context=self.context).perform_action(
-            verb='build',
-            build_id=image.id,
+        api.API(context=self.context).build_lp(
+            image_id=image.id,
             git_info=git_info,
             name=image.name,
-            base_image_id=image.base_image_id,
             source_format=image.source_format,
             image_format=image.image_format,
             artifact_type=image.artifact_type)

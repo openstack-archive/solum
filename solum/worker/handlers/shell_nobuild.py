@@ -32,9 +32,9 @@ update_assembly_status = shell_handler.update_assembly_status
 
 
 class Handler(shell_handler.Handler):
-    def build(self, ctxt, build_id, git_info, name, base_image_id,
+    def build(self, ctxt, build_id, git_info, ports, name, base_image_id,
               source_format, image_format, assembly_id,
-              test_cmd, artifact_type=None):
+              test_cmd, run_cmd, artifact_type=None):
 
         # TODO(datsun180b): This is only temporary, until Mistral becomes our
         # workflow engine.
@@ -46,7 +46,8 @@ class Handler(shell_handler.Handler):
         if ret_code == 0:
             update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.READY)
 
-    def _get_environment(self, ctxt, source_uri, assembly_id):
+    def _get_environment(self, ctxt, source_uri, assembly_id=None,
+                         test_cmd=None, run_cmd=None):
         # create a minimal environment
         user_env = {}
         for var in ['PATH', 'LOGNAME', 'LANG', 'HOME', 'USER', 'TERM']:

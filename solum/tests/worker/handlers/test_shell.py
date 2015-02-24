@@ -108,7 +108,7 @@ class HandlerTest(base.BaseTestCase):
         test_env = mock_environment()
         mock_get_env.return_value = test_env
         git_info = mock_git_info()
-        handler.build(self.ctx, build_id=5, git_info=git_info,
+        handler.build(self.ctx, build_id=5, git_info=git_info, ports=[80],
                       name='new_app', base_image_id=self.base_image_id,
                       source_format='heroku', image_format='docker',
                       assembly_id=44, test_cmd=None, run_cmd=None)
@@ -163,7 +163,7 @@ class HandlerTest(base.BaseTestCase):
 
         image_id = fake_glance_id + "APP_NAME=new_app"
 
-        handler.build(self.ctx, build_id=5, git_info=git_info,
+        handler.build(self.ctx, build_id=5, git_info=git_info, ports=[80],
                       name='new_app', base_image_id=fake_image.base_image_id,
                       source_format='heroku', image_format='docker',
                       assembly_id=44, test_cmd=None, run_cmd=None)
@@ -215,7 +215,7 @@ class HandlerTest(base.BaseTestCase):
         mock_ast.return_value = [{'source_url': 'git://example.com/foo',
                                   'private_key': 'some-private-key'}]
         git_info = mock_git_info()
-        handler.build(self.ctx, build_id=5,
+        handler.build(self.ctx, build_id=5, ports=[80],
                       git_info=git_info, name='new_app',
                       base_image_id=self.base_image_id, source_format='heroku',
                       image_format='docker', assembly_id=44,
@@ -276,7 +276,7 @@ class HandlerTest(base.BaseTestCase):
                                   'private_key': 'some-private-key'}]
 
         git_info = mock_git_info()
-        handler.build(self.ctx, build_id=5,
+        handler.build(self.ctx, build_id=5, ports=[80],
                       git_info=git_info, name='new_app',
                       base_image_id=self.base_image_id, source_format='heroku',
                       image_format='docker', assembly_id=44,
@@ -325,7 +325,7 @@ class HandlerTest(base.BaseTestCase):
         handler.build(self.ctx, build_id=5, git_info=git_info, name='new_app',
                       base_image_id=self.base_image_id, source_format='heroku',
                       image_format='docker', assembly_id=44, test_cmd=None,
-                      run_cmd=None)
+                      run_cmd=None, ports=[80])
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
@@ -365,7 +365,7 @@ class HandlerTest(base.BaseTestCase):
         handler.build(self.ctx, build_id=5, git_info=git_info, name='new_app',
                       base_image_id=self.base_image_id, source_format='heroku',
                       image_format='docker', assembly_id=44, test_cmd=None,
-                      run_cmd=None)
+                      run_cmd=None, ports=[80])
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
@@ -403,7 +403,7 @@ class HandlerTest(base.BaseTestCase):
         git_info = mock_git_info()
         handler.unittest(self.ctx, build_id=5, name='new_app',
                          base_image_id=self.base_image_id,
-                         source_format='chef',
+                         source_format='chef', ports=[80],
                          image_format='docker', assembly_id=fake_assembly.id,
                          git_info=git_info, test_cmd='tox')
 
@@ -439,7 +439,7 @@ class HandlerTest(base.BaseTestCase):
                          assembly_id=fake_assembly.id,
                          base_image_id=self.base_image_id,
                          source_format='chef',
-                         image_format='docker',
+                         image_format='docker', ports=[80],
                          git_info=git_info, test_cmd='tox')
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
@@ -480,8 +480,8 @@ class HandlerTest(base.BaseTestCase):
         git_info = mock_git_info()
         handler.build(self.ctx, build_id=5, git_info=git_info, name='new_app',
                       base_image_id=self.base_image_id, source_format='heroku',
-                      image_format='docker', assembly_id=44,
-                      test_cmd='faketests', run_cmd=None, artifact_type=None)
+                      image_format='docker', assembly_id=44, ports=[80],
+                      test_cmd='faketests', run_cmd=None)
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
@@ -531,7 +531,7 @@ class HandlerTest(base.BaseTestCase):
         git_info = mock_git_info()
         handler.build(self.ctx, build_id=5, git_info=git_info, name='new_app',
                       base_image_id=self.base_image_id, source_format='chef',
-                      image_format='docker', assembly_id=44,
+                      image_format='docker', assembly_id=44, ports=[80],
                       test_cmd='faketests', run_cmd=None)
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),

@@ -76,10 +76,11 @@ class HandlerTest(base.BaseTestCase):
         cfg.CONF.set_override('log_url_prefix', 'https://log.com/commit/',
                               group='worker')
 
-        handler.build(self.ctx, build_id=5, git_info=git_info, name='new_app',
-                      base_image_id=self.base_image_id, source_format='chef',
-                      image_format='docker', assembly_id=44,
-                      test_cmd='faketests', artifact_type=None)
+        handler.build(self.ctx, build_id=5, git_info=git_info, ports=[80],
+                      name='new_app', base_image_id=self.base_image_id,
+                      source_format='chef', image_format='docker',
+                      assembly_id=44, test_cmd='faketests', run_cmd='',
+                      artifact_type=None)
 
         expected = [
             mock.call(status_url, 'POST',
@@ -127,10 +128,10 @@ class HandlerTest(base.BaseTestCase):
         cfg.CONF.set_override('log_url_prefix', 'https://log.com/commit/',
                               group='worker')
 
-        handler.build(self.ctx, build_id=5, git_info=git_info,
+        handler.build(self.ctx, build_id=5, git_info=git_info, ports=[80],
                       name='new_app', base_image_id=self.base_image_id,
                       source_format='chef', image_format='docker',
-                      assembly_id=44, test_cmd='faketests',
+                      assembly_id=44, test_cmd='faketests', run_cmd='',
                       artifact_type=None)
 
         expected = [
