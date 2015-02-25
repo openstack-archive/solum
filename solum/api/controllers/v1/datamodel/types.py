@@ -98,11 +98,13 @@ class MultiType(wtypes.UserType):
 
     def validate(self, value):
         for t in self.types:
-            if t is wsme.types.text and isinstance(value, wsme.types.bytes):
-                value = value.decode()
-            if isinstance(value, t):
-                return value
+            try:
+                return wtypes.validate_value(t, value)
+            except ValueError:
+                pass
         else:
             raise ValueError(
                 _("Wrong type. Expected '%(type)s', got '%(value)s'")
                 % {'type': self.types, 'value': type(value)})
+
+PortType = wtypes.IntegerType(minimum=1, maximum=65535)

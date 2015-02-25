@@ -79,6 +79,23 @@ class PlanHandler(handler.Handler):
         db_obj.uuid = str(uuid.uuid4())
         db_obj.user_id = self.context.user
         db_obj.project_id = self.context.tenant
+        sys_params = self._generate_sys_params(db_obj, data)
+        user_params = data.get('parameters', {})
+        self._process_ports(user_params, data)
+
+        db_obj.raw_content = dict((k, v) for k, v in data.items()
+                                  if k != 'parameters')
+        db_obj.create(self.context)
+        if user_params or sys_params:
+            self._create_params(db_obj.id, user_params, sys_params)
+        return db_obj
+
+    def get_all(self):
+        """Return all plans."""
+        return objects.registry.PlanList.get_all(self.context)
+
+    def _generate_sys_params(self, plan_obj, data):
+        # NOTE: this method may modify the input 'data'
         sys_params = {}
         deploy_keys = []
         for artifact in data.get('artifacts', []):
@@ -106,32 +123,37 @@ class PlanHandler(handler.Handler):
                         raise
                 s = shelve.open(secrets_file)
                 try:
-                    s[db_obj.uuid] = encoded_payload
-                    repo_deploy_keys = db_obj.uuid
+                    s[plan_obj.uuid] = encoded_payload
+                    repo_deploy_keys = plan_obj.uuid
                 finally:
                     s.close()
             elif sys_param_store == 'barbican':
                 client = clients.OpenStackClients(None).barbican().admin_client
                 repo_deploy_keys = client.secrets.create(
-                    name=db_obj.uuid,
+                    name=plan_obj.uuid,
                     payload=encoded_payload,
                     payload_content_type='application/octet-stream',
                     payload_content_encoding='base64').store()
 
             if repo_deploy_keys:
                 sys_params['REPO_DEPLOY_KEYS'] = repo_deploy_keys
-        db_obj.raw_content = dict((k, v) for k, v in data.items()
-                                  if k != 'parameters')
-        db_obj.create(self.context)
+        return sys_params
 
-        user_params = data.get('parameters')
-        if user_params or sys_params:
-            self._create_params(db_obj.id, user_params, sys_params)
-        return db_obj
-
-    def get_all(self):
-        """Return all plans."""
-        return objects.registry.PlanList.get_all(self.context)
+    def _process_ports(self, user_params, data):
+        # NOTE: This method may modify the input 'user_params' and 'data'
+        for artifact in data.get('artifacts', []):
+            new_ports = None
+            ports = artifact.get('ports', [])
+            if isinstance(ports, list):
+                new_ports = list(it for it in set(ports) if it is not None)
+            elif isinstance(ports, dict):
+                new_ports = list(it for it in set(ports.values())
+                                 if it is not None)
+                user_params.update(dict((k, v) for k, v in ports.items()
+                                        if (k and v)))
+            elif type(ports) is int:
+                new_ports = [ports]
+            artifact['ports'] = new_ports or [80]
 
     def _create_params(self, plan_id, user_params, sys_params):
         param_obj = objects.registry.Parameter()
