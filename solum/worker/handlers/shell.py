@@ -122,9 +122,6 @@ class Handler(object):
         for var in ['PATH', 'LOGNAME', 'LANG', 'HOME', 'USER', 'TERM']:
             if var in os.environ:
                 user_env[var] = os.environ[var]
-        user_env['OS_AUTH_TOKEN'] = ctxt.auth_token
-        user_env['OS_AUTH_URL'] = ctxt.auth_url or ''
-        user_env['OS_REGION_NAME'] = cfg.CONF.worker.region_name
 
         if assembly_id is not None:
             assem = get_assembly_by_id(ctxt, assembly_id)
@@ -145,13 +142,19 @@ class Handler(object):
                 cfg.CONF.worker.docker_reg_endpoint = '127.0.0.1'
             user_env['DOCKER_REGISTRY'] = cfg.CONF.worker.docker_reg_endpoint
         else:
+            client_region_name = clients.get_client_option('swift',
+                                                           'region_name')
+            user_env['OS_AUTH_TOKEN'] = ctxt.auth_token
+            user_env['OS_AUTH_URL'] = ctxt.auth_url or ''
+            user_env['OS_REGION_NAME'] = client_region_name
             kc = solum_keystoneclient.KeystoneClientV3(ctxt)
             user_env['OS_IMAGE_URL'] = kc.client.service_catalog.url_for(
                 service_type='image',
                 endpoint_type='publicURL')
             user_env['OS_STORAGE_URL'] = kc.client.service_catalog.url_for(
                 service_type='object-store',
-                endpoint_type='publicURL')
+                endpoint_type='publicURL',
+                region_name=client_region_name)
 
         if test_cmd is not None:
             user_env['TEST_CMD'] = test_cmd
