@@ -133,7 +133,8 @@ class HandlerTest(base.BaseTestCase):
                     mock.call(44, {'status': 'BUILT'})]
         self.assertEqual(expected, mock_uas.call_args_list)
 
-        expected = [mock.call(assembly_id=44, image_id=fake_glance_id)]
+        expected = [mock.call(assembly_id=44, image_id=fake_glance_id,
+                              ports=[80])]
         self.assertEqual(expected, mock_deploy.call_args_list)
 
     @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
@@ -188,7 +189,8 @@ class HandlerTest(base.BaseTestCase):
                     mock.call(44, {'status': 'BUILT'})]
         self.assertEqual(expected, mock_uas.call_args_list)
 
-        expected = [mock.call(assembly_id=44, image_id=image_id)]
+        expected = [mock.call(assembly_id=44, image_id=image_id,
+                              ports=[80])]
         self.assertEqual(expected, mock_deploy.call_args_list)
 
     @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
@@ -240,7 +242,8 @@ class HandlerTest(base.BaseTestCase):
                     mock.call(44, {'status': 'BUILT'})]
         self.assertEqual(expected, mock_uas.call_args_list)
 
-        expected = [mock.call(assembly_id=44, image_id=fake_glance_id)]
+        expected = [mock.call(assembly_id=44, image_id=fake_glance_id,
+                              ports=[80])]
         self.assertEqual(expected, mock_deploy.call_args_list)
 
     @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
@@ -302,7 +305,8 @@ class HandlerTest(base.BaseTestCase):
                     mock.call(44, {'status': 'BUILT'})]
         self.assertEqual(expected, mock_uas.call_args_list)
 
-        expected = [mock.call(assembly_id=44, image_id=fake_glance_id)]
+        expected = [mock.call(assembly_id=44, image_id=fake_glance_id,
+                              ports=[80])]
         self.assertEqual(expected, mock_deploy.call_args_list)
 
     @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
@@ -511,7 +515,8 @@ class HandlerTest(base.BaseTestCase):
                     mock.call(self.ctx, 44, 'BUILT')]
         self.assertEqual(expected, mock_a_update.call_args_list)
 
-        expected = [mock.call(assembly_id=44, image_id=fake_glance_id)]
+        expected = [mock.call(assembly_id=44, image_id=fake_glance_id,
+                              ports=[80])]
         self.assertEqual(expected, mock_deploy.call_args_list)
 
     @mock.patch('solum.worker.handlers.shell.Handler._get_environment')

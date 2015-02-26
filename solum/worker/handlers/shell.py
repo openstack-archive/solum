@@ -373,7 +373,8 @@ class Handler(object):
                                     assembly_id=assembly_id)
             update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.BUILT)
             deployer_api.API(context=ctxt).deploy(assembly_id=assembly_id,
-                                                  image_id=created_image_id)
+                                                  image_id=created_image_id,
+                                                  ports=ports)
 
     def _run_unittest(self, ctxt, build_id, git_info, name, base_image_id,
                       source_format, image_format, assembly_id, test_cmd):
