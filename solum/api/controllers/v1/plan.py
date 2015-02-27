@@ -120,13 +120,13 @@ class PlanController(rest.RestController):
         return updated_plan_yml
 
     @exception.wrap_wsme_controller_exception
-    @wsme_pecan.wsexpose(status_code=204)
+    @wsme_pecan.wsexpose(status_code=202)
     def delete(self):
         """Delete this plan."""
-        handler = plan_handler.PlanHandler(pecan.request.security_context)
+        p_handler = plan_handler.PlanHandler(pecan.request.security_context)
         try:
-            handler.delete(self._id)
-        except (db_exc.DBReferenceError, db_exc.DBError):
+            p_handler.delete(self._id)
+        except (db_exc.DBError):
             raise exception.PlanStillReferenced(name=self._id)
 
 

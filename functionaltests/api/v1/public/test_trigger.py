@@ -83,4 +83,4 @@ class TestTriggerController(base.TestCase):
         resp, body = self.client.delete(
             'v1/plans/%s' % plan_uuid,
             headers={'content-type': 'application/x-yaml'})
-        self.assertEqual(resp.status, 204)
+        self.assertEqual(resp.status, 202)

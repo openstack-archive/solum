@@ -30,5 +30,8 @@ class API(service.API):
         self._cast('deploy', assembly_id=assembly_id, image_id=image_id,
                    ports=ports)
 
-    def destroy(self, assem_id):
-        self._cast('destroy', assem_id=assem_id)
+    def destroy_assembly(self, assem_id):
+        self._cast('destroy_assembly', assem_id=assem_id)
+
+    def destroy_app(self, app_id):
+        self._cast('destroy_app', app_id=app_id)

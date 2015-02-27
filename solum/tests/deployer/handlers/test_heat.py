@@ -287,7 +287,7 @@ class HandlerTest(base.BaseTestCase):
         cfg.CONF.deployer.wait_interval = 0
         cfg.CONF.deployer.growth_factor = 1.2
 
-        handler.destroy(self.ctx, fake_assem.id)
+        handler.destroy_assembly(self.ctx, fake_assem.id)
 
         stacks = mock_client.return_value.heat.return_value.stacks
         stacks.delete.assert_called_once_with('42')
@@ -311,7 +311,7 @@ class HandlerTest(base.BaseTestCase):
         cfg.CONF.deployer.wait_interval = 0
         cfg.CONF.deployer.growth_factor = 1.2
 
-        handler.destroy(self.ctx, fake_assem.id)
+        handler.destroy_assembly(self.ctx, fake_assem.id)
 
         stacks = mock_client.return_value.heat.return_value.stacks
         stacks.delete.assert_called_once_with('42')
@@ -328,7 +328,7 @@ class HandlerTest(base.BaseTestCase):
 
         handler = heat_handler.Handler()
         handler._find_id_if_stack_exists = mock.MagicMock(return_value=None)
-        handler.destroy(self.ctx, fake_assem.id)
+        handler.destroy_assembly(self.ctx, fake_assem.id)
 
         assert not mock_client.heat.stacks.delete.called
         fake_assem.destroy.assert_called_once()

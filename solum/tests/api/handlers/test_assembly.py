@@ -180,7 +180,7 @@ class TestAssemblyHandler(base.BaseTestCase):
         mock_kc.return_value.create_trust_context.assert_called_once_with()
 
     @mock.patch('solum.common.solum_keystoneclient.KeystoneClientV3')
-    @mock.patch('solum.deployer.api.API.destroy')
+    @mock.patch('solum.deployer.api.API.destroy_assembly')
     @mock.patch('solum.conductor.api.API.update_assembly')
     def test_delete(self, mock_cond, mock_deploy, mock_kc, mock_registry):
         db_obj = fakes.FakeAssembly()

@@ -28,8 +28,12 @@ class Handler(object):
         message = ("Deploy %s %s %s" % (assembly_id, image_id, ports))
         LOG.debug("%s" % message)
 
-    def destroy(self, ctxt, assem_id):
+    def destroy_assembly(self, ctxt, assem_id):
         assem = objects.registry.Assembly.get_by_id(ctxt, assem_id)
         assem.destroy(ctxt)
         message = ("Destroy %s" % (assem_id))
+        LOG.debug("%s" % message)
+
+    def destroy_app(self, ctxt, app_id):
+        message = ("Destroy App %s" % (app_id))
         LOG.debug("%s" % message)

@@ -44,7 +44,7 @@ class HandlerTest(base.BaseTestCase):
         fake_assembly = fakes.FakeAssembly()
         fake_registry.Assembly.get_by_id.return_value = fake_assembly
         args = [fake_assembly.id]
-        noop_handler.Handler().destroy(self.ctx, *args)
+        noop_handler.Handler().destroy_assembly(self.ctx, *args)
         fake_assembly.destroy.assert_called_once_with(self.ctx)
 
         message = 'Destroy %s' % tuple(args)

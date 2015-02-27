@@ -103,7 +103,7 @@ class AssemblyHandler(handler.Handler):
         conductor_api.API(context=self.context).update_assembly(
             db_obj.id, {'status': ASSEMBLY_STATES.DELETING})
 
-        deploy_api.API(context=self.context).destroy(
+        deploy_api.API(context=self.context).destroy_assembly(
             assem_id=db_obj.id)
 
     def create(self, data):

@@ -303,7 +303,7 @@ class TestPlansController(base.TestCase):
 
         # delete the plan using the Solum API
         resp, body = self.client.delete('v1/plans/%s' % uuid)
-        self.assertEqual(204, resp.status)
+        self.assertEqual(202, resp.status)
 
         # remove the plan from the list of plans so we don't try to remove it
         # twice

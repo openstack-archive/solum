@@ -203,7 +203,7 @@ class TestPlanController(base.TestCase):
         self.assertEqual(create_resp.status, 201)
         uuid = create_resp.uuid
         resp, body = self.client.delete_plan(uuid)
-        self.assertEqual(resp.status, 204)
+        self.assertEqual(resp.status, 202)
         self.assertEqual(body, '')
 
     def test_plans_delete_not_found(self):

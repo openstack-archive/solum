@@ -23,6 +23,7 @@ from oslo.config import cfg
 
 from solum.api.handlers import handler
 from solum.common import clients
+from solum.deployer import api as deploy_api
 from solum import objects
 
 
@@ -69,7 +70,8 @@ class PlanHandler(handler.Handler):
         """Delete existing plan."""
         db_obj = objects.registry.Plan.get_by_uuid(self.context, id)
         self._delete_params(db_obj.id)
-        db_obj.destroy(self.context)
+        deploy_api.API(context=self.context).destroy_app(
+            app_id=db_obj.id)
 
     def create(self, data):
         """Create a new plan."""

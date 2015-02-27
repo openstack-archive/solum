@@ -89,7 +89,7 @@ class Handler(object):
         return ''.join([assem_name[:min(len(assem_name), prefix_len)], '-',
                         assembly.uuid])
 
-    def destroy(self, ctxt, assem_id):
+    def destroy_assembly(self, ctxt, assem_id):
         assem = objects.registry.Assembly.get_by_id(ctxt, assem_id)
         stack_id = self._find_id_if_stack_exists(assem)
 
@@ -114,6 +114,18 @@ class Handler(object):
                             {'status': STATES.ERROR_STACK_DELETE_FAILED})
         else:
             assem.destroy(ctxt)
+
+    def destroy_app(self, ctxt, app_id):
+        # Destroy a plan's assemblies, and then the plan.
+        plan = objects.registry.Plan.get_by_id(ctxt, app_id)
+
+        # Fetch all assemblies by plan id, and self.destroy() them.
+        assemblies = objects.registry.AssemblyList.get_all(ctxt)
+        for assem in assemblies:
+            if app_id == assem.plan_id:
+                self.destroy_assembly(ctxt, assem.id)
+
+        plan.destroy(ctxt)
 
     def deploy(self, ctxt, assembly_id, image_id, ports):
         osc = clients.OpenStackClients(ctxt)

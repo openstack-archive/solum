@@ -231,20 +231,13 @@ class TestPlanController(base.BaseTestCase):
         obj = plan.PlanController('test_id')
         obj.delete()
         hand_delete.assert_called_with('test_id')
-        self.assertEqual(204, resp_mock.status)
+        self.assertEqual(202, resp_mock.status)
 
-    def test_plan_delete_dbreferror(self, PlanHandler, resp_mock,
-                                    request_mock):
-        hand_delete = PlanHandler.return_value.delete
-        hand_delete.side_effect = db_exc.DBReferenceError(
-            mock.ANY, mock.ANY, mock.ANY, mock.ANY)
-        obj = plan.PlanController('test_id')
-        obj.delete()
-        hand_delete.assert_called_with('test_id')
-        self.assertEqual(409, resp_mock.status)
+    def test_plan_delete_dberror(self, PlanHandler, resp_mock, request_mock):
+        hand_get = PlanHandler.return_value.get
+        fake_plan = fakes.FakePlan()
+        hand_get.return_value = fake_plan
 
-    def test_plan_delete_otherdberror(self, PlanHandler, resp_mock,
-                                      request_mock):
         hand_delete = PlanHandler.return_value.delete
         hand_delete.side_effect = db_exc.DBError()
         obj = plan.PlanController('test_id')
