@@ -52,6 +52,9 @@ cfg.CONF.import_opt('param_file_path', 'solum.worker.config', group='worker')
 cfg.CONF.import_opt('log_upload_strategy', 'solum.worker.config',
                     group='worker')
 cfg.CONF.import_opt('image_storage', 'solum.worker.config', group='worker')
+cfg.CONF.import_opt('temp_url_secret', 'solum.worker.config', group='worker')
+cfg.CONF.import_opt('temp_url_protocol', 'solum.worker.config', group='worker')
+cfg.CONF.import_opt('temp_url_ttl', 'solum.worker.config', group='worker')
 
 
 def upload_task_log(ctxt, original_path, resource, build_id, stage):
@@ -155,6 +158,9 @@ class Handler(object):
                 service_type='object-store',
                 endpoint_type='publicURL',
                 region_name=client_region_name)
+            user_env['TEMP_URL_SECRET'] = cfg.CONF.worker.temp_url_secret
+            user_env['TEMP_URL_PROTOCOL'] = cfg.CONF.worker.temp_url_protocol
+            user_env['TEMP_URL_TTL'] = cfg.CONF.worker.temp_url_ttl
 
         if test_cmd is not None:
             user_env['TEST_CMD'] = test_cmd
