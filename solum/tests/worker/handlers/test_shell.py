@@ -702,7 +702,7 @@ class TestLanguagePackBuildCommand(base.BaseTestCase):
         fake_glance_id = str(uuid.uuid4())
         mock_registry.Image.get_lp_by_name_or_uuid.return_value = fake_image
         mock_popen.return_value.communicate.return_value = [
-            'foo\image_external_ref=%s\n' % fake_glance_id, None]
+            'foo\nimage_external_ref=%s\n' % fake_glance_id, None]
         test_env = mock_environment()
         mock_get_env.return_value = test_env
         git_info = mock_git_info()

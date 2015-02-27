@@ -541,7 +541,14 @@ class Handler(object):
             for line in out.split('\n'):
                 if 'image_external_ref' in line:
                     solum.TLS.trace.support_info(build_lp_out_line=line)
-                    image_external_ref = line.split('=')[-1].strip()
+                    # When the image_storage is swift,
+                    # we cannot use splitting on '=' like we do for others.
+                    # Hence the special logic below.
+                    if cfg.CONF.worker.image_storage == 'swift':
+                        img_id = line.replace("image_external_ref=", '')
+                        image_external_ref = img_id
+                    else:
+                        image_external_ref = line.split('=')[-1].strip()
                     break
             if image_external_ref is not None:
                 status = IMAGE_STATES.COMPLETE

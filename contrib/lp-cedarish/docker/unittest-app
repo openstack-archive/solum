@@ -82,8 +82,7 @@ if [[ $IMG_EXTERNAL_REF != "auto" ]]; then
     sudo docker load -i $LP_NAME
     BASE_IMG=${LP_NAME%%.tar}
   elif [[ $IMAGE_STORAGE == "swift" ]]; then
-
-    swift --os-region-name $OS_REGION_NAME --os-auth-token $OS_AUTH_TOKEN --os-storage-url $OS_STORAGE_URL download solum_lp $LP_NAME --output $IMG_EXTERNAL_REF
+    sudo wget "$IMG_EXTERNAL_REF" --output-document=$LP_NAME
 
     if [ $? != 0 ]; then
       TLOG Failed to download image $IMG_EXTERNAL_REF from swift. && exit 1

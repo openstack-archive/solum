@@ -22,9 +22,9 @@ import time
 from oslo.config import cfg
 
 if len(sys.argv) < 7:
-    print('python get-temp-url.py storage_host container'
-          'app_name account secret ttl')
-    sys.exit()
+    print('USAGE: python get-temp-url.py storage_host container'
+          ' app_name account secret ttl')
+    sys.exit(1)
 
 storage_host = sys.argv[1]
 container = sys.argv[2]

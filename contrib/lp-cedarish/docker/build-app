@@ -150,7 +150,7 @@ else
     BASE_IMG=$LP_NAME
   elif [[ $IMAGE_STORAGE == "swift" ]]; then
     LP_FILE=$TMP_APP_DIR/$LP_NAME
-    swift --os-region-name $OS_REGION_NAME --os-auth-token $OS_AUTH_TOKEN --os-storage-url $OS_STORAGE_URL download solum_lp $IMG_EXTERNAL_REF --output $LP_FILE
+    sudo wget "$IMG_EXTERNAL_REF" --output-document=$LP_FILE
 
     if [ $? != 0 ]; then
       TLOG Failed to download image $IMG_EXTERNAL_REF from swift. && exit 1
