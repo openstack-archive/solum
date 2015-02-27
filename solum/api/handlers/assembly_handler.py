@@ -44,10 +44,7 @@ API_SERVICE_OPTS = [
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
-opt_group = cfg.OptGroup(name='api',
-                         title='Options for the solum-api service')
-CONF.register_group(opt_group)
-CONF.register_opts(API_SERVICE_OPTS, opt_group)
+CONF.register_opts(API_SERVICE_OPTS, group='api')
 
 ASSEMBLY_STATES = assembly.States
 IMAGE_STATES = image.States

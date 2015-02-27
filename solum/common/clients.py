@@ -30,6 +30,14 @@ from solum.openstack.common import log as logging
 LOG = logging.getLogger(__name__)
 
 
+GLOBAL_CLIENT_OPTS = [
+    cfg.StrOpt('region_name',
+               default='RegionOne',
+               help=_(
+                   'Region of endpoint in Identity service catalog to use'
+                   ' for all clients.')),
+]
+
 barbican_client_opts = [
     cfg.BoolOpt('insecure',
                 default=False,
@@ -48,7 +56,7 @@ glance_client_opts = [
                    'Type of endpoint in Identity service catalog to use '
                    'for communication with the Glance service.')),
     cfg.StrOpt('region_name',
-               default='RegionOne',
+               default='',
                help=_(
                    'Region of endpoint in Identity service catalog to use.'))]
 
@@ -59,7 +67,7 @@ heat_client_opts = [
                    'Type of endpoint in Identity service catalog to use '
                    'for communication with the OpenStack service.')),
     cfg.StrOpt('region_name',
-               default='RegionOne',
+               default='',
                help=_(
                    'Region of endpoint in Identity service catalog to use.')),
     cfg.StrOpt('ca_file',
@@ -81,7 +89,7 @@ zaqar_client_opts = [
                    'Type of endpoint in Queue service catalog to use '
                    'for communication with the Zaqar service.')),
     cfg.StrOpt('region_name',
-               default='RegionOne',
+               default='',
                help=_(
                    'Region of endpoint in Identity service catalog to use.')),
     cfg.BoolOpt('insecure',
@@ -96,7 +104,7 @@ neutron_client_opts = [
                    'Type of endpoint in Identity service catalog to use '
                    'for communication with the Neutron service.')),
     cfg.StrOpt('region_name',
-               default='RegionOne',
+               default='',
                help=_(
                    'Region of endpoint in Identity service catalog to use.')),
     cfg.StrOpt('ca_cert',
@@ -113,7 +121,7 @@ swift_client_opts = [
                    'Type of endpoint in Identity service catalog to use '
                    'for communication with the Swift service.')),
     cfg.StrOpt('region_name',
-               default='RegionOne',
+               default='',
                help=_(
                    'Region of endpoint in Identity service catalog to use.')),
     cfg.StrOpt('cacert',
@@ -129,7 +137,7 @@ mistral_client_opts = [
                    'Type of endpoint in Identity service catalog to use '
                    'for communication with the mistral service.')),
     cfg.StrOpt('region_name',
-               default='RegionOne',
+               default='',
                help=_(
                    'Region of endpoint in Identity service catalog to use.')),
     cfg.StrOpt('cacert',
@@ -140,6 +148,7 @@ mistral_client_opts = [
                 help=_("If set the server certificate will not be verified "
                        "while using Mistral."))]
 
+cfg.CONF.register_opts(GLOBAL_CLIENT_OPTS)
 cfg.CONF.register_opts(barbican_client_opts, group='barbican_client')
 cfg.CONF.register_opts(glance_client_opts, group='glance_client')
 cfg.CONF.register_opts(heat_client_opts, group='heat_client')
@@ -147,6 +156,15 @@ cfg.CONF.register_opts(zaqar_client_opts, group='zaqar_client')
 cfg.CONF.register_opts(neutron_client_opts, group='neutron_client')
 cfg.CONF.register_opts(swift_client_opts, group='swift_client')
 cfg.CONF.register_opts(mistral_client_opts, group='mistral_client')
+
+
+def get_client_option(client, option):
+    value = getattr(getattr(cfg.CONF, '%s_client' % client), option)
+    if option == 'region_name':
+        global_region = cfg.CONF.get(option)
+        return value or global_region
+    else:
+        return value
 
 
 class OpenStackClients(object):
@@ -179,7 +197,7 @@ class OpenStackClients(object):
         if self._barbican:
             return self._barbican
 
-        insecure = self._get_client_option('barbican', 'insecure')
+        insecure = get_client_option('barbican', 'insecure')
         self._barbican = solum_barbicanclient.BarbicanClient(
             verify=not insecure)
         return self._barbican
@@ -196,8 +214,8 @@ class OpenStackClients(object):
         if self._zaqar:
             return self._zaqar
 
-        endpoint_type = self._get_client_option('zaqar', 'endpoint_type')
-        region_name = self._get_client_option('zaqar', 'region_name')
+        endpoint_type = get_client_option('zaqar', 'endpoint_type')
+        region_name = get_client_option('zaqar', 'region_name')
         endpoint_url = self.url_for(service_type='queuing',
                                     endpoint_type=endpoint_type,
                                     region_name=region_name)
@@ -205,8 +223,8 @@ class OpenStackClients(object):
                 {'backend': 'keystone',
                  'options': {'os_auth_token': self.auth_token,
                              'os_auth_url': self.auth_url,
-                             'insecure': self._get_client_option(
-                                 'zaqar', 'insecure')}
+                             'insecure': get_client_option('zaqar',
+                                                           'insecure')}
                  }
                 }
         self._zaqar = zaqarclient.Client(endpoint_url, conf=conf)
@@ -217,8 +235,8 @@ class OpenStackClients(object):
         if self._neutron:
             return self._neutron
 
-        endpoint_type = self._get_client_option('neutron', 'endpoint_type')
-        region_name = self._get_client_option('neutron', 'region_name')
+        endpoint_type = get_client_option('neutron', 'endpoint_type')
+        region_name = get_client_option('neutron', 'region_name')
         endpoint_url = self.url_for(service_type='network',
                                     endpoint_type=endpoint_type,
                                     region_name=region_name)
@@ -228,14 +246,11 @@ class OpenStackClients(object):
             'token': self.auth_token,
             'username': None,
             'password': None,
-            'insecure': self._get_client_option('neutron', 'insecure'),
-            'ca_cert': self._get_client_option('neutron', 'ca_cert')
+            'insecure': get_client_option('neutron', 'insecure'),
+            'ca_cert': get_client_option('neutron', 'ca_cert')
         }
         self._neutron = neutronclient.Client('2.0', **args)
         return self._neutron
-
-    def _get_client_option(self, client, option):
-        return getattr(getattr(cfg.CONF, '%s_client' % client), option)
 
     @exception.wrap_keystone_exception
     def glance(self):
@@ -245,8 +260,8 @@ class OpenStackClients(object):
         args = {
             'token': self.auth_token,
         }
-        endpoint_type = self._get_client_option('glance', 'endpoint_type')
-        region_name = self._get_client_option('glance', 'region_name')
+        endpoint_type = get_client_option('glance', 'endpoint_type')
+        region_name = get_client_option('glance', 'region_name')
         endpoint = self.url_for(service_type='image',
                                 endpoint_type=endpoint_type,
                                 region_name=region_name)
@@ -262,8 +277,8 @@ class OpenStackClients(object):
         args = {
             'auth_token': self.auth_token,
         }
-        endpoint_type = self._get_client_option('mistral', 'endpoint_type')
-        region_name = self._get_client_option('mistral', 'region_name')
+        endpoint_type = get_client_option('mistral', 'endpoint_type')
+        region_name = get_client_option('mistral', 'region_name')
         endpoint = self.url_for(service_type='workflow',
                                 endpoint_type=endpoint_type,
                                 region_name=region_name)
@@ -276,19 +291,19 @@ class OpenStackClients(object):
         if self._heat:
             return self._heat
 
-        endpoint_type = self._get_client_option('heat', 'endpoint_type')
+        endpoint_type = get_client_option('heat', 'endpoint_type')
         args = {
             'auth_url': self.auth_url,
             'token': self.auth_token,
             'username': None,
             'password': None,
-            'ca_file': self._get_client_option('heat', 'ca_file'),
-            'cert_file': self._get_client_option('heat', 'cert_file'),
-            'key_file': self._get_client_option('heat', 'key_file'),
-            'insecure': self._get_client_option('heat', 'insecure')
+            'ca_file': get_client_option('heat', 'ca_file'),
+            'cert_file': get_client_option('heat', 'cert_file'),
+            'key_file': get_client_option('heat', 'key_file'),
+            'insecure': get_client_option('heat', 'insecure')
         }
 
-        region_name = self._get_client_option('heat', 'region_name')
+        region_name = get_client_option('heat', 'region_name')
         endpoint = self.url_for(service_type='orchestration',
                                 endpoint_type=endpoint_type,
                                 region_name=region_name)
@@ -301,8 +316,8 @@ class OpenStackClients(object):
         if self._swift:
             return self._swift
 
-        endpoint_type = self._get_client_option('swift', 'endpoint_type')
-        region_name = self._get_client_option('swift', 'region_name')
+        endpoint_type = get_client_option('swift', 'endpoint_type')
+        region_name = get_client_option('swift', 'region_name')
         args = {
             'auth_version': '2.0',
             'preauthtoken': self.auth_token,
@@ -311,8 +326,8 @@ class OpenStackClients(object):
                                        region_name=region_name),
             'os_options': {'endpoint_type': endpoint_type,
                            'region_name': region_name},
-            'cacert': self._get_client_option('swift', 'cacert'),
-            'insecure': self._get_client_option('swift', 'insecure')
+            'cacert': get_client_option('swift', 'cacert'),
+            'insecure': get_client_option('swift', 'insecure')
         }
         self._swift = swiftclient.Connection(**args)
         return self._swift

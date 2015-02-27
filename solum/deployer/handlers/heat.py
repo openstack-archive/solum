@@ -38,8 +38,6 @@ LOG = logging.getLogger(__name__)
 
 STATES = assembly.States
 
-OPT_GROUP = cfg.OptGroup(name='deployer',
-                         title='Options for the solum-deployer service')
 SERVICE_OPTS = [
     cfg.IntOpt('max_attempts',
                default=600,
@@ -67,8 +65,7 @@ SERVICE_OPTS = [
                help='Image id'),
 ]
 
-cfg.CONF.register_group(OPT_GROUP)
-cfg.CONF.register_opts(SERVICE_OPTS, OPT_GROUP)
+cfg.CONF.register_opts(SERVICE_OPTS, group='deployer')
 cfg.CONF.import_opt('image_format', 'solum.api.handlers.assembly_handler',
                     group='api')
 cfg.CONF.import_group('worker', 'solum.worker.handlers.shell')
