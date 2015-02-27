@@ -45,6 +45,13 @@ if action_to_take == 'upload':
         LOG.exception(e)
         status = "1"
     status = "0"
+elif action_to_take == 'stat':
+    try:
+        solum.uploaders.swift.SwiftUpload(**upload_args).stat()
+    except Exception as e:
+        LOG.exception(e)
+        status = "1"
+    status = "0"
 else:
     status = "Unknown action."
 

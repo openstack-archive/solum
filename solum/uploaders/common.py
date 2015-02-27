@@ -61,6 +61,9 @@ class UploaderBase(object):
     def upload_image(self):
         pass
 
+    def stat(self):
+        pass
+
     def transform_jsonlog(self):
         with open(self.original_file_path, 'r') as logfile:
             with open(self.transformed_path, 'w') as tflogfile:
