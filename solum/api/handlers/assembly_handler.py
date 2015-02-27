@@ -108,6 +108,10 @@ class AssemblyHandler(handler.Handler):
 
     def create(self, data):
         """Create a new resource."""
+        if 'workflow' in data and isinstance(data['workflow'], list):
+            data['workflow'] = list(set(data['workflow']))
+        else:
+            data['workflow'] = ['unittest', 'build', 'deploy']
         db_obj = objects.registry.Assembly()
         db_obj.update(data)
         db_obj.uuid = str(uuid.uuid4())
@@ -132,8 +136,8 @@ class AssemblyHandler(handler.Handler):
             self._build_artifact(assem=db_obj, artifact=arti)
         return db_obj
 
-    def _build_artifact(self, assem, artifact, verb='build', commit_sha='',
-                        status_url=None):
+    def _build_artifact(self, assem, artifact, verb='launch_workflow',
+                        commit_sha='', status_url=None):
 
         # This is a tempory hack so we don't need the build client
         # in the requirments.
@@ -174,6 +178,7 @@ class AssemblyHandler(handler.Handler):
             source_format=image.source_format,
             image_format=image.image_format,
             assembly_id=assem.id,
+            workflow=assem.workflow,
             test_cmd=test_cmd,
             run_cmd=run_cmd)
 

@@ -93,7 +93,7 @@ class TestAssemblyHandler(base.BaseTestCase):
             'status_url': None,
         }
         mock_pa.assert_called_once_with(
-            verb='build',
+            verb='launch_workflow', workflow=['unittest', 'build', 'deploy'],
             build_id=8, name='nodeus', assembly_id=8,
             git_info=git_info, test_cmd=None, ports=[80],
             base_image_id='auto', source_format='heroku',
@@ -171,7 +171,7 @@ class TestAssemblyHandler(base.BaseTestCase):
             'status_url': None,
         }
         mock_pa.assert_called_once_with(
-            verb='build',
+            verb='launch_workflow', workflow=['unittest', 'build', 'deploy'],
             build_id=8, name='nodeus', assembly_id=8,
             git_info=git_info, ports=[80],
             test_cmd=None, base_image_id='auto', source_format='heroku',

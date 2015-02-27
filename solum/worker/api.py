@@ -27,12 +27,13 @@ class API(service.API):
                                   topic=cfg.CONF.worker.topic)
 
     def build_app(self, verb, build_id, git_info, ports, name, base_image_id,
-                  source_format, image_format, assembly_id, test_cmd=None,
-                  run_cmd=None):
+                  source_format, image_format, assembly_id, workflow,
+                  test_cmd=None, run_cmd=None):
         self._cast(verb, build_id=build_id, git_info=git_info, ports=ports,
                    name=name, base_image_id=base_image_id,
                    source_format=source_format, image_format=image_format,
-                   assembly_id=assembly_id, test_cmd=test_cmd, run_cmd=run_cmd)
+                   assembly_id=assembly_id, workflow=workflow,
+                   test_cmd=test_cmd, run_cmd=run_cmd)
 
     def build_lp(self, image_id, git_info, name, source_format, image_format,
                  artifact_type):

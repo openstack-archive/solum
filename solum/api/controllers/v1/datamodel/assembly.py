@@ -58,6 +58,9 @@ class Assembly(api_types.Base):
     application_uri = common_types.Uri
     """The uri of the deployed application."""
 
+    workflow = [wtypes.Enum(wtypes.text, 'unittest', 'build', 'deploy')]
+    """Defines the workflow that an assembly will go through."""
+
     updated_at = datetime.datetime
     """The last time a change was made to the assembly's status."""
 

@@ -27,7 +27,6 @@ from solum.openstack.common.gettextutils import _
 from solum.openstack.common import log as logging
 from solum.worker.handlers import noop as noop_handler
 from solum.worker.handlers import shell as shell_handler
-from solum.worker.handlers import shell_nobuild as shell_nobuild_handler
 
 LOG = logging.getLogger(__name__)
 
@@ -48,7 +47,6 @@ def main():
     handlers = {
         'noop': noop_handler.Handler,
         'shell': shell_handler.Handler,
-        'shell_nobuild': shell_nobuild_handler.Handler,
     }
 
     endpoints = [

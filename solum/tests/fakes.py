@@ -212,6 +212,7 @@ class FakeAssembly(mock.Mock):
         now = datetime.datetime.utcnow()
         self.created_at = now
         self.updated_at = now
+        self.workflow = ['unittest', 'build', 'deploy']
 
     def as_dict(self):
         return dict(user_id=self.user_id,
@@ -222,7 +223,8 @@ class FakeAssembly(mock.Mock):
                     name=self.name,
                     created_at=self.created_at,
                     updated_at=self.updated_at,
-                    status=self.status)
+                    status=self.status,
+                    workflow=self.workflow)
 
 
 class FakePipeline(mock.Mock):

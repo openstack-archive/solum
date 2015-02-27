@@ -108,10 +108,10 @@ class HandlerTest(base.BaseTestCase):
         test_env = mock_environment()
         mock_get_env.return_value = test_env
         git_info = mock_git_info()
-        handler.build(self.ctx, build_id=5, git_info=git_info, ports=[80],
+        handler.build(self.ctx, build_id=5, git_info=git_info,
                       name='new_app', base_image_id=self.base_image_id,
                       source_format='heroku', image_format='docker',
-                      assembly_id=44, test_cmd=None, run_cmd=None)
+                      assembly_id=44, run_cmd=None)
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
@@ -133,9 +133,7 @@ class HandlerTest(base.BaseTestCase):
                     mock.call(44, {'status': 'BUILT'})]
         self.assertEqual(expected, mock_uas.call_args_list)
 
-        expected = [mock.call(assembly_id=44, image_id=fake_glance_id,
-                              ports=[80])]
-        self.assertEqual(expected, mock_deploy.call_args_list)
+        assert not mock_deploy.called
 
     @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
     @mock.patch('solum.objects.registry')
@@ -164,10 +162,10 @@ class HandlerTest(base.BaseTestCase):
 
         image_id = fake_glance_id + "APP_NAME=new_app"
 
-        handler.build(self.ctx, build_id=5, git_info=git_info, ports=[80],
-                      name='new_app', base_image_id=fake_image.base_image_id,
+        handler.build(self.ctx, build_id=5, git_info=git_info, name='new_app',
+                      base_image_id=fake_image.base_image_id,
                       source_format='heroku', image_format='docker',
-                      assembly_id=44, test_cmd=None, run_cmd=None)
+                      assembly_id=44, run_cmd=None)
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
@@ -189,9 +187,7 @@ class HandlerTest(base.BaseTestCase):
                     mock.call(44, {'status': 'BUILT'})]
         self.assertEqual(expected, mock_uas.call_args_list)
 
-        expected = [mock.call(assembly_id=44, image_id=image_id,
-                              ports=[80])]
-        self.assertEqual(expected, mock_deploy.call_args_list)
+        assert not mock_deploy.called
 
     @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
     @mock.patch('solum.objects.registry')
@@ -217,11 +213,12 @@ class HandlerTest(base.BaseTestCase):
         mock_ast.return_value = [{'source_url': 'git://example.com/foo',
                                   'private_key': 'some-private-key'}]
         git_info = mock_git_info()
-        handler.build(self.ctx, build_id=5, ports=[80],
-                      git_info=git_info, name='new_app',
-                      base_image_id=self.base_image_id, source_format='heroku',
-                      image_format='docker', assembly_id=44,
-                      test_cmd=None, run_cmd=None)
+        handler.launch_workflow(
+            self.ctx, build_id=5, git_info=git_info,
+            workflow=['unittest', 'build', 'deploy'], ports=[80],
+            name='new_app', base_image_id=self.base_image_id,
+            source_format='heroku', image_format='docker', assembly_id=44,
+            test_cmd=None, run_cmd=None)
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
@@ -279,11 +276,12 @@ class HandlerTest(base.BaseTestCase):
                                   'private_key': 'some-private-key'}]
 
         git_info = mock_git_info()
-        handler.build(self.ctx, build_id=5, ports=[80],
-                      git_info=git_info, name='new_app',
-                      base_image_id=self.base_image_id, source_format='heroku',
-                      image_format='docker', assembly_id=44,
-                      test_cmd=None, run_cmd=None)
+        handler.launch_workflow(
+            self.ctx, build_id=5, git_info=git_info,
+            workflow=['unitetst', 'build', 'deploy'], ports=[80],
+            name='new_app', base_image_id=self.base_image_id,
+            source_format='heroku', image_format='docker', assembly_id=44,
+            test_cmd=None, run_cmd=None)
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
@@ -328,8 +326,7 @@ class HandlerTest(base.BaseTestCase):
         git_info = mock_git_info()
         handler.build(self.ctx, build_id=5, git_info=git_info, name='new_app',
                       base_image_id=self.base_image_id, source_format='heroku',
-                      image_format='docker', assembly_id=44, test_cmd=None,
-                      run_cmd=None, ports=[80])
+                      image_format='docker', assembly_id=44, run_cmd=None)
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
@@ -368,8 +365,7 @@ class HandlerTest(base.BaseTestCase):
         git_info = mock_git_info()
         handler.build(self.ctx, build_id=5, git_info=git_info, name='new_app',
                       base_image_id=self.base_image_id, source_format='heroku',
-                      image_format='docker', assembly_id=44, test_cmd=None,
-                      run_cmd=None, ports=[80])
+                      image_format='docker', assembly_id=44, run_cmd=None)
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
@@ -407,8 +403,8 @@ class HandlerTest(base.BaseTestCase):
         git_info = mock_git_info()
         handler.unittest(self.ctx, build_id=5, name='new_app',
                          base_image_id=self.base_image_id,
-                         source_format='chef', ports=[80],
-                         image_format='docker', assembly_id=fake_assembly.id,
+                         source_format='chef', image_format='docker',
+                         assembly_id=fake_assembly.id,
                          git_info=git_info, test_cmd='tox')
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
@@ -420,7 +416,8 @@ class HandlerTest(base.BaseTestCase):
                                             self.expected_img_id,
                                             self.img_name],
                                            env=test_env, stdout=-1)
-        expected = [mock.call(self.ctx, 8, 'UNIT_TESTING')]
+        expected = [mock.call(self.ctx, 8, 'UNIT_TESTING'),
+                    mock.call(self.ctx, 8, 'UNIT_TESTING_PASSED')]
 
         self.assertEqual(expected, mock_a_update.call_args_list)
 
@@ -443,7 +440,7 @@ class HandlerTest(base.BaseTestCase):
                          assembly_id=fake_assembly.id,
                          base_image_id=self.base_image_id,
                          source_format='chef',
-                         image_format='docker', ports=[80],
+                         image_format='docker',
                          git_info=git_info, test_cmd='tox')
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
@@ -466,10 +463,9 @@ class HandlerTest(base.BaseTestCase):
     @mock.patch('solum.conductor.api.API.build_job_update')
     @mock.patch('solum.worker.handlers.shell.update_assembly_status')
     @mock.patch('solum.deployer.api.API.deploy')
-    def test_unittest_and_build(self, mock_deploy, mock_a_update,
-                                mock_b_update, mock_popen, mock_registry,
-                                mock_get_env):
-
+    def test_unittest_build_deploy(self, mock_deploy, mock_a_update,
+                                   mock_b_update, mock_popen, mock_registry,
+                                   mock_get_env):
         handler = shell_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
         fake_glance_id = str(uuid.uuid4())
@@ -482,10 +478,12 @@ class HandlerTest(base.BaseTestCase):
         test_env = mock_environment()
         mock_get_env.return_value = test_env
         git_info = mock_git_info()
-        handler.build(self.ctx, build_id=5, git_info=git_info, name='new_app',
-                      base_image_id=self.base_image_id, source_format='heroku',
-                      image_format='docker', assembly_id=44, ports=[80],
-                      test_cmd='faketests', run_cmd=None)
+        handler.launch_workflow(
+            self.ctx, build_id=5, git_info=git_info,
+            workflow=['unittest', 'build', 'deploy'], ports=[80],
+            name='new_app', base_image_id=self.base_image_id,
+            source_format='heroku', image_format='docker', assembly_id=44,
+            test_cmd='faketests', run_cmd=None)
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
@@ -511,6 +509,7 @@ class HandlerTest(base.BaseTestCase):
         self.assertEqual(expected, mock_b_update.call_args_list)
 
         expected = [mock.call(self.ctx, 44, 'UNIT_TESTING'),
+                    mock.call(self.ctx, 44, 'UNIT_TESTING_PASSED'),
                     mock.call(self.ctx, 44, 'BUILDING'),
                     mock.call(self.ctx, 44, 'BUILT')]
         self.assertEqual(expected, mock_a_update.call_args_list)
@@ -519,12 +518,13 @@ class HandlerTest(base.BaseTestCase):
                               ports=[80])]
         self.assertEqual(expected, mock_deploy.call_args_list)
 
+    @mock.patch('solum.worker.handlers.shell.Handler._do_build')
     @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
     @mock.patch('subprocess.Popen')
     @mock.patch('solum.worker.handlers.shell.update_assembly_status')
     @mock.patch('solum.objects.registry')
     def test_unittest_no_build(self, mock_registry, mock_a_update, mock_popen,
-                               mock_get_env):
+                               mock_get_env, mock_do_build):
         handler = shell_handler.Handler()
         mock_assembly = mock.MagicMock()
         mock_registry.Assembly.get_by_id.return_value = mock_assembly
@@ -534,10 +534,11 @@ class HandlerTest(base.BaseTestCase):
         test_env = mock_environment()
         mock_get_env.return_value = test_env
         git_info = mock_git_info()
-        handler.build(self.ctx, build_id=5, git_info=git_info, name='new_app',
-                      base_image_id=self.base_image_id, source_format='chef',
-                      image_format='docker', assembly_id=44, ports=[80],
-                      test_cmd='faketests', run_cmd=None)
+        handler.launch_workflow(
+            self.ctx, build_id=5, git_info=git_info, name='new_app',
+            base_image_id=self.base_image_id, source_format='chef',
+            image_format='docker', assembly_id=44, ports=[80],
+            test_cmd='faketests', run_cmd=None, workflow=['unittest', 'build'])
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
@@ -554,6 +555,8 @@ class HandlerTest(base.BaseTestCase):
         expected = [mock.call(self.ctx, 44, 'UNIT_TESTING'),
                     mock.call(self.ctx, 44, 'UNIT_TESTING_FAILED')]
         self.assertEqual(expected, mock_a_update.call_args_list)
+
+        assert not mock_do_build.called
 
 
 class HandlerUtilityTest(base.BaseTestCase):

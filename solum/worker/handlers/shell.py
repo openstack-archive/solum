@@ -266,15 +266,42 @@ class Handler(object):
         param_env['SOLUM_PARAMS'] = solum_param_file
         return param_env
 
-    def build(self, ctxt, build_id, git_info, ports, name, base_image_id,
-              source_format, image_format, assembly_id, test_cmd, run_cmd):
-        # TODO(datsun180b): This is only temporary, until Mistral becomes our
-        # workflow engine.
-        if self._run_unittest(ctxt, build_id, git_info, name, base_image_id,
-                              source_format, image_format, assembly_id,
-                              test_cmd) != 0:
-            return
+    def launch_workflow(self, ctxt, build_id, git_info, ports, name,
+                        base_image_id, source_format, image_format,
+                        assembly_id, workflow, test_cmd, run_cmd):
+        if 'unittest' in workflow:
+            if self._do_unittest(ctxt, build_id, git_info, name, base_image_id,
+                                 source_format, image_format, assembly_id,
+                                 test_cmd) != 0:
+                return
 
+        built_image = None
+        if 'build' in workflow:
+            built_image = self._do_build(ctxt, build_id, git_info, name,
+                                         base_image_id, source_format,
+                                         image_format, assembly_id,
+                                         run_cmd)
+
+        if 'deploy' in workflow and built_image:
+            self._do_deploy(ctxt, assembly_id, ports, built_image)
+
+    def build(self, ctxt, build_id, git_info, name, base_image_id,
+              source_format, image_format, assembly_id, run_cmd):
+        self._do_build(ctxt, build_id, git_info, name, base_image_id,
+                       source_format, image_format, assembly_id, run_cmd)
+
+    def unittest(self, ctxt, build_id, git_info, name, base_image_id,
+                 source_format, image_format, assembly_id, test_cmd):
+        self._do_unittest(ctxt, build_id, git_info, name, base_image_id,
+                          source_format, image_format, assembly_id, test_cmd)
+
+    def _do_deploy(self, ctxt, assembly_id, ports, built_image):
+        deployer_api.API(context=ctxt).deploy(assembly_id=assembly_id,
+                                              image_id=built_image,
+                                              ports=ports)
+
+    def _do_build(self, ctxt, build_id, git_info, name, base_image_id,
+                  source_format, image_format, assembly_id, run_cmd):
         update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.BUILDING)
 
         solum.TLS.trace.clear()
@@ -299,7 +326,6 @@ class Handler(object):
         try:
             user_env = self._get_environment(ctxt, source_uri,
                                              assembly_id=assembly_id,
-                                             test_cmd=test_cmd,
                                              run_cmd=run_cmd)
         except exception.SolumException as env_ex:
             LOG.exception(env_ex)
@@ -383,12 +409,10 @@ class Handler(object):
                                     created_image_id=created_image_id,
                                     assembly_id=assembly_id)
             update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.BUILT)
-            deployer_api.API(context=ctxt).deploy(assembly_id=assembly_id,
-                                                  image_id=created_image_id,
-                                                  ports=ports)
+            return created_image_id
 
-    def _run_unittest(self, ctxt, build_id, git_info, name, base_image_id,
-                      source_format, image_format, assembly_id, test_cmd):
+    def _do_unittest(self, ctxt, build_id, git_info, name, base_image_id,
+                     source_format, image_format, assembly_id, test_cmd):
         if test_cmd is None:
             LOG.debug("Unit test command is None; skipping unittests.")
             return 0
@@ -449,7 +473,10 @@ class Handler(object):
             upload_task_log(ctxt, logpath, assem, user_env['BUILD_ID'],
                             'unittest')
 
-        if returncode > 0:
+        if returncode == 0:
+            update_assembly_status(ctxt, assembly_id,
+                                   ASSEMBLY_STATES.UNIT_TESTING_PASSED)
+        elif returncode > 0:
             LOG.error("Unit tests failed. Return code is %r" % (returncode))
             update_assembly_status(ctxt, assembly_id,
                                    ASSEMBLY_STATES.UNIT_TESTING_FAILED)
@@ -460,11 +487,6 @@ class Handler(object):
         repo_utils.send_status(returncode, status_url, repo_token)
 
         return returncode
-
-    def unittest(self, ctxt, build_id, git_info, ports, name, base_image_id,
-                 source_format, image_format, assembly_id, test_cmd):
-        self._run_unittest(ctxt, build_id, git_info, name, base_image_id,
-                           source_format, image_format, assembly_id, test_cmd)
 
     def _get_private_key(self, source_creds, source_url):
         source_private_key = ''

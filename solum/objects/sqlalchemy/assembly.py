@@ -44,6 +44,7 @@ class Assembly(sql.Base, abstract.Assembly):
     status = sa.Column(sa.String(36))
     application_uri = sa.Column(sa.String(1024))
     username = sa.Column(sa.String(256))
+    workflow = sa.Column(sql.YAMLEncodedDict(1024))
 
     @classmethod
     def _raise_trigger_not_found(cls, item_id):
