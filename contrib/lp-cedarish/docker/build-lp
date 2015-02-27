@@ -76,8 +76,11 @@ if [ -d "$LP_DIR/build" ] ; then
     TLOG ===== tagging glace image $image_id
     glance --os-auth-token $OS_AUTH_TOKEN --os-image-api-version 2 image-tag-update $image_id 'solum::lp'
   elif [[ $IMAGE_STORAGE == "swift" ]]; then
-    PRUN silent swift --os-region-name $OS_REGION_NAME --os-auth-token $OS_AUTH_TOKEN --os-storage-url $OS_STORAGE_URL list
-    if [ $? != 0 ]; then
+
+    stat_status=`python $HERE/swift-handler.py $OS_REGION_NAME $OS_AUTH_TOKEN $OS_STORAGE_URL stat solum_lp '' ''`
+    echo "Swift_stat_status:$stat_status"
+
+    if [ "$stat_status" != "0" ]; then
       TLOG Cannot talk to Swift. Check your OpenStack credentials. && exit 1
     fi
 
@@ -85,7 +88,13 @@ if [ -d "$LP_DIR/build" ] ; then
     PRUN sudo docker build -t $LPNAME .
     TLOG ===== finished docker build
     sudo docker save --output $LP_FILE $LPNAME
-    swift --os-region-name $OS_REGION_NAME --os-auth-token $OS_AUTH_TOKEN --os-storage-url $OS_STORAGE_URL upload solum_lp $LP_FILE --object-name $LPNAME
+
+    upload_status=`python $HERE/swift-handler.py $OS_REGION_NAME $OS_AUTH_TOKEN $OS_STORAGE_URL upload solum_lp $LPNAME $LP_FILE`
+    echo "Upload_status:$upload_status"
+
+    if [ "$upload_status" != "0" ]; then
+      TLOG Swift upload failed. && exit 1
+    fi
 
     if [ $? != 0 ]; then
       TLOG Failed to upload languagepack to swift. && exit 1

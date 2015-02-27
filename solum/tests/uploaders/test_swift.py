@@ -63,6 +63,21 @@ class SwiftUploadTest(base.BaseTestCase):
         mock_conn.return_value = mock_swift
         container = "solum_du"
         name = "test_file"
+        swiftupload = self._get_connection_handle(container, name)
+        swiftupload.upload_image()
+        mock_swift.put_container.assert_called_once_with(container)
+        mock_swift.put_object.assert_called_once_with(container,
+                                                      name, fake_file)
+
+    @mock.patch('swiftclient.Connection')
+    def test_stat(self, mock_conn):
+        mock_swift = mock.MagicMock()
+        mock_conn.return_value = mock_swift
+        swift_client = self._get_connection_handle('', '')
+        swift_client.stat()
+        mock_swift.stat.assert_called_once()
+
+    def _get_connection_handle(self, container, name):
         client_args = {"region_name": "RegionOne",
                        "auth_token": "token123",
                        "storage_url": "http://storehere",
@@ -70,7 +85,4 @@ class SwiftUploadTest(base.BaseTestCase):
                        "name": name,
                        "path": "http://path123"}
         swiftupload = uploader.SwiftUpload(**client_args)
-        swiftupload.upload_image()
-        mock_swift.put_container.assert_called_once_with(container)
-        mock_swift.put_object.assert_called_once_with(container,
-                                                      name, fake_file)
+        return swiftupload

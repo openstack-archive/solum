@@ -70,3 +70,17 @@ class SwiftUpload(solum.uploaders.common.UploaderBase):
                 LOG.exception("Failed to upload %s to Swift." % self.name)
                 raise e
         LOG.debug("Upload complete.")
+
+    def stat(self):
+        try:
+            client_args = {
+                'auth_version': '2.0',
+                'preauthtoken': self.auth_token,
+                'preauthurl': self.storage_url,
+                'os_options': {'region_name': self.region_name},
+            }
+            swift = swiftclient.Connection(**client_args)
+            return swift.stat()
+        except swiftexceptions.ClientException as e:
+            LOG.exception("Failed to connect to Swift.")
+            raise e
