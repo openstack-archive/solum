@@ -60,6 +60,19 @@ SERVICE_OPTS = [
                help='Delete cached docker images and git repos from '
                'the worker node after building languagepacks and deployment '
                'units. Valid options are true or false.'),
+    cfg.StrOpt('region_name',
+               default="RegionOne",
+               help='Region name to use'),
+    cfg.StrOpt('temp_url_secret',
+               default="secret",
+               help='Secret to use with temp url'),
+    cfg.StrOpt('temp_url_protocol',
+               default="http",
+               help='Protocol to use with temp url. Options are '
+                    'http/https'),
+    cfg.StrOpt('temp_url_ttl',
+               default="604800",
+               help='TTL in seconds.'),
 ]
 
 opt_group = cfg.OptGroup(

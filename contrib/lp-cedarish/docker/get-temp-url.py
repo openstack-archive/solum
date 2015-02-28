@@ -19,6 +19,7 @@ import hmac
 import sys
 import time
 
+from oslo.config import cfg
 
 if len(sys.argv) < 7:
     print('python get-temp-url.py storage_host container'
@@ -35,7 +36,9 @@ ttl = sys.argv[6]
 method = 'GET'
 expires = int(time.time() + int(ttl))
 
-base = "https://"
+protocol = cfg.CONF.worker.temp_url_protocol
+
+base = protocol + "://"
 base += storage_host
 
 path = '/v1'

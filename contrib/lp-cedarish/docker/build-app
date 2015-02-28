@@ -35,6 +35,10 @@ OS_AUTH_TOKEN=${OS_AUTH_TOKEN:-null}
 OS_REGION_NAME=${OS_REGION_NAME:-null}
 OS_STORAGE_URL=${OS_STORAGE_URL:-null}
 
+TEMP_URL_SECRET=${TEMP_URL_SECRET:-null}
+TEMP_URL_PROTOCOL=${TEMP_URL_PROTOCOL:-null}
+TEMP_URL_TTL=${TEMP_URL_TTL:-null}
+
 # TLOG, PRUN, etc. defined in common/utils
 HERE=$(dirname $0)
 source $HERE/../../common/utils
@@ -245,12 +249,12 @@ elif [[ $IMAGE_STORAGE == "swift" ]]; then
   TLOG "ACCOUNT=$ACCOUNT"
   STORAGE_HOST=`echo $OS_STORAGE_URL | sed 's/\// /'g | awk '{print $2}'`
   TLOG "STORAGE_HOST=$STORAGE_HOST"
-  curl -i -X POST -H X-Auth-Token:$OS_AUTH_TOKEN -H X-Account-Meta-Temp-URL-Key:$SECRET https://$STORAGE_HOST/v1/$ACCOUNT
+  curl -i -X POST -H X-Auth-Token:$OS_AUTH_TOKEN -H X-Account-Meta-Temp-URL-Key:$TEMP_URL_SECRET $TEMP_URL_PROTOCOL://$STORAGE_HOST/v1/$ACCOUNT
   CWD=`pwd`
   TLOG "CWD:$CWD"
   TLOG "HERE:$HERE"
 
-  TEMP_URL=`python $HERE/get-temp-url.py $STORAGE_HOST solum_du $APP $ACCOUNT $SECRET $TTL`
+  TEMP_URL=`python $HERE/get-temp-url.py $STORAGE_HOST solum_du $APP $ACCOUNT $TEMP_URL_SECRET $TEMP_URL_TTL`
   TLOG "TEMP_URL:$TEMP_URL"
 
   image_id=$TEMP_URL
