@@ -261,7 +261,9 @@ class HandlerTest(base.BaseTestCase):
         handler = heat_handler.Handler()
 
         handler._find_id_if_stack_exists = mock.MagicMock(return_value='42')
-        handler._get_stack_id_from_heat = mock.MagicMock(return_value=None)
+        handler._get_stack_name = mock.MagicMock(return_value=fake_assem.name)
+        handler._get_stack_status = (mock.MagicMock(
+                                     return_value="DELETE_COMPLETE"))
 
         cfg.CONF.deployer.max_attempts = 1
         cfg.CONF.deployer.wait_interval = 0
@@ -269,7 +271,8 @@ class HandlerTest(base.BaseTestCase):
 
         handler.destroy(self.ctx, fake_assem.id)
 
-        mock_client.heat.stacks.delete.assert_called_once()
+        stacks = mock_client.return_value.heat.return_value.stacks
+        stacks.delete.assert_called_once_with('42')
         fake_assem.destroy.assert_called_once()
 
     @mock.patch('solum.conductor.api.API.update_assembly')
@@ -282,15 +285,22 @@ class HandlerTest(base.BaseTestCase):
         handler = heat_handler.Handler()
         handler._find_id_if_stack_exists = mock.MagicMock(return_value='42')
 
+        handler._get_stack_name = mock.MagicMock(return_value=fake_assem.name)
+        handler._get_stack_status = (mock.MagicMock(
+                                     return_value="DELETE_INCOMPLETE"))
+
         cfg.CONF.deployer.max_attempts = 1
         cfg.CONF.deployer.wait_interval = 0
         cfg.CONF.deployer.growth_factor = 1.2
 
         handler.destroy(self.ctx, fake_assem.id)
 
-        mock_client.heat.stacks.delete.assert_called_once()
+        stacks = mock_client.return_value.heat.return_value.stacks
+        stacks.delete.assert_called_once_with('42')
+
         mock_cond.assert_called_once_with(
             fake_assem.id, {'status': STATES.ERROR_STACK_DELETE_FAILED})
+        assert not fake_assem.destroy.called
 
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.common.clients.OpenStackClients')
