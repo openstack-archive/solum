@@ -20,8 +20,8 @@ import os
 import time
 
 from tempest import auth
-from tempest import clients
 from tempest import config
+from tempest import manager
 from tempest_lib.common import http
 from tempest_lib.common import rest_client
 import testtools
@@ -172,8 +172,7 @@ class TestCase(testtools.TestCase):
 
         credentials = SolumCredentials()
 
-        mgr = clients.Manager()
-        auth_provider = mgr.get_auth_provider(credentials)
+        auth_provider = manager.get_auth_provider(credentials)
         self.client = SolumClient(auth_provider)
         self.builderclient = SolumClient(auth_provider, 'image_builder')
 
