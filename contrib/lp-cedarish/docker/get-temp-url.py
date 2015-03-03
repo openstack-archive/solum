@@ -36,6 +36,7 @@ ttl = sys.argv[6]
 method = 'GET'
 expires = int(time.time() + int(ttl))
 
+cfg.CONF.import_opt('temp_url_protocol', 'solum.worker.config', group='worker')
 protocol = cfg.CONF.worker.temp_url_protocol
 
 base = protocol + "://"
