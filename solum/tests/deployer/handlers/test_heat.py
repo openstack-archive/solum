@@ -230,6 +230,24 @@ class HandlerTest(base.BaseTestCase):
                                         {'status':
                                          STATES.ERROR_STACK_CREATE_FAILED})
 
+    @mock.patch('solum.conductor.api.API.update_assembly')
+    @mock.patch('solum.common.clients.OpenStackClients')
+    def test_check_stack_status(self, mock_clients, mock_ua):
+        handler = heat_handler.Handler()
+        fake_assembly = fakes.FakeAssembly()
+
+        mock_clients.heat().stacks.get.side_effect = Exception()
+
+        cfg.CONF.set_override('wait_interval', 1, group='deployer')
+        cfg.CONF.set_override('growth_factor', 1, group='deployer')
+        cfg.CONF.set_override('max_attempts', 1, group='deployer')
+
+        handler._check_stack_status(self.ctx, fake_assembly.id, mock_clients,
+                                    'fake_id', [80])
+        mock_ua.assert_called_once_with(fake_assembly.id,
+                                        {'status':
+                                         STATES.ERROR_STACK_CREATE_FAILED})
+
     def test_parse_server_url(self):
         handler = heat_handler.Handler()
         heat_output = mock.MagicMock()

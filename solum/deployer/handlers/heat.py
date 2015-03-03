@@ -174,10 +174,17 @@ class Handler(object):
             return
 
         if stack_id is not None:
-            osc.heat().stacks.update(stack_id,
-                                     stack_name=stack_name,
-                                     template=template,
-                                     parameters=parameters)
+            try:
+                osc.heat().stacks.update(stack_id,
+                                         stack_name=stack_name,
+                                         template=template,
+                                         parameters=parameters)
+            except Exception as e:
+                LOG.error("Error updating Heat Stack for,"
+                          " assembly %s" % assembly_id)
+                LOG.exception(e)
+                update_assembly(ctxt, assembly_id, {'status': STATES.ERROR})
+                return
         else:
             try:
                 created_stack = osc.heat().stacks.create(stack_name=stack_name,
@@ -214,8 +221,16 @@ class Handler(object):
         wait_interval = cfg.CONF.deployer.wait_interval
         growth_factor = cfg.CONF.deployer.growth_factor
 
+        stack = None
+
         for count in range(cfg.CONF.deployer.max_attempts):
-            stack = osc.heat().stacks.get(stack_id)
+            time.sleep(wait_interval)
+            wait_interval *= growth_factor
+            try:
+                stack = osc.heat().stacks.get(stack_id)
+            except Exception as e:
+                LOG.exception(e)
+                continue
 
             if stack.status == 'COMPLETE':
                 break
@@ -223,10 +238,8 @@ class Handler(object):
                 update_assembly(ctxt, assembly_id,
                                 {'status': STATES.ERROR_STACK_CREATE_FAILED})
                 return
-            time.sleep(wait_interval)
-            wait_interval *= growth_factor
 
-        if stack.status == "":
+        if stack is None or (stack and stack.status == ""):
             update_assembly(ctxt, assembly_id,
                             {'status': STATES.ERROR_STACK_CREATE_FAILED})
             return
