@@ -14,9 +14,9 @@
 
 # How many seconds to wait for the API to be responding before giving up
 API_RESPONDING_TIMEOUT=20
-SERVICES=("solum-api" "solum-builder-api" "solum-worker" "solum-conductor" "solum-deployer")
+SERVICES=("solum-api" "solum-worker" "solum-conductor" "solum-deployer")
 SOLUM_CONFIG="/etc/solum/solum.conf"
-declare -A CONFIG_SECTIONS=(["api"]=9777 ["builder"]=9778)
+declare -A CONFIG_SECTIONS=(["api"]=9777)
 
 function check_api {
     local host=$1
