@@ -29,7 +29,22 @@ sample_data = {"version": "1",
                        "private": False,
                    },
                    "language_pack": "auto",
+                   "ports": 123
                }]}
+
+bad_data = {"version": "1",
+            "name": "test_plan",
+            "description": "A test to create plan",
+            "artifacts": [{
+                "name": "No deus",
+                "artifact_type": "heroku",
+                "content": {
+                    "href": "https://example.com/git/a.git",
+                    "private": False,
+                },
+                "language_pack": "auto",
+                "ports": -1
+            }]}
 
 sample_data_private = {"version": "1",
                        "name": "test_plan",
@@ -83,6 +98,12 @@ class TestPlanController(base.TestCase):
         resp = self.client.create_plan(data=sample_data)
         self.assertEqual(resp.status, 201)
         self._assert_output_expected(resp.data, sample_data)
+
+    def test_plans_create_bad_port_data(self):
+        try:
+            self.client.create_plan(data=bad_data)
+        except tempest_exceptions.BadRequest:
+            self.assertTrue(True)
 
     def test_plans_create_with_private_github_repo(self):
         resp = self.client.create_plan(data=sample_data_private)

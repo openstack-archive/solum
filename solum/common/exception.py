@@ -108,10 +108,8 @@ def wrap_controller_exception(func, func_server_error, func_client_error):
         try:
             return func(*args, **kw)
         except Exception as excp:
-            if isinstance(excp, SolumException):
-                http_error_code = excp.code
-            else:
-                http_error_code = 500
+            LOG.error(excp)
+            http_error_code = excp.code
 
             if http_error_code >= 500:
                 # log the error message with its associated
@@ -122,7 +120,6 @@ def wrap_controller_exception(func, func_server_error, func_client_error):
                 func_server_error(log_correlation_id, http_error_code)
             else:
                 # raise a client error the original message
-                LOG.debug(excp)
                 func_client_error(excp, http_error_code)
     return wrapped
 

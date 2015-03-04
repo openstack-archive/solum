@@ -109,7 +109,9 @@ class ExceptionTestCase(base.BaseTestCase):
         exception.LOG.error = mock.Mock()
 
         def error_func():
-            raise ValueError('Hey!')
+            value_error = ValueError('Hey!')
+            value_error.code = 500
+            raise value_error
 
         correlation_id = None
         try:
