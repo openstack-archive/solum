@@ -19,11 +19,9 @@ import hmac
 import sys
 import time
 
-from oslo.config import cfg
-
-if len(sys.argv) < 7:
+if len(sys.argv) < 8:
     print('USAGE: python get-temp-url.py storage_host container'
-          ' app_name account secret ttl')
+          ' app_name account secret ttl protocol')
     sys.exit(1)
 
 storage_host = sys.argv[1]
@@ -32,12 +30,10 @@ app_name = sys.argv[3]
 account = sys.argv[4]
 secret = sys.argv[5]
 ttl = sys.argv[6]
+protocol = sys.argv[7]
 
 method = 'GET'
 expires = int(time.time() + int(ttl))
-
-cfg.CONF.import_opt('temp_url_protocol', 'solum.worker.config', group='worker')
-protocol = cfg.CONF.worker.temp_url_protocol
 
 base = protocol + "://"
 base += storage_host

@@ -254,7 +254,7 @@ elif [[ $IMAGE_STORAGE == "swift" ]]; then
   TLOG "CWD:$CWD"
   TLOG "HERE:$HERE"
 
-  TEMP_URL=`python $HERE/get-temp-url.py $STORAGE_HOST solum_du $APP $ACCOUNT $TEMP_URL_SECRET $TEMP_URL_TTL`
+  TEMP_URL=`python $HERE/get-temp-url.py $STORAGE_HOST solum_du $APP $ACCOUNT $TEMP_URL_SECRET $TEMP_URL_TTL $TEMP_URL_PROTOCOL`
   TLOG "TEMP_URL:$TEMP_URL"
 
   image_id=$TEMP_URL
