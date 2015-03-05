@@ -95,25 +95,25 @@ class Handler(object):
 
         if stack_id is not None:
             osc = clients.OpenStackClients(ctxt)
-            osc.heat().stacks.delete(stack_id)
+
+            try:
+                osc.heat().stacks.delete(stack_id)
+            except Exception as e:
+                LOG.exception(e)
 
             wait_interval = cfg.CONF.deployer.wait_interval
             growth_factor = cfg.CONF.deployer.growth_factor
-            stack_name = self._get_stack_name(assem)
             for count in range(cfg.CONF.deployer.max_attempts):
-                stack_id = self._get_stack_id_from_heat(osc, stack_name)
-                if stack_id is None:
-                    break
+                stack_status = self._get_stack_status(osc, stack_id)
+                if stack_status == "DELETE_COMPLETE":
+                    assem.destroy(ctxt)
+                    return
                 time.sleep(wait_interval)
                 wait_interval *= growth_factor
-
-        if stack_id is None:
-            assem.destroy(ctxt)
-            return
-
-        if stack_id is not None:
             update_assembly(ctxt, assem_id,
                             {'status': STATES.ERROR_STACK_DELETE_FAILED})
+        else:
+            assem.destroy(ctxt)
 
     def deploy(self, ctxt, assembly_id, image_id, ports):
         osc = clients.OpenStackClients(ctxt)
@@ -284,11 +284,11 @@ class Handler(object):
             return assem.heat_stack_component.heat_stack_id
         return None
 
-    def _get_stack_id_from_heat(self, osc, stack_name):
+    def _get_stack_status(self, osc, stack_id):
         try:
-            stack = osc.heat().stacks.get(stack_name)
+            stack = osc.heat().stacks.get(stack_id)
             if stack is not None:
-                return stack.identifier.split('/')[-1]
+                return stack.stack_status
         except exc.HTTPNotFound:
             return None
 
