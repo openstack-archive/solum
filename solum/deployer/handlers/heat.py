@@ -93,27 +93,37 @@ class Handler(object):
         assem = objects.registry.Assembly.get_by_id(ctxt, assem_id)
         stack_id = self._find_id_if_stack_exists(assem)
 
-        if stack_id is not None:
+        if stack_id is None:
+            assem.destroy(ctxt)
+            return
+        else:
             osc = clients.OpenStackClients(ctxt)
-
             try:
                 osc.heat().stacks.delete(stack_id)
+            except exc.HTTPNotFound:
+                # stack already deleted
+                assem.destroy(ctxt)
+                return
             except Exception as e:
                 LOG.exception(e)
+                update_assembly(ctxt, assem_id,
+                                {'status': STATES.ERROR_STACK_DELETE_FAILED})
+                return
 
             wait_interval = cfg.CONF.deployer.wait_interval
             growth_factor = cfg.CONF.deployer.growth_factor
+            stack_name = self._get_stack_name(assem)
             for count in range(cfg.CONF.deployer.max_attempts):
-                stack_status = self._get_stack_status(osc, stack_id)
-                if stack_status == "DELETE_COMPLETE":
+                try:
+                    # Must use stack_name for expecting a 404
+                    osc.heat().stacks.get(stack_name)
+                except exc.HTTPNotFound:
                     assem.destroy(ctxt)
                     return
                 time.sleep(wait_interval)
                 wait_interval *= growth_factor
             update_assembly(ctxt, assem_id,
                             {'status': STATES.ERROR_STACK_DELETE_FAILED})
-        else:
-            assem.destroy(ctxt)
 
     def deploy(self, ctxt, assembly_id, image_id, ports):
         osc = clients.OpenStackClients(ctxt)
@@ -296,14 +306,6 @@ class Handler(object):
         if assem.heat_stack_component is not None:
             return assem.heat_stack_component.heat_stack_id
         return None
-
-    def _get_stack_status(self, osc, stack_id):
-        try:
-            stack = osc.heat().stacks.get(stack_id)
-            if stack is not None:
-                return stack.stack_status
-        except exc.HTTPNotFound:
-            return None
 
     def _get_template_for_docker_reg(self, assem, template, ports):
         du_name = '/'.join([cfg.CONF.worker.docker_reg_endpoint,
