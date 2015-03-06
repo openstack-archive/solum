@@ -124,7 +124,7 @@ class HandlerTest(base.BaseTestCase):
                                            stdout=-1)
         expected = [mock.call(5, 'BUILDING', 'Starting the image build',
                               None, 44),
-                    mock.call(5, 'COMPLETE', 'built successfully',
+                    mock.call(5, 'READY', 'built successfully',
                               fake_glance_id, 44)]
 
         self.assertEqual(expected, mock_b_update.call_args_list)
@@ -178,7 +178,7 @@ class HandlerTest(base.BaseTestCase):
                                            stdout=-1)
         expected = [mock.call(5, 'BUILDING', 'Starting the image build',
                               None, 44),
-                    mock.call(5, 'COMPLETE', 'built successfully',
+                    mock.call(5, 'READY', 'built successfully',
                               image_id, 44)]
 
         self.assertEqual(expected, mock_b_update.call_args_list)
@@ -230,7 +230,7 @@ class HandlerTest(base.BaseTestCase):
                                            env=test_env, stdout=-1)
         expected = [mock.call(5, 'BUILDING', 'Starting the image build',
                               None, 44),
-                    mock.call(5, 'COMPLETE', 'built successfully',
+                    mock.call(5, 'READY', 'built successfully',
                               fake_glance_id, 44)]
 
         self.assertEqual(expected, mock_b_update.call_args_list)
@@ -294,7 +294,7 @@ class HandlerTest(base.BaseTestCase):
                                            env=test_env, stdout=-1)
         expected = [mock.call(5, 'BUILDING', 'Starting the image build',
                               None, 44),
-                    mock.call(5, 'COMPLETE', 'built successfully',
+                    mock.call(5, 'READY', 'built successfully',
                               fake_glance_id, 44)]
 
         self.assertEqual(expected, mock_b_update.call_args_list)
@@ -504,7 +504,7 @@ class HandlerTest(base.BaseTestCase):
 
         expected = [mock.call(5, 'BUILDING', 'Starting the image build',
                               None, 44),
-                    mock.call(5, 'COMPLETE', 'built successfully',
+                    mock.call(5, 'READY', 'built successfully',
                               fake_glance_id, 44)]
         self.assertEqual(expected, mock_b_update.call_args_list)
 
@@ -722,5 +722,5 @@ class TestLanguagePackBuildCommand(base.BaseTestCase):
                                            stdout=-1)
 
         expected = [mock.call(5, 'BUILDING', None),
-                    mock.call(5, 'COMPLETE', fake_glance_id)]
+                    mock.call(5, 'READY', fake_glance_id)]
         self.assertEqual(expected, mock_ui.call_args_list)

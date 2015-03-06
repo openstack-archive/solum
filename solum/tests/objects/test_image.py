@@ -69,9 +69,9 @@ class TestImage(base.BaseTestCase):
 class TestStates(base.BaseTestCase):
     def test_as_dict(self):
         self.assertEqual(objects.image.States.as_dict(),
-                         {'BUILDING': 'BUILDING', 'COMPLETE': 'COMPLETE',
+                         {'BUILDING': 'BUILDING', 'READY': 'READY',
                           'ERROR': 'ERROR', 'PENDING': 'PENDING'})
 
     def test_values(self):
         self.assertEqual(sorted(objects.image.States.values()),
-                         sorted(['BUILDING', 'COMPLETE', 'PENDING', 'ERROR']))
+                         sorted(['BUILDING', 'READY', 'PENDING', 'ERROR']))

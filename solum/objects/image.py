@@ -28,7 +28,7 @@ class States(object):
     PENDING = 'PENDING'
     BUILDING = 'BUILDING'
     ERROR = 'ERROR'
-    COMPLETE = 'COMPLETE'
+    READY = 'READY'
 
     @classmethod
     def as_dict(cls):

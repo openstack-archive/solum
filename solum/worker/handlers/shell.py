@@ -404,7 +404,7 @@ class Handler(object):
             update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.ERROR)
             return
         else:
-            job_update_notification(ctxt, build_id, IMAGE_STATES.COMPLETE,
+            job_update_notification(ctxt, build_id, IMAGE_STATES.READY,
                                     description='built successfully',
                                     created_image_id=created_image_id,
                                     assembly_id=assembly_id)
@@ -573,7 +573,7 @@ class Handler(object):
                         image_external_ref = line.split('=')[-1].strip()
                     break
             if image_external_ref is not None:
-                status = IMAGE_STATES.COMPLETE
+                status = IMAGE_STATES.READY
             else:
                 status = IMAGE_STATES.ERROR
         except OSError as subex:
