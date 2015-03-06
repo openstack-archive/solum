@@ -76,7 +76,7 @@ class Handler(object):
             LOG.exception(ex)
 
     def update_image(self, ctxt, image_id, status, external_ref=None):
-        to_update = {'state': status}
+        to_update = {'status': status}
         if external_ref:
             to_update['external_ref'] = external_ref
         try:

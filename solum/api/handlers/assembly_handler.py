@@ -151,7 +151,7 @@ class AssemblyHandler(handler.Handler):
         image.uuid = str(uuid.uuid4())
         image.user_id = self.context.user
         image.project_id = self.context.tenant
-        image.state = IMAGE_STATES.PENDING
+        image.status = IMAGE_STATES.PENDING
         image.create(self.context)
         test_cmd = artifact.get('unittest_cmd')
         run_cmd = artifact.get('run_cmd')

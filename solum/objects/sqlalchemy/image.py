@@ -43,7 +43,7 @@ class Image(sql.Base, abstract.Image):
     project_id = sa.Column(sa.String(36))
     user_id = sa.Column(sa.String(36))
     tags = sa.Column(sa.Text)
-    state = sa.Column(sa.String(12))
+    status = sa.Column(sa.String(12))
     base_image_id = sa.Column(sa.String(36))
     created_image_id = sa.Column(sa.String(36))
     image_format = sa.Column(sa.String(12))

@@ -104,7 +104,7 @@ class LanguagePack(api_types.Base):
     source_format = SOURCE_KIND
     """The source repository format."""
 
-    state = STATE_KIND
+    status = STATE_KIND
     """The state of the image. """
 
     base_image_id = wtypes.text
