@@ -27,6 +27,9 @@ from solum.api.handlers import plan_handler
 from solum.common import exception
 from solum.common import yamlutils
 from solum import objects
+from solum.openstack.common import log as logging
+
+LOG = logging.getLogger(__name__)
 
 
 def init_plan_v1(yml_input_plan):
@@ -49,6 +52,7 @@ def init_yml_plan_by_version():
     try:
         yml_input_plan = yamlutils.load(pecan.request.body)
     except ValueError as excp:
+        LOG.error("Invalid plan.")
         raise exception.BadRequest(reason='Plan is invalid. '
                                           + excp.message)
     return init_plan_by_version(yml_input_plan)
