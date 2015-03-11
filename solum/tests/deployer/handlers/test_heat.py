@@ -14,6 +14,7 @@
 
 import json
 
+from heatclient import exc
 import mock
 from oslo.config import cfg
 import yaml
@@ -279,9 +280,8 @@ class HandlerTest(base.BaseTestCase):
         handler = heat_handler.Handler()
 
         handler._find_id_if_stack_exists = mock.MagicMock(return_value='42')
-        handler._get_stack_name = mock.MagicMock(return_value=fake_assem.name)
-        handler._get_stack_status = (mock.MagicMock(
-                                     return_value="DELETE_COMPLETE"))
+        mock_heat = mock_client.return_value.heat.return_value
+        mock_heat.stacks.get.side_effect = exc.HTTPNotFound
 
         cfg.CONF.deployer.max_attempts = 1
         cfg.CONF.deployer.wait_interval = 0
@@ -289,8 +289,7 @@ class HandlerTest(base.BaseTestCase):
 
         handler.destroy_assembly(self.ctx, fake_assem.id)
 
-        stacks = mock_client.return_value.heat.return_value.stacks
-        stacks.delete.assert_called_once_with('42')
+        mock_client.heat.stacks.delete.assert_called_once()
         fake_assem.destroy.assert_called_once()
 
     @mock.patch('solum.conductor.api.API.update_assembly')
@@ -303,22 +302,15 @@ class HandlerTest(base.BaseTestCase):
         handler = heat_handler.Handler()
         handler._find_id_if_stack_exists = mock.MagicMock(return_value='42')
 
-        handler._get_stack_name = mock.MagicMock(return_value=fake_assem.name)
-        handler._get_stack_status = (mock.MagicMock(
-                                     return_value="DELETE_INCOMPLETE"))
-
         cfg.CONF.deployer.max_attempts = 1
         cfg.CONF.deployer.wait_interval = 0
         cfg.CONF.deployer.growth_factor = 1.2
 
         handler.destroy_assembly(self.ctx, fake_assem.id)
 
-        stacks = mock_client.return_value.heat.return_value.stacks
-        stacks.delete.assert_called_once_with('42')
-
+        mock_client.heat.stacks.delete.assert_called_once()
         mock_cond.assert_called_once_with(
             fake_assem.id, {'status': STATES.ERROR_STACK_DELETE_FAILED})
-        assert not fake_assem.destroy.called
 
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.common.clients.OpenStackClients')
