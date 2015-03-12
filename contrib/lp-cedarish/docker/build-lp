@@ -59,6 +59,7 @@ PRUN mkdir -p $TMP_LP_DIR
 
 TLOG ===== Cloning repo
 PRUN git clone $GIT $LP_DIR/build
+[[ $? != 0 ]] && TLOG Git clone failed. Check repo $GIT && exit 1
 
 if [ -d "$LP_DIR/build" ] ; then
   cd $LP_DIR/build
