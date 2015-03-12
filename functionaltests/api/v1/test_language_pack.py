@@ -60,7 +60,7 @@ class TestLanguagePackController(base.TestCase):
         resp, body = self.client.post('v1/language_packs', sample_json)
         self.assertEqual(resp.status, 201)
         json_data = json.loads(body)
-        self.assertEqual(json_data["status"], "PENDING")
+        self.assertEqual(json_data["status"], "QUEUED")
         self.assertEqual(json_data["name"], sample_lp['name'])
         self._delete_language_pack(json_data["uuid"])
 

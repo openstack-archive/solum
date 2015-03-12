@@ -59,7 +59,7 @@ class LanguagePackHandler(handler.Handler):
             db_obj.uuid = str(uuid.uuid4())
             db_obj.user_id = self.context.user
             db_obj.project_id = self.context.tenant
-            db_obj.status = image.States.PENDING
+            db_obj.status = image.States.QUEUED
             db_obj.artifact_type = 'language_pack'
             if lp_metadata:
                 db_obj.tags = []

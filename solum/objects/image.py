@@ -25,7 +25,7 @@ class ImageList(list, base.CrudListMixin):
 
 
 class States(object):
-    PENDING = 'PENDING'
+    QUEUED = 'QUEUED'
     BUILDING = 'BUILDING'
     ERROR = 'ERROR'
     READY = 'READY'
