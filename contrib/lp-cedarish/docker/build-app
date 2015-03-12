@@ -213,8 +213,9 @@ cd $APP_DIR
 if [[ $IMAGE_STORAGE == "glance" ]]; then
   PRUN sudo docker build -t $APP .
   [[ $? != 0 ]] && TLOG Docker build failed. && exit 1
-  sudo docker save "$APP" | glance image-create --container-format=docker --disk-format=raw --name "$APP" > /dev/null
-  image_id=$(app_glance_id $APP)
+  G_NAME=$(echo $APP | cut -c1-100)-$ASSEMBLY_ID
+  sudo docker save "$APP" | glance image-create --container-format=docker --disk-format=raw --name "$G_NAME" > /dev/null
+  image_id=$(app_glance_id $G_NAME)
   sudo docker rmi -f $APP
   TLOG ===== finished uploading DU to $IMAGE_STORAGE
 elif [[ $IMAGE_STORAGE == "docker_registry" ]]; then
@@ -238,7 +239,8 @@ elif [[ $IMAGE_STORAGE == "swift" ]]; then
   TTL=604800
 
   echo "APP_DIR:$APP_DIR"
-  upload_status=`python $HERE/swift-handler.py $OS_REGION_NAME $OS_AUTH_TOKEN $OS_STORAGE_URL upload solum_du $APP $APP_DU_FILE`
+  OBJ_NAME=$(echo $APP | cut -c1-100):$ASSEMBLY_ID
+  upload_status=`python $HERE/swift-handler.py $OS_REGION_NAME $OS_AUTH_TOKEN $OS_STORAGE_URL upload solum_du $OBJ_NAME $APP_DU_FILE`
   echo "Upload_status:$upload_status"
 
   if [ "$upload_status" != "0" ]; then
@@ -254,7 +256,7 @@ elif [[ $IMAGE_STORAGE == "swift" ]]; then
   TLOG "CWD:$CWD"
   TLOG "HERE:$HERE"
 
-  TEMP_URL=`python $HERE/get-temp-url.py $STORAGE_HOST solum_du $APP $ACCOUNT $TEMP_URL_SECRET $TEMP_URL_TTL $TEMP_URL_PROTOCOL`
+  TEMP_URL=`python $HERE/get-temp-url.py $STORAGE_HOST solum_du $OBJ_NAME $ACCOUNT $TEMP_URL_SECRET $TEMP_URL_TTL $TEMP_URL_PROTOCOL`
   TLOG "TEMP_URL:$TEMP_URL"
 
   image_id=$TEMP_URL
