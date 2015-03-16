@@ -63,7 +63,7 @@ PRUN git clone $GIT $LP_DIR/build
 
 if [ -d "$LP_DIR/build" ] ; then
   cd $LP_DIR/build
-  TLOG Uploading LP image to $IMAGE_STORAGE
+  TLOG Building LP
   if [[ $IMAGE_STORAGE == "glance" ]]; then
     PRUN silent glance --os-auth-token $OS_AUTH_TOKEN image-list
     if [ $? != 0 ]; then
