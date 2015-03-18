@@ -305,7 +305,7 @@ class Handler(object):
         if du_is_up:
             to_update = {'status': STATES.READY, 'application_uri': host_ip}
         else:
-            to_update = {'status': STATES.ERROR_DU_CREATION}
+            to_update = {'status': STATES.ERROR_CODE_DEPLOYMENT}
         update_assembly(ctxt, assembly_id, to_update)
 
     def _parse_server_url(self, heat_output):
