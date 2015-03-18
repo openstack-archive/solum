@@ -50,19 +50,16 @@ LPNAME=$1
 shift
 TENANT=$1
 
-BASE_DIR=/dev/shm
 GIT_CHECKSUM=$(echo $GIT | md5sum | awk '{print $1;}')
-LP_DIR=$BASE_DIR/apps/$TENANT/$GIT_CHECKSUM
 TMP_LP_DIR=/tmp/apps/$TENANT/$GIT_CHECKSUM
-PRUN mkdir -p $LP_DIR
 PRUN mkdir -p $TMP_LP_DIR
 
 TLOG ===== Cloning repo
-PRUN git clone $GIT $LP_DIR/build
+PRUN git clone $GIT $TMP_LP_DIR/build
 [[ $? != 0 ]] && TLOG Git clone failed. Check repo $GIT && exit 1
 
-if [ -d "$LP_DIR/build" ] ; then
-  cd $LP_DIR/build
+if [ -d "$TMP_LP_DIR/build" ] ; then
+  cd $TMP_LP_DIR/build
   TLOG Building LP
   if [[ $IMAGE_STORAGE == "glance" ]]; then
     PRUN silent glance --os-auth-token $OS_AUTH_TOKEN image-list
@@ -151,7 +148,7 @@ if [[ $DELETE_LOCAL_CACHE == "true" ]]; then
   # Delete the local image once we've uploaded the image.
   PRUN sudo docker rmi -f $LPNAME
   # Delete the cloned git repo
-  PRUN silent rm -rf $LP_DIR
+  PRUN silent rm -rf $TMP_LP_DIR
   if [[ -e $LP_FILE ]]; then
     PRUN silent rm -f $LP_FILE
   fi
