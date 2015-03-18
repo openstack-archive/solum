@@ -86,7 +86,8 @@ class HandlerTest(base.BaseTestCase):
         fake_assembly = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
         fake_template = self._get_fake_template()
-        img = "http://a.b.c/d?temp_url_sig=v&temp_url_expires=vAPP_NAME=d"
+        img = ("http://a.b.c/d?temp_url_sig=v&temp_url_expires=v"
+               "DOCKER_IMAGE_TAG=tenant-name-ts-commit")
         template = self._get_tmpl_for_swift(fake_assembly, fake_template, img)
         cfg.CONF.api.image_format = "vm"
         cfg.CONF.worker.image_storage = "swift"
@@ -356,7 +357,7 @@ class HandlerTest(base.BaseTestCase):
     def _get_tmpl_for_swift(self, assem, template, image_tar_location):
         template_bdy = yaml.safe_load(template)
 
-        image_loc_and_du_name = image_tar_location.split("APP_NAME=")
+        image_loc_and_du_name = image_tar_location.split("DOCKER_IMAGE_TAG=")
         image_tar_location = image_loc_and_du_name[0]
         du_name = image_loc_and_du_name[1]
 

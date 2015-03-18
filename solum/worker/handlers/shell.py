@@ -196,7 +196,7 @@ class Handler(object):
 
     def _get_build_command(self, ctxt, stage, source_uri, name,
                            base_image_id, source_format, image_format,
-                           commit_sha, artifact_type=None, lp_name=None):
+                           commit_sha, artifact_type=None, lp_image_tag=None):
 
         # map the input formats to script paths.
         # TODO(asalkeld) we need an "auto".
@@ -220,11 +220,11 @@ class Handler(object):
         if stage == 'unittest':
             build_app = os.path.join(build_app_path, 'unittest-app')
             return [build_app, source_uri, commit_sha, ctxt.tenant,
-                    base_image_id, lp_name]
+                    base_image_id, lp_image_tag]
         elif stage == 'build':
             build_app = os.path.join(build_app_path, 'build-app')
             return [build_app, source_uri, name, ctxt.tenant, base_image_id,
-                    lp_name]
+                    lp_image_tag]
 
     def _get_parameter_env(self, ctxt, source_uri, assembly_id, build_id):
         param_env = {}
@@ -319,19 +319,29 @@ class Handler(object):
 
         source_uri = git_info['source_url']
 
-        lp_name = ''
+        image_tag = ''
         lp_access = ''
         if base_image_id != 'auto':
             image = objects.registry.Image.get_lp_by_name_or_uuid(
                 ctxt, base_image_id, include_operators_lp=True)
-            base_image_id = image.external_ref
-            lp_name = image.name
+            if not image.external_ref:
+                LOG.warn("Error building due to language pack not ready."
+                         " assembly ID: %s" % assembly_id)
+                job_update_notification(ctxt, build_id, IMAGE_STATES.ERROR,
+                                        description='language pack not ready',
+                                        assembly_id=assembly_id)
+                update_assembly_status(ctxt, assembly_id,
+                                       ASSEMBLY_STATES.ERROR)
+                return
+            image_loc_and_tag = image.external_ref.split('DOCKER_IMAGE_TAG=')
+            base_image_id = image_loc_and_tag[0]
+            image_tag = image_loc_and_tag[1]
             lp_access = get_lp_access_method(image.project_id)
 
         build_cmd = self._get_build_command(ctxt, 'build', source_uri,
                                             name, base_image_id,
                                             source_format, image_format, '',
-                                            lp_name=lp_name)
+                                            lp_image_tag=image_tag)
         solum.TLS.trace.support_info(build_cmd=' '.join(build_cmd),
                                      assembly_id=assembly_id)
 
@@ -383,33 +393,23 @@ class Handler(object):
             upload_task_log(ctxt, logpath, assem, user_env['BUILD_ID'],
                             'build')
 
-        # we expect one line in the output that looks like:
-        # created_image_id=<id of the image>
-        # If image_storage is 'glance', this will be glance_id
-        # If image_storage is 'docker_registry', this will be URL:PORT/APP
-        # If image_storage is 'swift', this will be swift tempUrl for the DU
+        '''
+        we expect one line in the output that looks like:
+        created_image_id=<location of DU>DOCKER_IMAGE_TAG=<tag of DU>
+        The location is:
+        DU's swift tempUrl if backend is 'swift';
+        DU's UUID in glance if backend is 'glance';
+        DU's docker registry location if backend is 'docker_registry'
+        '''
         created_image_id = None
-
         for line in out.split('\n'):
-            if 'created_image_id' in line:
+            if line.startswith('created_image_id'):
+                # Won't break out until we get the final
+                # matching which is the expected value
                 solum.TLS.trace.support_info(build_out_line=line)
-                # (devkulkarni): When the image_storage is swift, the form
-                # of the tempUrl is like so:
-                # https://<>/<app-name>?temp_url_sig=val&temp_url_expires=val
-                # Because of the presence of the query string, we cannot use
-                # splitting on '=' like we do for others. Hence the special
-                # logic below.
-                if cfg.CONF.worker.image_storage == 'swift':
-                    img_id = line.replace("created_image_id=", '')
-                    # (devkulkarni): We need the APP_NAME in deployer
-                    # Appending it to the created_image_id for now (below).
-                    # TODO(devkulkarni): Store the APP_NAME in assembly
-                    # in deployer
-                    img_id += "APP_NAME=" + name
-                    created_image_id = img_id
-                else:
-                    created_image_id = line.split('=')[-1].strip()
+                created_image_id = line.replace("created_image_id=", '')
                 LOG.debug("created_image_id:%s" % created_image_id)
+
         if not created_image_id:
             job_update_notification(ctxt, build_id, IMAGE_STATES.ERROR,
                                     description='image not created',
@@ -437,20 +437,27 @@ class Handler(object):
         LOG.debug("Running unittests.")
         update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.UNIT_TESTING)
 
-        lp_name = ''
+        image_tag = ''
         lp_access = ''
         if base_image_id != 'auto':
             image = objects.registry.Image.get_lp_by_name_or_uuid(
                 ctxt, base_image_id, include_operators_lp=True)
-            base_image_id = image.external_ref
-            lp_name = image.name
+            if not image.external_ref:
+                LOG.warn("Error running unittest due to language pack"
+                         " not ready. assembly ID: %s" % assembly_id)
+                update_assembly_status(ctxt, assembly_id,
+                                       ASSEMBLY_STATES.ERROR)
+                return
+            image_loc_and_tag = image.external_ref.split('DOCKER_IMAGE_TAG=')
+            base_image_id = image_loc_and_tag[0]
+            image_tag = image_loc_and_tag[1]
             lp_access = get_lp_access_method(image.project_id)
 
         git_url = git_info['source_url']
         command = self._get_build_command(ctxt, 'unittest', git_url, name,
                                           base_image_id,
                                           source_format, image_format,
-                                          commit_sha, lp_name=lp_name)
+                                          commit_sha, lp_image_tag=image_tag)
 
         solum.TLS.trace.clear()
         solum.TLS.trace.import_context(ctxt)
@@ -579,19 +586,13 @@ class Handler(object):
 
             # we expect one line in the output that looks like:
             # image_external_ref=<external storage ref>
-
             for line in out.split('\n'):
-                if 'image_external_ref' in line:
+                if line.startswith('image_external_ref'):
+                    # Won't break out until we get the final
+                    # matching which is the expected value
                     solum.TLS.trace.support_info(build_lp_out_line=line)
-                    # When the image_storage is swift,
-                    # we cannot use splitting on '=' like we do for others.
-                    # Hence the special logic below.
-                    if cfg.CONF.worker.image_storage == 'swift':
-                        img_id = line.replace("image_external_ref=", '')
-                        image_external_ref = img_id
-                    else:
-                        image_external_ref = line.split('=')[-1].strip()
-                    break
+                    image_external_ref = line.replace("image_external_ref=",
+                                                      '')
             if image_external_ref is not None:
                 status = IMAGE_STATES.READY
             else:

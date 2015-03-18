@@ -49,7 +49,7 @@ TLOG ===== Starting Test Script $0 $*
 
 # Check command line arguments
 if [ $# -lt 5 ]; then
-  TLOG Usage: $0 git_url commit_sha tenant img_external_ref lp_name
+  TLOG Usage: $0 git_url commit_sha tenant img_external_ref lp_img_tag
   exit 1
 fi
 
@@ -64,10 +64,23 @@ TENANT=$1
 shift
 IMG_EXTERNAL_REF=$1
 shift
-LP_NAME=$1
+LP_IMG_TAG=$1
+
+if ! (test_public_repo $GIT); then
+    TLOG Could not reach $GIT with curl. Failing.
+    exit 1
+fi
 
 TLOG "Executing test command $ENTRYPOINT"
 
+BASE_DIR=/dev/shm
+RANDOM_NAME=$(mktemp -u XXXXXXXXXXXXXXXXXXXXXXX | tr '[:upper:]' '[:lower:]' | head -n 1)
+APP_DIR=$BASE_DIR/solum/$RANDOM_NAME
+TMP_DIR=/tmp/solum/$RANDOM_NAME
+rm -rf $APP_DIR
+rm -rf $TMP_DIR
+PRUN mkdir -p $APP_DIR
+PRUN mkdir -p $TMP_DIR
 
 # Set base docker image to solum/slugtester for the 'auto' option
 BASE_IMG="solum/slugtester"
@@ -76,29 +89,38 @@ BASE_IMG="solum/slugtester"
 if [[ $IMG_EXTERNAL_REF != "auto" ]]; then
   TLOG downloading LP image from $IMAGE_STORAGE
   if [[ $IMAGE_STORAGE == "glance" ]]; then
-    glance image-download --file $LP_NAME $IMG_EXTERNAL_REF
+    OUTPUT="$TMP_DIR/$LP_IMG_TAG"
+    glance image-download --file $OUTPUT $IMG_EXTERNAL_REF
     if [ $? != 0 ]; then
       TLOG Failed to download image $IMG_EXTERNAL_REF from glance. && exit 1
     fi
-    sudo docker load -i $LP_NAME
-    BASE_IMG=${LP_NAME%%.tar}
-  elif [[ $IMAGE_STORAGE == "swift" ]]; then
-    if [[ $LP_ACCESS == "custom" ]]; then
-      swift --os-auth-token $OS_AUTH_TOKEN download solum_lp $IMG_EXTERNAL_REF --output $LP_NAME
-    elif [[ $LP_ACCESS == "operator" ]]; then
-      wget -q "$IMG_EXTERNAL_REF" --output-document=$LP_NAME
-    fi
 
+    sudo docker load -i $OUTPUT
+    rm -f $OUTPUT
+
+    BASE_IMG=$LP_IMG_TAG
+  elif [[ $IMAGE_STORAGE == "swift" ]]; then
+    OUTPUT="$TMP_DIR/$LP_IMG_TAG"
+
+    if [[ $LP_ACCESS == "custom" ]]; then
+      swift --os-auth-token $OS_AUTH_TOKEN --os-storage-url $OS_STORAGE_URL download solum_lp $IMG_EXTERNAL_REF --output $OUTPUT
+    elif [[ $LP_ACCESS == "operator" ]]; then
+      wget -q "$IMG_EXTERNAL_REF" --output-document=$OUTPUT
+    fi
     if [ $? != 0 ]; then
       TLOG Failed to download image $IMG_EXTERNAL_REF from swift. && exit 1
     fi
-    sudo docker load -i $LP_NAME
-    BASE_IMG=${LP_NAME%%.tar}
+
+    sudo docker load -i $OUTPUT
+    rm -f $OUTPUT
+
+    BASE_IMG=$LP_IMG_TAG
   elif [[ $IMAGE_STORAGE == "docker_registry" ]]; then
     sudo docker pull $IMG_EXTERNAL_REF
     if [ $? != 0 ]; then
       TLOG Failed to download image $IMG_EXTERNAL_REF from docker registry. && exit 1
     fi
+
     BASE_IMG=$IMG_EXTERNAL_REF
   else
     TLOG Unsupported Image storage backend - $IMAGE_STORAGE
@@ -106,27 +128,18 @@ if [[ $IMG_EXTERNAL_REF != "auto" ]]; then
   fi
 fi
 
-
-BASE_DIR=/dev/shm
-DIR_NAME=$(mktemp -u XXXXXXXXXXXXXXXXXXXXXXX | tr '[:upper:]' '[:lower:]' | head -n 1)
-
-APP_DIR=$BASE_DIR/solum/$DIR_NAME
-rm -rf $APP_DIR
-PRUN mkdir -p $APP_DIR
-
 add_ssh_creds "$GIT_PRIVATE_KEY" "$APP_DIR"
-
-if ! (test_public_repo $GIT); then
-    TLOG Could not reach $GIT with curl. Failing.
-    exit 1
-fi
 
 if [[ $COMMIT_SHA ]]; then
   git_clone_with_retry $GIT $APP_DIR/code
+  [[ $? != 0 ]] && TLOG Git clone failed. Check repo $GIT && rm -rf $APP_DIR && exit 1
+
   cd $APP_DIR/code
   PRUN git checkout -B solum_testing $COMMIT_SHA
 else
   git_clone_with_retry $GIT $APP_DIR/code --single-branch
+  [[ $? != 0 ]] && TLOG Git clone failed. Check repo $GIT && rm -rf $APP_DIR && exit 1
+
   cd $APP_DIR/code
 fi
 
@@ -144,7 +157,6 @@ if [[ $SOLUM_PARAMS != null ]]; then
   cp $SOLUM_PARAMS $APP_DIR/code/solum_params.$EXT
 fi
 
-COMMIT_ID=$(git log -1 --pretty=%H)
 echo "$GIT_PRIVATE_KEY" > $APP_DIR/code/id_rsa
 # Test the application code
 TLOG "===>" Testing App
@@ -154,7 +166,7 @@ if [[ $USE_DRONE != null && $(which drone) ]]; then
   if [[ ! -e $APP_DIR/code/.drone.yml ]]; then
     TLOG "===>" Creating .drone.yml
     cat << EOF > $APP_DIR/code/.drone.yml
-image: solum/slugtester
+image: $BASE_IMG
 script:
 - $DRONE_ENTRYPOINT
 EOF
@@ -175,7 +187,7 @@ RUN ${DOCKER_ENTRYPOINT}
 EOF
 
   cd $APP_DIR
-  sudo docker build --rm -t $DIR_NAME . 2>&1 > >(while read LINE; do TLOG $LINE; done)
+  sudo docker build --force-rm=true -t $RANDOM_NAME . 2>&1 > >(while read LINE; do TLOG $LINE; done)
 fi
 
 SUCCESS=$?
@@ -191,12 +203,16 @@ fi
 
 if [[ $DELETE_LOCAL_CACHE == "true" ]]; then
   # Delete local languagepack image after building the DU for testing
-  sudo docker rmi -f $BASE_IMG
+  if [[ $BASE_IMG != "solum/slugtester" ]]; then
+    sudo docker rmi -f $BASE_IMG
+  fi
+
   # Delete local DU image after running user tests
-  sudo docker rmi $DIR_NAME
+  sudo docker rmi -f $RANDOM_NAME
+
   # Delete the cloned git repo
-  cd /tmp
   PRUN silent rm -rf $APP_DIR
+  PRUN silent rm -rf $TMP_DIR
 fi
 
 

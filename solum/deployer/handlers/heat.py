@@ -179,7 +179,7 @@ class Handler(object):
         if cfg.CONF.api.image_format == 'vm':
             if cfg.CONF.worker.image_storage == 'docker_registry':
                 template = self._get_template_for_docker_reg(assem, template,
-                                                             ports)
+                                                             image_id, ports)
                 LOG.debug(template)
             elif cfg.CONF.worker.image_storage == 'swift':
                 template = self._get_template_for_swift(assem, template,
@@ -319,9 +319,9 @@ class Handler(object):
             return assem.heat_stack_component.heat_stack_id
         return None
 
-    def _get_template_for_docker_reg(self, assem, template, ports):
-        du_name = '/'.join([cfg.CONF.worker.docker_reg_endpoint,
-                            str(assem.uuid)])
+    def _get_template_for_docker_reg(self, assem, template,
+                                     origin_image_tar_location, ports):
+        du_name = origin_image_tar_location.split('DOCKER_IMAGE_TAG=')[0]
         ports_str = ''
         for port in ports:
             ports_str += ' -p {pt}:{pt}'.format(pt=port)
@@ -347,7 +347,8 @@ class Handler(object):
         LOG.debug("Image tar location and name:%s" % origin_image_tar_location)
 
         # TODO(devkulkarni): extract du_name from assembly
-        image_loc_and_du_name = origin_image_tar_location.split("APP_NAME=")
+        image_loc_and_du_name = origin_image_tar_location.split(
+            'DOCKER_IMAGE_TAG=')
         image_tar_location = image_loc_and_du_name[0]
         du_name = image_loc_and_du_name[1]
 

@@ -167,8 +167,9 @@ function git_clone_with_retry () {
   RETRIES=0
   until [ $RETRIES -ge 5 ]; do
     rm -rf $DESTINATION
-    PRUN git clone $SINGLEBRANCH $GIT_REPO $DESTINATION && break
+    PRUN git clone $SINGLEBRANCH $GIT_REPO $DESTINATION && return 0
     RETRIES=$[$RETRIES+1]
     sleep 5
   done
+  return 1
 }

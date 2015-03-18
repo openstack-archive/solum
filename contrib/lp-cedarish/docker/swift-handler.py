@@ -31,13 +31,14 @@ app = sys.argv[6]
 path = sys.argv[7]
 
 
+upload_args = {'region_name': str(region_name),
+               'auth_token': str(auth_token),
+               'storage_url': str(storage_url),
+               'container': str(container),
+               'name': str(app),
+               'path': str(path)}
+
 if action_to_take == 'upload':
-    upload_args = {'region_name': str(region_name),
-                   'auth_token': str(auth_token),
-                   'storage_url': str(storage_url),
-                   'container': str(container),
-                   'name': str(app),
-                   'path': str(path)}
     try:
         LOG.debug("Calling swift uploader")
         solum.uploaders.swift.SwiftUpload(**upload_args).upload_image()

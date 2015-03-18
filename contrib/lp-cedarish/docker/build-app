@@ -61,7 +61,7 @@ fi
 
 # Check command line arguments
 if [ $# -lt 5 ]; then
-  TLOG Usage: $0 git_url appname project_id img_external_ref lp_name
+  TLOG Usage: $0 git_url appname project_id img_external_ref lp_img_tag
   exit 1
 fi
 
@@ -77,8 +77,12 @@ TENANT=$1
 shift
 IMG_EXTERNAL_REF=$1
 shift
-LP_NAME=$1
+LP_IMG_TAG=$1
 
+if ! (test_public_repo $GIT); then
+    TLOG Could not reach $GIT with curl. Failing.
+    exit 1
+fi
 
 BASE_DIR=/dev/shm
 GIT_CHECKSUM=$(git ls-remote $GIT | head -1 | awk '{print $1}')
@@ -87,11 +91,6 @@ TMP_APP_DIR=/tmp/apps/$TENANT/$GIT_CHECKSUM
 PRUN silent mkdir -p $APP_DIR
 PRUN silent mkdir -p $TMP_APP_DIR
 add_ssh_creds "$GIT_PRIVATE_KEY" "$APP_DIR"
-
-if ! (test_public_repo $GIT); then
-    TLOG Could not reach $GIT with curl. Failing.
-    exit 1
-fi
 
 if [ -d "$APP_DIR/build" ] ; then
   cd $APP_DIR/build
@@ -113,13 +112,15 @@ if [ -d "$APP_DIR/build" ] ; then
   fi
 else
   git_clone_with_retry $GIT $APP_DIR/build
+  [[ $? != 0 ]] && TLOG Git clone failed. Check repo $GIT && rm -rf $APP_DIR && exit 1
 fi
+
+cd $APP_DIR/build
+COMMIT_ID=$(git log -1 --pretty=%H)
 
 # If languagepack is 'auto', build the application slug
 if [[ $IMG_EXTERNAL_REF == "auto" ]]; then
   TLOG "===>" Building App
-  cd $APP_DIR/build
-  COMMIT_ID=$(git log -1 --pretty=%H)
   BUILD_ID=$(git archive master | sudo docker run -i -a stdin \
              -v /opt/solum/cache:/tmp/cache:rw  \
              -v /opt/solum/buildpacks:/tmp/buildpacks:rw  \
@@ -135,39 +136,46 @@ if [[ $IMG_EXTERNAL_REF == "auto" ]]; then
   fi
   PRUN sudo docker rm $BUILD_ID
 else
-  # download base image (languagepack) if it is not 'Auto'
+  # download base image (languagepack) if it is not 'auto'
   TLOG downloading LP image from $IMAGE_STORAGE
   if [[ $IMAGE_STORAGE == "glance" ]]; then
+    OUTPUT="$TMP_APP_DIR/$LP_IMG_TAG"
     PRUN silent glance image-list
     if [ $? != 0 ]; then
       TLOG Cannot talk to Glance. Check your OpenStack credentials. && exit 1
     fi
-    glance image-download --file $LP_NAME $IMG_EXTERNAL_REF
+
+    glance image-download --file $OUTPUT $IMG_EXTERNAL_REF
     if [ $? != 0 ]; then
       TLOG Failed to download image $IMG_EXTERNAL_REF from glance. && exit 1
     fi
-    sudo docker load -i $LP_NAME
-    sudo rm $LP_NAME
-    BASE_IMG=$LP_NAME
-  elif [[ $IMAGE_STORAGE == "swift" ]]; then
-    LP_FILE=$TMP_APP_DIR/$LP_NAME
 
+    sudo docker load -i $OUTPUT
+
+    BASE_IMG=$LP_IMG_TAG
+    sudo rm -f $OUTPUT
+  elif [[ $IMAGE_STORAGE == "swift" ]]; then
+    OUTPUT="$TMP_APP_DIR/$LP_IMG_TAG"
     if [[ $LP_ACCESS == "custom" ]]; then
-      swift --os-auth-token $OS_AUTH_TOKEN download solum_lp $IMG_EXTERNAL_REF --output $LP_FILE
+      swift --os-auth-token $OS_AUTH_TOKEN --os-storage-url $OS_STORAGE_URL download solum_lp $IMG_EXTERNAL_REF --output $OUTPUT
     elif [[ $LP_ACCESS == "operator" ]]; then
-      wget -q "$IMG_EXTERNAL_REF" --output-document=$LP_FILE
+      wget -q "$IMG_EXTERNAL_REF" --output-document=$OUTPUT
     fi
 
     if [ $? != 0 ]; then
       TLOG Failed to download image $IMG_EXTERNAL_REF from swift. && exit 1
     fi
-    sudo docker load -i $LP_FILE
-    BASE_IMG=$LP_NAME
+
+    sudo docker load -i $OUTPUT
+
+    BASE_IMG=$LP_IMG_TAG
+    sudo rm -f $OUTPUT
   elif [[ $IMAGE_STORAGE == "docker_registry" ]]; then
     sudo docker pull $IMG_EXTERNAL_REF
     if [ $? != 0 ]; then
       TLOG Failed to download image $IMG_EXTERNAL_REF from docker registry. && exit 1
     fi
+
     BASE_IMG=$IMG_EXTERNAL_REF
   else
     TLOG Unsupported Image storage backend - $IMAGE_STORAGE
@@ -215,40 +223,44 @@ EOF
 fi
 
 cd $APP_DIR
+TS=$(date +"%Y%m%dt%H%M%S")
+DU_IMG_TAG="$TENANT-$APP-$TS-$COMMIT_ID"
+STORAGE_OBJ_NAME="$APP-$TS-$COMMIT_ID"
 
 if [[ $IMAGE_STORAGE == "glance" ]]; then
-  PRUN sudo docker build -t $APP .
+  PRUN sudo docker build --force-rm=true -t $DU_IMG_TAG .
   [[ $? != 0 ]] && TLOG Docker build failed. && exit 1
-  G_NAME=$(echo $APP | cut -c1-100)-$ASSEMBLY_ID
-  sudo docker save "$APP" | glance image-create --container-format=docker --disk-format=raw --name "$G_NAME" > /dev/null
-  image_id=$(app_glance_id $G_NAME)
-  sudo docker rmi -f $APP
+
+  sudo docker save "$DU_IMG_TAG" | glance image-create --container-format=docker --disk-format=raw --name "$STORAGE_OBJ_NAME" > /dev/null
+  image_id="$(app_glance_id $STORAGE_OBJ_NAME)DOCKER_IMAGE_TAG=${DU_IMG_TAG}"
+
+  sudo docker rmi -f $DU_IMG_TAG
   TLOG ===== finished uploading DU to $IMAGE_STORAGE
 elif [[ $IMAGE_STORAGE == "docker_registry" ]]; then
   DOCKER_REGISTRY=${DOCKER_REGISTRY:-'10.0.2.15:5042'}
-  APP_NAME=$DOCKER_REGISTRY/$ASSEMBLY_ID
-  echo "APP_NAME=$APP_NAME"
-  PRUN sudo docker build -t $APP_NAME .
+  APP_NAME=$DOCKER_REGISTRY/$DU_IMG_TAG
+
+  PRUN sudo docker build --force-rm=true -t $APP_NAME .
   [[ $? != 0 ]] && TLOG Docker build failed. && exit 1
+
   sudo docker push $APP_NAME
-  image_id=$APP_NAME
+
+  # just to make worker/shell easier to process
+  image_id="${APP_NAME}DOCKER_IMAGE_TAG=${DU_IMG_TAG}"
   sudo docker rmi -f $APP_NAME
   TLOG ===== finished uploading DU to $IMAGE_STORAGE
 elif [[ $IMAGE_STORAGE == "swift" ]]; then
-  APP_DU_FILE=$TMP_APP_DIR/$APP
-  PRUN sudo docker build -t $APP .
+  PRUN sudo docker build --force-rm=true -t $DU_IMG_TAG .
   [[ $? != 0 ]] && TLOG Docker build failed. && exit 1
-  sudo docker save --output $APP_DU_FILE $APP
+
+  APP_DU_FILE="$TMP_APP_DIR/$APP"
+  sudo docker save --output $APP_DU_FILE $DU_IMG_TAG
 
   #TODO(devkulkarni): Read the SECRET and TTL from config file
   SECRET=secret
   TTL=604800
 
-  echo "APP_DIR:$APP_DIR"
-  OBJ_NAME=$(echo $APP | cut -c1-100):$ASSEMBLY_ID
-  upload_status=`python $HERE/swift-handler.py $OS_REGION_NAME $OS_AUTH_TOKEN $OS_STORAGE_URL upload solum_du $OBJ_NAME $APP_DU_FILE`
-  echo "Upload_status:$upload_status"
-
+  upload_status=`python $HERE/swift-handler.py $OS_REGION_NAME $OS_AUTH_TOKEN $OS_STORAGE_URL upload solum_du $STORAGE_OBJ_NAME $APP_DU_FILE`
   if [ "$upload_status" != "0" ]; then
     TLOG Swift upload failed. && exit 1
   fi
@@ -262,32 +274,24 @@ elif [[ $IMAGE_STORAGE == "swift" ]]; then
   TLOG "CWD:$CWD"
   TLOG "HERE:$HERE"
 
-  TEMP_URL=`python $HERE/get-temp-url.py $STORAGE_HOST solum_du $OBJ_NAME $ACCOUNT $TEMP_URL_SECRET $TEMP_URL_TTL $TEMP_URL_PROTOCOL`
+  TEMP_URL=`python $HERE/get-temp-url.py $STORAGE_HOST solum_du $STORAGE_OBJ_NAME $ACCOUNT $TEMP_URL_SECRET $TEMP_URL_TTL $TEMP_URL_PROTOCOL`
   TLOG "TEMP_URL:$TEMP_URL"
 
-  image_id=$TEMP_URL
-  sudo rm $APP
-  sudo docker rmi -f $APP
+  image_id="${TEMP_URL}DOCKER_IMAGE_TAG=${DU_IMG_TAG}"
+  sudo docker rmi -f $DU_IMG_TAG
+  sudo rm -f $APP_DU_FILE
   TLOG ===== finished uploading DU to $IMAGE_STORAGE
 else
   TLOG Unsupported Image storage backend - $IMAGE_STORAGE
   exit 1
 fi
 
-
 if [[ $DELETE_LOCAL_CACHE == "true" ]]; then
   # Delete local languagepack image after building the DU
   sudo docker rmi -f $BASE_IMG
+
   # Delete the cloned git repo
   PRUN silent rm -rf $APP_DIR
-  # Delete language pack file if downloaded
-  if [[ -e $LP_FILE ]]; then
-    PRUN silent rm -f $LP_FILE
-  fi
-  # Delete app DU file if built
-  if [[ -e $APP_DU_FILE ]]; then
-    PRUN silent rm -f $APP_DU_FILE
-  fi
 fi
 
 TOTAL_TIME=$(elapsed $SCRIPT_START_TIME)

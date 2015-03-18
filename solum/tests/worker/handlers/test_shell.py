@@ -82,8 +82,8 @@ class HandlerTest(base.BaseTestCase):
               img_name='')),
         ('lp_id',
          dict(base_image_id='1-2-3-4',
-              expected_img_id='docker_registry/image',
-              img_name='faker'))]
+              expected_img_id='TempUrl',
+              img_name='tenant-name-ts-commit'))]
 
     def setUp(self):
         super(HandlerTest, self).setUp()
@@ -155,12 +155,13 @@ class HandlerTest(base.BaseTestCase):
                               group='worker')
 
         mock_popen.return_value.communicate.return_value = [
-            'foo\ncreated_image_id=%s' % fake_glance_id, None]
+            'foo\ncreated_image_id=%sDOCKER_IMAGE_TAG=tenant-name-ts-commit' %
+            (fake_glance_id)]
         test_env = mock_environment()
         mock_get_env.return_value = test_env
         git_info = mock_git_info()
 
-        image_id = fake_glance_id + "APP_NAME=new_app"
+        image_id = fake_glance_id + "DOCKER_IMAGE_TAG=tenant-name-ts-commit"
 
         handler.build(self.ctx, build_id=5, git_info=git_info, name='new_app',
                       base_image_id=fake_image.base_image_id,
@@ -170,10 +171,11 @@ class HandlerTest(base.BaseTestCase):
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
         script = os.path.join(proj_dir, 'contrib/lp-cedarish/docker/build-app')
+        expected_loc = fake_image.external_ref.split('DOCKER_IMAGE_TAG=')[0]
+        expected_tag = fake_image.external_ref.split('DOCKER_IMAGE_TAG=')[1]
         mock_popen.assert_called_once_with([script, 'git://example.com/foo',
                                             'new_app', self.ctx.tenant,
-                                            fake_image.external_ref,
-                                            fake_image.name],
+                                            expected_loc, expected_tag],
                                            env=test_env,
                                            stdout=-1)
         expected = [mock.call(5, 'BUILDING', 'Starting the image build',
