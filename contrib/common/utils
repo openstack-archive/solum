@@ -24,7 +24,7 @@ function TLOG () {
 
     local LOGFILE=${LOG_FILE:-/dev/null}
     local TIMESTAMP=$(date --iso-8601=seconds)
-    JSONMESSAGE="{ \"@timestamp\": \"$TIMESTAMP\", \"project_id\": \"$PROJECT_ID\", \"commit_id\": \"$COMMIT_ID\", \"build_id\": \"$BUILD_ID\", \"task\": \"$TASKNAME\", \"message\": \"$MESSAGE\"}"
+    JSONMESSAGE="{ \"@timestamp\": \"$TIMESTAMP\", \"project_id\": \"$PROJECT_ID\", \"commit_id\": \"$COMMIT_ID\", \"stage_id\": \"$BUILD_ID\", \"task\": \"$TASKNAME\", \"message\": \"$MESSAGE\"}"
     echo $JSONMESSAGE >> $LOGFILE
 
   fi
@@ -43,7 +43,7 @@ function TLOG_FILTERED () {
 
     local LOGFILE=${LOG_FILE:-/dev/null}
     local TIMESTAMP=$(date --iso-8601=seconds)
-    JSONMESSAGE="{ \"@timestamp\": \"$TIMESTAMP\", \"project_id\": \"$PROJECT_ID\", \"commit_id\": \"$COMMIT_ID\", \"build_id\": \"$BUILD_ID\", \"task\": \"$TASKNAME\", \"message\": \"$MESSAGE\", \"_user\": \"$_USER\" }"
+    JSONMESSAGE="{ \"@timestamp\": \"$TIMESTAMP\", \"project_id\": \"$PROJECT_ID\", \"commit_id\": \"$COMMIT_ID\", \"stage_id\": \"$BUILD_ID\", \"task\": \"$TASKNAME\", \"message\": \"$MESSAGE\", \"_user\": \"$_USER\" }"
     echo $JSONMESSAGE >> $LOGFILE
 
     echo "$MESSAGE" | grep -i "starting build" && _USER=true

@@ -20,6 +20,7 @@ import pecan
 from solum.api import auth
 from solum.api import config as api_config
 
+
 # Register options for the service
 API_SERVICE_OPTS = [
     cfg.IntOpt('port',
@@ -52,6 +53,7 @@ def get_pecan_config():
 
 
 def setup_app(config=None):
+
     if not config:
         config = get_pecan_config()
 
