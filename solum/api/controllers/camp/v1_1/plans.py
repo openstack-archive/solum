@@ -27,7 +27,7 @@ import wsmeext.pecan as wsme_pecan
 from solum.api.controllers.camp.v1_1.datamodel import plans as model
 from solum.api.controllers.camp.v1_1 import uris
 from solum.api.controllers import common_types
-from solum.api.handlers import plan_handler as plan_handler
+from solum.api.handlers.camp import plan_handler as plan_handler
 from solum.common import exception
 from solum.common import yamlutils
 from solum.openstack.common.gettextutils import _
@@ -219,5 +219,8 @@ class PlansController(rest.RestController):
 
         db_obj = handler.create(clean_plan(wjson.tojson(model.Plan,
                                                         model_plan)))
+        plan_dict = fluff_plan(db_obj.refined_content(), db_obj.uuid)
+
         pecan.response.status = 201
-        return fluff_plan(db_obj.refined_content(), db_obj.uuid)
+        pecan.response.location = plan_dict['uri']
+        return plan_dict

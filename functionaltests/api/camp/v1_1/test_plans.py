@@ -90,11 +90,12 @@ class TestPlansController(base.TestCase):
         new_plan = p_resp.yaml_data
         new_uuid = new_plan['uuid']
 
-        # try to get to the newly created through the CAMP plans resource. it
-        # would be more efficient to simply take the UUID of the newly created
-        # resource and create a CAMP API URI (../camp/v1_1/plans/<uuid>) from
-        # that, but we want to test that a link to the Solum-created plan
-        # appears in in the list of links in the CAMP plans resource.
+        # try to get to the newly plan created through the CAMP plans
+        # resource. it would be more efficient to simply take the UUID of the
+        # newly created resource and create a CAMP API URI
+        # (../camp/v1_1/plans/<uuid>) from that, but we want to test that a
+        # link to the Solum-created plan appears in in the list of links in
+        # the CAMP plans resource.
         resp, body = self.client.get('camp/v1_1/plans')
         self.assertEqual(200, resp.status, 'GET plans resource')
 
