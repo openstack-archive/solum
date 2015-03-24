@@ -39,7 +39,7 @@ PRUN mkdir -p $APP_DIR
 add_ssh_creds "$GIT_PRIVATE_KEY" "$APP_DIR"
 
 [[ -d $APP_DIR/build ]] && rm -rf $APP_DIR/build
-PRUN git clone $GIT $APP_DIR/build
+git_clone_with_retry $GIT $APP_DIR/build
 
 remove_ssh_creds "$GIT_PRIVATE_KEY"
 

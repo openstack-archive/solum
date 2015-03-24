@@ -111,7 +111,7 @@ if [ -d "$APP_DIR/build" ] ; then
     fi
   fi
 else
-  PRUN git clone $GIT $APP_DIR/build
+  git_clone_with_retry $GIT $APP_DIR/build
 fi
 
 # If languagepack is 'auto', build the application slug

@@ -157,3 +157,18 @@ function test_public_repo () {
     fi
     return 0
 }
+
+function git_clone_with_retry () {
+  local GIT_REPO=$1
+  local DESTINATION=$2
+  shift; shift
+  local SINGLEBRANCH=$1
+
+  RETRIES=0
+  until [ $RETRIES -ge 5 ]; do
+    rm -rf $DESTINATION
+    PRUN git clone $SINGLEBRANCH $GIT_REPO $DESTINATION && break
+    RETRIES=$[$RETRIES+1]
+    sleep 5
+  done
+}

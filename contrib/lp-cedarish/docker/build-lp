@@ -55,7 +55,7 @@ TMP_LP_DIR=/tmp/apps/$TENANT/$GIT_CHECKSUM
 PRUN mkdir -p $TMP_LP_DIR
 
 TLOG ===== Cloning repo
-PRUN git clone $GIT $TMP_LP_DIR/build
+git_clone_with_retry $GIT $TMP_LP_DIR/build
 [[ $? != 0 ]] && TLOG Git clone failed. Check repo $GIT && exit 1
 
 if [ -d "$TMP_LP_DIR/build" ] ; then
