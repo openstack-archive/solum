@@ -78,11 +78,11 @@ if ! (test_public_repo $GIT); then
 fi
 
 if [[ $COMMIT_SHA ]]; then
-  PRUN git clone $GIT $APP_DIR/code
+  git_clone_with_retry $GIT $APP_DIR/code
   cd $APP_DIR/code
   PRUN git checkout -B solum_testing $COMMIT_SHA
 else
-  PRUN git clone --single-branch $GIT $APP_DIR/code
+  git_clone_with_retry $GIT $APP_DIR/code --single-branch
   cd $APP_DIR/code
 fi
 
