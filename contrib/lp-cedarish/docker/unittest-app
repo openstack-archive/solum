@@ -29,6 +29,7 @@ GIT_PRIVATE_KEY=${REPO_DEPLOY_KEYS:-''}
 ENTRYPOINT=${TEST_CMD:-:}
 IMAGE_STORAGE=${IMAGE_STORAGE:-null}
 DELETE_LOCAL_CACHE=${DELETE_LOCAL_CACHE:-null}
+LP_ACCESS=${ACCESS:-null}
 
 OS_AUTH_TOKEN=${OS_AUTH_TOKEN:-null}
 OS_REGION_NAME=${OS_REGION_NAME:-null}
@@ -82,7 +83,11 @@ if [[ $IMG_EXTERNAL_REF != "auto" ]]; then
     sudo docker load -i $LP_NAME
     BASE_IMG=${LP_NAME%%.tar}
   elif [[ $IMAGE_STORAGE == "swift" ]]; then
-    wget -q "$IMG_EXTERNAL_REF" --output-document=$LP_NAME
+    if [[ $LP_ACCESS == "custom" ]]; then
+      swift --os-auth-token $OS_AUTH_TOKEN download solum_lp $IMG_EXTERNAL_REF --output $LP_NAME
+    elif [[ $LP_ACCESS == "operator" ]]; then
+      wget -q "$IMG_EXTERNAL_REF" --output-document=$LP_NAME
+    fi
 
     if [ $? != 0 ]; then
       TLOG Failed to download image $IMG_EXTERNAL_REF from swift. && exit 1

@@ -112,13 +112,20 @@ def update_lp_status(ctxt, image_id, status, external_ref=None):
                                                  external_ref)
 
 
+def get_lp_access_method(lp_project_id):
+    if lp_project_id == cfg.CONF.api.operator_project_id:
+        return 'operator'
+    else:
+        return 'custom'
+
+
 class Handler(object):
     def echo(self, ctxt, message):
         LOG.debug("%s" % message)
 
     @exception.wrap_keystone_exception
     def _get_environment(self, ctxt, source_uri, assembly_id=None,
-                         test_cmd=None, run_cmd=None):
+                         test_cmd=None, run_cmd=None, lp_access=None):
         # create a minimal environment
         user_env = {}
 
@@ -171,6 +178,9 @@ class Handler(object):
 
         user_env['BUILD_ID'] = uuidutils.generate_uuid()
         user_env['SOLUM_TASK_DIR'] = cfg.CONF.worker.task_log_dir
+
+        if lp_access is not None:
+            user_env['ACCESS'] = lp_access
 
         params_env = self._get_parameter_env(ctxt, source_uri, assembly_id,
                                              user_env['BUILD_ID'])
@@ -310,11 +320,13 @@ class Handler(object):
         source_uri = git_info['source_url']
 
         lp_name = ''
+        lp_access = ''
         if base_image_id != 'auto':
             image = objects.registry.Image.get_lp_by_name_or_uuid(
-                ctxt, base_image_id)
+                ctxt, base_image_id, include_operators_lp=True)
             base_image_id = image.external_ref
             lp_name = image.name
+            lp_access = get_lp_access_method(image.project_id)
 
         build_cmd = self._get_build_command(ctxt, 'build', source_uri,
                                             name, base_image_id,
@@ -326,7 +338,8 @@ class Handler(object):
         try:
             user_env = self._get_environment(ctxt, source_uri,
                                              assembly_id=assembly_id,
-                                             run_cmd=run_cmd)
+                                             run_cmd=run_cmd,
+                                             lp_access=lp_access)
         except exception.SolumException as env_ex:
             LOG.exception(env_ex)
             job_update_notification(ctxt, build_id, IMAGE_STATES.ERROR,
@@ -425,11 +438,13 @@ class Handler(object):
         update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.UNIT_TESTING)
 
         lp_name = ''
+        lp_access = ''
         if base_image_id != 'auto':
             image = objects.registry.Image.get_lp_by_name_or_uuid(
-                ctxt, base_image_id)
+                ctxt, base_image_id, include_operators_lp=True)
             base_image_id = image.external_ref
             lp_name = image.name
+            lp_access = get_lp_access_method(image.project_id)
 
         git_url = git_info['source_url']
         command = self._get_build_command(ctxt, 'unittest', git_url, name,
@@ -442,7 +457,8 @@ class Handler(object):
 
         user_env = self._get_environment(ctxt, git_url,
                                          assembly_id=assembly_id,
-                                         test_cmd=test_cmd)
+                                         test_cmd=test_cmd,
+                                         lp_access=lp_access)
         log_env = user_env.copy()
         if 'OS_AUTH_TOKEN' in log_env:
             del log_env['OS_AUTH_TOKEN']
@@ -530,8 +546,12 @@ class Handler(object):
                                             source_format, 'docker', '',
                                             artifact_type)
 
+        lp_access = get_lp_access_method(ctxt.tenant)
+
         try:
-            user_env = self._get_environment(ctxt, source_uri)
+            user_env = self._get_environment(ctxt,
+                                             source_uri,
+                                             lp_access=lp_access)
         except exception.SolumException as env_ex:
             LOG.exception(_("Failed to successfully get environment for "
                             "building languagepack: `%s`"),

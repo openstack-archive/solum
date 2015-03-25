@@ -7,6 +7,7 @@ REUSE_IMAGES_IF_REPO_UNCHANGED=${REUSE_IMAGES_IF_REPO_UNCHANGED:="1"}
 GIT_PRIVATE_KEY=${REPO_DEPLOY_KEYS:-''}
 IMAGE_STORAGE=${IMAGE_STORAGE:-null}
 DELETE_LOCAL_CACHE=${DELETE_LOCAL_CACHE:-null}
+LP_ACCESS=${ACCESS:-null}
 
 OS_AUTH_TOKEN=${OS_AUTH_TOKEN:-null}
 OS_REGION_NAME=${OS_REGION_NAME:-null}
@@ -66,7 +67,7 @@ if [ -d "$TMP_LP_DIR/build" ] ; then
     if [ $? != 0 ]; then
       TLOG Cannot talk to Glance. Check your OpenStack credentials. && exit 1
     fi
-    PRUN sudo docker build -t $LPNAME .
+    PRUN sudo docker build --force-rm=true -t $LPNAME .
     [[ $? != 0 ]] && TLOG Docker build failed. && exit 1
     TLOG ===== finished docker build
     sudo docker save "$LPNAME" | glance --os-auth-token $OS_AUTH_TOKEN image-create --container-format=docker --disk-format=raw --name "$LPNAME"
@@ -79,7 +80,6 @@ if [ -d "$TMP_LP_DIR/build" ] ; then
     TLOG ===== tagging glace image $image_id
     glance --os-auth-token $OS_AUTH_TOKEN --os-image-api-version 2 image-tag-update $image_id 'solum::lp'
   elif [[ $IMAGE_STORAGE == "swift" ]]; then
-
     stat_status=`python $HERE/swift-handler.py $OS_REGION_NAME $OS_AUTH_TOKEN $OS_STORAGE_URL stat solum_lp '' ''`
     echo "Swift_stat_status:$stat_status"
 
@@ -88,7 +88,7 @@ if [ -d "$TMP_LP_DIR/build" ] ; then
     fi
 
     LP_FILE=$TMP_LP_DIR/$LPNAME
-    PRUN sudo docker build -t $LPNAME .
+    PRUN sudo docker build --force-rm=true -t $LPNAME .
     [[ $? != 0 ]] && TLOG Docker build failed. && exit 1
     TLOG ===== finished docker build
     sudo docker save --output $LP_FILE $LPNAME
@@ -97,31 +97,31 @@ if [ -d "$TMP_LP_DIR/build" ] ; then
     echo "Upload_status:$upload_status"
 
     if [ "$upload_status" != "0" ]; then
-      TLOG Swift upload failed. && exit 1
-    fi
-
-    if [ $? != 0 ]; then
       TLOG Failed to upload languagepack to swift. && exit 1
     fi
 
-    ACCOUNT=`echo $OS_STORAGE_URL | sed 's/\// /'g | awk '{print $4}'`
-    TLOG "ACCOUNT=$ACCOUNT"
-    STORAGE_HOST=`echo $OS_STORAGE_URL | sed 's/\// /'g | awk '{print $2}'`
-    TLOG "STORAGE_HOST=$STORAGE_HOST"
+    if [[ $LP_ACCESS == "custom" ]]; then
+      image_id=$LPNAME
+    elif [[ $LP_ACCESS == "operator" ]]; then
+      ACCOUNT=`echo $OS_STORAGE_URL | sed 's/\// /'g | awk '{print $4}'`
+      TLOG "ACCOUNT=$ACCOUNT"
+      STORAGE_HOST=`echo $OS_STORAGE_URL | sed 's/\// /'g | awk '{print $2}'`
+      TLOG "STORAGE_HOST=$STORAGE_HOST"
 
-    TLOG "STORAGE_URL:$OS_STORAGE_URL"
-    TLOG "REGION:$OS_REGION_NAME"
-    TLOG "AUTH_TOKEN:$OS_AUTH_TOKEN"
+      TLOG "STORAGE_URL:$OS_STORAGE_URL"
+      TLOG "REGION:$OS_REGION_NAME"
+      TLOG "AUTH_TOKEN:$OS_AUTH_TOKEN"
 
-    curl -i -X POST -H X-Auth-Token:$OS_AUTH_TOKEN -H X-Account-Meta-Temp-URL-Key:$TEMP_URL_SECRET $TEMP_URL_PROTOCOL://$STORAGE_HOST/v1/$ACCOUNT
-    CWD=`pwd`
-    TLOG "CWD:$CWD"
-    TLOG "HERE:$HERE"
+      curl -i -X POST -H X-Auth-Token:$OS_AUTH_TOKEN -H X-Account-Meta-Temp-URL-Key:$TEMP_URL_SECRET $TEMP_URL_PROTOCOL://$STORAGE_HOST/v1/$ACCOUNT
+      CWD=`pwd`
+      TLOG "CWD:$CWD"
+      TLOG "HERE:$HERE"
 
-    TEMP_URL=`python $HERE/get-temp-url.py $STORAGE_HOST solum_lp $LPNAME $ACCOUNT $TEMP_URL_SECRET $TEMP_URL_TTL $TEMP_URL_PROTOCOL`
-    TLOG "TEMP_URL:$TEMP_URL"
+      TEMP_URL=`python $HERE/get-temp-url.py $STORAGE_HOST solum_lp $LPNAME $ACCOUNT $TEMP_URL_SECRET $TEMP_URL_TTL $TEMP_URL_PROTOCOL`
+      TLOG "TEMP_URL:$TEMP_URL"
+      image_id=$TEMP_URL
+    fi
 
-    image_id=$TEMP_URL
     TLOG ===== finished uploading LP to $IMAGE_STORAGE
   elif [[ $IMAGE_STORAGE == "docker_registry" ]]; then
     DOCKER_REGISTRY=${DOCKER_REGISTRY:-'10.0.2.15:5042'}

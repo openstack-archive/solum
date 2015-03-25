@@ -54,7 +54,8 @@ class TestImage(base.BaseTestCase):
         img = image.Image()
         img.get_lp_by_name_or_uuid(self.ctx, self.data[0]['name'])
         mock_img.assert_called_once_with(self.ctx,
-                                         self.data[0]['name'])
+                                         self.data[0]['name'],
+                                         False)
 
     @mock.patch('sqlalchemy.orm.query.Query.one')
     @mock.patch('solum.objects.registry.Image.get_by_name')
@@ -63,7 +64,8 @@ class TestImage(base.BaseTestCase):
         mock_query.side_effect = exc.NoResultFound()
         image.Image().get_lp_by_name_or_uuid(self.ctx, self.data[0]['uuid'])
         mock_img.assert_called_once_with(self.ctx,
-                                         self.data[0]['uuid'])
+                                         self.data[0]['uuid'],
+                                         False)
 
 
 class TestStates(base.BaseTestCase):

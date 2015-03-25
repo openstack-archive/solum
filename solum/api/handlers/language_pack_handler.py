@@ -41,7 +41,8 @@ class LanguagePackHandler(handler.Handler):
 
     def get(self, id):
         """Return a languagepack."""
-        return objects.registry.Image.get_lp_by_name_or_uuid(self.context, id)
+        return objects.registry.Image.get_lp_by_name_or_uuid(
+            self.context, id, include_operators_lp=True)
 
     def get_all(self):
         """Return all languagepacks."""
@@ -51,8 +52,8 @@ class LanguagePackHandler(handler.Handler):
         """Create a new languagepack."""
         try:
             # Check if an LP with the same name exists.
-            objects.registry.Image.get_lp_by_name_or_uuid(self.context,
-                                                          data['name'])
+            objects.registry.Image.get_lp_by_name_or_uuid(
+                self.context, data['name'], include_operators_lp=True)
         except exc.ResourceNotFound:
             db_obj = objects.registry.Image()
             db_obj.update(data)

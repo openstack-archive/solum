@@ -30,6 +30,7 @@ SOLUM_PARAMS=${SOLUM_PARAMS:-null}
 GIT_PRIVATE_KEY=${REPO_DEPLOY_KEYS:-''}
 RUN_CMD=${RUN_CMD:-''}
 DELETE_LOCAL_CACHE=${DELETE_LOCAL_CACHE:-null}
+LP_ACCESS=${ACCESS:-null}
 
 OS_AUTH_TOKEN=${OS_AUTH_TOKEN:-null}
 OS_REGION_NAME=${OS_REGION_NAME:-null}
@@ -150,7 +151,12 @@ else
     BASE_IMG=$LP_NAME
   elif [[ $IMAGE_STORAGE == "swift" ]]; then
     LP_FILE=$TMP_APP_DIR/$LP_NAME
-    wget -q "$IMG_EXTERNAL_REF" --output-document=$LP_FILE
+
+    if [[ $LP_ACCESS == "custom" ]]; then
+      swift --os-auth-token $OS_AUTH_TOKEN download solum_lp $IMG_EXTERNAL_REF --output $LP_FILE
+    elif [[ $LP_ACCESS == "operator" ]]; then
+      wget -q "$IMG_EXTERNAL_REF" --output-document=$LP_FILE
+    fi
 
     if [ $? != 0 ]; then
       TLOG Failed to download image $IMG_EXTERNAL_REF from swift. && exit 1

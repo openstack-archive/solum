@@ -73,6 +73,9 @@ SERVICE_OPTS = [
     cfg.StrOpt('temp_url_ttl',
                default="604800",
                help='TTL in seconds.'),
+    cfg.StrOpt('lp_location_url',
+               default="",
+               help='url to the container where LPs are stored.'),
 ]
 
 opt_group = cfg.OptGroup(

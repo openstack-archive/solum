@@ -33,7 +33,7 @@ class TestLanguagePackHandler(base.BaseTestCase):
         res = handler.get('test_id')
         self.assertIsNotNone(res)
         mock_img.get_lp_by_name_or_uuid.assert_called_once_with(
-            self.ctx, 'test_id')
+            self.ctx, 'test_id', include_operators_lp=True)
 
     def test_languagepack_get_all(self, mock_img):
         mock_img.get_by_uuid.return_value = {}

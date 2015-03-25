@@ -51,25 +51,37 @@ class Image(sql.Base, abstract.Image):
     external_ref = sa.Column(sa.String(1024))
 
     @classmethod
-    def get_lp_by_name_or_uuid(cls, context, name_or_uuid):
+    def get_lp_by_name_or_uuid(cls, context, name_or_uuid,
+                               include_operators_lp=False):
         if uuidutils.is_uuid_like(name_or_uuid):
             try:
                 session = Image.get_session()
-                result = session.query(cls).filter_by(uuid=name_or_uuid)
-                result = result.filter_by(artifact_type='language_pack')
-                return sql.filter_by_project(context, result).one()
+                result = session.query(cls).filter_by(
+                    artifact_type='language_pack', uuid=name_or_uuid)
+                if include_operators_lp is True:
+                    result = result.filter(
+                        Image.project_id.in_([operator_id, context.tenant]))
+                    return result.one()
+                else:
+                    return sql.filter_by_project(context, result).one()
             except exc.NoResultFound:
-                return cls.get_by_name(context, name_or_uuid)
+                return cls.get_by_name(context, name_or_uuid,
+                                       include_operators_lp)
         else:
-            return cls.get_by_name(context, name_or_uuid)
+            return cls.get_by_name(context, name_or_uuid, include_operators_lp)
 
     @classmethod
-    def get_by_name(cls, context, name):
+    def get_by_name(cls, context, name, include_operators_lp=False):
         try:
             session = Image.get_session()
-            result = session.query(cls).filter_by(name=name)
-            result = result.filter_by(artifact_type='language_pack')
-            return sql.filter_by_project(context, result).one()
+            result = session.query(cls).filter_by(
+                artifact_type='language_pack', name=name)
+            if include_operators_lp is True:
+                result = result.filter(
+                    Image.project_id.in_([operator_id, context.tenant]))
+                return result.one()
+            else:
+                return sql.filter_by_project(context, result).one()
         except exc.NoResultFound:
             cls._raise_not_found(name)
 
