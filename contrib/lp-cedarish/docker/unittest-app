@@ -79,8 +79,8 @@ APP_DIR=$BASE_DIR/solum/$RANDOM_NAME
 TMP_DIR=/tmp/solum/$RANDOM_NAME
 rm -rf $APP_DIR
 rm -rf $TMP_DIR
-PRUN mkdir -p $APP_DIR
-PRUN mkdir -p $TMP_DIR
+mkdir -p $APP_DIR
+mkdir -p $TMP_DIR
 
 # Set base docker image to solum/slugtester for the 'auto' option
 BASE_IMG="solum/slugtester"
@@ -211,8 +211,8 @@ if [[ $DELETE_LOCAL_CACHE == "true" ]]; then
   sudo docker rmi -f $RANDOM_NAME
 
   # Delete the cloned git repo
-  PRUN silent rm -rf $APP_DIR
-  PRUN silent rm -rf $TMP_DIR
+  rm -rf $APP_DIR
+  rm -rf $TMP_DIR
 fi
 
 

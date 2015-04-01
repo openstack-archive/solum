@@ -53,7 +53,7 @@ TENANT=$1
 
 GIT_CHECKSUM=$(echo $GIT | md5sum | awk '{print $1;}')
 TMP_LP_DIR=/tmp/lps/$TENANT/$GIT_CHECKSUM
-PRUN mkdir -p $TMP_LP_DIR
+mkdir -p $TMP_LP_DIR
 
 TLOG ===== Cloning repo
 git_clone_with_retry $GIT $TMP_LP_DIR/build
@@ -62,7 +62,7 @@ git_clone_with_retry $GIT $TMP_LP_DIR/build
 if [ -d "$TMP_LP_DIR/build" ] ; then
   cd $TMP_LP_DIR/build
   COMMIT_ID=$(git log -1 --pretty=%H)
-  TS=$(date +"%Y%m%dt%H%M%S")
+  TS=$(date +"%Y%m%dt%H%M%S%N")
   LP_IMG_TAG="$TENANT-$LPNAME-$TS-$COMMIT_ID"
   STORAGE_OBJ_NAME="$LPNAME-$TS-$COMMIT_ID"
 
@@ -97,7 +97,7 @@ if [ -d "$TMP_LP_DIR/build" ] ; then
     [[ $? != 0 ]] && TLOG Docker build failed. && exit 1
     TLOG ===== finished docker build
 
-    LP_FILE="$TMP_LP_DIR/$LPNAME"
+    LP_FILE="$TMP_LP_DIR/$STORAGE_OBJ_NAME"
     sudo docker save --output $LP_FILE $LP_IMG_TAG
 
     upload_status=`python $HERE/swift-handler.py $OS_REGION_NAME $OS_AUTH_TOKEN $OS_STORAGE_URL upload solum_lp $STORAGE_OBJ_NAME $LP_FILE`
@@ -145,7 +145,7 @@ if [ -d "$TMP_LP_DIR/build" ] ; then
 
     # Just to make work/shell easier to process
     image_id="${APP_NAME}DOCKER_IMAGE_TAG=${LP_IMG_TAG}"
-    PRUN sudo docker rmi -f $APP_NAME
+    sudo docker rmi -f $APP_NAME
   else
     TLOG Unsupported Image storage backend - $IMAGE_STORAGE
     exit 1
@@ -154,13 +154,13 @@ fi
 
 if [[ $DELETE_LOCAL_CACHE == "true" ]]; then
   # Delete the local image once we've uploaded the image.
-  PRUN sudo docker rmi -f $LP_IMG_TAG
+  sudo docker rmi -f $LP_IMG_TAG
 
   # Delete the cloned git repo
-  PRUN silent rm -rf $TMP_LP_DIR
+  rm -rf $TMP_LP_DIR
 
   if [[ -e $LP_FILE ]]; then
-    PRUN silent rm -f $LP_FILE
+    rm -f $LP_FILE
   fi
 fi
 

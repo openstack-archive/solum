@@ -88,8 +88,8 @@ BASE_DIR=/dev/shm
 GIT_CHECKSUM=$(git ls-remote $GIT | head -1 | awk '{print $1}')
 APP_DIR=$BASE_DIR/apps/$TENANT/$GIT_CHECKSUM
 TMP_APP_DIR=/tmp/apps/$TENANT/$GIT_CHECKSUM
-PRUN silent mkdir -p $APP_DIR
-PRUN silent mkdir -p $TMP_APP_DIR
+mkdir -p $APP_DIR
+mkdir -p $TMP_APP_DIR
 add_ssh_creds "$GIT_PRIVATE_KEY" "$APP_DIR"
 
 if [ -d "$APP_DIR/build" ] ; then
@@ -134,7 +134,7 @@ if [[ $IMG_EXTERNAL_REF == "auto" ]]; then
     TLOG Slug build failed see container: $BUILD_ID
     exit
   fi
-  PRUN sudo docker rm $BUILD_ID
+  sudo docker rm -f $BUILD_ID
 else
   # download base image (languagepack) if it is not 'auto'
   TLOG downloading LP image from $IMAGE_STORAGE
@@ -153,7 +153,7 @@ else
     sudo docker load -i $OUTPUT
 
     BASE_IMG=$LP_IMG_TAG
-    sudo rm -f $OUTPUT
+    rm -f $OUTPUT
   elif [[ $IMAGE_STORAGE == "swift" ]]; then
     OUTPUT="$TMP_APP_DIR/$LP_IMG_TAG"
     if [[ $LP_ACCESS == "custom" ]]; then
@@ -169,7 +169,7 @@ else
     sudo docker load -i $OUTPUT
 
     BASE_IMG=$LP_IMG_TAG
-    sudo rm -f $OUTPUT
+    rm -f $OUTPUT
   elif [[ $IMAGE_STORAGE == "docker_registry" ]]; then
     sudo docker pull $IMG_EXTERNAL_REF
     if [ $? != 0 ]; then
@@ -223,7 +223,7 @@ EOF
 fi
 
 cd $APP_DIR
-TS=$(date +"%Y%m%dt%H%M%S")
+TS=$(date +"%Y%m%dt%H%M%S%N")
 DU_IMG_TAG="$TENANT-$APP-$TS-$COMMIT_ID"
 STORAGE_OBJ_NAME="$APP-$TS-$COMMIT_ID"
 
@@ -253,7 +253,7 @@ elif [[ $IMAGE_STORAGE == "swift" ]]; then
   PRUN sudo docker build --force-rm=true -t $DU_IMG_TAG .
   [[ $? != 0 ]] && TLOG Docker build failed. && exit 1
 
-  APP_DU_FILE="$TMP_APP_DIR/$APP"
+  APP_DU_FILE="$TMP_APP_DIR/$STORAGE_OBJ_NAME"
   sudo docker save --output $APP_DU_FILE $DU_IMG_TAG
 
   #TODO(devkulkarni): Read the SECRET and TTL from config file
@@ -279,7 +279,7 @@ elif [[ $IMAGE_STORAGE == "swift" ]]; then
 
   image_id="${TEMP_URL}DOCKER_IMAGE_TAG=${DU_IMG_TAG}"
   sudo docker rmi -f $DU_IMG_TAG
-  sudo rm -f $APP_DU_FILE
+  rm -f $APP_DU_FILE
   TLOG ===== finished uploading DU to $IMAGE_STORAGE
 else
   TLOG Unsupported Image storage backend - $IMAGE_STORAGE
@@ -291,7 +291,7 @@ if [[ $DELETE_LOCAL_CACHE == "true" ]]; then
   sudo docker rmi -f $BASE_IMG
 
   # Delete the cloned git repo
-  PRUN silent rm -rf $APP_DIR
+  rm -rf $APP_DIR
 fi
 
 TOTAL_TIME=$(elapsed $SCRIPT_START_TIME)
