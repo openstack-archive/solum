@@ -173,3 +173,12 @@ function git_clone_with_retry () {
   done
   return 1
 }
+
+function docker_build_with_retry () {
+  local APP_NAME=$1
+  local DESTINATION=$2
+  shift; shift
+  PRUN sudo docker build --force-rm=true -t $APP_NAME $DESTINATION && return 0
+  sleep 2
+  PRUN sudo docker build --no-cache --force-rm=true -t $APP_NAME $DESTINATION
+}

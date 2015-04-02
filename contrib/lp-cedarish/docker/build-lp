@@ -73,7 +73,7 @@ if [ -d "$TMP_LP_DIR/build" ] ; then
       TLOG Cannot talk to Glance. Check your OpenStack credentials. && exit 1
     fi
 
-    PRUN sudo docker build --force-rm=true -t $LP_IMG_TAG .
+    docker_build_with_retry $LP_IMG_TAG .
     [[ $? != 0 ]] && TLOG Docker build failed. && exit 1
     TLOG ===== finished docker build
 
@@ -93,7 +93,7 @@ if [ -d "$TMP_LP_DIR/build" ] ; then
       TLOG Cannot talk to Swift. Check your OpenStack credentials. && exit 1
     fi
 
-    PRUN sudo docker build --force-rm=true -t $LP_IMG_TAG .
+    docker_build_with_retry $LP_IMG_TAG .
     [[ $? != 0 ]] && TLOG Docker build failed. && exit 1
     TLOG ===== finished docker build
 
@@ -130,7 +130,8 @@ if [ -d "$TMP_LP_DIR/build" ] ; then
     TLOG ===== finished uploading LP to $IMAGE_STORAGE
   elif [[ $IMAGE_STORAGE == "docker_registry" ]]; then
     DOCKER_REGISTRY=${DOCKER_REGISTRY:-'10.0.2.15:5042'}
-    PRUN sudo docker build --force-rm=true -t $LP_IMG_TAG .
+    docker_build_with_retry $LP_IMG_TAG .
+    [[ $? != 0 ]] && TLOG Docker build failed. && exit 1
     TLOG ===== finished docker build
 
     APP_NAME="$DOCKER_REGISTRY/$LP_IMG_TAG"

@@ -228,7 +228,7 @@ DU_IMG_TAG="$TENANT-$APP-$TS-$COMMIT_ID"
 STORAGE_OBJ_NAME="$APP-$TS-$COMMIT_ID"
 
 if [[ $IMAGE_STORAGE == "glance" ]]; then
-  PRUN sudo docker build --force-rm=true -t $DU_IMG_TAG .
+  docker_build_with_retry $DU_IMG_TAG .
   [[ $? != 0 ]] && TLOG Docker build failed. && exit 1
 
   sudo docker save "$DU_IMG_TAG" | glance image-create --container-format=docker --disk-format=raw --name "$STORAGE_OBJ_NAME" > /dev/null
@@ -240,7 +240,7 @@ elif [[ $IMAGE_STORAGE == "docker_registry" ]]; then
   DOCKER_REGISTRY=${DOCKER_REGISTRY:-'10.0.2.15:5042'}
   APP_NAME=$DOCKER_REGISTRY/$DU_IMG_TAG
 
-  PRUN sudo docker build --force-rm=true -t $APP_NAME .
+  docker_build_with_retry $APP_NAME .
   [[ $? != 0 ]] && TLOG Docker build failed. && exit 1
 
   sudo docker push $APP_NAME
@@ -250,7 +250,7 @@ elif [[ $IMAGE_STORAGE == "docker_registry" ]]; then
   sudo docker rmi -f $APP_NAME
   TLOG ===== finished uploading DU to $IMAGE_STORAGE
 elif [[ $IMAGE_STORAGE == "swift" ]]; then
-  PRUN sudo docker build --force-rm=true -t $DU_IMG_TAG .
+  docker_build_with_retry $DU_IMG_TAG .
   [[ $? != 0 ]] && TLOG Docker build failed. && exit 1
 
   APP_DU_FILE="$TMP_APP_DIR/$STORAGE_OBJ_NAME"
