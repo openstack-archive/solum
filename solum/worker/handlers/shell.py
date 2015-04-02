@@ -68,13 +68,13 @@ def upload_task_log(ctxt, original_path, resource, build_id, stage):
     uploader(ctxt, original_path, resource, build_id, stage).upload_log()
 
 
-def job_update_notification(ctxt, build_id, state=None, description=None,
+def job_update_notification(ctxt, build_id, status=None, description=None,
                             created_image_id=None, assembly_id=None):
     """send a status update to the conductor."""
-    LOG.debug('build id:%s %s (%s) %s %s' % (build_id, state, description,
+    LOG.debug('build id:%s %s (%s) %s %s' % (build_id, status, description,
                                              created_image_id, assembly_id),
               context=solum.TLS.trace)
-    conductor_api.API(context=ctxt).build_job_update(build_id, state,
+    conductor_api.API(context=ctxt).build_job_update(build_id, status,
                                                      description,
                                                      created_image_id,
                                                      assembly_id)

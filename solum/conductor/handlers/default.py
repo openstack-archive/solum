@@ -33,9 +33,9 @@ class Handler(object):
     def echo(self, ctxt, message):
         LOG.debug("%s" % message)
 
-    def build_job_update(self, ctxt, build_id, state, description,
+    def build_job_update(self, ctxt, build_id, status, description,
                          created_image_id, assembly_id):
-        to_update = {'state': state,
+        to_update = {'status': status,
                      'external_ref': created_image_id,
                      'description': str(description)}
         try:

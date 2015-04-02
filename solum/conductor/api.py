@@ -26,9 +26,9 @@ class API(service.API):
         super(API, self).__init__(transport, context,
                                   topic=cfg.CONF.conductor.topic)
 
-    def build_job_update(self, build_id, state, description, created_image_id,
+    def build_job_update(self, build_id, status, description, created_image_id,
                          assembly_id):
-        self._cast('build_job_update', build_id=build_id, state=state,
+        self._cast('build_job_update', build_id=build_id, status=status,
                    description=description, created_image_id=created_image_id,
                    assembly_id=assembly_id)
 
