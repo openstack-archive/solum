@@ -106,7 +106,7 @@ if [[ -d "$TMP_LP_DIR/build" ]]; then
     fi
     TLOG ===== finished uploading LP to $IMAGE_STORAGE
 
-    image_id="$(app_glance_id $STORAGE_OBJ_NAME)DOCKER_IMAGE_TAG=${LP_IMG_TAG}"
+    image_id="$(app_glance_id $STORAGE_OBJ_NAME)"
     # Tag the glance image as a solum language pack
     TLOG ===== tagging glace image $image_id
     glance --os-auth-token $OS_AUTH_TOKEN --os-image-api-version 2 image-tag-update $image_id 'solum::lp'
@@ -126,7 +126,7 @@ if [[ -d "$TMP_LP_DIR/build" ]]; then
     fi
 
     if [[ $LP_ACCESS == "custom" ]]; then
-      image_id="${STORAGE_OBJ_NAME}DOCKER_IMAGE_TAG=${LP_IMG_TAG}"
+      image_id="${STORAGE_OBJ_NAME}"
     elif [[ $LP_ACCESS == "operator" ]]; then
       ACCOUNT=$(echo $OS_STORAGE_URL | sed 's/\// /'g | awk '{print $4}')
       TLOG "ACCOUNT=$ACCOUNT"
@@ -143,7 +143,7 @@ if [[ -d "$TMP_LP_DIR/build" ]]; then
       TEMP_URL=$(python $HERE/get-temp-url.py $STORAGE_HOST solum_lp $STORAGE_OBJ_NAME $ACCOUNT $TEMP_URL_SECRET $TEMP_URL_TTL $TEMP_URL_PROTOCOL)
       TLOG "TEMP_URL:$TEMP_URL"
 
-      image_id="${TEMP_URL}DOCKER_IMAGE_TAG=${LP_IMG_TAG}"
+      image_id="${TEMP_URL}"
     fi
 
     TLOG ===== finished uploading LP to $IMAGE_STORAGE
@@ -164,7 +164,7 @@ if [[ -d "$TMP_LP_DIR/build" ]]; then
     TLOG ===== finished uploading LP to $IMAGE_STORAGE
 
     # Just to make work/shell easier to process
-    image_id="${APP_NAME}DOCKER_IMAGE_TAG=${LP_IMG_TAG}"
+    image_id="${APP_NAME}"
     sudo docker rmi -f $APP_NAME
   else
     TLOG Unsupported Image storage backend - $IMAGE_STORAGE && exit 1
@@ -175,8 +175,10 @@ TOTAL_TIME=$(elapsed $SCRIPT_START_TIME)
 TLOG ===== Total elapsed time: $TOTAL_TIME sec
 
 TLOG image_external_ref=$image_id
+TLOG docker_image_name=$LP_IMG_TAG
 
 # Need stdout for solum-worker to parse the image_id
 echo image_external_ref=$image_id
+echo docker_image_name=$LP_IMG_TAG
 
 exit 0

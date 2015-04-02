@@ -34,9 +34,10 @@ class Handler(object):
         LOG.debug("%s" % message)
 
     def build_job_update(self, ctxt, build_id, status, description,
-                         created_image_id, assembly_id):
+                         created_image_id, docker_image_name, assembly_id):
         to_update = {'status': status,
                      'external_ref': created_image_id,
+                     'docker_image_name': docker_image_name,
                      'description': str(description)}
         try:
             objects.registry.Image.update_and_save(ctxt, build_id, to_update)
@@ -75,10 +76,13 @@ class Handler(object):
             LOG.error("Failed to update assembly status, ID: %s" % assembly_id)
             LOG.exception(ex)
 
-    def update_image(self, ctxt, image_id, status, external_ref=None):
+    def update_image(self, ctxt, image_id, status, external_ref=None,
+                     docker_image_name=None):
         to_update = {'status': status}
         if external_ref:
             to_update['external_ref'] = external_ref
+        if docker_image_name:
+            to_update['docker_image_name'] = docker_image_name
         try:
             objects.registry.Image.update_and_save(ctxt, image_id, to_update)
         except sqla_exc.SQLAlchemyError as ex:

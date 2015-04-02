@@ -284,8 +284,7 @@ if [[ $IMAGE_STORAGE == "glance" ]]; then
   [[ $? != 0 ]] && TLOG Docker build failed. && exit 1
 
   glance_upload_with_retry $DU_IMG_TAG
-  image_id="$(app_glance_id $DU_IMG_TAG)DOCKER_IMAGE_TAG=${DU_IMG_TAG}"
-
+  image_id="$(app_glance_id $DU_IMG_TAG)"
   TLOG ===== finished uploading DU to $IMAGE_STORAGE
 elif [[ $IMAGE_STORAGE == "docker_registry" ]]; then
 
@@ -299,7 +298,7 @@ elif [[ $IMAGE_STORAGE == "docker_registry" ]]; then
   [[ $? != 0 ]] && TLOG Docker push failed. && exit 1
 
   # just to make worker/shell easier to process
-  image_id="${APP_NAME}DOCKER_IMAGE_TAG=${DU_IMG_TAG}"
+  image_id="${APP_NAME}"
   sudo docker rmi -f $APP_NAME
   TLOG ===== finished uploading DU to $IMAGE_STORAGE
 elif [[ $IMAGE_STORAGE == "swift" ]]; then
@@ -334,7 +333,7 @@ elif [[ $IMAGE_STORAGE == "swift" ]]; then
   TEMP_URL=$(python $HERE/get-temp-url.py $STORAGE_HOST solum_du $STORAGE_OBJ_NAME $ACCOUNT $TEMP_URL_SECRET $TEMP_URL_TTL $TEMP_URL_PROTOCOL)
   TLOG "TEMP_URL:$TEMP_URL"
 
-  image_id="${TEMP_URL}DOCKER_IMAGE_TAG=${DU_IMG_TAG}"
+  image_id="${TEMP_URL}"
   TLOG ===== finished uploading DU to $IMAGE_STORAGE
 else
   TLOG Unsupported Image storage backend - $IMAGE_STORAGE && exit 1
@@ -344,8 +343,10 @@ TOTAL_TIME=$(elapsed $SCRIPT_START_TIME)
 TLOG ===== Total elapsed time: $TOTAL_TIME sec
 
 TLOG created_image_id=$image_id
+TLOG docker_image_name=$DU_IMG_TAG
 
 # Need stdout for solum-worker to parse the image_id
 echo created_image_id=$image_id
+echo docker_image_name=$DU_IMG_TAG
 
 exit 0

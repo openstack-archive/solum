@@ -297,8 +297,9 @@ class FakeImage(mock.Mock):
         self.image_format = 'docker'
         self.source_format = 'dib'
         self.artifact_type = None
-        self.status = 'QUEUED'
-        self.external_ref = 'TempUrlDOCKER_IMAGE_TAG=tenant-name-ts-commit'
+        self.status = 'READY'
+        self.external_ref = 'TempUrl'
+        self.docker_image_name = 'tenant-name-ts-commit'
 
     def as_dict(self):
         return dict(user_id=self.user_id,

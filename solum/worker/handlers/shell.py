@@ -68,14 +68,18 @@ def upload_task_log(ctxt, original_path, resource, build_id, stage):
 
 
 def job_update_notification(ctxt, build_id, status=None, description=None,
-                            created_image_id=None, assembly_id=None):
+                            created_image_id=None, docker_image_name=None,
+                            assembly_id=None):
     """send a status update to the conductor."""
-    LOG.debug('build id:%s %s (%s) %s %s' % (build_id, status, description,
-                                             created_image_id, assembly_id),
+    LOG.debug('build id:%s %s (%s) %s %s %s' % (build_id, status, description,
+                                                created_image_id,
+                                                docker_image_name,
+                                                assembly_id),
               context=solum.TLS.trace)
     conductor_api.API(context=ctxt).build_job_update(build_id, status,
                                                      description,
                                                      created_image_id,
+                                                     docker_image_name,
                                                      assembly_id)
 
 
@@ -102,13 +106,15 @@ def update_assembly_status(ctxt, assembly_id, status):
     conductor_api.API(context=ctxt).update_assembly(assembly_id, data)
 
 
-def update_lp_status(ctxt, image_id, status, external_ref=None):
+def update_lp_status(ctxt, image_id, status, external_ref=None,
+                     docker_image_name=None):
     if image_id is None:
         return
     LOG.debug('Updating languagepack %s status to %s and external_ref to %s'
               % (image_id, status, external_ref))
     conductor_api.API(context=ctxt).update_image(image_id, status,
-                                                 external_ref)
+                                                 external_ref,
+                                                 docker_image_name)
 
 
 def get_lp_access_method(lp_project_id):
@@ -284,15 +290,16 @@ class Handler(object):
                                  test_cmd) != 0:
                 return
 
-        built_image = None
+        du_image_loc = None
+        du_image_name = None
         if 'build' in workflow:
-            built_image = self._do_build(ctxt, build_id, git_info, name,
-                                         base_image_id, source_format,
-                                         image_format, assembly_id,
-                                         run_cmd)
+            du_image_loc, du_image_name = self._do_build(
+                ctxt, build_id, git_info, name, base_image_id, source_format,
+                image_format, assembly_id, run_cmd)
 
-        if 'deploy' in workflow and built_image:
-            self._do_deploy(ctxt, assembly_id, ports, built_image)
+        if 'deploy' in workflow and du_image_loc and du_image_name:
+            self._do_deploy(ctxt, assembly_id, ports, du_image_loc,
+                            du_image_name)
 
     def build(self, ctxt, build_id, git_info, name, base_image_id,
               source_format, image_format, assembly_id, run_cmd):
@@ -304,9 +311,11 @@ class Handler(object):
         self._do_unittest(ctxt, build_id, git_info, name, base_image_id,
                           source_format, image_format, assembly_id, test_cmd)
 
-    def _do_deploy(self, ctxt, assembly_id, ports, built_image):
+    def _do_deploy(self, ctxt, assembly_id, ports, du_image_loc,
+                   du_image_name):
         deployer_api.API(context=ctxt).deploy(assembly_id=assembly_id,
-                                              image_id=built_image,
+                                              image_loc=du_image_loc,
+                                              image_name=du_image_name,
                                               ports=ports)
 
     def _do_build(self, ctxt, build_id, git_info, name, base_image_id,
@@ -323,7 +332,9 @@ class Handler(object):
         if base_image_id != 'auto':
             image = objects.registry.Image.get_lp_by_name_or_uuid(
                 ctxt, base_image_id, include_operators_lp=True)
-            if not image.external_ref:
+            if (not image or not image.project_id or not image.status or
+                    not image.external_ref or not image.docker_image_name or
+                    image.status.lower() != 'ready'):
                 LOG.warn("Error building due to language pack not ready."
                          " assembly ID: %s" % assembly_id)
                 job_update_notification(ctxt, build_id, IMAGE_STATES.ERROR,
@@ -332,9 +343,8 @@ class Handler(object):
                 update_assembly_status(ctxt, assembly_id,
                                        ASSEMBLY_STATES.ERROR)
                 return
-            image_loc_and_tag = image.external_ref.split('DOCKER_IMAGE_TAG=')
-            base_image_id = image_loc_and_tag[0]
-            image_tag = image_loc_and_tag[1]
+            base_image_id = image.external_ref
+            image_tag = image.docker_image_name
             lp_access = get_lp_access_method(image.project_id)
 
         build_cmd = self._get_build_command(ctxt, 'build', source_uri,
@@ -394,23 +404,26 @@ class Handler(object):
                             'build')
 
         '''
-        we expect one line in the output that looks like:
-        created_image_id=<location of DU>DOCKER_IMAGE_TAG=<tag of DU>
-        The location is:
+        we expect two lines in the output that looks like:
+        created_image_id=<location of DU>
+        docker_image_name=<DU name>
+        The DU location is:
         DU's swift tempUrl if backend is 'swift';
         DU's UUID in glance if backend is 'glance';
         DU's docker registry location if backend is 'docker_registry'
         '''
-        created_image_id = None
+        du_image_loc = None
+        docker_image_name = None
         for line in out.split('\n'):
+            # Won't break out until we get the final
+            # matching which is the expected value
             if line.startswith('created_image_id'):
-                # Won't break out until we get the final
-                # matching which is the expected value
                 solum.TLS.trace.support_info(build_out_line=line)
-                created_image_id = line.replace("created_image_id=", '')
-                LOG.debug("created_image_id:%s" % created_image_id)
+                du_image_loc = line.replace('created_image_id=', '').strip()
+            elif line.startswith('docker_image_name'):
+                docker_image_name = line.replace('docker_image_name=', '')
 
-        if not created_image_id:
+        if not du_image_loc or not docker_image_name:
             job_update_notification(ctxt, build_id, IMAGE_STATES.ERROR,
                                     description='image not created',
                                     assembly_id=assembly_id)
@@ -419,10 +432,11 @@ class Handler(object):
         else:
             job_update_notification(ctxt, build_id, IMAGE_STATES.READY,
                                     description='built successfully',
-                                    created_image_id=created_image_id,
+                                    created_image_id=du_image_loc,
+                                    docker_image_name=docker_image_name,
                                     assembly_id=assembly_id)
             update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.BUILT)
-            return created_image_id
+            return (du_image_loc, docker_image_name)
 
     def _do_unittest(self, ctxt, build_id, git_info, name, base_image_id,
                      source_format, image_format, assembly_id, test_cmd):
@@ -442,15 +456,16 @@ class Handler(object):
         if base_image_id != 'auto':
             image = objects.registry.Image.get_lp_by_name_or_uuid(
                 ctxt, base_image_id, include_operators_lp=True)
-            if not image.external_ref:
+            if (not image or not image.project_id or not image.status or
+                    not image.external_ref or not image.docker_image_name or
+                    image.status.lower() != 'ready'):
                 LOG.warn("Error running unittest due to language pack"
                          " not ready. assembly ID: %s" % assembly_id)
                 update_assembly_status(ctxt, assembly_id,
                                        ASSEMBLY_STATES.ERROR)
                 return
-            image_loc_and_tag = image.external_ref.split('DOCKER_IMAGE_TAG=')
-            base_image_id = image_loc_and_tag[0]
-            image_tag = image_loc_and_tag[1]
+            base_image_id = image.external_ref
+            image_tag = image.docker_image_name
             lp_access = get_lp_access_method(image.project_id)
 
         git_url = git_info['source_url']
@@ -579,33 +594,37 @@ class Handler(object):
         out = None
         status = IMAGE_STATES.ERROR
         image_external_ref = None
+        docker_image_name = None
 
         try:
             out = subprocess.Popen(build_cmd,
                                    env=user_env,
                                    stdout=subprocess.PIPE).communicate()[0]
 
-            # we expect one line in the output that looks like:
+            # we expect two lines in the output that looks like:
             # image_external_ref=<external storage ref>
+            # docker_image_name=<DU name>
             for line in out.split('\n'):
+                # Won't break out until we get the final
+                # matching which is the expected value
                 if line.startswith('image_external_ref'):
-                    # Won't break out until we get the final
-                    # matching which is the expected value
                     solum.TLS.trace.support_info(build_lp_out_line=line)
-                    image_external_ref = line.replace("image_external_ref=",
-                                                      '')
-            if image_external_ref is not None:
+                    image_external_ref = line.replace('image_external_ref=',
+                                                      '').strip()
+                elif line.startswith('docker_image_name'):
+                    docker_image_name = line.replace('docker_image_name=', '')
+            if image_external_ref and docker_image_name:
                 status = IMAGE_STATES.READY
             else:
                 status = IMAGE_STATES.ERROR
         except OSError as subex:
-
             LOG.exception(_("Failed to successfully build languagepack: `%s`"),
                           image_id)
             LOG.exception(subex)
 
         img = get_image_by_id(ctxt, image_id)
         img.type = 'languagepack'
+        update_lp_status(ctxt, image_id, status, image_external_ref,
+                         docker_image_name)
         upload_task_log(ctxt, logpath, img,
                         user_env['BUILD_ID'], 'languagepack')
-        update_lp_status(ctxt, image_id, status, image_external_ref)

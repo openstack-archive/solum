@@ -49,6 +49,7 @@ class Image(sql.Base, abstract.Image):
     image_format = sa.Column(sa.String(12))
     artifact_type = sa.Column(sa.String(36))
     external_ref = sa.Column(sa.String(1024))
+    docker_image_name = sa.Column(sa.String(512))
 
     @classmethod
     def get_lp_by_name_or_uuid(cls, context, name_or_uuid,

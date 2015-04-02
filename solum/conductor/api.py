@@ -27,14 +27,17 @@ class API(service.API):
                                   topic=cfg.CONF.conductor.topic)
 
     def build_job_update(self, build_id, status, description, created_image_id,
-                         assembly_id):
+                         docker_image_name, assembly_id):
         self._cast('build_job_update', build_id=build_id, status=status,
                    description=description, created_image_id=created_image_id,
+                   docker_image_name=docker_image_name,
                    assembly_id=assembly_id)
 
     def update_assembly(self, assembly_id, data):
         self._cast('update_assembly', assembly_id=assembly_id, data=data)
 
-    def update_image(self, image_id, status, external_ref=None):
+    def update_image(self, image_id, status, external_ref=None,
+                     docker_image_name=None):
         self._cast('update_image', image_id=image_id, status=status,
-                   external_ref=external_ref)
+                   external_ref=external_ref,
+                   docker_image_name=docker_image_name)

@@ -181,8 +181,7 @@ class Handler(object):
 
         plan.destroy(ctxt)
 
-    def deploy(self, ctxt, assembly_id, image_id, ports):
-
+    def deploy(self, ctxt, assembly_id, image_loc, image_name, ports):
         osc = clients.OpenStackClients(ctxt)
 
         assem = objects.registry.Assembly.get_by_id(ctxt,
@@ -195,22 +194,19 @@ class Handler(object):
         msg = "Deploying Assembly %s" % assem.uuid
         t_logger.log(logging.DEBUG, msg)
 
-        LOG.debug("Image id:%s" % image_id)
+        LOG.debug("Image loc:%s, image_name:%s" % (image_loc, image_name))
 
         parameters = self._get_parameters(ctxt, cfg.CONF.api.image_format,
-                                          image_id, assem, ports, osc,
+                                          image_loc, assem, ports, osc,
                                           t_logger)
-
         LOG.debug(parameters)
 
         if parameters is None:
             return
 
-        template = self._get_template(ctxt,
-                                      cfg.CONF.api.image_format,
-                                      cfg.CONF.worker.image_storage,
-                                      image_id, assem, ports, t_logger)
-
+        template = self._get_template(ctxt, cfg.CONF.api.image_format,
+                                      cfg.CONF.worker.image_storage, image_loc,
+                                      image_name, assem, ports, t_logger)
         LOG.debug(template)
 
         if template is None:
@@ -280,7 +276,7 @@ class Handler(object):
             self._destroy_other_assemblies(ctxt, assem)
 
     def _get_template(self, ctxt, image_format, image_storage,
-                      image_id, assem, ports, t_logger):
+                      image_loc, image_name, assem, ports, t_logger):
         template = None
 
         if image_format == 'docker':
@@ -312,15 +308,11 @@ class Handler(object):
                     return template
 
                 if image_storage == 'docker_registry':
-                    template = self._get_template_for_docker_reg(assem,
-                                                                 template,
-                                                                 image_id,
-                                                                 ports)
+                    template = self._get_template_for_docker_reg(
+                        assem, template, image_loc, image_name, ports)
                 elif image_storage == 'swift':
-                    template = self._get_template_for_swift(assem,
-                                                            template,
-                                                            image_id,
-                                                            ports)
+                    template = self._get_template_for_swift(
+                        assem, template, image_loc, image_name, ports)
         else:
             LOG.debug("Image format %s is not supported." % image_format)
             update_assembly(ctxt, assem.id, {'status': STATES.ERROR})
@@ -329,12 +321,11 @@ class Handler(object):
 
         return template
 
-    def _get_parameters(self, ctxt, image_format, image_id, assem, ports, osc,
+    def _get_parameters(self, ctxt, image_format, image_loc, assem, ports, osc,
                         t_logger):
         parameters = None
         if image_format == 'docker':
-            image_uuid_du = image_id.split('DOCKER_IMAGE_TAG=')
-            glance_img_uuid = image_uuid_du[0].strip()
+            glance_img_uuid = image_loc
             LOG.debug("Image id:%s" % glance_img_uuid)
             LOG.debug("Specified ports:%s" % ports)
             LOG.debug("Picking first port..")
@@ -463,8 +454,8 @@ class Handler(object):
         return None
 
     def _get_template_for_docker_reg(self, assem, template,
-                                     origin_image_tar_location, ports):
-        du_name = origin_image_tar_location.split('DOCKER_IMAGE_TAG=')[0]
+                                     image_loc, image_name, ports):
+        du_name = image_loc
         ports_str = ''
         for port in ports:
             ports_str += ' -p {pt}:{pt}'.format(pt=port)
@@ -488,25 +479,12 @@ class Handler(object):
         return template
 
     def _get_template_for_swift(self, assem, template,
-                                origin_image_tar_location, ports):
-        LOG.debug("Image tar location and name:%s" % origin_image_tar_location)
-
-        # TODO(devkulkarni): extract du_name from assembly
-        image_loc_and_du_name = origin_image_tar_location.split(
-            'DOCKER_IMAGE_TAG=')
-        image_tar_location = image_loc_and_du_name[0]
-        du_name = image_loc_and_du_name[1]
+                                image_loc, image_name, ports):
+        image_tar_location = image_loc
+        du_name = image_name
 
         LOG.debug("DU Name:%s" % du_name)
         LOG.debug("Image tar loc:%s" % image_tar_location)
-
-        # TODO(devkulkarni): Change the assembly state to ERROR
-        if du_name is None:
-            LOG.debug("DU not created..")
-
-        # TODO(devkulkarni): Change the assembly state to ERROR
-        if image_tar_location is None:
-            LOG.debug("DU image not available..")
 
         ports_str = ''
         for port in ports:

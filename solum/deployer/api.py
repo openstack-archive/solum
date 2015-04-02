@@ -26,9 +26,9 @@ class API(service.API):
         super(API, self).__init__(transport, context,
                                   topic=cfg.CONF.deployer.topic)
 
-    def deploy(self, assembly_id, image_id, ports):
-        self._cast('deploy', assembly_id=assembly_id, image_id=image_id,
-                   ports=ports)
+    def deploy(self, assembly_id, image_loc, image_name, ports):
+        self._cast('deploy', assembly_id=assembly_id, image_loc=image_loc,
+                   image_name=image_name, ports=ports)
 
     def destroy_assembly(self, assem_id):
         self._cast('destroy_assembly', assem_id=assem_id)

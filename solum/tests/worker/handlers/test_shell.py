@@ -100,11 +100,13 @@ class HandlerTest(base.BaseTestCase):
         handler = shell_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
         fake_glance_id = str(uuid.uuid4())
+        fake_image_name = 'tenant-name-ts-commit'
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
         fake_image = fakes.FakeImage()
         mock_registry.Image.get_lp_by_name_or_uuid.return_value = fake_image
         mock_popen.return_value.communicate.return_value = [
-            'foo\ncreated_image_id=%s' % fake_glance_id, None]
+            'foo\ncreated_image_id=%s\ndocker_image_name=%s' %
+            (fake_glance_id, fake_image_name), None]
         test_env = mock_environment()
         mock_get_env.return_value = test_env
         git_info = mock_git_info()
@@ -123,9 +125,9 @@ class HandlerTest(base.BaseTestCase):
                                            env=test_env,
                                            stdout=-1)
         expected = [mock.call(5, 'BUILDING', 'Starting the image build',
-                              None, 44),
+                              None, None, 44),
                     mock.call(5, 'READY', 'built successfully',
-                              fake_glance_id, 44)]
+                              fake_glance_id, fake_image_name, 44)]
 
         self.assertEqual(expected, mock_b_update.call_args_list)
 
@@ -146,6 +148,7 @@ class HandlerTest(base.BaseTestCase):
         handler = shell_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
         fake_glance_id = str(uuid.uuid4())
+        fake_image_name = 'tenant-name-ts-commit'
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
         fake_image = fakes.FakeImage()
         mock_registry.Image.get_by_uuid.return_value = fake_image
@@ -155,13 +158,11 @@ class HandlerTest(base.BaseTestCase):
                               group='worker')
 
         mock_popen.return_value.communicate.return_value = [
-            'foo\ncreated_image_id=%sDOCKER_IMAGE_TAG=tenant-name-ts-commit' %
-            (fake_glance_id)]
+            'foo\ncreated_image_id=%s\ndocker_image_name=%s' %
+            (fake_glance_id, fake_image_name)]
         test_env = mock_environment()
         mock_get_env.return_value = test_env
         git_info = mock_git_info()
-
-        image_id = fake_glance_id + "DOCKER_IMAGE_TAG=tenant-name-ts-commit"
 
         handler.build(self.ctx, build_id=5, git_info=git_info, name='new_app',
                       base_image_id=fake_image.base_image_id,
@@ -171,17 +172,17 @@ class HandlerTest(base.BaseTestCase):
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
         script = os.path.join(proj_dir, 'contrib/lp-cedarish/docker/build-app')
-        expected_loc = fake_image.external_ref.split('DOCKER_IMAGE_TAG=')[0]
-        expected_tag = fake_image.external_ref.split('DOCKER_IMAGE_TAG=')[1]
+        expected_loc = fake_image.external_ref
+        expected_tag = fake_image.docker_image_name
         mock_popen.assert_called_once_with([script, 'git://example.com/foo',
                                             'new_app', self.ctx.tenant,
                                             expected_loc, expected_tag],
                                            env=test_env,
                                            stdout=-1)
         expected = [mock.call(5, 'BUILDING', 'Starting the image build',
-                              None, 44),
+                              None, None, 44),
                     mock.call(5, 'READY', 'built successfully',
-                              image_id, 44)]
+                              fake_glance_id, fake_image_name, 44)]
 
         self.assertEqual(expected, mock_b_update.call_args_list)
 
@@ -204,12 +205,14 @@ class HandlerTest(base.BaseTestCase):
         handler = shell_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
         fake_glance_id = str(uuid.uuid4())
+        fake_image_name = 'tenant-name-ts-commit'
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
         fake_image = fakes.FakeImage()
         mock_registry.Image.get_lp_by_name_or_uuid.return_value = fake_image
         handler._update_assembly_status = mock.MagicMock()
         mock_popen.return_value.communicate.return_value = [
-            'foo\ncreated_image_id=%s' % fake_glance_id, None]
+            'foo\ncreated_image_id=%s\ndocker_image_name=%s' %
+            (fake_glance_id, fake_image_name), None]
         test_env = mock_environment()
         mock_get_env.return_value = test_env
         mock_ast.return_value = [{'source_url': 'git://example.com/foo',
@@ -231,9 +234,9 @@ class HandlerTest(base.BaseTestCase):
                                             self.img_name],
                                            env=test_env, stdout=-1)
         expected = [mock.call(5, 'BUILDING', 'Starting the image build',
-                              None, 44),
+                              None, None, 44),
                     mock.call(5, 'READY', 'built successfully',
-                              fake_glance_id, 44)]
+                              fake_glance_id, fake_image_name, 44)]
 
         self.assertEqual(expected, mock_b_update.call_args_list)
 
@@ -241,7 +244,8 @@ class HandlerTest(base.BaseTestCase):
                     mock.call(44, {'status': 'BUILT'})]
         self.assertEqual(expected, mock_uas.call_args_list)
 
-        expected = [mock.call(assembly_id=44, image_id=fake_glance_id,
+        expected = [mock.call(assembly_id=44, image_loc=fake_glance_id,
+                              image_name=fake_image_name,
                               ports=[80])]
         self.assertEqual(expected, mock_deploy.call_args_list)
 
@@ -260,12 +264,14 @@ class HandlerTest(base.BaseTestCase):
         handler = shell_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
         fake_glance_id = str(uuid.uuid4())
+        fake_image_name = 'tenant-name-ts-commit'
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
         fake_image = fakes.FakeImage()
         mock_registry.Image.get_lp_by_name_or_uuid.return_value = fake_image
         handler._update_assembly_status = mock.MagicMock()
         mock_popen.return_value.communicate.return_value = [
-            'foo\ncreated_image_id=%s' % fake_glance_id, None]
+            'foo\ncreated_image_id=%s\ndocker_image_name=%s' %
+            (fake_glance_id, fake_image_name), None]
         test_env = mock_environment()
         mock_get_env.return_value = test_env
         cfg.CONF.set_override('system_param_store', 'local_file',
@@ -295,9 +301,9 @@ class HandlerTest(base.BaseTestCase):
                                             self.img_name],
                                            env=test_env, stdout=-1)
         expected = [mock.call(5, 'BUILDING', 'Starting the image build',
-                              None, 44),
+                              None, None, 44),
                     mock.call(5, 'READY', 'built successfully',
-                              fake_glance_id, 44)]
+                              fake_glance_id, fake_image_name, 44)]
 
         self.assertEqual(expected, mock_b_update.call_args_list)
 
@@ -305,7 +311,8 @@ class HandlerTest(base.BaseTestCase):
                     mock.call(44, {'status': 'BUILT'})]
         self.assertEqual(expected, mock_uas.call_args_list)
 
-        expected = [mock.call(assembly_id=44, image_id=fake_glance_id,
+        expected = [mock.call(assembly_id=44, image_loc=fake_glance_id,
+                              image_name=fake_image_name,
                               ports=[80])]
         self.assertEqual(expected, mock_deploy.call_args_list)
 
@@ -340,8 +347,8 @@ class HandlerTest(base.BaseTestCase):
                                            env=test_env, stdout=-1)
 
         expected = [mock.call(5, 'BUILDING', 'Starting the image build',
-                              None, 44),
-                    mock.call(5, 'ERROR', 'image not created', None, 44)]
+                              None, None, 44),
+                    mock.call(5, 'ERROR', 'image not created', None, None, 44)]
 
         self.assertEqual(expected, mock_b_update.call_args_list)
 
@@ -379,8 +386,8 @@ class HandlerTest(base.BaseTestCase):
                                            env=test_env, stdout=-1)
 
         expected = [mock.call(5, 'BUILDING', 'Starting the image build',
-                              None, 44),
-                    mock.call(5, 'ERROR', 'image not created', None, 44)]
+                              None, None, 44),
+                    mock.call(5, 'ERROR', 'image not created', None, None, 44)]
 
         self.assertEqual(expected, mock_b_update.call_args_list)
 
@@ -471,12 +478,14 @@ class HandlerTest(base.BaseTestCase):
         handler = shell_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
         fake_glance_id = str(uuid.uuid4())
+        fake_image_name = 'tenant-name-ts-commit'
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
         fake_image = fakes.FakeImage()
         mock_registry.Image.get_lp_by_name_or_uuid.return_value = fake_image
         mock_popen.return_value.wait.return_value = 0
         mock_popen.return_value.communicate.return_value = [
-            'foo\ncreated_image_id=%s' % fake_glance_id, None]
+            'foo\ncreated_image_id=%s\ndocker_image_name=%s' %
+            (fake_glance_id, fake_image_name), None]
         test_env = mock_environment()
         mock_get_env.return_value = test_env
         git_info = mock_git_info()
@@ -505,9 +514,9 @@ class HandlerTest(base.BaseTestCase):
         self.assertEqual(expected, mock_popen.call_args_list)
 
         expected = [mock.call(5, 'BUILDING', 'Starting the image build',
-                              None, 44),
+                              None, None, 44),
                     mock.call(5, 'READY', 'built successfully',
-                              fake_glance_id, 44)]
+                              fake_glance_id, fake_image_name, 44)]
         self.assertEqual(expected, mock_b_update.call_args_list)
 
         expected = [mock.call(self.ctx, 44, 'UNIT_TESTING'),
@@ -516,7 +525,8 @@ class HandlerTest(base.BaseTestCase):
                     mock.call(self.ctx, 44, 'BUILT')]
         self.assertEqual(expected, mock_a_update.call_args_list)
 
-        expected = [mock.call(assembly_id=44, image_id=fake_glance_id,
+        expected = [mock.call(assembly_id=44, image_loc=fake_glance_id,
+                              image_name=fake_image_name,
                               ports=[80])]
         self.assertEqual(expected, mock_deploy.call_args_list)
 
@@ -705,9 +715,11 @@ class TestLanguagePackBuildCommand(base.BaseTestCase):
         handler = shell_handler.Handler()
         fake_image = fakes.FakeImage()
         fake_glance_id = str(uuid.uuid4())
+        fake_image_name = 'tenant-name-ts-commit'
         mock_registry.Image.get_lp_by_name_or_uuid.return_value = fake_image
         mock_popen.return_value.communicate.return_value = [
-            'foo\nimage_external_ref=%s\n' % fake_glance_id, None]
+            'foo\nimage_external_ref=%s\ndocker_image_name=%s\n' %
+            (fake_glance_id, fake_image_name), None]
         test_env = mock_environment()
         mock_get_env.return_value = test_env
         git_info = mock_git_info()
@@ -723,6 +735,6 @@ class TestLanguagePackBuildCommand(base.BaseTestCase):
                                            env=test_env,
                                            stdout=-1)
 
-        expected = [mock.call(5, 'BUILDING', None),
-                    mock.call(5, 'READY', fake_glance_id)]
+        expected = [mock.call(5, 'BUILDING', None, None),
+                    mock.call(5, 'READY', fake_glance_id, fake_image_name)]
         self.assertEqual(expected, mock_ui.call_args_list)

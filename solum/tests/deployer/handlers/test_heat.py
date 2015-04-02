@@ -68,7 +68,7 @@ class HandlerTest(base.BaseTestCase):
             "links": [{"href": "http://fake.ref",
                        "rel": "self"}]}}
         handler._check_stack_status = mock.MagicMock()
-        handler.deploy(self.ctx, 77, 'created_image_id', [80])
+        handler.deploy(self.ctx, 77, 'created_image_id', 'image_name', [80])
         stacks = mock_clients.return_value.heat.return_value.stacks
         stacks.create.assert_called_once()
         assign_and_create_mock = mock_registry.Component.assign_and_create
@@ -94,9 +94,9 @@ class HandlerTest(base.BaseTestCase):
         fake_assembly = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
         fake_template = self._get_fake_template()
-        img = ("http://a.b.c/d?temp_url_sig=v&temp_url_expires=v"
-               "DOCKER_IMAGE_TAG=tenant-name-ts-commit")
-        template = self._get_tmpl_for_swift(fake_assembly, fake_template, img)
+        img = "http://a.b.c/d?temp_url_sig=v&temp_url_expires=v"
+        template = self._get_tmpl_for_swift(fake_assembly, fake_template, img,
+                                            'tenant-name-ts-commit')
         cfg.CONF.api.image_format = "vm"
         cfg.CONF.worker.image_storage = "swift"
         cfg.CONF.deployer.flavor = "flavor"
@@ -109,7 +109,7 @@ class HandlerTest(base.BaseTestCase):
             "links": [{"href": "http://fake.ref",
                        "rel": "self"}]}}
         handler._check_stack_status = mock.MagicMock()
-        handler.deploy(self.ctx, 77, img, [80])
+        handler.deploy(self.ctx, 77, img, 'tenant-name-ts-commit', [80])
         stacks = mock_clients.return_value.heat.return_value.stacks
 
         parameters = {'name': fake_assembly.uuid,
@@ -153,7 +153,7 @@ class HandlerTest(base.BaseTestCase):
             "links": [{"href": "http://fake.ref",
                        "rel": "self"}]}}
         handler._check_stack_status = mock.MagicMock()
-        handler.deploy(self.ctx, 77, 'created_image_id', [80])
+        handler.deploy(self.ctx, 77, 'created_image_id', 'image_name', [80])
         assign_and_create_mock = mock_registry.Component.assign_and_create
         comp_name = 'Heat Stack for %s' % fake_assembly.name
         self.assertRaises(AssertionError,
@@ -188,7 +188,7 @@ class HandlerTest(base.BaseTestCase):
             "links": [{"href": "http://fake.ref",
                        "rel": "self"}]}}
         handler._check_stack_status = mock.MagicMock()
-        handler.deploy(self.ctx, 77, 'created_image_id', [80])
+        handler.deploy(self.ctx, 77, 'created_image_id', 'image_name', [80])
         parameters = {'image': 'created_image_id',
                       'app_name': 'faker',
                       'port': 80}
@@ -294,11 +294,12 @@ class HandlerTest(base.BaseTestCase):
 
         image_format = 'vm'
         image_storage = 'glance'
-        image_id = 'abc'
+        image_loc = 'abc'
+        image_name = 'def'
         ports = [80]
         mock_logger = mock.MagicMock()
         template = handler._get_template(self.ctx, image_format,
-                                         image_storage, image_id,
+                                         image_storage, image_loc, image_name,
                                          fake_assembly, ports, mock_logger)
         self.assertIsNone(template)
         mock_update_assembly.assert_called_once_with(fake_assembly.id,
@@ -311,11 +312,12 @@ class HandlerTest(base.BaseTestCase):
 
         image_format = 'vm'
         image_storage = 'glance'
-        image_id = 'abc'
+        image_loc = 'abc'
+        image_name = 'def'
         ports = [80]
         mock_logger = mock.MagicMock()
         template = handler._get_template(self.ctx, image_format,
-                                         image_storage, image_id,
+                                         image_storage, image_loc, image_name,
                                          fake_assembly, ports, mock_logger)
         self.assertIsNone(template)
         mock_update_assembly.assert_called_once_with(fake_assembly.id,
@@ -332,11 +334,12 @@ class HandlerTest(base.BaseTestCase):
 
         image_format = 'vm'
         image_storage = 'docker_registry'
-        image_id = 'abc'
+        image_loc = 'abc'
+        image_name = 'def'
         ports = [80]
         mock_logger = mock.MagicMock()
         template = handler._get_template(self.ctx, image_format,
-                                         image_storage, image_id,
+                                         image_storage, image_loc, image_name,
                                          fake_assembly, ports, mock_logger)
         self.assertIsNotNone(template)
         handler._get_template_for_docker_reg.assert_called_once()
@@ -353,11 +356,12 @@ class HandlerTest(base.BaseTestCase):
 
         image_format = 'vm'
         image_storage = 'swift'
-        image_id = 'abc'
+        image_loc = 'abc'
+        image_name = 'def'
         ports = [80]
         mock_logger = mock.MagicMock()
         template = handler._get_template(self.ctx, image_format,
-                                         image_storage, image_id,
+                                         image_storage, image_loc, image_name,
                                          fake_assembly, ports, mock_logger)
         self.assertIsNotNone(template)
         handler._get_template_for_swift.assert_called_once()
@@ -378,11 +382,12 @@ class HandlerTest(base.BaseTestCase):
 
         image_format = 'vm'
         image_storage = 'swift'
-        image_id = 'abc'
+        image_loc = 'abc'
+        image_name = 'def'
         ports = [80]
         mock_logger = mock.MagicMock()
         template = handler._get_template(self.ctx, image_format,
-                                         image_storage, image_id,
+                                         image_storage, image_loc, image_name,
                                          fake_assembly, ports, mock_logger)
         self.assertIsNone(template)
         mock_ua.assert_called_once_with(fake_assembly.id,
@@ -405,11 +410,12 @@ class HandlerTest(base.BaseTestCase):
 
         image_format = 'docker'
         image_storage = 'swift'
-        image_id = 'abc'
+        image_loc = 'abc'
+        image_name = 'def'
         ports = [80]
         mock_logger = mock.MagicMock()
         template = handler._get_template(self.ctx, image_format,
-                                         image_storage, image_id,
+                                         image_storage, image_loc, image_name,
                                          fake_assembly, ports, mock_logger)
         self.assertIsNone(template)
         mock_ua.assert_called_once_with(fake_assembly.id,
@@ -423,13 +429,13 @@ class HandlerTest(base.BaseTestCase):
         fake_assembly = fakes.FakeAssembly()
 
         image_format = 'docker'
-        image_id = 'abc DOCKER_IMAGE_TAG=abc'
+        image_loc = 'abc'
         ports = [80]
 
         mock_logger = mock.MagicMock()
 
         params = handler._get_parameters(self.ctx, image_format,
-                                         image_id, fake_assembly,
+                                         image_loc, fake_assembly,
                                          ports, mock_clients, mock_logger)
 
         self.assertEqual(params['app_name'], fake_assembly.name)
@@ -444,7 +450,7 @@ class HandlerTest(base.BaseTestCase):
         fake_assembly = fakes.FakeAssembly()
 
         image_format = 'vm'
-        image_id = 'abc DOCKER_IMAGE_TAG=abc'
+        image_loc = 'abc'
         ports = [80]
 
         mock_logger = mock.MagicMock()
@@ -453,7 +459,7 @@ class HandlerTest(base.BaseTestCase):
         cfg.CONF.set_override('image', 'def', group='deployer')
 
         params = handler._get_parameters(self.ctx, image_format,
-                                         image_id, fake_assembly,
+                                         image_loc, fake_assembly,
                                          ports, mock_clients, mock_logger)
 
         self.assertEqual(params['name'], str(fake_assembly.uuid))
@@ -473,13 +479,13 @@ class HandlerTest(base.BaseTestCase):
         fake_assembly = fakes.FakeAssembly()
 
         image_format = 'abc'
-        image_id = 'abc DOCKER_IMAGE_TAG=abc'
+        image_loc = 'abc'
         ports = [80]
 
         mock_logger = mock.MagicMock()
 
         params = handler._get_parameters(self.ctx, image_format,
-                                         image_id, fake_assembly,
+                                         image_loc, fake_assembly,
                                          ports, mock_clients, mock_logger)
 
         self.assertIsNone(params)
@@ -710,12 +716,10 @@ class HandlerTest(base.BaseTestCase):
         template = yaml.dump(template_bdy)
         return template
 
-    def _get_tmpl_for_swift(self, assem, template, image_tar_location):
+    def _get_tmpl_for_swift(self, assem, template, image_loc, image_name):
         template_bdy = yaml.safe_load(template)
 
-        image_loc_and_du_name = image_tar_location.split("DOCKER_IMAGE_TAG=")
-        image_tar_location = image_loc_and_du_name[0]
-        du_name = image_loc_and_du_name[1]
+        image_tar_location = image_loc
 
         run_docker = ('#!/bin/bash -x\n'
                       '# Invoke the container\n'
@@ -724,7 +728,7 @@ class HandlerTest(base.BaseTestCase):
                       'docker run -p 80:80 -d {du}\n'
                       'wc_notify --data-binary {stat}')
         run_docker = run_docker.format(image_tar_location=image_tar_location,
-                                       du=du_name,
+                                       du=image_name,
                                        stat='\'{"status": "SUCCESS"}\'')
 
         comp_instance = template_bdy['resources']['compute_instance']
