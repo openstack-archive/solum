@@ -284,6 +284,11 @@ class PlanStillReferenced(ResourceStillReferenced):
                 " Assemblies reference it.")
 
 
+class LPStillReferenced(ResourceStillReferenced):
+    msg_fmt = _("Languagepack %(name)s cannot be deleted because one or more"
+                " applications reference it.")
+
+
 class NotImplemented(SolumException):
     msg_fmt = _("The requested operation is not implemented.")
     code = 501

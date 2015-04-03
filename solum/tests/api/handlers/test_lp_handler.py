@@ -57,12 +57,43 @@ class TestLanguagePackHandler(base.BaseTestCase):
         fi.update.assert_called_once_with(data)
         fi.create.assert_called_once_with(self.ctx)
 
-    def test_languagepack_delete(self, mock_img):
+    @mock.patch('solum.objects.registry.PlanList')
+    def test_languagepack_delete(self, mock_planlist, mock_img):
         fi = fakes.FakeImage()
         mock_img.get_lp_by_name_or_uuid.return_value = fi
         mock_img.destroy.return_value = {}
+        mock_planlist.get_all.return_value = {}
         handler = language_pack_handler.LanguagePackHandler(self.ctx)
-        handler.delete('test_id')
+        handler.delete('test_lp')
         mock_img.get_lp_by_name_or_uuid.assert_called_once_with(
-            self.ctx, 'test_id')
+            self.ctx, 'test_lp')
+        fi.destroy.assert_called_once_with(self.ctx)
+
+    @mock.patch('solum.objects.registry.PlanList')
+    def test_languagepack_delete_with_plan_using_lp(self, mock_planlist,
+                                                    mock_img):
+        fi = fakes.FakeImage()
+        fi.name = 'test_lp'
+        mock_img.get_lp_by_name_or_uuid.return_value = fi
+        mock_img.destroy.return_value = {}
+        mock_planlist.get_all.return_value = [fakes.FakePlan()]
+        handler = language_pack_handler.LanguagePackHandler(self.ctx)
+        self.assertRaises(exc.LPStillReferenced, handler.delete, 'test_lp')
+        mock_img.get_lp_by_name_or_uuid.assert_called_once_with(
+            self.ctx, 'test_lp')
+        mock_planlist.get_all.assert_called_once()
+        assert not fi.destroy.called
+
+    @mock.patch('solum.objects.registry.PlanList')
+    def test_languagepack_delete_with_plan_not_using_lp(self, mock_planlist,
+                                                        mock_img):
+        fi = fakes.FakeImage()
+        mock_img.get_lp_by_name_or_uuid.return_value = fi
+        mock_img.destroy.return_value = {}
+        mock_planlist.get_all.return_value = [fakes.FakePlan()]
+        handler = language_pack_handler.LanguagePackHandler(self.ctx)
+        handler.delete('lp_name')
+        mock_img.get_lp_by_name_or_uuid.assert_called_once_with(
+            self.ctx, 'lp_name')
+        mock_planlist.get_all.assert_called_once()
         fi.destroy.assert_called_once_with(self.ctx)

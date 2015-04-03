@@ -13,6 +13,7 @@
 # under the License.
 
 import json
+import time
 
 from tempest_lib import exceptions as tempest_exceptions
 
@@ -20,6 +21,13 @@ from functionaltests.api import base
 
 sample_lp = {"name": "language_pack_name",
              "source_uri": "https://github.com/murali44/Solum-lp-Go.git"}
+
+sample_plan = {"version": "1",
+               "name": "test_plan",
+               "artifacts": [{
+                   "name": "No deus",
+                   "language_pack": "language_pack_name"
+               }]}
 
 
 class TestLanguagePackController(base.TestCase):
@@ -90,3 +98,13 @@ class TestLanguagePackController(base.TestCase):
     def test_language_packs_delete_not_found(self):
         self.assertRaises(tempest_exceptions.NotFound,
                           self.client.delete, 'v1/language_packs/not_found')
+
+    def test_language_packs_delete_used_by_app(self):
+        uuid = self._create_language_pack()
+        resp = self.client.create_plan(data=sample_plan)
+        self.assertRaises(tempest_exceptions.Conflict,
+                          self.client.delete, 'v1/language_packs/%s' % uuid)
+        self.client.delete_plan(resp.uuid)
+        # Sleep for a few seconds to make sure plans are deleted.
+        time.sleep(5)
+        self._delete_language_pack(uuid)

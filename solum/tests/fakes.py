@@ -256,7 +256,8 @@ class FakePlan(mock.Mock):
         super(FakePlan, self).__init__(**kwargs)
         self.__tablename__ = 'plan'
         self.__resource__ = 'plans'
-        self.raw_content = {'name': 'faker', 'artifacts': []}
+        self.raw_content = ({'name': 'faker',
+                            'artifacts': [{'language_pack': 'test_lp'}]})
         self.user_id = 'fake user id'
         self.project_id = 'fake_project_id'
         self.uuid = 'test_uuid'

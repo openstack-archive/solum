@@ -76,6 +76,14 @@ class LanguagePackHandler(handler.Handler):
         """Delete a languagepack."""
         db_obj = objects.registry.Image.get_lp_by_name_or_uuid(self.context,
                                                                uuid)
+
+        # Check if the languagepack is being used.
+        plans = objects.registry.PlanList.get_all(self.context)
+        for plan in plans:
+            lp = plan.raw_content['artifacts'][0]['language_pack']
+            if lp == db_obj.name or lp == db_obj.uuid:
+                raise exc.LPStillReferenced(name=uuid)
+
         return db_obj.destroy(self.context)
 
     def _start_build(self, image):
