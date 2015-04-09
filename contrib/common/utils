@@ -133,10 +133,9 @@ function add_ssh_creds () {
     chmod 600 $SSH_PRIVATE_KEY_FILE
     ssh-add $SSH_PRIVATE_KEY_FILE ; EXIT_STATUS=$?
     rm -f $SSH_PRIVATE_KEY_FILE
-    if [ "$EXIT_STATUS" != "0" ] ; then
-      TLOG "FAILED: ssh key register with ssh-agent (EXIT_STATUS=$EXIT_STATUS)"
-      exit 1
-    fi
+    return $EXIT_STATUS
+  else
+    return 0
   fi
 }
 
@@ -181,4 +180,36 @@ function docker_build_with_retry () {
   PRUN sudo docker build --force-rm=true -t $APP_NAME $DESTINATION && return 0
   sleep 2
   PRUN sudo docker build --no-cache --force-rm=true -t $APP_NAME $DESTINATION
+}
+
+function docker_load_with_retry () {
+  local FILE=$1
+  shift
+  sudo docker load -i $FILE && return 0
+  sleep 1
+  sudo docker load -i $FILE
+}
+
+function docker_save_with_retry () {
+  local OUTPUT_FILE=$1
+  shift
+  local DOCKER_IMG=$1
+
+  sudo docker save --output $OUTPUT_FILE $DOCKER_IMG && return 0
+  sleep 1
+  sudo docker save --output $OUTPUT_FILE $DOCKER_IMG
+}
+
+function swift_download_with_retry () {
+  local TOKEN=$1
+  shift
+  local STORAGE_URL=$1
+  shift
+  local OBJECT=$1
+  shift
+  local OUTPUT_FILE=$1
+
+  swift --os-auth-token $TOKEN --os-storage-url $STORAGE_URL download solum_lp $OBJECT --output $OUTPUT_FILE && return 0
+  sleep 1
+  swift --os-auth-token $TOKEN --os-storage-url $STORAGE_URL download solum_lp $OBJECT --output $OUTPUT_FILE
 }

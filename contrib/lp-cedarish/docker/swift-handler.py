@@ -15,6 +15,7 @@
 """Swift Handler"""
 
 import sys
+import time
 
 from solum.openstack.common import log as logging
 import solum.uploaders.swift
@@ -38,22 +39,29 @@ upload_args = {'region_name': str(region_name),
                'name': str(app),
                'path': str(path)}
 
+status = 0
+
 if action_to_take == 'upload':
     try:
-        LOG.debug("Calling swift uploader")
         solum.uploaders.swift.SwiftUpload(**upload_args).upload_image()
-    except Exception as e:
-        LOG.exception(e)
-        status = "1"
-    status = "0"
+    except Exception:
+        time.sleep(1)
+        try:
+            solum.uploaders.swift.SwiftUpload(**upload_args).upload_image()
+        except Exception as e:
+            LOG.exception(e)
+            status = 1
 elif action_to_take == 'stat':
     try:
         solum.uploaders.swift.SwiftUpload(**upload_args).stat()
-    except Exception as e:
-        LOG.exception(e)
-        status = "1"
-    status = "0"
+    except Exception:
+        time.sleep(1)
+        try:
+            solum.uploaders.swift.SwiftUpload(**upload_args).stat()
+        except Exception as e:
+            LOG.exception(e)
+            status = 1
 else:
-    status = "Unknown action."
+    status = -1
 
-print('%s' % (str(status)))
+print('%s' % status)

@@ -3,7 +3,7 @@
 
 SCRIPT_START_TIME=`date +'%s'`
 TASKNAME=languagepack
-REUSE_IMAGES_IF_REPO_UNCHANGED=${REUSE_IMAGES_IF_REPO_UNCHANGED:="1"}
+REUSE_IMAGES_IF_REPO_UNCHANGED=${REUSE_IMAGES_IF_REPO_UNCHANGED:="0"}
 GIT_PRIVATE_KEY=${REPO_DEPLOY_KEYS:-''}
 IMAGE_STORAGE=${IMAGE_STORAGE:-null}
 DELETE_LOCAL_CACHE=${DELETE_LOCAL_CACHE:-null}
@@ -28,18 +28,35 @@ function app_glance_id () {
   glance --os-auth-token $OS_AUTH_TOKEN image-list --name $1 --sort-key updated_at --sort-dir asc | grep -v "+--" | tail -1 | cut -d'|' -f2
 }
 
+function cleanup_on_exit () {
+  if [[ $DELETE_LOCAL_CACHE == "true" ]]; then
+    # Delete the local image once we've uploaded the image.
+    if [[ -n $LP_IMG_TAG ]]; then
+      sudo docker rmi -f $LP_IMG_TAG
+    fi
+
+    # Delete the cloned git repo
+    if [[ -n $TMP_LP_DIR ]]; then
+      rm -rf $TMP_LP_DIR
+    fi
+
+    # Delete temp output file
+    if [[ -n $LP_FILE ]] && [[ -e $LP_FILE ]]; then
+      rm -f $LP_FILE
+    fi
+  fi
+}
+
 TLOG ===== Starting Language Pack Build Script $0 $*
 
 # Make sure tenant auth credentials were passed in.
 if [[ -z $OS_AUTH_TOKEN ]]; then
-  TLOG openstack credentials not passed via ENV.
-  exit 1
+  TLOG openstack credentials not passed via ENV. && exit 1
 fi
 
 # Check command line arguments
-if [ $# -lt 3 ]; then
-  TLOG Usage: $0 git_url lpname project_id
-  exit 1
+if [[ $# -lt 3 ]]; then
+  TLOG Usage: $0 git_url lpname project_id && exit 1
 fi
 
 PRUN silent sudo docker ps
@@ -51,25 +68,27 @@ LPNAME=$1
 shift
 TENANT=$1
 
+TS=$(date +"%Y%m%dt%H%M%S%N")
 GIT_CHECKSUM=$(echo $GIT | md5sum | awk '{print $1;}')
-TMP_LP_DIR=/tmp/lps/$TENANT/$GIT_CHECKSUM
+TMP_LP_DIR="/tmp/lps/$TENANT/$GIT_CHECKSUM-$TS"
 mkdir -p $TMP_LP_DIR
+
+trap cleanup_on_exit EXIT
 
 TLOG ===== Cloning repo
 git_clone_with_retry $GIT $TMP_LP_DIR/build
-[[ $? != 0 ]] && TLOG Git clone failed. Check repo $GIT && rm -rf $TMP_LP_DIR && exit 1
+[[ $? != 0 ]] && TLOG Git clone failed. Check repo $GIT && exit 1
 
-if [ -d "$TMP_LP_DIR/build" ] ; then
+if [[ -d "$TMP_LP_DIR/build" ]]; then
   cd $TMP_LP_DIR/build
   COMMIT_ID=$(git log -1 --pretty=%H)
-  TS=$(date +"%Y%m%dt%H%M%S%N")
   LP_IMG_TAG="$TENANT-$LPNAME-$TS-$COMMIT_ID"
   STORAGE_OBJ_NAME="$LPNAME-$TS-$COMMIT_ID"
 
   TLOG Building LP
   if [[ $IMAGE_STORAGE == "glance" ]]; then
     PRUN silent glance --os-auth-token $OS_AUTH_TOKEN image-list
-    if [ $? != 0 ]; then
+    if [[ $? != 0 ]]; then
       TLOG Cannot talk to Glance. Check your OpenStack credentials. && exit 1
     fi
 
@@ -78,7 +97,7 @@ if [ -d "$TMP_LP_DIR/build" ] ; then
     TLOG ===== finished docker build
 
     sudo docker save "$LP_IMG_TAG" | glance --os-auth-token $OS_AUTH_TOKEN image-create --container-format=docker --disk-format=raw --name "$STORAGE_OBJ_NAME"
-    if [ $? != 0 ]; then
+    if [[ $? != 0 ]]; then
       TLOG Failed to upload languagepack to glance. && exit 1
     fi
     TLOG ===== finished uploading LP to $IMAGE_STORAGE
@@ -88,20 +107,16 @@ if [ -d "$TMP_LP_DIR/build" ] ; then
     TLOG ===== tagging glace image $image_id
     glance --os-auth-token $OS_AUTH_TOKEN --os-image-api-version 2 image-tag-update $image_id 'solum::lp'
   elif [[ $IMAGE_STORAGE == "swift" ]]; then
-    stat_status=`python $HERE/swift-handler.py $OS_REGION_NAME $OS_AUTH_TOKEN $OS_STORAGE_URL stat solum_lp '' ''`
-    if [ "$stat_status" != "0" ]; then
-      TLOG Cannot talk to Swift. Check your OpenStack credentials. && exit 1
-    fi
-
     docker_build_with_retry $LP_IMG_TAG .
     [[ $? != 0 ]] && TLOG Docker build failed. && exit 1
     TLOG ===== finished docker build
 
     LP_FILE="$TMP_LP_DIR/$STORAGE_OBJ_NAME"
-    sudo docker save --output $LP_FILE $LP_IMG_TAG
+    docker_save_with_retry $LP_FILE $LP_IMG_TAG
+    [[ $? != 0 ]] && TLOG Docker save failed. && exit 1
 
     upload_status=`python $HERE/swift-handler.py $OS_REGION_NAME $OS_AUTH_TOKEN $OS_STORAGE_URL upload solum_lp $STORAGE_OBJ_NAME $LP_FILE`
-    if [ "$upload_status" != "0" ]; then
+    if [[ "$upload_status" != "0" ]]; then
       TLOG Failed to upload languagepack to swift. && exit 1
     fi
 
@@ -139,7 +154,7 @@ if [ -d "$TMP_LP_DIR/build" ] ; then
     PRUN sudo docker tag $LP_IMG_TAG $APP_NAME
 
     sudo docker push $APP_NAME
-    if [ $? != 0 ]; then
+    if [[ $? != 0 ]]; then
       TLOG Failed to upload languagepack to docker registry. && exit 1
     fi
     TLOG ===== finished uploading LP to $IMAGE_STORAGE
@@ -148,20 +163,7 @@ if [ -d "$TMP_LP_DIR/build" ] ; then
     image_id="${APP_NAME}DOCKER_IMAGE_TAG=${LP_IMG_TAG}"
     sudo docker rmi -f $APP_NAME
   else
-    TLOG Unsupported Image storage backend - $IMAGE_STORAGE
-    exit 1
-  fi
-fi
-
-if [[ $DELETE_LOCAL_CACHE == "true" ]]; then
-  # Delete the local image once we've uploaded the image.
-  sudo docker rmi -f $LP_IMG_TAG
-
-  # Delete the cloned git repo
-  rm -rf $TMP_LP_DIR
-
-  if [[ -e $LP_FILE ]]; then
-    rm -f $LP_FILE
+    TLOG Unsupported Image storage backend - $IMAGE_STORAGE && exit 1
   fi
 fi
 

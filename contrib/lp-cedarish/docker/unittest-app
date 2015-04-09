@@ -43,14 +43,42 @@ function TLOG () {
   TLOG_FILTERED $*
 }
 
+function cleanup_on_exit () {
+  if [[ $DELETE_LOCAL_CACHE == "true" ]]; then
+    # Delete local languagepack image after building the DU for testing
+    if [[ -n $BASE_IMG ]] && [[ $BASE_IMG != "solum/slugtester" ]]; then
+      sudo docker rmi -f $BASE_IMG
+    fi
+
+    # Delete local DU image after running user tests
+    if [[ -n $RANDOM_NAME ]]; then
+      sudo docker rmi -f $RANDOM_NAME
+    fi
+
+    # Delete the cloned git repo
+    if [[ -n $APP_DIR ]]; then
+      rm -rf $APP_DIR
+    fi
+    if [[ -n $TMP_DIR ]]; then
+      rm -rf $TMP_DIR
+    fi
+
+    # Delete temp output file
+    if [[ -n $OUTPUT ]] && [[ -e $OUTPUT ]]; then
+      rm -f $OUTPUT
+    fi
+
+    remove_ssh_creds "$GIT_PRIVATE_KEY"
+  fi
+}
+
 LOG_FILE=$(GET_LOGFILE)
 
 TLOG ===== Starting Test Script $0 $*
 
 # Check command line arguments
-if [ $# -lt 5 ]; then
-  TLOG Usage: $0 git_url commit_sha tenant img_external_ref lp_img_tag
-  exit 1
+if [[ $# -lt 5 ]]; then
+  TLOG Usage: $0 git_url commit_sha tenant img_external_ref lp_img_tag && exit 1
 fi
 
 PRUN silent sudo docker ps
@@ -67,8 +95,7 @@ shift
 LP_IMG_TAG=$1
 
 if ! (test_public_repo $GIT); then
-    TLOG Could not reach $GIT with curl. Failing.
-    exit 1
+    TLOG Could not reach $GIT with curl. Failing. && exit 1
 fi
 
 TLOG "Executing test command $ENTRYPOINT"
@@ -85,60 +112,63 @@ mkdir -p $TMP_DIR
 # Set base docker image to solum/slugtester for the 'auto' option
 BASE_IMG="solum/slugtester"
 
+trap cleanup_on_exit EXIT
+
 # download base image if it is not 'Auto'
 if [[ $IMG_EXTERNAL_REF != "auto" ]]; then
   TLOG downloading LP image from $IMAGE_STORAGE
   if [[ $IMAGE_STORAGE == "glance" ]]; then
     OUTPUT="$TMP_DIR/$LP_IMG_TAG"
     glance image-download --file $OUTPUT $IMG_EXTERNAL_REF
-    if [ $? != 0 ]; then
+    if [[ $? != 0 ]]; then
       TLOG Failed to download image $IMG_EXTERNAL_REF from glance. && exit 1
     fi
 
-    sudo docker load -i $OUTPUT
-    rm -f $OUTPUT
+    docker_load_with_retry $OUTPUT
 
     BASE_IMG=$LP_IMG_TAG
   elif [[ $IMAGE_STORAGE == "swift" ]]; then
     OUTPUT="$TMP_DIR/$LP_IMG_TAG"
 
     if [[ $LP_ACCESS == "custom" ]]; then
-      swift --os-auth-token $OS_AUTH_TOKEN --os-storage-url $OS_STORAGE_URL download solum_lp $IMG_EXTERNAL_REF --output $OUTPUT
+      swift_download_with_retry $OS_AUTH_TOKEN $OS_STORAGE_URL $IMG_EXTERNAL_REF $OUTPUT
     elif [[ $LP_ACCESS == "operator" ]]; then
       wget -q "$IMG_EXTERNAL_REF" --output-document=$OUTPUT
     fi
-    if [ $? != 0 ]; then
+    if [[ $? != 0 ]]; then
       TLOG Failed to download image $IMG_EXTERNAL_REF from swift. && exit 1
     fi
 
-    sudo docker load -i $OUTPUT
-    rm -f $OUTPUT
+    docker_load_with_retry $OUTPUT
+    if [[ $? != 0 ]]; then
+      TLOG Docker load failed. && exit 1
+    fi
 
     BASE_IMG=$LP_IMG_TAG
   elif [[ $IMAGE_STORAGE == "docker_registry" ]]; then
     sudo docker pull $IMG_EXTERNAL_REF
-    if [ $? != 0 ]; then
+    if [[ $? != 0 ]]; then
       TLOG Failed to download image $IMG_EXTERNAL_REF from docker registry. && exit 1
     fi
 
     BASE_IMG=$IMG_EXTERNAL_REF
   else
-    TLOG Unsupported Image storage backend - $IMAGE_STORAGE
-    exit 1
+    TLOG Unsupported Image storage backend - $IMAGE_STORAGE && exit 1
   fi
 fi
 
 add_ssh_creds "$GIT_PRIVATE_KEY" "$APP_DIR"
+[[ $? != 0 ]] && TLOG FAILED to register ssh key with ssh-agent && exit 1
 
 if [[ $COMMIT_SHA ]]; then
   git_clone_with_retry $GIT $APP_DIR/code
-  [[ $? != 0 ]] && TLOG Git clone failed. Check repo $GIT && rm -rf $APP_DIR && exit 1
+  [[ $? != 0 ]] && TLOG Git clone failed. Check repo $GIT && exit 1
 
   cd $APP_DIR/code
   PRUN git checkout -B solum_testing $COMMIT_SHA
 else
   git_clone_with_retry $GIT $APP_DIR/code --single-branch
-  [[ $? != 0 ]] && TLOG Git clone failed. Check repo $GIT && rm -rf $APP_DIR && exit 1
+  [[ $? != 0 ]] && TLOG Git clone failed. Check repo $GIT && exit 1
 
   cd $APP_DIR/code
 fi
@@ -191,7 +221,6 @@ EOF
 fi
 
 SUCCESS=$?
-remove_ssh_creds "$GIT_PRIVATE_KEY"
 echo Docker finished with status $SUCCESS.
 
 if [[ $SUCCESS == 0 ]]; then
@@ -199,22 +228,6 @@ TLOG ==== Status: SUCCESS
 else
 TLOG ==== Status: FAIL
 fi
-
-
-if [[ $DELETE_LOCAL_CACHE == "true" ]]; then
-  # Delete local languagepack image after building the DU for testing
-  if [[ $BASE_IMG != "solum/slugtester" ]]; then
-    sudo docker rmi -f $BASE_IMG
-  fi
-
-  # Delete local DU image after running user tests
-  sudo docker rmi -f $RANDOM_NAME
-
-  # Delete the cloned git repo
-  rm -rf $APP_DIR
-  rm -rf $TMP_DIR
-fi
-
 
 TOTAL_TIME=$(elapsed $SCRIPT_START_TIME)
 TLOG ===== Total elapsed time: $TOTAL_TIME sec
