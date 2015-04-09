@@ -313,18 +313,24 @@ class HandlerTest(base.BaseTestCase):
         mock_cond.assert_called_once_with(
             fake_assem.id, {'status': STATES.ERROR_STACK_DELETE_FAILED})
 
+    @mock.patch('solum.deployer.handlers.heat.tlog')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.common.clients.OpenStackClients')
-    def test_destroy_absent(self, mock_client, mock_registry):
+    def test_destroy_absent(self, mock_client, mock_registry, mock_tlogger):
+
         fake_assem = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assem
 
-        handler = heat_handler.Handler()
-        handler._find_id_if_stack_exists = mock.MagicMock(return_value=None)
-        handler.destroy_assembly(self.ctx, fake_assem.id)
+        mock_tlogger.TenantLogger.call.return_value = mock.MagicMock()
+
+        hh = heat_handler.Handler()
+        hh._find_id_if_stack_exists = mock.MagicMock(return_value=None)
+        hh.destroy_assembly(self.ctx, fake_assem.id)
 
         assert not mock_client.heat.stacks.delete.called
         fake_assem.destroy.assert_called_once()
+        mock_tlogger.log.assert_called_once()
+        mock_tlogger.upload.assert_called_once()
 
     def _get_fake_template(self):
         t = "description: test\n"

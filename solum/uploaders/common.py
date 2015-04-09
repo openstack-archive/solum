@@ -13,6 +13,7 @@
 #    limitations under the License.
 
 import datetime
+import re
 
 import solum
 from solum.openstack.common import jsonutils as json
@@ -25,7 +26,7 @@ class UploaderBase(object):
     context = None
     original_file_path = None
     resource = None
-    build_id = None
+    stage_id = None
     stage_name = None
     strategy = None
 
@@ -38,13 +39,13 @@ class UploaderBase(object):
     path = ''
 
     def __init__(self, context=None, original_file_path='',
-                 resource=None, build_id=None,
+                 resource=None, stage_id=None,
                  stage_name=None, **kwargs):
         self.context = context
         self.original_file_path = original_file_path
         self.transformed_path = original_file_path + '.tf'
         self.resource = resource
-        self.build_id = build_id
+        self.stage_id = stage_id
         self.stage_name = stage_name
 
         if kwargs:
@@ -69,6 +70,15 @@ class UploaderBase(object):
             with open(self.transformed_path, 'w') as tflogfile:
                 for line in logfile.readlines():
                     try:
+                        # Log lines generated from Python logger
+                        # has 'level name' followed by ' - '.
+                        # Remove this before parsing the log line
+                        patrn = ('^ERROR - |^DEBUG - |'
+                                 '^WARN - |^CRITICAL - |^INFO - ')
+                        reg = re.compile(patrn)
+                        m = reg.match(line)
+                        if m is not None:
+                            line = line.replace(m.group(0), '')
                         json_line = json.loads(line, encoding='utf-8')
                         json_line['user'] = ''
                         if json_line.get('_user') == 'false':
@@ -76,7 +86,7 @@ class UploaderBase(object):
                             # logs from system logs.
                             json_line['user'] = '.system'
                         flatline = ("%(@timestamp)s "
-                                    "solum.%(task)s.%(build_id)s%(user)s "
+                                    "solum.%(task)s.%(stage_id)s%(user)s "
                                     "%(message)s\n")
                         tflogfile.write(flatline % json_line)
                     except ValueError:

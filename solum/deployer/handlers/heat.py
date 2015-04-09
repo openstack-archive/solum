@@ -14,6 +14,7 @@
 
 """Solum Deployer Heat handler."""
 
+import logging
 import socket
 import time
 
@@ -31,12 +32,13 @@ from solum.common import repo_utils
 from solum.conductor import api as conductor_api
 from solum import objects
 from solum.objects import assembly
-from solum.openstack.common import log as logging
+from solum.openstack.common import log as openstack_logger
+from solum.uploaders import tenant_logger as tlog
 
-
-LOG = logging.getLogger(__name__)
+LOG = openstack_logger.getLogger(__name__)
 
 STATES = assembly.States
+
 
 SERVICE_OPTS = [
     cfg.IntOpt('max_attempts',
@@ -63,12 +65,17 @@ SERVICE_OPTS = [
     cfg.StrOpt('image',
                default="coreos",
                help='Image id'),
+    cfg.StrOpt('deployer_log_dir',
+               default="/var/log/solum/deployer",
+               help='Deployer logs location'),
 ]
 
 cfg.CONF.register_opts(SERVICE_OPTS, group='deployer')
 cfg.CONF.import_opt('image_format', 'solum.api.handlers.assembly_handler',
                     group='api')
 cfg.CONF.import_group('worker', 'solum.worker.handlers.shell')
+
+deployer_log_dir = cfg.CONF.deployer.deployer_log_dir
 
 
 def update_assembly(ctxt, assembly_id, data):
@@ -93,8 +100,15 @@ class Handler(object):
         assem = objects.registry.Assembly.get_by_id(ctxt, assem_id)
         stack_id = self._find_id_if_stack_exists(assem)
 
+        # TODO(devkulkarni) Delete t_logger when returning from this call.
+        # This needs to be implemented as a decorator since there are
+        # multiple return paths from this method.
+        t_logger = tlog.TenantLogger(ctxt, assem, deployer_log_dir, 'delete')
+
         if stack_id is None:
             assem.destroy(ctxt)
+            t_logger.log(logging.DEBUG, "Deleted Heat stack.")
+            t_logger.upload()
             return
         else:
             osc = clients.OpenStackClients(ctxt)
@@ -103,11 +117,15 @@ class Handler(object):
             except exc.HTTPNotFound:
                 # stack already deleted
                 assem.destroy(ctxt)
+                t_logger.log(logging.ERROR, "Heat stack not found.")
+                t_logger.upload()
                 return
             except Exception as e:
                 LOG.exception(e)
                 update_assembly(ctxt, assem_id,
                                 {'status': STATES.ERROR_STACK_DELETE_FAILED})
+                t_logger.log(logging.ERROR, "Error deleting heat stack.")
+                t_logger.upload()
                 return
 
             wait_interval = cfg.CONF.deployer.wait_interval
@@ -118,6 +136,7 @@ class Handler(object):
                     # Must use stack_name for expecting a 404
                     osc.heat().stacks.get(stack_name)
                 except exc.HTTPNotFound:
+                    t_logger.upload()
                     assem.destroy(ctxt)
                     return
                 time.sleep(wait_interval)
@@ -138,10 +157,16 @@ class Handler(object):
         plan.destroy(ctxt)
 
     def deploy(self, ctxt, assembly_id, image_id, ports):
+
         osc = clients.OpenStackClients(ctxt)
 
         assem = objects.registry.Assembly.get_by_id(ctxt,
                                                     assembly_id)
+
+        # TODO(devkulkarni) Delete t_logger when returning from this call.
+        # This needs to be implemented as a decorator since there are
+        # multiple return paths from this method.
+        t_logger = tlog.TenantLogger(ctxt, assem, deployer_log_dir, 'deploy')
 
         if cfg.CONF.api.image_format == 'docker':
             parameters = {'app_name': assem.name,
@@ -167,6 +192,7 @@ class Handler(object):
             image_fmt = cfg.CONF.api.image_format
             LOG.debug("Image format is %s not supported." % image_fmt)
             update_assembly(ctxt, assembly_id, {'status': STATES.ERROR})
+            t_logger.upload()
             return
 
         try:
@@ -174,6 +200,8 @@ class Handler(object):
         except exception.ObjectNotFound as onf_ex:
             LOG.excepion(onf_ex)
             update_assembly(ctxt, assembly_id, {'status': STATES.ERROR})
+            t_logger.log(logging.ERROR, "Error reading heat template.")
+            t_logger.upload()
             return
 
         if cfg.CONF.api.image_format == 'vm':
@@ -185,14 +213,17 @@ class Handler(object):
                 template = self._get_template_for_swift(assem, template,
                                                         image_id, ports)
             else:
-                LOG.debug("DU storage option not recognized. Exiting..")
+                log_msg = "DU storage option not recognized. Exiting.."
+                LOG.debug(log_msg)
                 update_assembly(ctxt, assembly_id, {'status': STATES.ERROR})
+                t_logger.upload()
                 return
 
         stack_name = self._get_stack_name(assem)
         stack_id = self._find_id_if_stack_exists(assem)
 
         if assem.status == STATES.DELETING:
+            t_logger.upload()
             return
 
         if stack_id is not None:
@@ -206,6 +237,8 @@ class Handler(object):
                           " assembly %s" % assembly_id)
                 LOG.exception(e)
                 update_assembly(ctxt, assembly_id, {'status': STATES.ERROR})
+                t_logger.log(logging.ERROR, "Error updating heat stack.")
+                t_logger.upload()
                 return
         else:
             try:
@@ -217,6 +250,8 @@ class Handler(object):
                           " assembly %s" % assembly_id)
                 LOG.exception(exp)
                 update_assembly(ctxt, assembly_id, {'status': STATES.ERROR})
+                t_logger.log(logging.ERROR, "Error creating heat stack.")
+                t_logger.upload()
                 return
             stack_id = created_stack['stack']['id']
 
