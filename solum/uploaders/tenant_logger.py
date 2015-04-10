@@ -70,7 +70,10 @@ class TenantLogger(object):
 
     def log(self, level, message):
         logline = self._logline(message)
-        self.assem_logger.log(level, logline)
+        try:
+            self.assem_logger.log(level, logline)
+        except IOError as e:
+            LOG.error(e)
 
     def _logline(self, message):
         log_line = {}

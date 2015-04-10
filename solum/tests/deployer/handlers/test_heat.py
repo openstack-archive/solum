@@ -40,15 +40,19 @@ class HandlerTest(base.BaseTestCase):
         handler.echo({}, 'foo')
         handler.echo.assert_called_once_with({}, 'foo')
 
+    @mock.patch('solum.deployer.handlers.heat.tlog')
     @mock.patch('solum.conductor.api.API.update_assembly')
     @mock.patch('solum.common.catalog.get')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.common.clients.OpenStackClients')
     def test_deploy_docker_on_vm_with_dreg(self, mock_clients, mock_registry,
-                                           mock_get_templ, mock_cond):
+                                           mock_get_templ, mock_cond, m_log):
         handler = heat_handler.Handler()
 
         fake_assembly = fakes.FakeAssembly()
+
+        m_log.TenantLogger.call.return_value = mock.MagicMock()
+
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
         fake_template = self._get_fake_template()
         template = self._get_tmpl_for_docker_reg(fake_assembly, fake_template)
@@ -75,14 +79,16 @@ class HandlerTest(base.BaseTestCase):
                                                        'http://fake.ref',
                                                        'fake_id')
 
+    @mock.patch('solum.deployer.handlers.heat.tlog')
     @mock.patch('solum.conductor.api.API.update_assembly')
     @mock.patch('solum.common.catalog.get')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.common.clients.OpenStackClients')
     def test_deploy_docker_on_vm_swift(self, mock_clients, mock_registry,
-                                       mock_get_templ, mock_cond):
+                                       mock_get_templ, mock_cond, m_log):
         handler = heat_handler.Handler()
 
+        m_log.TenantLogger.call.return_value = mock.MagicMock()
         fake_assembly = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
         fake_template = self._get_fake_template()
@@ -121,14 +127,18 @@ class HandlerTest(base.BaseTestCase):
                                                        'Heat Stack test',
                                                        'http://fake.ref',
                                                        'fake_id')
+        m_log.log.assert_called_once()
 
+    @mock.patch('solum.deployer.handlers.heat.tlog')
     @mock.patch('solum.conductor.api.API.update_assembly')
     @mock.patch('solum.common.catalog.get')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.common.clients.OpenStackClients')
     def test_comp_name_error(self, mock_clients, mock_registry,
-                             mock_get_templ, mock_cond):
+                             mock_get_templ, mock_cond, m_log):
         handler = heat_handler.Handler()
+
+        m_log.TenantLogger.call.return_value = mock.MagicMock()
 
         fake_assembly = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
@@ -147,16 +157,20 @@ class HandlerTest(base.BaseTestCase):
         self.assertRaises(AssertionError,
                           assign_and_create_mock.assert_called_once_with,
                           comp_name)
+        m_log.log.assert_called_once()
 
+    @mock.patch('solum.deployer.handlers.heat.tlog')
     @mock.patch('solum.conductor.api.API.update_assembly')
     @mock.patch('solum.common.catalog.get')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.common.clients.OpenStackClients')
     def test_deploy_docker(self, mock_clients, mock_registry,
-                           mock_get_templ, mock_cond):
+                           mock_get_templ, mock_cond, m_log):
         handler = heat_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
+
+        m_log.TenantLogger.call.return_value = mock.MagicMock()
 
         cfg.CONF.api.image_format = "docker"
 
@@ -272,13 +286,16 @@ class HandlerTest(base.BaseTestCase):
         id = handler._find_id_if_stack_exists(assem)
         self.assertEqual(id, '123')
 
+    @mock.patch('solum.deployer.handlers.heat.tlog')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.common.clients.OpenStackClients')
-    def test_destroy_success(self, mock_client, mock_registry):
+    def test_destroy_success(self, mock_client, mock_registry, m_log):
         fake_assem = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assem
 
         handler = heat_handler.Handler()
+
+        m_log.TenantLogger.call.return_value = mock.MagicMock()
 
         handler._find_id_if_stack_exists = mock.MagicMock(return_value='42')
         mock_heat = mock_client.return_value.heat.return_value
@@ -292,13 +309,17 @@ class HandlerTest(base.BaseTestCase):
 
         mock_client.heat.stacks.delete.assert_called_once()
         fake_assem.destroy.assert_called_once()
+        m_log.log.assert_called_once()
 
+    @mock.patch('solum.deployer.handlers.heat.tlog')
     @mock.patch('solum.conductor.api.API.update_assembly')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.common.clients.OpenStackClients')
-    def test_destroy_error(self, mock_client, mock_registry, mock_cond):
+    def test_destroy_error(self, mock_client, mock_registry, mock_cond, m_log):
         fake_assem = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assem
+
+        m_log.TenantLogger.call.return_value = mock.MagicMock()
 
         handler = heat_handler.Handler()
         handler._find_id_if_stack_exists = mock.MagicMock(return_value='42')
