@@ -138,7 +138,7 @@ class Handler(object):
             user_env['ASSEMBLY_ID'] = str(assem.uuid)
         else:
             str_assem = (''.join(random.choice(string.ascii_uppercase)
-                         for i in range(10)))
+                         for i in range(20)))
             user_env['ASSEMBLY_ID'] = str_assem
 
         user_env['IMAGE_STORAGE'] = cfg.CONF.worker.image_storage

@@ -118,8 +118,8 @@ fi
 BASE_DIR=/dev/shm
 GIT_CHECKSUM=$(git ls-remote $GIT | head -1 | awk '{print $1}')
 TS=$(date +"%Y%m%dt%H%M%S%N")
-APP_DIR="$BASE_DIR/apps/$TENANT/$GIT_CHECKSUM-$TS"
-TMP_APP_DIR="/tmp/apps/$TENANT/$GIT_CHECKSUM-$TS"
+APP_DIR="$BASE_DIR/apps/$TENANT/$ASSEMBLY_ID"
+TMP_APP_DIR="/tmp/apps/$TENANT/$ASSEMBLY_ID"
 mkdir -p $APP_DIR
 mkdir -p $TMP_APP_DIR
 
@@ -241,7 +241,7 @@ if [[ $IMG_EXTERNAL_REF == "auto" ]]; then
 # SOLUM APP BUILDER
 FROM solum/slugrunner
 ADD slug.tgz /app
-ADD build/params_$EXT /root/params
+COPY build/params_$EXT /root/params
 ENTRYPOINT ["/runner/init"]
 CMD ["start","web"]
 EOF
@@ -249,7 +249,7 @@ else
   TLOG Creating Dockerfile
   cat << EOF > $APP_DIR/Dockerfile
 FROM $BASE_IMG
-ADD build /app
+COPY build /app
 WORKDIR /solum/bin
 RUN chmod +x build.sh
 RUN ./build.sh
@@ -261,6 +261,8 @@ fi
 cd $APP_DIR
 DU_IMG_TAG="$TENANT-$APP-$TS-$COMMIT_ID"
 STORAGE_OBJ_NAME="$APP-$TS-$COMMIT_ID"
+
+echo "build/.git" > .dockerignore
 
 if [[ $IMAGE_STORAGE == "glance" ]]; then
   docker_build_with_retry $DU_IMG_TAG .

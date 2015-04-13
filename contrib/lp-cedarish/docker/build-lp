@@ -3,6 +3,7 @@
 
 SCRIPT_START_TIME=`date +'%s'`
 TASKNAME=languagepack
+ASSEMBLY_ID=${ASSEMBLY_ID:-null}
 REUSE_IMAGES_IF_REPO_UNCHANGED=${REUSE_IMAGES_IF_REPO_UNCHANGED:="0"}
 GIT_PRIVATE_KEY=${REPO_DEPLOY_KEYS:-''}
 IMAGE_STORAGE=${IMAGE_STORAGE:-null}
@@ -70,7 +71,7 @@ TENANT=$1
 
 TS=$(date +"%Y%m%dt%H%M%S%N")
 GIT_CHECKSUM=$(echo $GIT | md5sum | awk '{print $1;}')
-TMP_LP_DIR="/tmp/lps/$TENANT/$GIT_CHECKSUM-$TS"
+TMP_LP_DIR="/tmp/lps/$TENANT/$ASSEMBLY_ID"
 mkdir -p $TMP_LP_DIR
 
 trap cleanup_on_exit EXIT
@@ -84,6 +85,8 @@ if [[ -d "$TMP_LP_DIR/build" ]]; then
   COMMIT_ID=$(git log -1 --pretty=%H)
   LP_IMG_TAG="$TENANT-$LPNAME-$TS-$COMMIT_ID"
   STORAGE_OBJ_NAME="$LPNAME-$TS-$COMMIT_ID"
+
+  echo ".git" > .dockerignore
 
   TLOG Building LP
   if [[ $IMAGE_STORAGE == "glance" ]]; then
