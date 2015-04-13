@@ -179,9 +179,20 @@ class Handler(object):
         msg = "Deploying Assembly %s" % assem.uuid
         t_logger.log(logging.DEBUG, msg)
 
+        LOG.debug("Image id:%s" % image_id)
+
         if cfg.CONF.api.image_format == 'docker':
+            image_uuid_du = image_id.split('DOCKER_IMAGE_TAG=')
+            glance_img_uuid = image_uuid_du[0].strip()
+            LOG.debug("Image id:%s" % glance_img_uuid)
+            LOG.debug("Specified ports:%s" % ports)
+            LOG.debug("Currently only one port supported. Picking first")
+            port_to_use = ports[0]
+            LOG.debug("Application port:%s" % port_to_use)
+
             parameters = {'app_name': assem.name,
-                          'image': image_id}
+                          'image': glance_img_uuid,
+                          'port': port_to_use}
             parameters.update(heat_utils.get_network_parameters(osc))
 
             # TODO(asalkeld) support template flavors
@@ -216,21 +227,13 @@ class Handler(object):
             t_logger.upload()
             return
 
-        if cfg.CONF.api.image_format == 'vm':
-            if cfg.CONF.worker.image_storage == 'docker_registry':
-                template = self._get_template_for_docker_reg(assem, template,
-                                                             image_id, ports)
-                LOG.debug(template)
-            elif cfg.CONF.worker.image_storage == 'swift':
-                template = self._get_template_for_swift(assem, template,
-                                                        image_id, ports)
-            else:
-                log_msg = "DU storage option not recognized. Exiting.."
-                LOG.debug(log_msg)
-                update_assembly(ctxt, assembly_id, {'status': STATES.ERROR})
-                t_logger.log(logging.DEBUG, "Solum config error: DU storage.")
-                t_logger.upload()
-                return
+        if cfg.CONF.worker.image_storage == 'docker_registry':
+            template = self._get_template_for_docker_reg(assem, template,
+                                                         image_id, ports)
+        if cfg.CONF.worker.image_storage == 'swift':
+            template = self._get_template_for_swift(assem, template,
+                                                    image_id, ports)
+        LOG.debug(template)
 
         stack_name = self._get_stack_name(assem)
         stack_id = self._find_id_if_stack_exists(assem)

@@ -59,7 +59,7 @@ resources:
       floating_network_id: { get_param: public_net }
       port_id: { get_resource: public_port }
 
-  compute:
+  compute_instance:
     type: OS::Nova::Server
     properties:
       name: {get_param: app_name}

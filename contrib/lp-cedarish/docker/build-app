@@ -279,14 +279,16 @@ STORAGE_OBJ_NAME="$APP-$TS-$COMMIT_ID"
 echo "build/.git" > .dockerignore
 
 if [[ $IMAGE_STORAGE == "glance" ]]; then
+
   docker_build_with_retry $DU_IMG_TAG .
   [[ $? != 0 ]] && TLOG Docker build failed. && exit 1
 
-  sudo docker save "$DU_IMG_TAG" | glance image-create --container-format=docker --disk-format=raw --name "$STORAGE_OBJ_NAME" > /dev/null
-  image_id="$(app_glance_id $STORAGE_OBJ_NAME)DOCKER_IMAGE_TAG=${DU_IMG_TAG}"
+  glance_upload_with_retry $DU_IMG_TAG
+  image_id="$(app_glance_id $DU_IMG_TAG)DOCKER_IMAGE_TAG=${DU_IMG_TAG}"
 
   TLOG ===== finished uploading DU to $IMAGE_STORAGE
 elif [[ $IMAGE_STORAGE == "docker_registry" ]]; then
+
   DOCKER_REGISTRY=${DOCKER_REGISTRY:-'10.0.2.15:5042'}
   APP_NAME=$DOCKER_REGISTRY/$DU_IMG_TAG
 
@@ -294,6 +296,7 @@ elif [[ $IMAGE_STORAGE == "docker_registry" ]]; then
   [[ $? != 0 ]] && TLOG Docker build failed. && exit 1
 
   sudo docker push $APP_NAME
+  [[ $? != 0 ]] && TLOG Docker push failed. && exit 1
 
   # just to make worker/shell easier to process
   image_id="${APP_NAME}DOCKER_IMAGE_TAG=${DU_IMG_TAG}"

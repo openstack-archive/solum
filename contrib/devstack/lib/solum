@@ -175,6 +175,9 @@ function configure_solum() {
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE deployer wait_interval $SOLUM_WAIT_INTERVAL
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE deployer growth_factor $SOLUM_GROWTH_FACTOR
 
+    # configure AllHostsFilter in /etc/nova/nova.conf
+    iniset /etc/nova/nova.conf DEFAULT scheduler_default_filters AllHostsFilter
+
 }
 
 #register solum user in Keystone

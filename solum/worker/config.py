@@ -48,7 +48,7 @@ SERVICE_OPTS = [
                default='/tmp/solum',
                help='The path of param files to save to.'),
     cfg.StrOpt('image_storage',
-               default='docker_registry',
+               default='glance',
                help='Image storage backend. This includes images created '
                'for LanguagePacks and Deployment Units. Possible values are '
                'docker_registry, swift and glance.'),

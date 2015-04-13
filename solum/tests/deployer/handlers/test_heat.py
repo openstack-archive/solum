@@ -55,7 +55,8 @@ class HandlerTest(base.BaseTestCase):
 
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
         fake_template = self._get_fake_template()
-        template = self._get_tmpl_for_docker_reg(fake_assembly, fake_template)
+        template = self._get_tmpl_for_docker_reg(fake_assembly, fake_template,
+                                                 'created_image_id')
         cfg.CONF.api.image_format = "vm"
         cfg.CONF.worker.image_storage = "docker_registry"
         mock_get_templ.return_value = template
@@ -174,8 +175,11 @@ class HandlerTest(base.BaseTestCase):
 
         cfg.CONF.api.image_format = "docker"
 
-        fake_template = json.dumps({'description': 'test'})
-        mock_get_templ.return_value = fake_template
+        fake_template = self._get_fake_template()
+        template = self._get_tmpl_for_docker_reg(fake_assembly, fake_template,
+                                                 'created_image_id')
+        mock_get_templ.return_value = template
+
         handler._find_id_if_stack_exists = mock.MagicMock(return_value=(None))
         stacks = mock_clients.return_value.heat.return_value.stacks
         stacks.create.return_value = {"stack": {
@@ -185,9 +189,10 @@ class HandlerTest(base.BaseTestCase):
         handler._check_stack_status = mock.MagicMock()
         handler.deploy(self.ctx, 77, 'created_image_id', [80])
         parameters = {'image': 'created_image_id',
-                      'app_name': 'faker'}
+                      'app_name': 'faker',
+                      'port': 80}
         stacks.create.assert_called_once_with(stack_name='faker-test_uuid',
-                                              template=fake_template,
+                                              template=template,
                                               parameters=parameters)
         assign_and_create_mock = mock_registry.Component.assign_and_create
         comp_name = 'Heat_Stack_for_%s' % fake_assembly.name
@@ -404,13 +409,13 @@ class HandlerTest(base.BaseTestCase):
         t += "}\n"
         return t
 
-    def _get_tmpl_for_docker_reg(self, assem, template):
+    def _get_tmpl_for_docker_reg(self, assem, template, image_id):
         template_bdy = yaml.safe_load(template)
-        run_docker = "#!/bin/bash -x\n # Invoke the container\n"
-        docker_endpt = "127.0.0.1"
-        run_docker += "docker run -p 80:80 -d "
-        run_docker += docker_endpt + ":5042/"
-        run_docker += str(assem.uuid)
+
+        run_docker = ('#!/bin/bash -x\n'
+                      '# Invoke the container\n'
+                      'docker run -p 80:80 -d {img}')
+        run_docker = run_docker.format(img=image_id)
         comp_instance = template_bdy['resources']['compute_instance']
         user_data = comp_instance['properties']['user_data']
         user_data['str_replace']['template'] = run_docker
