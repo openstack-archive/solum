@@ -13,6 +13,7 @@
 # under the License.
 
 import mock
+from oslo.config import cfg
 
 from solum.tests import base
 from solum.tests import fakes
@@ -24,58 +25,97 @@ class SwiftUploadTest(base.BaseTestCase):
     def setUp(self):
         super(SwiftUploadTest, self).setUp()
 
-    @mock.patch('open')
-    @mock.patch('clients.OpenStackClients')
-    @mock.patch('oslo.config.cfg.CONF.worker')
-    def test_upload(self, mock_config, mock_client, mock_open):
+    def test_upload_on_assembly_delete(self):
         ctxt = utils.dummy_context()
         orig_path = "original path"
         assembly = fakes.FakeAssembly()
         build_id = "5678"
         container = 'fake-container'
-        mock_config.log_upload_swift_container.return_value = container
-        mock_swift = mock.MagicMock()
-        mock_client.return_value.swift.return_value = mock_swift
-        fake_file = mock.MagicMock()
-        mock_open.return_value = fake_file
+
+        cfg.CONF.worker.log_upload_swift_container = container
+
+        stage = "fakestage"
         swiftupload = uploader.SwiftUpload(ctxt, orig_path,
                                            assembly, build_id,
-                                           "fakestage")
+                                           stage)
+        swiftupload._open = mock.MagicMock()
+        swiftupload._upload = mock.MagicMock()
         swiftupload.transform_jsonlog = mock.MagicMock()
         swiftupload.write_userlog_row = mock.MagicMock()
+
+        rs_before_delete = swiftupload.resource
+        name_before = swiftupload.resource.name
+        uuid_before = swiftupload.resource.uuid
+
+        # Delete the assembly object before calling upload_log()
+        del assembly
+
         swiftupload.upload_log()
+
+        self.assertEqual(name_before, swiftupload.resource.name)
+        self.assertEqual(uuid_before, swiftupload.resource.uuid)
+
+        # Asserts
         swift_info = {'container': container}
 
-        swiftupload.write_userlog_row.assert_called_once_with(orig_path,
-                                                              swift_info)
-        swiftupload.transform_jsonlog.assert_called_once()
-        mock_swift.put_container.assert_called_once_with(container)
-        mock_swift.put_object.assert_called_once_with(container,
-                                                      orig_path,
-                                                      fake_file)
+        filename = "%s-%s/%s-%s.log" % (rs_before_delete.name,
+                                        rs_before_delete.uuid,
+                                        stage, build_id)
 
-    @mock.patch('open')
-    @mock.patch('swiftclient.Connection')
-    def test_upload_image(self, mock_conn, mock_open):
-        mock_swift = mock.MagicMock()
-        fake_file = mock.MagicMock()
-        mock_open.return_value = fake_file
-        mock_conn.return_value = mock_swift
+        swiftupload.transform_jsonlog.assert_called_once()
+        swiftupload._upload.assert_called_once()
+        swiftupload.write_userlog_row.assert_called_once_with(filename,
+                                                              swift_info)
+
+    def test_upload(self):
+        ctxt = utils.dummy_context()
+        orig_path = "original path"
+        assembly = fakes.FakeAssembly()
+        build_id = "5678"
+        container = 'fake-container'
+        cfg.CONF.worker.log_upload_swift_container = container
+
+        stage = "fakestage"
+
+        swiftupload = uploader.SwiftUpload(ctxt, orig_path,
+                                           assembly, build_id,
+                                           stage)
+        swiftupload._open = mock.MagicMock()
+        swiftupload._upload = mock.MagicMock()
+        swiftupload.transform_jsonlog = mock.MagicMock()
+        swiftupload.write_userlog_row = mock.MagicMock()
+
+        resource = swiftupload.resource
+
+        swiftupload.upload_log()
+
+        swift_info = {'container': container}
+
+        filename = "%s-%s/%s-%s.log" % (resource.name,
+                                        resource.uuid,
+                                        stage, build_id)
+
+        swiftupload.transform_jsonlog.assert_called_once()
+        swiftupload._upload.assert_called_once()
+        swiftupload.write_userlog_row.assert_called_once_with(filename,
+                                                              swift_info)
+
+    @mock.patch('swiftclient.client.Connection')
+    def test_upload_image(self, mock_conn):
+
         container = "solum_du"
         name = "test_file"
         swiftupload = self._get_connection_handle(container, name)
-        swiftupload.upload_image()
-        mock_swift.put_container.assert_called_once_with(container)
-        mock_swift.put_object.assert_called_once_with(container,
-                                                      name, fake_file)
+        swiftupload._open = mock.MagicMock()
+        swiftupload._upload = mock.MagicMock()
 
-    @mock.patch('swiftclient.Connection')
+        swiftupload.upload_image()
+        swiftupload._upload.assert_called_once()
+
+    @mock.patch('swiftclient.client.Connection')
     def test_stat(self, mock_conn):
-        mock_swift = mock.MagicMock()
-        mock_conn.return_value = mock_swift
         swift_client = self._get_connection_handle('', '')
         swift_client.stat()
-        mock_swift.stat.assert_called_once()
 
     def _get_connection_handle(self, container, name):
         client_args = {"region_name": "RegionOne",

@@ -12,6 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import mock
+
 from solum.tests import base
 from solum.tests import fakes
 from solum.tests import utils
@@ -27,8 +29,13 @@ class CommonTest(base.BaseTestCase):
         orig_path = "original path"
         assembly = fakes.FakeAssembly()
         build_id = "5678"
+
         baseuploader = uploader.UploaderBase(ctxt, orig_path,
                                              assembly, build_id,
                                              "fakestage")
+
+        baseuploader.write_userlog_row = mock.MagicMock()
+
+        baseuploader.upload_log()
 
         self.assertEqual(0, baseuploader.write_userlog_row.call_count)
