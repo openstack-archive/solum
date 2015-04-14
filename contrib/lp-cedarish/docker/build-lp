@@ -1,7 +1,7 @@
 #!/bin/bash
 # Solum script for building custom languagepacks
 
-SCRIPT_START_TIME=`date +'%s'`
+SCRIPT_START_TIME=$(date +'%s')
 TASKNAME=languagepack
 ASSEMBLY_ID=${ASSEMBLY_ID:-null}
 REUSE_IMAGES_IF_REPO_UNCHANGED=${REUSE_IMAGES_IF_REPO_UNCHANGED:="0"}
@@ -118,17 +118,18 @@ if [[ -d "$TMP_LP_DIR/build" ]]; then
     docker_save_with_retry $LP_FILE $LP_IMG_TAG
     [[ $? != 0 ]] && TLOG Docker save failed. && exit 1
 
-    upload_status=`python $HERE/swift-handler.py $OS_REGION_NAME $OS_AUTH_TOKEN $OS_STORAGE_URL upload solum_lp $STORAGE_OBJ_NAME $LP_FILE`
-    if [[ "$upload_status" != "0" ]]; then
+    python $HERE/swift-handler.py $OS_REGION_NAME $OS_AUTH_TOKEN $OS_STORAGE_URL upload solum_lp $STORAGE_OBJ_NAME $LP_FILE \
+    > >(while read ALINE; do TLOG $ALINE; done)
+    if [[ $? != 0 ]]; then
       TLOG Failed to upload languagepack to swift. && exit 1
     fi
 
     if [[ $LP_ACCESS == "custom" ]]; then
       image_id="${STORAGE_OBJ_NAME}DOCKER_IMAGE_TAG=${LP_IMG_TAG}"
     elif [[ $LP_ACCESS == "operator" ]]; then
-      ACCOUNT=`echo $OS_STORAGE_URL | sed 's/\// /'g | awk '{print $4}'`
+      ACCOUNT=$(echo $OS_STORAGE_URL | sed 's/\// /'g | awk '{print $4}')
       TLOG "ACCOUNT=$ACCOUNT"
-      STORAGE_HOST=`echo $OS_STORAGE_URL | sed 's/\// /'g | awk '{print $2}'`
+      STORAGE_HOST=$(echo $OS_STORAGE_URL | sed 's/\// /'g | awk '{print $2}')
       TLOG "STORAGE_HOST=$STORAGE_HOST"
 
       TLOG "STORAGE_URL:$OS_STORAGE_URL"
@@ -136,10 +137,9 @@ if [[ -d "$TMP_LP_DIR/build" ]]; then
       TLOG "AUTH_TOKEN:$OS_AUTH_TOKEN"
 
       curl -i -X POST -H X-Auth-Token:$OS_AUTH_TOKEN -H X-Account-Meta-Temp-URL-Key:$TEMP_URL_SECRET $TEMP_URL_PROTOCOL://$STORAGE_HOST/v1/$ACCOUNT
-      CWD=`pwd`
       TLOG "HERE:$HERE"
 
-      TEMP_URL=`python $HERE/get-temp-url.py $STORAGE_HOST solum_lp $STORAGE_OBJ_NAME $ACCOUNT $TEMP_URL_SECRET $TEMP_URL_TTL $TEMP_URL_PROTOCOL`
+      TEMP_URL=$(python $HERE/get-temp-url.py $STORAGE_HOST solum_lp $STORAGE_OBJ_NAME $ACCOUNT $TEMP_URL_SECRET $TEMP_URL_TTL $TEMP_URL_PROTOCOL)
       TLOG "TEMP_URL:$TEMP_URL"
 
       image_id="${TEMP_URL}DOCKER_IMAGE_TAG=${LP_IMG_TAG}"

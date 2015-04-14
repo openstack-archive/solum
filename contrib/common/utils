@@ -199,17 +199,3 @@ function docker_save_with_retry () {
   sleep 1
   sudo docker save --output $OUTPUT_FILE $DOCKER_IMG
 }
-
-function swift_download_with_retry () {
-  local TOKEN=$1
-  shift
-  local STORAGE_URL=$1
-  shift
-  local OBJECT=$1
-  shift
-  local OUTPUT_FILE=$1
-
-  swift --os-auth-token $TOKEN --os-storage-url $STORAGE_URL download solum_lp $OBJECT --output $OUTPUT_FILE && return 0
-  sleep 1
-  swift --os-auth-token $TOKEN --os-storage-url $STORAGE_URL download solum_lp $OBJECT --output $OUTPUT_FILE
-}

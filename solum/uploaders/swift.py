@@ -18,7 +18,6 @@ from solum.common import clients
 from solum.openstack.common import log as logging
 import solum.uploaders.common
 
-from swiftclient import client as swiftclient
 from swiftclient import exceptions as swiftexceptions
 
 LOG = logging.getLogger(__name__)
@@ -30,12 +29,8 @@ cfg.CONF.import_opt('log_upload_swift_container', 'solum.worker.config',
 class SwiftUpload(solum.uploaders.common.UploaderBase):
     strategy = "swift"
 
-    def _upload(self, container, filename, filelike, client_args=None):
-        swift = None
-        if client_args:
-            swift = clients.OpenStackClients(**client_args).swift()
-        else:
-            swift = clients.OpenStackClients(self.context).swift()
+    def _upload(self, container, filename, filelike):
+        swift = clients.OpenStackClients(self.context).swift()
         swift.put_container(container)
         swift.put_object(container, filename, filelike)
 
@@ -45,7 +40,7 @@ class SwiftUpload(solum.uploaders.common.UploaderBase):
                                         self.stage_name, self.stage_id)
 
         self.transform_jsonlog()
-        with self._open(self.transformed_path, 'r') as logfile:
+        with open(self.transformed_path, 'r') as logfile:
             try:
                 LOG.debug("Uploading log to Swift. %s, %s" %
                           (container, filename))
@@ -60,33 +55,3 @@ class SwiftUpload(solum.uploaders.common.UploaderBase):
         }
 
         self.write_userlog_row(filename, swift_info)
-
-    def upload_image(self):
-        with self._open(self.path, 'r') as du_file:
-            try:
-                client_args = {
-                    'auth_version': '2.0',
-                    'preauthtoken': self.auth_token,
-                    'preauthurl': self.storage_url,
-                    'os_options': {'region_name': self.region_name},
-                }
-                self._upload(self.container, self.name, du_file,
-                             client_args=client_args)
-            except swiftexceptions.ClientException as e:
-                LOG.exception("Failed to upload %s to Swift." % self.name)
-                raise e
-        LOG.debug("Upload complete.")
-
-    def stat(self):
-        try:
-            client_args = {
-                'auth_version': '2.0',
-                'preauthtoken': self.auth_token,
-                'preauthurl': self.storage_url,
-                'os_options': {'region_name': self.region_name},
-            }
-            swift = swiftclient.Connection(**client_args)
-            return swift.stat()
-        except swiftexceptions.ClientException as e:
-            LOG.exception("Failed to connect to Swift.")
-            raise e

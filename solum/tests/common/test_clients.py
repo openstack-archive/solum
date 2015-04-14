@@ -63,8 +63,14 @@ class ClientsTest(base.BaseTestCase):
         cfg.CONF.set_override('admin_tenant_name', 'service',
                               group='keystone_authtoken')
         obj = clients.OpenStackClients(None)
-        self.assertRaises(exceptions.ConnectionRefused,
-                          lambda: obj.barbican().admin_client)
+
+        # try to create and store a secret
+        try:
+            bclient = obj.barbican().admin_client
+            secret = bclient.secrets.create(name="test", payload="test")
+            secret.store()
+        except exceptions.ConnectionRefused:
+            self.assertTrue(True)
 
     @mock.patch.object(barbicanclient, 'Client')
     @mock.patch.object(identity_v2, 'Password')

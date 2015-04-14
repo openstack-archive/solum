@@ -194,11 +194,11 @@ else
   elif [[ $IMAGE_STORAGE == "swift" ]]; then
     OUTPUT="$TMP_APP_DIR/$LP_IMG_TAG"
     if [[ $LP_ACCESS == "custom" ]]; then
-      swift_download_with_retry $OS_AUTH_TOKEN $OS_STORAGE_URL $IMG_EXTERNAL_REF $OUTPUT
+      python $HERE/swift-handler.py $OS_REGION_NAME $OS_AUTH_TOKEN $OS_STORAGE_URL download solum_lp $IMG_EXTERNAL_REF $OUTPUT \
+      > >(while read ALINE; do TLOG $ALINE; done)
     elif [[ $LP_ACCESS == "operator" ]]; then
       wget -q "$IMG_EXTERNAL_REF" --output-document=$OUTPUT
     fi
-
     if [[ $? != 0 ]]; then
       TLOG Failed to download image $IMG_EXTERNAL_REF from swift. && exit 1
     fi
@@ -301,21 +301,20 @@ elif [[ $IMAGE_STORAGE == "swift" ]]; then
   SECRET=secret
   TTL=604800
 
-  upload_status=`python $HERE/swift-handler.py $OS_REGION_NAME $OS_AUTH_TOKEN $OS_STORAGE_URL upload solum_du $STORAGE_OBJ_NAME $APP_DU_FILE`
-  if [[ "$upload_status" != "0" ]]; then
+  python $HERE/swift-handler.py $OS_REGION_NAME $OS_AUTH_TOKEN $OS_STORAGE_URL upload solum_du $STORAGE_OBJ_NAME $APP_DU_FILE \
+  > >(while read ALINE; do TLOG $ALINE; done)
+  if [[ $? != 0 ]]; then
     TLOG Swift upload failed. && exit 1
   fi
 
-  ACCOUNT=`echo $OS_STORAGE_URL | sed 's/\// /'g | awk '{print $4}'`
+  ACCOUNT=$(echo $OS_STORAGE_URL | sed 's/\// /'g | awk '{print $4}')
   TLOG "ACCOUNT=$ACCOUNT"
-  STORAGE_HOST=`echo $OS_STORAGE_URL | sed 's/\// /'g | awk '{print $2}'`
+  STORAGE_HOST=$(echo $OS_STORAGE_URL | sed 's/\// /'g | awk '{print $2}')
   TLOG "STORAGE_HOST=$STORAGE_HOST"
   curl -i -X POST -H X-Auth-Token:$OS_AUTH_TOKEN -H X-Account-Meta-Temp-URL-Key:$TEMP_URL_SECRET $TEMP_URL_PROTOCOL://$STORAGE_HOST/v1/$ACCOUNT
-  CWD=`pwd`
-  TLOG "CWD:$CWD"
   TLOG "HERE:$HERE"
 
-  TEMP_URL=`python $HERE/get-temp-url.py $STORAGE_HOST solum_du $STORAGE_OBJ_NAME $ACCOUNT $TEMP_URL_SECRET $TEMP_URL_TTL $TEMP_URL_PROTOCOL`
+  TEMP_URL=$(python $HERE/get-temp-url.py $STORAGE_HOST solum_du $STORAGE_OBJ_NAME $ACCOUNT $TEMP_URL_SECRET $TEMP_URL_TTL $TEMP_URL_PROTOCOL)
   TLOG "TEMP_URL:$TEMP_URL"
 
   image_id="${TEMP_URL}DOCKER_IMAGE_TAG=${DU_IMG_TAG}"

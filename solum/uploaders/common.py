@@ -30,17 +30,8 @@ class UploaderBase(object):
     stage_name = None
     strategy = None
 
-    # below are kwargs
-    region_name = ''
-    auth_token = None
-    storage_url = ''
-    container = ''
-    name = ''
-    path = ''
-
-    def __init__(self, context=None, original_file_path='',
-                 resource=None, stage_id=None,
-                 stage_name=None, **kwargs):
+    def __init__(self, context, original_file_path, resource, stage_id,
+                 stage_name):
         self.context = context
         self.original_file_path = original_file_path
         self.transformed_path = original_file_path + '.tf'
@@ -48,29 +39,12 @@ class UploaderBase(object):
         self.stage_id = stage_id
         self.stage_name = stage_name
 
-        if kwargs:
-            self.region_name = kwargs['region_name']
-            self.auth_token = kwargs['auth_token']
-            self.storage_url = kwargs['storage_url']
-            self.container = kwargs['container']
-            self.name = kwargs['name']
-            self.path = str(kwargs['path'])
-
     def upload_log(self):
         pass
 
-    def upload_image(self):
-        pass
-
-    def stat(self):
-        pass
-
-    def _open(self, filepath, readwrite):
-        return open(filepath, readwrite)
-
     def transform_jsonlog(self):
-        with self._open(self.original_file_path, 'r') as logfile:
-            with self._open(self.transformed_path, 'w') as tflogfile:
+        with open(self.original_file_path, 'r') as logfile:
+            with open(self.transformed_path, 'w') as tflogfile:
                 for line in logfile.readlines():
                     try:
                         # Log lines generated from Python logger

@@ -14,54 +14,170 @@
 
 """Swift Handler"""
 
+import errno
+import httplib
+import os
 import sys
-import time
 
-from solum.openstack.common import log as logging
-import solum.uploaders.swift
-
-
-LOG = logging.getLogger(__name__)
-
-region_name = sys.argv[1]
-auth_token = sys.argv[2]
-storage_url = sys.argv[3]
-action_to_take = sys.argv[4]
-container = sys.argv[5]
-app = sys.argv[6]
-path = sys.argv[7]
+import six
+from swiftclient import client as swiftclient
+from swiftclient import exceptions as swiftexp
 
 
-upload_args = {'region_name': str(region_name),
-               'auth_token': str(auth_token),
-               'storage_url': str(storage_url),
-               'container': str(container),
-               'name': str(app),
-               'path': str(path)}
+CHUNKSIZE = 65536
+TOTAL_RETRIES = 3
+Gi = 1024 * 1024 * 1000
+LARGE_OBJECT_SIZE = 5 * Gi
 
-status = 0
 
-if action_to_take == 'upload':
-    try:
-        solum.uploaders.swift.SwiftUpload(**upload_args).upload_image()
-    except Exception:
-        time.sleep(1)
+class InvalidObjectSizeError(Exception):
+    pass
+
+
+class MaxRetryReached(Exception):
+    pass
+
+
+def _get_swift_client(args):
+    client_args = {
+        'auth_version': '2.0',
+        'preauthtoken': args['auth_token'],
+        'preauthurl': args['storage_url'],
+        'os_options': {'region_name': args['region_name']},
+        }
+
+    # swiftclient connection will retry the request
+    # 5 times before failing
+    return swiftclient.Connection(**client_args)
+
+
+def _get_file_size(file_obj):
+    # Analyze file-like object and attempt to determine its size.
+
+    if (hasattr(file_obj, 'seek') and hasattr(file_obj, 'tell') and
+            (six.PY2 or six.PY3 and file_obj.seekable())):
         try:
-            solum.uploaders.swift.SwiftUpload(**upload_args).upload_image()
-        except Exception as e:
-            LOG.exception(e)
-            status = 1
-elif action_to_take == 'stat':
-    try:
-        solum.uploaders.swift.SwiftUpload(**upload_args).stat()
-    except Exception:
-        time.sleep(1)
-        try:
-            solum.uploaders.swift.SwiftUpload(**upload_args).stat()
-        except Exception as e:
-            LOG.exception(e)
-            status = 1
-else:
-    status = -1
+            curr = file_obj.tell()
+            file_obj.seek(0, os.SEEK_END)
+            size = file_obj.tell()
+            file_obj.seek(curr)
+            return size
+        except IOError as e:
+            if e.errno == errno.ESPIPE:
+                # Illegal seek. This means the file object
+                # is a pipe (e.g. the user is trying
+                # to pipe image data to the client,
+                # echo testdata | bin/glance add blah...), or
+                # that file object is empty, or that a file-like
+                # object which doesn't support 'seek/tell' has
+                # been supplied.
+                return 0
+            else:
+                print("Error getting file size")
+                raise
+    else:
+        return 0
 
-print('%s' % status)
+
+def _get_object(container, name, connection_args, start_byte=None):
+    connection = _get_swift_client(connection_args)
+    headers = {}
+    if start_byte is not None:
+        bytes_range = 'bytes=%d-' % start_byte
+        headers = {'Range': bytes_range}
+
+    try:
+        resp_headers, resp_body = connection.get_object(
+            container=container, obj=name, resp_chunk_size=CHUNKSIZE,
+            headers=headers)
+    except swiftexp.ClientException as e:
+        if e.http_status == httplib.NOT_FOUND:
+            print("Swift could not find object %s." % name)
+        raise
+
+    return (resp_headers, resp_body)
+
+
+def _retry_iter(resp_iter, length, container, name, connection_args):
+    length = length if length else (resp_iter.len
+                                    if hasattr(resp_iter, 'len') else 0)
+    retries = 0
+    bytes_read = 0
+
+    while retries <= TOTAL_RETRIES:
+        try:
+            for chunk in resp_iter:
+                yield chunk
+                bytes_read += len(chunk)
+        except swiftexp.ClientException as e:
+            print("Swift exception %s" % e.__class__.__name__)
+
+        if bytes_read == length:
+            break
+        else:
+            if retries == TOTAL_RETRIES:
+                raise MaxRetryReached
+            else:
+                retries += 1
+                print("Retrying Swift download")
+                # NOTE(james_li): Need a new swift connection to do
+                # a range request for the same object
+                (_resp_headers, resp_iter) = _get_object(container, name,
+                                                         connection_args,
+                                                         start_byte=bytes_read)
+
+
+def do_upload(path, container, name, connection_args):
+    connection = _get_swift_client(connection_args)
+    with open(path, 'rb') as local_file:
+        size = _get_file_size(local_file)
+        if size > 0 and size < LARGE_OBJECT_SIZE:
+            connection.put_container(container)
+            connection.put_object(container, name, local_file,
+                                  content_length=size)
+        else:
+            print("Cannot upload a file with the size exceeding 5GB")
+            raise InvalidObjectSizeError
+
+
+def do_download(path, container, name, connection_args):
+    (resp_headers, resp_data) = _get_object(container, name, connection_args)
+    length = int(resp_headers.get('content-length', 0))
+    data_iter = _retry_iter(resp_data, length, container, name,
+                            connection_args)
+
+    with open(path, 'wb') as local_file:
+        for chunk in data_iter:
+            local_file.write(chunk)
+        local_file.flush()
+
+
+def main():
+    action_to_take = sys.argv[4]
+    path = str(sys.argv[7])
+    container = str(sys.argv[5])
+    obj_name = str(sys.argv[6])
+    connection_args = {'region_name': str(sys.argv[1]),
+                       'auth_token': str(sys.argv[2]),
+                       'storage_url': str(sys.argv[3])}
+
+    if action_to_take == 'download':
+        try:
+            do_download(path, container, obj_name, connection_args)
+            sys.exit(0)
+        except Exception as e:
+            print("Error download object, got %s" % e.__class__.__name__)
+            sys.exit(1)
+    elif action_to_take == 'upload':
+        try:
+            do_upload(path, container, obj_name, connection_args)
+            sys.exit(0)
+        except Exception as e:
+            print("Error upload object, got %s" % e.__class__.__name__)
+            sys.exit(1)
+    else:
+        sys.exit(2)
+
+
+if __name__ == '__main__':
+    main()

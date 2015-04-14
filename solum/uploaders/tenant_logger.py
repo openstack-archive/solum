@@ -38,8 +38,6 @@ class TenantLogger(object):
         self.assem = assem
         self.stage = stage
 
-        tenant_log_file = ''
-
         # Note: assembly type is used by uploader
         self.assem.type = 'app'
 
