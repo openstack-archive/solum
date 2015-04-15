@@ -50,7 +50,7 @@ class TenantLogger(object):
         uploadr = {
             'local': local_uploader.LocalStorage,
             'swift': swift_uploader.SwiftUpload,
-        }.get(strategy, 'local')
+        }.get(strategy, local_uploader.LocalStorage)
 
         self.uploader = uploadr(ctxt, self.path, assem, assem.uuid, stage)
 

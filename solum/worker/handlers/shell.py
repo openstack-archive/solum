@@ -36,7 +36,6 @@ from solum.objects import assembly
 from solum.objects import image
 from solum.openstack.common import log as logging
 from solum.openstack.common import uuidutils
-import solum.uploaders.common as uploader_common
 import solum.uploaders.local as local_uploader
 import solum.uploaders.swift as swift_uploader
 
@@ -64,7 +63,7 @@ def upload_task_log(ctxt, original_path, resource, build_id, stage):
     uploader = {
         'local': local_uploader.LocalStorage,
         'swift': swift_uploader.SwiftUpload,
-    }.get(strategy, uploader_common.UploaderBase)
+    }.get(strategy, local_uploader.LocalStorage)
     uploader(ctxt, original_path, resource, build_id, stage).upload_log()
 
 
