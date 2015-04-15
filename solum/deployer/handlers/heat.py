@@ -323,7 +323,7 @@ class Handler(object):
             return
 
         du_is_up = False
-        to_upd = {'status': STATES.WAITING_FOR_DOCKER_DU,
+        to_upd = {'status': STATES.STARTING_APP,
                   'application_uri': host_ip}
         update_assembly(ctxt, assembly_id, to_upd)
         LOG.debug("HOST IP:%s, PORTS:%s" % (host_ip, ports))

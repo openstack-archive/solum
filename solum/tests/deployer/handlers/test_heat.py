@@ -221,7 +221,7 @@ class HandlerTest(base.BaseTestCase):
                                     'fake_id', [80])
 
         c1 = mock.call(fake_assembly.id,
-                       {'status': STATES.WAITING_FOR_DOCKER_DU,
+                       {'status': STATES.STARTING_APP,
                         'application_uri': 'xyz'})
 
         c2 = mock.call(fake_assembly.id,
