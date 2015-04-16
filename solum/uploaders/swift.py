@@ -30,19 +30,26 @@ cfg.CONF.import_opt('log_upload_swift_container', 'solum.worker.config',
 class SwiftUpload(solum.uploaders.common.UploaderBase):
     strategy = "swift"
 
+    def _upload(self, container, filename, filelike, client_args=None):
+        swift = None
+        if client_args:
+            swift = clients.OpenStackClients(**client_args).swift()
+        else:
+            swift = clients.OpenStackClients(self.context).swift()
+        swift.put_container(container)
+        swift.put_object(container, filename, filelike)
+
     def upload_log(self):
         container = cfg.CONF.worker.log_upload_swift_container
         filename = "%s-%s/%s-%s.log" % (self.resource.name, self.resource.uuid,
                                         self.stage_name, self.stage_id)
 
         self.transform_jsonlog()
-        with open(self.transformed_path, 'r') as logfile:
+        with self._open(self.transformed_path, 'r') as logfile:
             try:
                 LOG.debug("Uploading log to Swift. %s, %s" %
                           (container, filename))
-                swift = clients.OpenStackClients(self.context).swift()
-                swift.put_container(container)
-                swift.put_object(container, filename, logfile)
+                self._upload(container, filename, logfile)
             except swiftexceptions.ClientException:
                 LOG.exception("Failed to upload logfile to Swift.")
                 return
@@ -55,7 +62,7 @@ class SwiftUpload(solum.uploaders.common.UploaderBase):
         self.write_userlog_row(filename, swift_info)
 
     def upload_image(self):
-        with open(self.path, 'r') as du_file:
+        with self._open(self.path, 'r') as du_file:
             try:
                 client_args = {
                     'auth_version': '2.0',
@@ -63,9 +70,8 @@ class SwiftUpload(solum.uploaders.common.UploaderBase):
                     'preauthurl': self.storage_url,
                     'os_options': {'region_name': self.region_name},
                 }
-                swift = swiftclient.Connection(**client_args)
-                swift.put_container(self.container)
-                swift.put_object(self.container, self.name, du_file)
+                self._upload(self.container, self.name, du_file,
+                             client_args=client_args)
             except swiftexceptions.ClientException as e:
                 LOG.exception("Failed to upload %s to Swift." % self.name)
                 raise e

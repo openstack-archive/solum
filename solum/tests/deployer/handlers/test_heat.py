@@ -216,9 +216,10 @@ class HandlerTest(base.BaseTestCase):
 
         cfg.CONF.deployer.du_attempts = 1
 
+        mock_logger = mock.MagicMock()
         handler._parse_server_url = mock.MagicMock(return_value=('xyz'))
         handler._check_stack_status(self.ctx, fake_assembly.id, mock_clients,
-                                    'fake_id', [80])
+                                    'fake_id', [80], mock_logger)
 
         c1 = mock.call(fake_assembly.id,
                        {'status': STATES.STARTING_APP,
@@ -240,8 +241,9 @@ class HandlerTest(base.BaseTestCase):
         stack = mock.MagicMock()
         stack.status = 'FAILED'
         mock_clients.heat().stacks.get.return_value = stack
+        mock_logger = mock.MagicMock()
         handler._check_stack_status(self.ctx, fake_assembly.id, mock_clients,
-                                    'fake_id', [80])
+                                    'fake_id', [80], mock_logger)
         mock_ua.assert_called_once_with(fake_assembly.id,
                                         {'status':
                                          STATES.ERROR_STACK_CREATE_FAILED})
@@ -258,8 +260,9 @@ class HandlerTest(base.BaseTestCase):
         cfg.CONF.set_override('growth_factor', 1, group='deployer')
         cfg.CONF.set_override('max_attempts', 1, group='deployer')
 
+        mock_logger = mock.MagicMock()
         handler._check_stack_status(self.ctx, fake_assembly.id, mock_clients,
-                                    'fake_id', [80])
+                                    'fake_id', [80], mock_logger)
         mock_ua.assert_called_once_with(fake_assembly.id,
                                         {'status':
                                          STATES.ERROR_STACK_CREATE_FAILED})

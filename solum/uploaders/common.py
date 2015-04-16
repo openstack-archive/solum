@@ -65,9 +65,12 @@ class UploaderBase(object):
     def stat(self):
         pass
 
+    def _open(self, filepath, readwrite):
+        return open(filepath, readwrite)
+
     def transform_jsonlog(self):
-        with open(self.original_file_path, 'r') as logfile:
-            with open(self.transformed_path, 'w') as tflogfile:
+        with self._open(self.original_file_path, 'r') as logfile:
+            with self._open(self.transformed_path, 'w') as tflogfile:
                 for line in logfile.readlines():
                     try:
                         # Log lines generated from Python logger

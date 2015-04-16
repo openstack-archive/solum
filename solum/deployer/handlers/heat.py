@@ -106,6 +106,7 @@ class Handler(object):
         t_logger = tlog.TenantLogger(ctxt, assem, deployer_log_dir, 'delete')
         msg = "Deleting Assembly %s" % assem.uuid
         t_logger.log(logging.DEBUG, msg)
+        LOG.debug(msg)
 
         if stack_id is None:
             assem.destroy(ctxt)
@@ -139,17 +140,18 @@ class Handler(object):
                     # Must use stack_name for expecting a 404
                     osc.heat().stacks.get(stack_name)
                 except exc.HTTPNotFound:
+                    assem.destroy(ctxt)
                     t_logger.log(logging.DEBUG, "Stack delete successful.")
                     t_logger.upload()
-                    assem.destroy(ctxt)
                     return
                 time.sleep(wait_interval)
                 wait_interval *= growth_factor
 
-            t_logger.log(logging.ERROR, "Error deleting heat stack.")
-            t_logger.upload()
             update_assembly(ctxt, assem_id,
                             {'status': STATES.ERROR_STACK_DELETE_FAILED})
+
+            t_logger.log(logging.ERROR, "Error deleting heat stack.")
+            t_logger.upload()
 
     def destroy_app(self, ctxt, app_id):
         # Destroy a plan's assemblies, and then the plan.
@@ -261,7 +263,8 @@ class Handler(object):
                 LOG.error("Error creating Heat Stack for,"
                           " assembly %s" % assembly_id)
                 LOG.exception(exp)
-                update_assembly(ctxt, assembly_id, {'status': STATES.ERROR})
+                update_assembly(ctxt, assembly_id,
+                                {'status': STATES.ERROR_STACK_CREATE_FAILED})
                 t_logger.log(logging.ERROR, "Error creating heat stack.")
                 t_logger.upload()
                 return
@@ -285,9 +288,12 @@ class Handler(object):
                 return
         update_assembly(ctxt, assembly_id, {'status': STATES.DEPLOYING})
 
-        self._check_stack_status(ctxt, assembly_id, osc, stack_id, ports)
+        self._check_stack_status(ctxt, assembly_id, osc, stack_id, ports,
+                                 t_logger)
+        t_logger.upload()
 
-    def _check_stack_status(self, ctxt, assembly_id, osc, stack_id, ports):
+    def _check_stack_status(self, ctxt, assembly_id, osc, stack_id, ports,
+                            t_logger):
 
         wait_interval = cfg.CONF.deployer.wait_interval
         growth_factor = cfg.CONF.deployer.growth_factor
@@ -308,11 +314,15 @@ class Handler(object):
             elif stack.status == 'FAILED':
                 update_assembly(ctxt, assembly_id,
                                 {'status': STATES.ERROR_STACK_CREATE_FAILED})
+                lg_msg = "App deployment failed: Heat stack creation failure"
+                t_logger.log(logging.ERROR, lg_msg)
                 return
 
         if stack is None or (stack and stack.status == ""):
             update_assembly(ctxt, assembly_id,
                             {'status': STATES.ERROR_STACK_CREATE_FAILED})
+            lg_msg = "App deployment failed: Heat stack is in unexpected state"
+            t_logger.log(logging.ERROR, lg_msg)
             return
 
         host_ip = self._parse_server_url(stack)
@@ -320,6 +330,9 @@ class Handler(object):
             LOG.exception("Could not parse url from heat stack.")
             update_assembly(ctxt, assembly_id,
                             {'status': STATES.ERROR})
+            lg_msg = ("App deployment failed: "
+                      "container IP address not available")
+            t_logger.log(logging.ERROR, lg_msg)
             return
 
         du_is_up = False
@@ -350,11 +363,17 @@ class Handler(object):
             except Exception as exp:
                 LOG.exception(exp)
                 update_assembly(ctxt, assembly_id, {'status': STATES.ERROR})
+                lg_msg = ("App deployment error: unexpected error when trying"
+                          " to reach app endpoint")
+                t_logger.log(logging.ERROR, lg_msg)
                 return
         if du_is_up:
             to_update = {'status': STATES.READY, 'application_uri': host_ip}
         else:
             to_update = {'status': STATES.ERROR_CODE_DEPLOYMENT}
+            lg_msg = ("App deployment error: unreachable server or port, "
+                      " please check your port config.")
+            t_logger.log(logging.ERROR, lg_msg)
         update_assembly(ctxt, assembly_id, to_update)
 
     def _parse_server_url(self, heat_output):

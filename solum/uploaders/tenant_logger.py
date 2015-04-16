@@ -43,7 +43,7 @@ class TenantLogger(object):
         # Note: assembly type is used by uploader
         self.assem.type = 'app'
 
-        tenant_log_file = "%s-%s-%s" % (stage, ctxt.tenant, assem.uuid)
+        tenant_log_file = "%s-%s" % (stage, assem.uuid)
         self.path = "%s/%s.log" % (deployer_log_dir, tenant_log_file)
         LOG.debug("Deployer logs stored at %s" % self.path)
 
