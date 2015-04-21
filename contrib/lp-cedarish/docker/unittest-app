@@ -174,6 +174,17 @@ else
   cd $APP_DIR/code
 fi
 
+# if $ENTRYPOINT contains a testing script in repo ($APP_DIR/code)
+# and not executable, make it executable
+# docker ADD and COPY will inherit permissions
+test_cmd_prefix="./"
+if [[ -n $ENTRYPOINT ]] && [[ "$ENTRYPOINT" == $test_cmd_prefix* ]]; then
+  script_name=${ENTRYPOINT:2}
+  if [[ -e "$script_name" ]] && [[ ! -x "$script_name" ]]; then
+    chmod +x "$script_name"
+  fi
+fi
+
 DRONE_ENTRYPOINT=$ENTRYPOINT
 DOCKER_ENTRYPOINT=$ENTRYPOINT
 
