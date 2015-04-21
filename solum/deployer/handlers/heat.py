@@ -368,7 +368,13 @@ class Handler(object):
                 t_logger.log(logging.ERROR, lg_msg)
                 return
         if du_is_up:
-            to_update = {'status': STATES.READY, 'application_uri': host_ip}
+            app_uri = host_ip
+            if len(ports) == 1:
+                app_uri += ":" + str(ports[0])
+            if len(ports) > 1:
+                port_list = ','.join(str(p) for p in ports)
+                app_uri += ":[" + port_list + "]"
+            to_update = {'status': STATES.READY, 'application_uri': app_uri}
         else:
             to_update = {'status': STATES.ERROR_CODE_DEPLOYMENT}
             lg_msg = ("App deployment error: unreachable server or port, "

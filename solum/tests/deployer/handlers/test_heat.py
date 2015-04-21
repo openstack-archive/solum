@@ -227,7 +227,42 @@ class HandlerTest(base.BaseTestCase):
 
         c2 = mock.call(fake_assembly.id,
                        {'status': 'READY',
+                        'application_uri': 'xyz:80'})
+
+        calls = [c1, c2]
+
+        mock_ua.assert_has_calls(calls, any_order=False)
+
+    @mock.patch('solum.conductor.api.API.update_assembly')
+    @mock.patch('solum.common.clients.OpenStackClients')
+    @mock.patch('httplib2.Http')
+    def test_update_assembly_status_multiple_ports(self, mock_http,
+                                                   mock_clients, mock_ua):
+        handler = heat_handler.Handler()
+        fake_assembly = fakes.FakeAssembly()
+        stack = mock.MagicMock()
+        stack.status = 'COMPLETE'
+        mock_clients.heat().stacks.get.return_value = stack
+
+        resp = {'status': '200'}
+        conn = mock.MagicMock()
+        conn.request.return_value = [resp, '']
+        mock_http.return_value = conn
+
+        cfg.CONF.deployer.du_attempts = 1
+
+        mock_logger = mock.MagicMock()
+        handler._parse_server_url = mock.MagicMock(return_value=('xyz'))
+        handler._check_stack_status(self.ctx, fake_assembly.id, mock_clients,
+                                    'fake_id', [80, 81], mock_logger)
+
+        c1 = mock.call(fake_assembly.id,
+                       {'status': STATES.STARTING_APP,
                         'application_uri': 'xyz'})
+
+        c2 = mock.call(fake_assembly.id,
+                       {'status': 'READY',
+                        'application_uri': 'xyz:[80,81]'})
 
         calls = [c1, c2]
 
