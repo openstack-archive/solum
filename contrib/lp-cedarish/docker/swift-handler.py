@@ -164,6 +164,7 @@ def main():
     if action_to_take == 'download':
         try:
             do_download(path, container, obj_name, connection_args)
+            print("Finished swift download.")
             sys.exit(0)
         except Exception as e:
             print("Error download object, got %s" % e.__class__.__name__)
@@ -171,6 +172,7 @@ def main():
     elif action_to_take == 'upload':
         try:
             do_upload(path, container, obj_name, connection_args)
+            print("Finished swift upload.")
             sys.exit(0)
         except Exception as e:
             print("Error upload object, got %s" % e.__class__.__name__)

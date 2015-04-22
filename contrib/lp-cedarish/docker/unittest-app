@@ -142,7 +142,8 @@ if [[ $IMG_EXTERNAL_REF != "auto" ]]; then
 
     docker_load_with_retry $OUTPUT
     if [[ $? != 0 ]]; then
-      TLOG Docker load failed. && exit 1
+      OUTPUT_FILE_SIZE=$(stat -c%s "$OUTPUT")
+      TLOG Docker load failed, file size $OUTPUT_FILE_SIZE && exit 1
     fi
 
     BASE_IMG=$LP_IMG_TAG

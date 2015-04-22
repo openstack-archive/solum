@@ -198,7 +198,8 @@ else
 
     docker_load_with_retry $OUTPUT
     if [[ $? != 0 ]]; then
-      TLOG Failed docker load. && exit 1
+      OUTPUT_FILE_SIZE=$(stat -c%s "$OUTPUT")
+      TLOG Failed docker load, file size $OUTPUT_FILE_SIZE && exit 1
     fi
 
     BASE_IMG=$LP_IMG_TAG
@@ -216,7 +217,8 @@ else
 
     docker_load_with_retry $OUTPUT
     if [[ $? != 0 ]]; then
-      TLOG Failed docker load. && exit 1
+      OUTPUT_FILE_SIZE=$(stat -c%s "$OUTPUT")
+      TLOG Failed docker load, file size $OUTPUT_FILE_SIZE && exit 1
     fi
 
     BASE_IMG=$LP_IMG_TAG
