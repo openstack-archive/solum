@@ -46,24 +46,29 @@ def _get_solum_client():
 
 def main(args):
     client = _get_solum_client()
-    assembly = client.assemblies.find(name_or_id=args.assembly)
+    plan = client.plans.find(name_or_id=args.app)
     status_url = 'https://api.github.com/repos/{repo}/statuses/{sha}'.format(
         repo=args.repo, sha=args.sha)
     body_dict = {'sender': {'url': 'https://api.github.com'},
                  'pull_request': {'head': {'sha': args.sha}},
                  'repository': {'statuses_url': status_url}}
     body = json.dumps(body_dict)
-    resp = requests.post(assembly.trigger_uri, data=body)
+    trigger_uri = plan.trigger_uri
+    if args.workflow:
+        trigger_uri = "%s?workflow=%s" % (trigger_uri, args.workflow)
+    resp = requests.post(trigger_uri, data=body)
     print('status code is %s' % resp.status_code)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('assembly', help="assembly name/UUID")
+    parser.add_argument('app', help="app name/UUID")
     parser.add_argument('--sha', default='xyz', dest='sha',
                         help="the commit sha to clone from")
     parser.add_argument('--repo', default='u/r', dest='repo',
                         help="{user}/{repo}")
+    parser.add_argument('--workflow', dest="workflow",
+                        help="Workflow to trigger")
 
     args = parser.parse_args()
     main(args)

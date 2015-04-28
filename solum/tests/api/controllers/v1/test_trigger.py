@@ -25,8 +25,8 @@ from solum.tests import fakes
 
 @mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
 @mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
-@mock.patch('solum.api.controllers.v1.trigger.assembly_handler'
-            '.AssemblyHandler')
+@mock.patch('solum.api.controllers.v1.trigger.plan_handler'
+            '.PlanHandler')
 @mock.patch('solum.api.controllers.v1.trigger.pipeline_handler'
             '.PipelineHandler')
 class TestTriggerController(base.BaseTestCase):
@@ -50,7 +50,8 @@ class TestTriggerController(base.BaseTestCase):
         obj.post('test_id')
         self.assertEqual(202, resp_mock.status)
         tw = assem_mock.return_value.trigger_workflow
-        tw.assert_called_once_with('test_id', 'asdf', expected_st_url, None)
+        tw.assert_called_once_with('test_id', 'asdf', expected_st_url, None,
+                                   workflow=None)
 
     def test_trigger_post_on_github_comment_webhook(self, pipe_mock,
                                                     assem_mock, resp_mock,
@@ -72,7 +73,8 @@ class TestTriggerController(base.BaseTestCase):
         obj.post('test_id')
         self.assertEqual(202, resp_mock.status)
         tw = assem_mock.return_value.trigger_workflow
-        tw.assert_called_once_with('test_id', 'asdf', expected_st_url, None)
+        tw.assert_called_once_with('test_id', 'asdf', expected_st_url, None,
+                                   workflow=None)
 
     @mock.patch('httplib2.Http.request')
     def test_trigger_post_on_mismatch_comment_pub_repo(self, http_mock,
@@ -123,7 +125,7 @@ class TestTriggerController(base.BaseTestCase):
         self.assertEqual(202, resp_mock.status)
         tw = assem_mock.return_value.trigger_workflow
         tw.assert_called_once_with('test_id', 'asdf', expected_st_url,
-                                   expected_clb_url)
+                                   expected_clb_url, workflow=None)
 
     def test_trigger_post_on_comment_missing_login(self, pipe_mock,
                                                    assem_mock, resp_mock,
@@ -223,6 +225,7 @@ class TestTriggerController(base.BaseTestCase):
         obj.post('test_id')
         self.assertEqual(404, resp_mock.status)
         tw = assem_mock.return_value.trigger_workflow
-        tw.assert_called_once_with('test_id', 'asdf', expected_st_url, None)
+        tw.assert_called_once_with('test_id', 'asdf', expected_st_url, None,
+                                   workflow=None)
         tw = pipe_mock.return_value.trigger_workflow
         tw.assert_called_once_with('test_id')

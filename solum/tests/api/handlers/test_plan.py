@@ -54,7 +54,8 @@ class TestPlanHandler(base.BaseTestCase):
         mock_registry.Plan.update_and_save.assert_called_once_with(
             self.ctx, 'test_id', to_update_data)
 
-    def test_plan_create(self, mock_registry):
+    @mock.patch('solum.common.clients.OpenStackClients.keystone')
+    def test_plan_create(self, mock_kc, mock_registry):
         data = {'name': 'new_name',
                 'uuid': 'input_uuid'}
         db_obj = fakes.FakePlan()
@@ -64,7 +65,8 @@ class TestPlanHandler(base.BaseTestCase):
         db_obj.create.assert_called_once_with(self.ctx)
         self.assertEqual(db_obj, res)
 
-    def test_plan_create_with_param(self, mock_registry):
+    @mock.patch('solum.common.clients.OpenStackClients.keystone')
+    def test_plan_create_with_param(self, mock_kc, mock_registry):
         data = {'name': 'new_name',
                 'uuid': 'input_uuid',
                 'parameters': {'username': 'user_a'}}
@@ -79,7 +81,8 @@ class TestPlanHandler(base.BaseTestCase):
         self.assertEqual(db_obj, res)
 
     @mock.patch('solum.deployer.api.API.destroy_app')
-    def test_plan_delete(self, mock_destroy, mock_registry):
+    @mock.patch('solum.common.clients.OpenStackClients.keystone')
+    def test_plan_delete(self, mock_kc, mock_destroy, mock_registry):
         db_obj = fakes.FakePlan()
         mock_registry.Plan.get_by_uuid.return_value = db_obj
         handler = plan_handler.PlanHandler(self.ctx)
@@ -89,7 +92,9 @@ class TestPlanHandler(base.BaseTestCase):
                                                                'test_id')
 
     @mock.patch('solum.deployer.api.API.destroy_app')
-    def test_plan_delete_with_param(self, mock_destroy, mock_registry):
+    @mock.patch('solum.common.clients.OpenStackClients.keystone')
+    def test_plan_delete_with_param(self, mock_kc, mock_destroy,
+                                    mock_registry):
         db_obj = fakes.FakePlan()
         param_obj = fakes.FakeParameter()
         mock_registry.Plan.get_by_uuid.return_value = db_obj
@@ -102,3 +107,45 @@ class TestPlanHandler(base.BaseTestCase):
         mock_registry.Parameter.get_by_plan_id.assert_called_once_with(
             self.ctx, db_obj.id)
         mock_destroy.assert_called_once_with(app_id=db_obj.id)
+
+    @mock.patch('solum.common.clients.OpenStackClients.keystone')
+    def test_trigger_workflow_stage_select(self, mock_kc, mock_registry):
+        trigger_id = 1
+        plan_obj = fakes.FakePlan()
+        artifacts = [{"name": "Test",
+                      "artifact_type": "heroku",
+                      "content": {"href": "https://github.com/some/project"},
+                      "language_pack": "auto"}]
+        plan_obj.raw_content = {"artifacts": artifacts}
+        mock_registry.Plan.get_by_trigger_id.return_value = plan_obj
+        handler = plan_handler.PlanHandler(self.ctx)
+        handler._build_artifact = mock.MagicMock()
+        handler.trigger_workflow(trigger_id, workflow=['unittest'])
+        handler._build_artifact.assert_called_once_with(
+            plan_obj,
+            artifact=artifacts[0],
+            commit_sha='',
+            status_url=None,
+            workflow=['unittest'],
+            )
+        mock_registry.Plan.get_by_trigger_id.assert_called_once_with(
+            None, trigger_id)
+
+    @mock.patch('solum.common.clients.OpenStackClients.keystone')
+    def test_trigger_workflow_verify_artifact_failed(self, mock_kc,
+                                                     mock_registry):
+
+        trigger_id = 1
+        plan_obj = fakes.FakePlan()
+        artifacts = [{"name": "Test",
+                      "artifact_type": "heroku",
+                      "content": {"href": "https://github.com/some/project"},
+                      "language_pack": "auto"}]
+        plan_obj.raw_content = {"artifacts": artifacts}
+        mock_registry.Plan.get_by_trigger_id.return_value = plan_obj
+        handler = plan_handler.PlanHandler(self.ctx)
+        handler._build_artifact = mock.MagicMock()
+        handler._verify_artifact = mock.MagicMock(return_value=False)
+        collab_url = 'https://api.github.com/repos/u/r/collaborators/foo'
+        handler.trigger_workflow(trigger_id, collab_url=collab_url)
+        assert not handler._build_artifact.called

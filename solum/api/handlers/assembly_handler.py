@@ -26,7 +26,7 @@ from solum import objects
 from solum.objects import assembly
 from solum.objects import image
 from solum.openstack.common import log as logging
-from solum.worker import api
+from solum.worker import api as worker_api
 
 # Register options for the service
 API_SERVICE_OPTS = [
@@ -91,16 +91,13 @@ class AssemblyHandler(handler.Handler):
         """Delete a resource."""
         db_obj = objects.registry.Assembly.get_by_uuid(self.context, id)
 
-        # delete the delegation trust_id\token, if one was created.
-        keystone_utils.delete_delegation_token(self.context, db_obj.trust_id)
-
         conductor_api.API(context=self.context).update_assembly(
             db_obj.id, {'status': ASSEMBLY_STATES.DELETING})
 
         deploy_api.API(context=self.context).destroy_assembly(
             assem_id=db_obj.id)
 
-    def create(self, data):
+    def create(self, data, commit_sha='', status_url=None):
         """Create a new resource."""
         if 'workflow' in data and isinstance(data['workflow'], list):
             data['workflow'] = list(set(data['workflow']))
@@ -111,11 +108,7 @@ class AssemblyHandler(handler.Handler):
         db_obj.uuid = str(uuid.uuid4())
         db_obj.user_id = self.context.user
         db_obj.project_id = self.context.tenant
-        db_obj.trigger_id = str(uuid.uuid4())
         db_obj.username = self.context.user_name
-
-        # create a delegation trust_id\token, if required
-        db_obj.trust_id = keystone_utils.create_delegation_token(self.context)
 
         db_obj.status = ASSEMBLY_STATES.QUEUED
         db_obj.create(self.context)
@@ -125,14 +118,16 @@ class AssemblyHandler(handler.Handler):
 
         artifacts = plan_obj.raw_content.get('artifacts', [])
         for arti in artifacts:
-            self._build_artifact(assem=db_obj, artifact=arti)
+            self._build_artifact(assem=db_obj, artifact=arti,
+                                 commit_sha=commit_sha,
+                                 status_url=status_url)
         return db_obj
 
     def _build_artifact(self, assem, artifact, verb='launch_workflow',
                         commit_sha='', status_url=None):
 
         # This is a tempory hack so we don't need the build client
-        # in the requirments.
+        # in the requirements.
         image = objects.registry.Image()
         image.name = artifact['name']
         image.source_uri = artifact['content']['href']
@@ -160,7 +155,7 @@ class AssemblyHandler(handler.Handler):
         if test_cmd:
             repo_utils.send_status(0, status_url, repo_token, pending=True)
 
-        api.API(context=self.context).build_app(
+        worker_api.API(context=self.context).build_app(
             verb=verb,
             build_id=image.id,
             git_info=git_info,

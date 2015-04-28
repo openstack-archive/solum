@@ -49,6 +49,7 @@ class FakePecanRequest(mock.Mock):
         self.headers = fakeAuthTokenHeaders
         self.environ = {}
         self.pecan = dict(content_type=None)
+        self.query_string = ''
 
     def __setitem__(self, index, value):
         setattr(self, index, value)
@@ -208,7 +209,6 @@ class FakeAssembly(mock.Mock):
         self.components = [FakeComponent()]
         self.status = 'BUILDING'
         self.application_uri = 'test_uri'
-        self.trust_id = 'trust_worthy'
         now = datetime.datetime.utcnow()
         self.created_at = now
         self.updated_at = now
@@ -264,6 +264,7 @@ class FakePlan(mock.Mock):
         self.id = 8
         self.name = 'faker'
         self.deploy_keys_uri = None
+        self.trust_id = 'trust_worthy'
 
     def as_dict(self):
         return dict(raw_content=self.raw_content,

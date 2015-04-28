@@ -12,18 +12,28 @@
 
 
 import json
+import urllib
 
 from oslo.config import cfg
 import pecan
 from pecan import rest
 
-from solum.api.handlers import assembly_handler
 from solum.api.handlers import pipeline_handler
+from solum.api.handlers import plan_handler
 from solum.common import exception
 from solum.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
+
+
+def query_dict(querystring):
+    if not querystring:
+        return {}
+    query = urllib.unquote(querystring).rstrip()
+    query = query.split('&')
+    query = [q.split('=') for q in query]
+    return dict([(q[0], ' '.join(q[1:])) for q in query])
 
 
 class TriggerController(rest.RestController):
@@ -36,7 +46,15 @@ class TriggerController(rest.RestController):
         commit_sha = ''
         status_url = None
         collab_url = None
+        workflow = None
         try:
+            query = query_dict(pecan.request.query_string)
+            if 'workflow' in query:
+                valid_stages = ['unittest', 'build', 'deploy']
+                workflow = query['workflow'].replace('+', ' ').split(' ')
+                workflow = filter(lambda x: x in valid_stages, workflow)
+                if not workflow:
+                    workflow = None
             body = json.loads(pecan.request.body)
             if ('sender' in body and 'url' in body['sender'] and
                     'api.github.com' in body['sender']['url']):
@@ -78,9 +96,9 @@ class TriggerController(rest.RestController):
             raise exception.BadRequest(reason=info_msg)
 
         try:
-            handler = assembly_handler.AssemblyHandler(None)
+            handler = plan_handler.PlanHandler(None)
             handler.trigger_workflow(trigger_id, commit_sha, status_url,
-                                     collab_url)
+                                     collab_url, workflow=workflow)
         except exception.ResourceNotFound:
             handler = pipeline_handler.PipelineHandler(None)
             handler.trigger_workflow(trigger_id)

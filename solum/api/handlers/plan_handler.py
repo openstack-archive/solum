@@ -21,11 +21,17 @@ import uuid
 from Crypto.PublicKey import RSA
 from oslo.config import cfg
 
+from solum.api.handlers import assembly_handler
 from solum.api.handlers import handler
 from solum.common import clients
+from solum.common import exception
+from solum.common import keystone_utils
+from solum.common import repo_utils
 from solum.deployer import api as deploy_api
 from solum import objects
-
+from solum.objects import assembly
+from solum.objects import image
+from solum.openstack.common import log as logging
 
 API_PARAMETER_OPTS = [
     cfg.StrOpt('system_param_store',
@@ -42,6 +48,11 @@ API_PARAMETER_OPTS = [
 
 CONF = cfg.CONF
 CONF.register_opts(API_PARAMETER_OPTS, group='api')
+
+LOG = logging.getLogger(__name__)
+
+ASSEMBLY_STATES = assembly.States
+IMAGE_STATES = image.States
 
 sys_param_store = CONF.api.system_param_store
 
@@ -69,6 +80,8 @@ class PlanHandler(handler.Handler):
     def delete(self, id):
         """Delete existing plan."""
         db_obj = objects.registry.Plan.get_by_uuid(self.context, id)
+        # Delete the trust.
+        keystone_utils.delete_delegation_token(self.context, db_obj.trust_id)
         self._delete_params(db_obj.id)
         deploy_api.API(context=self.context).destroy_app(
             app_id=db_obj.id)
@@ -81,6 +94,12 @@ class PlanHandler(handler.Handler):
         db_obj.uuid = str(uuid.uuid4())
         db_obj.user_id = self.context.user
         db_obj.project_id = self.context.tenant
+        db_obj.trigger_id = str(uuid.uuid4())
+
+        # create a delegation trust_id\token, if required
+        db_obj.trust_id = keystone_utils.create_delegation_token(self.context)
+        db_obj.username = self.context.user_name
+
         sys_params = self._generate_sys_params(db_obj, data)
         user_params = data.get('parameters', {})
         self._process_ports(user_params, data)
@@ -156,6 +175,46 @@ class PlanHandler(handler.Handler):
             elif type(ports) is int:
                 new_ports = [ports]
             artifact['ports'] = new_ports or [80]
+
+    def trigger_workflow(self, trigger_id, commit_sha='',
+                         status_url=None, collab_url=None, workflow=None):
+        """Get trigger by trigger id and start git workflow associated."""
+        # Note: self.context will be None at this point as this is a
+        # non-authenticated request.
+        plan_obj = objects.registry.Plan.get_by_trigger_id(None, trigger_id)
+        # get the trust context and authenticate it.
+        try:
+            self.context = keystone_utils.create_delegation_context(
+                plan_obj, self.context)
+            self.context.tenant = plan_obj.project_id
+            self.context.user = plan_obj.user_id
+            self.context.user_name = plan_obj.username
+
+        except exception.AuthorizationFailure as auth_ex:
+            LOG.warn(auth_ex)
+            return
+
+        artifacts = plan_obj.raw_content.get('artifacts', [])
+        for arti in artifacts:
+            if repo_utils.verify_artifact(arti, collab_url):
+                self._build_artifact(plan_obj, artifact=arti,
+                                     commit_sha=commit_sha,
+                                     status_url=status_url,
+                                     workflow=workflow)
+
+    def _build_artifact(self, plan, artifact, verb='build', commit_sha='',
+                        status_url=None, workflow=None):
+
+        if workflow is None:
+            workflow = ['unittest', 'build', 'deploy']
+        ahand = assembly_handler.AssemblyHandler(self.context)
+        plandata = {
+            'plan_id': plan.id,
+            'name': "%s-%s" % (plan.name, artifact['name']),
+            'description': '',
+            'workflow': workflow,
+            }
+        ahand.create(plandata, commit_sha=commit_sha, status_url=status_url)
 
     def _create_params(self, plan_id, user_params, sys_params):
         param_obj = objects.registry.Parameter()

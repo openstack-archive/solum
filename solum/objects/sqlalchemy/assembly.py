@@ -14,7 +14,6 @@
 
 import sqlalchemy as sa
 
-from solum.common import exception
 from solum import objects
 from solum.objects import assembly as abstract
 from solum.objects.sqlalchemy import component
@@ -35,8 +34,6 @@ class Assembly(sql.Base, abstract.Assembly):
     uuid = sa.Column(sa.String(36), nullable=False)
     project_id = sa.Column(sa.String(36))
     user_id = sa.Column(sa.String(36))
-    trigger_id = sa.Column(sa.String(36))
-    trust_id = sa.Column(sa.String(255))
     name = sa.Column(sa.String(100))
     description = sa.Column(sa.String(255))
     tags = sa.Column(sa.Text)
@@ -45,19 +42,6 @@ class Assembly(sql.Base, abstract.Assembly):
     application_uri = sa.Column(sa.String(1024))
     username = sa.Column(sa.String(256))
     workflow = sa.Column(sql.YAMLEncodedDict(1024))
-
-    @classmethod
-    def _raise_trigger_not_found(cls, item_id):
-        """Raise a NotFound exception."""
-        raise exception.ResourceNotFound(id=item_id, name='trigger')
-
-    @classmethod
-    def get_by_trigger_id(cls, context, trigger_id):
-        try:
-            session = sql.Base.get_session()
-            return session.query(cls).filter_by(trigger_id=trigger_id).one()
-        except sa.orm.exc.NoResultFound:
-            cls._raise_trigger_not_found(trigger_id)
 
     def _non_updatable_fields(self):
         return set(('uuid', 'id', 'project_id'))

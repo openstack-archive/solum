@@ -35,7 +35,6 @@ class TestAssembly(base.BaseTestCase):
                       'user_id': 'fred',
                       'name': 'assembly1',
                       'description': 'test assembly',
-                      'trigger_id': 'trigger-uuid-1234',
                       'tags': 'assembly tags',
                       'plan_id': 'plan_id_1',
                       'status': 'BUILDING',
@@ -52,12 +51,6 @@ class TestAssembly(base.BaseTestCase):
 
     def test_check_data(self):
         ta = assembly.Assembly().get_by_id(self.ctx, self.data[0]['id'])
-        for key, value in self.data[0].items():
-            self.assertEqual(value, getattr(ta, key))
-
-    def test_check_data_by_trigger_id(self):
-        ta = assembly.Assembly().get_by_trigger_id(self.ctx, self.data[0][
-            'trigger_id'])
         for key, value in self.data[0].items():
             self.assertEqual(value, getattr(ta, key))
 

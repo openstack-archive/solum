@@ -109,7 +109,6 @@ def wrap_controller_exception(func, func_server_error, func_client_error):
             return func(*args, **kw)
         except Exception as excp:
             LOG.error(excp)
-
             http_error_code = 500
             if hasattr(excp, 'code'):
                 http_error_code = excp.code

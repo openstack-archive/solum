@@ -22,22 +22,21 @@ assembly_data = {'name': 'test_assembly',
 
 plan_data = {'version': '1',
              'name': 'test_plan',
+             'artifacts': [],
              'description': 'A test to create plan'}
 
 
 class TestTriggerController(base.TestCase):
 
     def _create_assembly(self):
-        plan_uuid = self._create_plan()
+        plan_uuid, trigger_uri = self._create_plan()
         assembly_data['plan_uri'] = "%s/v1/plans/%s" % (self.client.base_url,
                                                         plan_uuid)
         data = json.dumps(assembly_data)
         resp, body = self.client.post('v1/assemblies', data)
         self.assertEqual(resp.status, 201)
         out_data = json.loads(body)
-        trigger_uri = out_data['trigger_uri']
         uuid = out_data['uuid']
-        self.assertIsNotNone(trigger_uri)
         self.assertIsNotNone(uuid)
         return uuid, plan_uuid, trigger_uri
 
@@ -49,8 +48,10 @@ class TestTriggerController(base.TestCase):
         self.assertEqual(resp.status, 201)
         out_data = yaml.load(body)
         uuid = out_data['uuid']
+        trigger_uri = out_data['trigger_uri']
         self.assertIsNotNone(uuid)
-        return uuid
+        self.assertIsNotNone(trigger_uri)
+        return uuid, trigger_uri
 
     def test_trigger_post(self):
         assembly_uuid, plan_uuid, trigger_uri = self._create_assembly()

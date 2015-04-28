@@ -15,7 +15,6 @@
 import uuid
 
 from solum.api.handlers import assembly_handler as solum_assem_handler
-from solum.common import clients
 from solum import objects
 
 
@@ -28,11 +27,6 @@ class AssemblyHandler(solum_assem_handler.AssemblyHandler):
         db_obj.project_id = self.context.tenant
         db_obj.trigger_id = str(uuid.uuid4())
         db_obj.username = self.context.user_name
-
-        # create the trust_id and store it.
-        ksc = clients.OpenStackClients(self.context).keystone()
-        trust_context = ksc.create_trust_context()
-        db_obj.trust_id = trust_context.trust_id
 
         # use the plan name as the name of this application
         db_obj.name = plan_obj.name + "_application"

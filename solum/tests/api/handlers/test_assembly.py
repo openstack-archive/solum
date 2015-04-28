@@ -83,9 +83,6 @@ class TestAssemblyHandler(base.BaseTestCase):
                            'language_pack': 'auto'}]}
 
         mock_registry.Image.return_value = fakes.FakeImage()
-        trust_ctx = utils.dummy_context()
-        trust_ctx.trust_id = '12345'
-        mock_kc.return_value.create_trust_context.return_value = trust_ctx
 
         handler = assembly_handler.AssemblyHandler(self.ctx)
         res = handler.create(data)
@@ -104,8 +101,6 @@ class TestAssemblyHandler(base.BaseTestCase):
             git_info=git_info, test_cmd=None, ports=[80],
             base_image_id='auto', source_format='heroku',
             image_format='qcow2', run_cmd=None)
-
-        mock_kc.return_value.create_trust_context.assert_called_once_with()
 
     @mock.patch('solum.common.clients.OpenStackClients.keystone')
     def test_create_with_username_in_ctx(self, mock_kc, mock_registry):
@@ -161,9 +156,6 @@ class TestAssemblyHandler(base.BaseTestCase):
                            'language_pack': 'auto'}]}
         fp.deploy_keys_uri = 'secret_ref_uri'
         mock_registry.Image.return_value = fakes.FakeImage()
-        trust_ctx = utils.dummy_context()
-        trust_ctx.trust_id = '12345'
-        mock_kc.return_value.create_trust_context.return_value = trust_ctx
 
         handler = assembly_handler.AssemblyHandler(self.ctx)
         res = handler.create(data)
@@ -183,8 +175,6 @@ class TestAssemblyHandler(base.BaseTestCase):
             test_cmd=None, base_image_id='auto', source_format='heroku',
             image_format='qcow2', run_cmd=None)
 
-        mock_kc.return_value.create_trust_context.assert_called_once_with()
-
     @mock.patch('solum.common.clients.OpenStackClients.keystone')
     @mock.patch('solum.deployer.api.API.destroy_assembly')
     @mock.patch('solum.conductor.api.API.update_assembly')
@@ -195,58 +185,8 @@ class TestAssemblyHandler(base.BaseTestCase):
         handler.delete('test_id')
         mock_registry.Assembly.get_by_uuid.assert_called_once_with(self.ctx,
                                                                    'test_id')
-        mock_kc.return_value.delete_trust.assert_called_once_with(
-            'trust_worthy')
         mock_cond.assert_called_once_with(db_obj.id, {'status': 'DELETING'})
         mock_deploy.assert_called_once_with(assem_id=db_obj.id)
-
-    @mock.patch('solum.common.keystone_utils.create_delegation_context')
-    def test_trigger_workflow(self, mock_ksu, mock_registry):
-        trigger_id = 1
-        artifacts = [{"name": "Test",
-                      "artifact_type": "heroku",
-                      "content": {"href": "https://github.com/some/project"},
-                      "language_pack": "auto"}]
-        db_obj = fakes.FakeAssembly()
-        mock_registry.Assembly.get_by_trigger_id.return_value = db_obj
-        plan_obj = fakes.FakePlan()
-        mock_registry.Plan.get_by_id.return_value = plan_obj
-        plan_obj.raw_content = {"artifacts": artifacts}
-        handler = assembly_handler.AssemblyHandler(self.ctx)
-        handler._build_artifact = mock.MagicMock()
-        mock_ksu.return_value = self.ctx
-        handler.trigger_workflow(trigger_id)
-        handler._build_artifact.assert_called_once_with(
-            assem=db_obj,
-            artifact=artifacts[0],
-            commit_sha='',
-            status_url=None)
-        mock_ksu.assert_called_once_with(db_obj, mock.ANY)
-        mock_registry.Assembly.get_by_trigger_id.assert_called_once_with(
-            None, trigger_id)
-        mock_registry.Plan.get_by_id.assert_called_once_with(self.ctx,
-                                                             db_obj.plan_id)
-
-    @mock.patch('solum.common.keystone_utils.create_delegation_context')
-    def test_trigger_workflow_verify_artifact_failed(self, mock_ksu,
-                                                     mock_registry):
-        trigger_id = 1
-        artifacts = [{"name": "Test",
-                      "artifact_type": "heroku",
-                      "content": {"href": "https://github.com/some/project"},
-                      "language_pack": "auto"}]
-        db_obj = fakes.FakeAssembly()
-        mock_registry.Assembly.get_by_trigger_id.return_value = db_obj
-        plan_obj = fakes.FakePlan()
-        mock_registry.Plan.get_by_id.return_value = plan_obj
-        plan_obj.raw_content = {"artifacts": artifacts}
-        handler = assembly_handler.AssemblyHandler(self.ctx)
-        handler._build_artifact = mock.MagicMock()
-        handler._verify_artifact = mock.MagicMock(return_value=False)
-        mock_ksu.return_value = self.ctx
-        collab_url = 'https://api.github.com/repos/u/r/collaborators/foo'
-        handler.trigger_workflow(trigger_id, collab_url=collab_url)
-        assert not handler._build_artifact.called
 
     @mock.patch('httplib2.Http.request')
     def test_verify_artifact_raise_exp(self, http_mock, mock_registry):
