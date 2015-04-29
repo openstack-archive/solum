@@ -53,14 +53,15 @@ function app_glance_id () {
 
 function cleanup_on_exit () {
   if [[ $DELETE_LOCAL_CACHE == "true" ]]; then
-    # Delete local languagepack image after building the DU
-    if [[ -n $BASE_IMG ]]; then
-      sudo docker rmi -f $BASE_IMG
-    fi
+    # Not Deleting languagepack image because we found it conflicts with docker load in
+    # performance tests, which might be due to a concurrency bug in docker load and rmi.
+    #if [[ -n $BASE_IMG ]]; then
+    #  sudo docker rmi -f $BASE_IMG
+    #fi
 
     # Delete DU image after uploading to backend
     if [[ -n $DU_IMG_TAG ]]; then
-      sudo docker rmi -f $DU_IMG_TAG
+      sudo docker rmi $DU_IMG_TAG
     fi
 
     # Delete temp output files

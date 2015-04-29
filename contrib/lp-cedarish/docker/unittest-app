@@ -45,14 +45,15 @@ function TLOG () {
 
 function cleanup_on_exit () {
   if [[ $DELETE_LOCAL_CACHE == "true" ]]; then
-    # Delete local languagepack image after building the DU for testing
-    if [[ -n $BASE_IMG ]] && [[ $BASE_IMG != "solum/slugtester" ]]; then
-      sudo docker rmi -f $BASE_IMG
-    fi
+    # Not Deleting languagepack image because we found it conflicts with docker load in
+    # performance tests, which might be due to a concurrency bug in docker load and rmi.
+    #if [[ -n $BASE_IMG ]] && [[ $BASE_IMG != "solum/slugtester" ]]; then
+    #  sudo docker rmi -f $BASE_IMG
+    #fi
 
     # Delete local DU image after running user tests
     if [[ -n $RANDOM_NAME ]]; then
-      sudo docker rmi -f $RANDOM_NAME
+      sudo docker rmi $RANDOM_NAME
     fi
 
     # Delete the cloned git repo
