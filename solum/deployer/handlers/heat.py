@@ -181,59 +181,21 @@ class Handler(object):
 
         LOG.debug("Image id:%s" % image_id)
 
-        if cfg.CONF.api.image_format == 'docker':
-            image_uuid_du = image_id.split('DOCKER_IMAGE_TAG=')
-            glance_img_uuid = image_uuid_du[0].strip()
-            LOG.debug("Image id:%s" % glance_img_uuid)
-            LOG.debug("Specified ports:%s" % ports)
-            LOG.debug("Currently only one port supported. Picking first")
-            port_to_use = ports[0]
-            LOG.debug("Application port:%s" % port_to_use)
+        parameters = self._get_parameters(ctxt, cfg.CONF.api.image_format,
+                                          image_id, assem, ports, osc,
+                                          t_logger)
 
-            parameters = {'app_name': assem.name,
-                          'image': glance_img_uuid,
-                          'port': port_to_use}
-            parameters.update(heat_utils.get_network_parameters(osc))
+        LOG.debug(parameters)
 
-            # TODO(asalkeld) support template flavors
-            # (maybe an autoscaling one)
-            # this could also be stored in glance.
-            template_flavor = 'basic'
-        elif cfg.CONF.api.image_format == 'vm':
-            parameters = {}
-            parameters['name'] = str(assem.uuid)
+        template = self._get_template(ctxt,
+                                      cfg.CONF.api.image_format,
+                                      cfg.CONF.worker.image_storage,
+                                      image_id, assem, ports, t_logger)
 
-            # (devkulkarni): Default values optimized for devstack
-            parameters['count'] = 1
-            parameters['flavor'] = cfg.CONF.deployer.flavor
-            parameters['image'] = cfg.CONF.deployer.image
-
-            # use coreos
-            template_flavor = 'coreos'
-        else:
-            image_fmt = cfg.CONF.api.image_format
-            LOG.debug("Image format is %s not supported." % image_fmt)
-            update_assembly(ctxt, assembly_id, {'status': STATES.ERROR})
-            t_logger.log(logging.DEBUG, "Solum config error: Image format.")
-            t_logger.upload()
-            return
-
-        try:
-            template = catalog.get('templates', template_flavor)
-        except exception.ObjectNotFound as onf_ex:
-            LOG.excepion(onf_ex)
-            update_assembly(ctxt, assembly_id, {'status': STATES.ERROR})
-            t_logger.log(logging.ERROR, "Error reading heat template.")
-            t_logger.upload()
-            return
-
-        if cfg.CONF.worker.image_storage == 'docker_registry':
-            template = self._get_template_for_docker_reg(assem, template,
-                                                         image_id, ports)
-        if cfg.CONF.worker.image_storage == 'swift':
-            template = self._get_template_for_swift(assem, template,
-                                                    image_id, ports)
         LOG.debug(template)
+
+        if template is None:
+            return
 
         stack_name = self._get_stack_name(assem)
         stack_id = self._find_id_if_stack_exists(assem)
@@ -295,6 +257,76 @@ class Handler(object):
                                  t_logger)
         t_logger.upload()
 
+    def _get_template(self, ctxt, image_format, image_storage,
+                      image_id, assem, ports, t_logger):
+        template = None
+
+        if image_format == 'docker':
+            try:
+                template = catalog.get('templates', 'basic')
+            except exception.ObjectNotFound as onf_ex:
+                LOG.excepion(onf_ex)
+                update_assembly(ctxt, assem.id, {'status': STATES.ERROR})
+                t_logger.log(logging.ERROR, "Error reading heat template.")
+                t_logger.upload()
+        elif image_format == 'vm':
+            if image_storage == 'glance':
+                msg = ("image_storage %s not supported with image_format %s" %
+                       (image_storage, image_format))
+                LOG.debug(msg)
+                update_assembly(ctxt, assem.id, {'status': STATES.ERROR})
+                t_logger.log(logging.DEBUG, "Solum config error: %s " % msg)
+                t_logger.upload()
+            else:
+                try:
+                    template = catalog.get('templates', 'coreos')
+                except exception.ObjectNotFound as onf_ex:
+                    LOG.excepion(onf_ex)
+                    update_assembly(ctxt, assem.id, {'status': STATES.ERROR})
+                    t_logger.log(logging.ERROR, "Error reading heat template.")
+                    t_logger.upload()
+
+                if image_storage == 'docker_registry':
+                    template = self._get_template_for_docker_reg(assem,
+                                                                 template,
+                                                                 image_id,
+                                                                 ports)
+                if image_storage == 'swift':
+                    template = self._get_template_for_swift(assem,
+                                                            template,
+                                                            image_id,
+                                                            ports)
+        return template
+
+    def _get_parameters(self, ctxt, image_format, image_id, assem, ports, osc,
+                        t_logger):
+        parameters = None
+        if image_format == 'docker':
+            image_uuid_du = image_id.split('DOCKER_IMAGE_TAG=')
+            glance_img_uuid = image_uuid_du[0].strip()
+            LOG.debug("Image id:%s" % glance_img_uuid)
+            LOG.debug("Specified ports:%s" % ports)
+            LOG.debug("Picking first port..")
+            port_to_use = ports[0]
+            LOG.debug("Application port:%s" % port_to_use)
+
+            parameters = {'app_name': assem.name,
+                          'image': glance_img_uuid,
+                          'port': port_to_use}
+            parameters.update(heat_utils.get_network_parameters(osc))
+
+        elif image_format == 'vm':
+            parameters = {'name': str(assem.uuid),
+                          'count': 1,
+                          'flavor': cfg.CONF.deployer.flavor,
+                          'image': cfg.CONF.deployer.image}
+        else:
+            LOG.debug("Image format %s is not supported." % image_format)
+            update_assembly(ctxt, assem.id, {'status': STATES.ERROR})
+            t_logger.log(logging.DEBUG, "Solum config error: Image format.")
+            t_logger.upload()
+        return parameters
+
     def _check_stack_status(self, ctxt, assembly_id, osc, stack_id, ports,
                             t_logger):
 
@@ -339,10 +371,18 @@ class Handler(object):
             return
 
         du_is_up = False
+        app_uri = host_ip
+
+        if len(ports) == 1:
+            app_uri += ":" + str(ports[0])
+        if len(ports) > 1:
+            port_list = ','.join(str(p) for p in ports)
+            app_uri += ":[" + port_list + "]"
+
         to_upd = {'status': STATES.STARTING_APP,
-                  'application_uri': host_ip}
+                  'application_uri': app_uri}
         update_assembly(ctxt, assembly_id, to_upd)
-        LOG.debug("HOST IP:%s, PORTS:%s" % (host_ip, ports))
+        LOG.debug("Application URI: %s" % app_uri)
         port_idx = 0
         for count in range(cfg.CONF.deployer.du_attempts):
             if port_idx > len(ports) - 1:
@@ -371,12 +411,6 @@ class Handler(object):
                 t_logger.log(logging.ERROR, lg_msg)
                 return
         if du_is_up:
-            app_uri = host_ip
-            if len(ports) == 1:
-                app_uri += ":" + str(ports[0])
-            if len(ports) > 1:
-                port_list = ','.join(str(p) for p in ports)
-                app_uri += ":[" + port_list + "]"
             to_update = {'status': STATES.READY, 'application_uri': app_uri}
         else:
             to_update = {'status': STATES.ERROR_CODE_DEPLOYMENT}

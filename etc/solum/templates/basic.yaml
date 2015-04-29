@@ -47,9 +47,9 @@ resources:
   public_port:
     type: OS::Neutron::Port
     properties:
-      network_id: { get_param: private_net }
+      network: { get_param: private_net }
       fixed_ips:
-      - subnet_id: { get_param: private_subnet }
+      - subnet: { get_param: private_subnet }
       security_groups:
       - {get_resource: external_access}
 
@@ -58,6 +58,7 @@ resources:
     properties:
       floating_network_id: { get_param: public_net }
       port_id: { get_resource: public_port }
+      fixed_ip_address: { get_attr: [ public_port, fixed_ips, 0, ip_address ] }
 
   compute_instance:
     type: OS::Nova::Server

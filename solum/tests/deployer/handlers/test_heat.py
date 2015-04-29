@@ -228,7 +228,7 @@ class HandlerTest(base.BaseTestCase):
 
         c1 = mock.call(fake_assembly.id,
                        {'status': STATES.STARTING_APP,
-                        'application_uri': 'xyz'})
+                        'application_uri': 'xyz:80'})
 
         c2 = mock.call(fake_assembly.id,
                        {'status': 'READY',
@@ -263,7 +263,7 @@ class HandlerTest(base.BaseTestCase):
 
         c1 = mock.call(fake_assembly.id,
                        {'status': STATES.STARTING_APP,
-                        'application_uri': 'xyz'})
+                        'application_uri': 'xyz:[80,81]'})
 
         c2 = mock.call(fake_assembly.id,
                        {'status': 'READY',
@@ -287,6 +287,96 @@ class HandlerTest(base.BaseTestCase):
         mock_ua.assert_called_once_with(fake_assembly.id,
                                         {'status':
                                          STATES.ERROR_STACK_CREATE_FAILED})
+
+    @mock.patch('solum.conductor.api.API.update_assembly')
+    def test_get_template(self, mock_update_assembly):
+        handler = heat_handler.Handler()
+        fake_assembly = fakes.FakeAssembly()
+
+        image_format = 'vm'
+        image_storage = 'glance'
+        image_id = 'abc'
+        ports = [80]
+        mock_logger = mock.MagicMock()
+        template = handler._get_template(self.ctx, image_format,
+                                         image_storage, image_id,
+                                         fake_assembly, ports, mock_logger)
+        self.assertIsNone(template)
+        mock_update_assembly.assert_called_once_with(fake_assembly.id,
+                                                     {'status': STATES.ERROR})
+
+    @mock.patch('solum.common.heat_utils.get_network_parameters')
+    @mock.patch('solum.common.clients.OpenStackClients')
+    def test_get_parameters_for_docker(self, mock_clients, mock_heat_utils):
+
+        handler = heat_handler.Handler()
+        fake_assembly = fakes.FakeAssembly()
+
+        image_format = 'docker'
+        image_id = 'abc DOCKER_IMAGE_TAG=abc'
+        ports = [80]
+
+        mock_logger = mock.MagicMock()
+
+        params = handler._get_parameters(self.ctx, image_format,
+                                         image_id, fake_assembly,
+                                         ports, mock_clients, mock_logger)
+
+        self.assertEqual(params['app_name'], fake_assembly.name)
+        self.assertEqual(params['image'], 'abc')
+        self.assertEqual(params['port'], 80)
+
+    @mock.patch('solum.common.heat_utils.get_network_parameters')
+    @mock.patch('solum.common.clients.OpenStackClients')
+    def test_get_parameters_for_vm(self, mock_clients, mock_heat_utils):
+
+        handler = heat_handler.Handler()
+        fake_assembly = fakes.FakeAssembly()
+
+        image_format = 'vm'
+        image_id = 'abc DOCKER_IMAGE_TAG=abc'
+        ports = [80]
+
+        mock_logger = mock.MagicMock()
+
+        cfg.CONF.set_override('flavor', 'abc', group='deployer')
+        cfg.CONF.set_override('image', 'def', group='deployer')
+
+        params = handler._get_parameters(self.ctx, image_format,
+                                         image_id, fake_assembly,
+                                         ports, mock_clients, mock_logger)
+
+        self.assertEqual(params['name'], str(fake_assembly.uuid))
+        self.assertEqual(params['count'], 1)
+        self.assertEqual(params['flavor'], 'abc')
+        self.assertEqual(params['image'], 'def')
+        self.assertIsNone(params.get('port'))
+
+    @mock.patch('solum.conductor.api.API.update_assembly')
+    @mock.patch('solum.common.heat_utils.get_network_parameters')
+    @mock.patch('solum.common.clients.OpenStackClients')
+    def test_get_parameters_for_unrecognized_img_format(self, mock_clients,
+                                                        mock_heat_utils,
+                                                        mock_ua):
+
+        handler = heat_handler.Handler()
+        fake_assembly = fakes.FakeAssembly()
+
+        image_format = 'abc'
+        image_id = 'abc DOCKER_IMAGE_TAG=abc'
+        ports = [80]
+
+        mock_logger = mock.MagicMock()
+
+        params = handler._get_parameters(self.ctx, image_format,
+                                         image_id, fake_assembly,
+                                         ports, mock_clients, mock_logger)
+
+        self.assertIsNone(params)
+
+        mock_ua.assert_called_once_with(fake_assembly.id,
+                                        {'status':
+                                         STATES.ERROR})
 
     @mock.patch('solum.conductor.api.API.update_assembly')
     @mock.patch('solum.common.clients.OpenStackClients')
