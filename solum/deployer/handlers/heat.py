@@ -153,6 +153,22 @@ class Handler(object):
             t_logger.log(logging.ERROR, "Error deleting heat stack.")
             t_logger.upload()
 
+    def _destroy_other_assemblies(self, ctxt, new_assembly):
+        # Destroy all of an app's READY assemblies except the one named.
+        if new_assembly.status != STATES.READY:
+            return
+
+        app_id = new_assembly.plan_id
+
+        # Fetch all assemblies by plan id, and self.destroy() them.
+        assemblies = objects.registry.AssemblyList.get_all(ctxt)
+        for assem in assemblies:
+            if assem.status != STATES.READY:
+                continue
+            if app_id == assem.plan_id:
+                if assem.id != new_assembly.id:
+                    self.destroy_assembly(ctxt, assem.id)
+
     def destroy_app(self, ctxt, app_id):
         # Destroy a plan's assemblies, and then the plan.
         plan = objects.registry.Plan.get_by_id(ctxt, app_id)
@@ -253,9 +269,11 @@ class Handler(object):
                 return
         update_assembly(ctxt, assembly_id, {'status': STATES.DEPLOYING})
 
-        self._check_stack_status(ctxt, assembly_id, osc, stack_id, ports,
-                                 t_logger)
+        result = self._check_stack_status(ctxt, assembly_id, osc, stack_id,
+                                          ports, t_logger)
         t_logger.upload()
+        if result == STATES.READY:
+            self._destroy_other_assemblies(ctxt, assem)
 
     def _get_template(self, ctxt, image_format, image_storage,
                       image_id, assem, ports, t_logger):
@@ -351,14 +369,14 @@ class Handler(object):
                                 {'status': STATES.ERROR_STACK_CREATE_FAILED})
                 lg_msg = "App deployment failed: Heat stack creation failure"
                 t_logger.log(logging.ERROR, lg_msg)
-                return
+                return STATES.ERROR_STACK_CREATE_FAILED
 
         if stack is None or (stack and stack.status == ""):
             update_assembly(ctxt, assembly_id,
                             {'status': STATES.ERROR_STACK_CREATE_FAILED})
             lg_msg = "App deployment failed: Heat stack is in unexpected state"
             t_logger.log(logging.ERROR, lg_msg)
-            return
+            return STATES.ERROR_STACK_CREATE_FAILED
 
         host_ip = self._parse_server_url(stack)
         if host_ip is None:
@@ -368,7 +386,7 @@ class Handler(object):
             lg_msg = ("App deployment failed: "
                       "container IP address not available")
             t_logger.log(logging.ERROR, lg_msg)
-            return
+            return STATES.ERROR
 
         du_is_up = False
         app_uri = host_ip
@@ -409,7 +427,7 @@ class Handler(object):
                 lg_msg = ("App deployment error: unexpected error when trying"
                           " to reach app endpoint")
                 t_logger.log(logging.ERROR, lg_msg)
-                return
+                return STATES.ERROR
         if du_is_up:
             to_update = {'status': STATES.READY, 'application_uri': app_uri}
         else:
@@ -418,6 +436,7 @@ class Handler(object):
                       " please check your port config.")
             t_logger.log(logging.ERROR, lg_msg)
         update_assembly(ctxt, assembly_id, to_update)
+        return to_update['status']
 
     def _parse_server_url(self, heat_output):
         """Parse server url from heat-stack-show output."""

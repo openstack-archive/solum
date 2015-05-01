@@ -34,6 +34,7 @@ from solum.deployer import api as deployer_api
 from solum import objects
 from solum.objects import assembly
 from solum.objects import image
+from solum.openstack.common.gettextutils import _
 from solum.openstack.common import log as logging
 from solum.openstack.common import uuidutils
 import solum.uploaders.local as local_uploader
@@ -554,6 +555,7 @@ class Handler(object):
 
         lp_access = get_lp_access_method(ctxt.tenant)
 
+        user_env = {}
         try:
             user_env = self._get_environment(ctxt,
                                              source_uri,

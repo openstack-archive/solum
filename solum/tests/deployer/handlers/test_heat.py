@@ -486,6 +486,90 @@ class HandlerTest(base.BaseTestCase):
         mock_tlogger.log.assert_called_once()
         mock_tlogger.upload.assert_called_once()
 
+    @mock.patch('solum.objects.registry')
+    def test_successful_deploy_destroys_twins(self, mock_registry):
+        handler = heat_handler.Handler()
+        old_app = fakes.FakeAssembly()
+        old_app.name = 'old app'
+        old_app.status = 'READY'
+
+        new_app = fakes.FakeAssembly()
+        new_app.id = 9
+        new_app.plan_id = old_app.plan_id
+        new_app.name = 'new app'
+        new_app.status = 'READY'
+
+        self.assertEqual(old_app.plan_id, new_app.plan_id)
+        self.assertEqual(old_app.plan_uuid, new_app.plan_uuid)
+        mock_registry.AssemblyList.get_all.return_value = [old_app, new_app]
+
+        handler.destroy_assembly = mock.MagicMock()
+        handler._destroy_other_assemblies(self.ctx, new_app)
+        handler.destroy_assembly.assert_called_once_with(self.ctx, old_app.id)
+
+    @mock.patch('solum.objects.registry')
+    def test_successful_deploy_preserves_others(self, mock_registry):
+        handler = heat_handler.Handler()
+        old_app = fakes.FakeAssembly()
+        old_app.name = 'old app'
+        old_app.status = 'READY'
+
+        new_app = fakes.FakeAssembly()
+        new_app.id = 9
+        new_app.plan_uuid = 'new fake plan uuid'
+        new_app.name = 'new app'
+        new_app.status = 'READY'
+
+        self.assertNotEqual(old_app.plan_id, new_app.plan_id)
+        self.assertNotEqual(old_app.plan_uuid, new_app.plan_uuid)
+        mock_registry.AssemblyList.get_all.return_value = [old_app, new_app]
+
+        handler.destroy_assembly = mock.MagicMock()
+        handler._destroy_other_assemblies(self.ctx, new_app)
+        self.assertEqual(0, handler.destroy_assembly.call_count)
+
+    @mock.patch('solum.objects.registry')
+    def test_successful_deploy_preserves_notreadies(self, mock_registry):
+        handler = heat_handler.Handler()
+        old_app = fakes.FakeAssembly()
+        old_app.name = 'old app'
+        old_app.status = 'BUILDING'
+
+        new_app = fakes.FakeAssembly()
+        new_app.id = 9
+        new_app.plan_id = old_app.plan_id
+        new_app.name = 'new app'
+        new_app.status = 'READY'
+
+        self.assertEqual(old_app.plan_id, new_app.plan_id)
+        self.assertEqual(old_app.plan_uuid, new_app.plan_uuid)
+        mock_registry.AssemblyList.get_all.return_value = [old_app, new_app]
+
+        handler.destroy_assembly = mock.MagicMock()
+        handler._destroy_other_assemblies(self.ctx, new_app)
+        self.assertEqual(0, handler.destroy_assembly.call_count)
+
+    @mock.patch('solum.objects.registry')
+    def test_unsuccessful_deploy_preserves_everyone(self, mock_registry):
+        handler = heat_handler.Handler()
+        old_app = fakes.FakeAssembly()
+        old_app.name = 'old app'
+        old_app.status = 'READY'
+
+        new_app = fakes.FakeAssembly()
+        new_app.id = 9
+        new_app.plan_id = old_app.plan_id
+        new_app.name = 'new app'
+        new_app.status = 'ERROR'
+
+        self.assertEqual(old_app.plan_id, new_app.plan_id)
+        self.assertEqual(old_app.plan_uuid, new_app.plan_uuid)
+        mock_registry.AssemblyList.get_all.return_value = [old_app, new_app]
+
+        handler.destroy_assembly = mock.MagicMock()
+        handler._destroy_other_assemblies(self.ctx, new_app)
+        self.assertEqual(0, handler.destroy_assembly.call_count)
+
     def _get_fake_template(self):
         t = "description: test\n"
         t += "resources:\n"
