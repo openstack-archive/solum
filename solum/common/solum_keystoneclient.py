@@ -35,6 +35,31 @@ cfg.CONF.register_opts(trust_opts)
 cfg.CONF.import_opt('auth_uri', 'keystonemiddleware.auth_token',
                     group='keystone_authtoken')
 
+AUTH_OPTS = [
+    cfg.StrOpt('keystone_version',
+               default='3',
+               help='The keystone version to use with Solum'),
+]
+
+cfg.CONF.register_opts(AUTH_OPTS)
+
+
+class KeystoneClient(object):
+    """Keystone client wrapper to initialize the right version of the client.
+
+       The version to use is specified in solum.conf
+       """
+
+    def __new__(self, context):
+        ks_version = cfg.CONF.get('keystone_version')
+        if ks_version == '3':
+            return KeystoneClientV3(context)
+        else:
+            msg = 'Unsupported version of keystone: %s', ks_version
+            LOG.error(msg)
+            raise exception.AuthorizationFailure(client='keystone',
+                                                 message=msg)
+
 
 class KeystoneClientV3(object):
     """Keystone client wrapper so we can encapsulate logic in one place."""
@@ -56,11 +81,11 @@ class KeystoneClientV3(object):
         self._admin_client = None
 
         if self.context.auth_url:
-            self.v3_endpoint = self.context.auth_url.replace('v2.0', 'v3')
+            self.endpoint = self.context.auth_url.replace('v2.0', 'v3')
         else:
             # Import auth_token to have keystone_authtoken settings setup.
             importutils.import_module('keystonemiddleware.auth_token')
-            self.v3_endpoint = cfg.CONF.keystone_authtoken.auth_uri.replace(
+            self.endpoint = cfg.CONF.keystone_authtoken.auth_uri.replace(
                 'v2.0', 'v3')
 
         if self.context.trust_id:
@@ -90,8 +115,8 @@ class KeystoneClientV3(object):
 
     def _v3_client_init(self):
         kwargs = {
-            'auth_url': self.v3_endpoint,
-            'endpoint': self.v3_endpoint
+            'auth_url': self.endpoint,
+            'endpoint': self.endpoint
         }
         # Note try trust_id first, as we can't reuse auth_token in that case
         if self.context.trust_id is not None:
@@ -135,7 +160,7 @@ class KeystoneClientV3(object):
                 raise exception.AuthorizationFailure()
             # All OK so update the context with the token
             self.context.auth_token = client.auth_ref.auth_token
-            self.context.auth_url = self.v3_endpoint
+            self.context.auth_url = self.endpoint
             self.context.user = client.auth_ref.user_id
             self.context.tenant = client.auth_ref.project_id
             self.context.user_name = client.auth_ref.username
@@ -148,8 +173,8 @@ class KeystoneClientV3(object):
         creds = {
             'username': cfg.CONF.keystone_authtoken.admin_user,
             'password': cfg.CONF.keystone_authtoken.admin_password,
-            'auth_url': self.v3_endpoint,
-            'endpoint': self.v3_endpoint,
+            'auth_url': self.endpoint,
+            'endpoint': self.endpoint,
             'project_name': cfg.CONF.keystone_authtoken.admin_tenant_name}
         LOG.info('admin creds %s' % creds)
         return creds

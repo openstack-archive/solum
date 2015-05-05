@@ -14,10 +14,12 @@
 
 import mock
 
+from solum.api import auth
 from solum.api.handlers import assembly_handler
 from solum.common import exception
 from solum.common import repo_utils
 from solum.objects import assembly
+from solum.openstack.common.fixture import config
 from solum.tests import base
 from solum.tests import fakes
 from solum.tests import utils
@@ -31,6 +33,10 @@ class TestAssemblyHandler(base.BaseTestCase):
     def setUp(self):
         super(TestAssemblyHandler, self).setUp()
         self.ctx = utils.dummy_context()
+        self.CONF = self.useFixture(config.Config())
+        self.CONF.config(auth_uri='http://fakeidentity.com',
+                         group=auth.OPT_GROUP_NAME)
+        self.CONF.config(keystone_version='3')
 
     def test_assembly_get(self, mock_registry):
         mock_registry.return_value.Assembly.get_by_uuid.return_value = {
@@ -58,7 +64,7 @@ class TestAssemblyHandler(base.BaseTestCase):
             self.ctx, 'test_id', data)
 
     @mock.patch('solum.worker.api.API.build_app')
-    @mock.patch('solum.common.solum_keystoneclient.KeystoneClientV3')
+    @mock.patch('solum.common.clients.OpenStackClients.keystone')
     def test_create(self, mock_kc, mock_pa, mock_registry):
         data = {'user_id': 'new_user_id',
                 'uuid': 'input_uuid',
@@ -101,7 +107,7 @@ class TestAssemblyHandler(base.BaseTestCase):
 
         mock_kc.return_value.create_trust_context.assert_called_once_with()
 
-    @mock.patch('solum.common.solum_keystoneclient.KeystoneClientV3')
+    @mock.patch('solum.common.clients.OpenStackClients.keystone')
     def test_create_with_username_in_ctx(self, mock_kc, mock_registry):
         data = {'plan_uuid': 'input_plan_uuid'}
 
@@ -116,7 +122,7 @@ class TestAssemblyHandler(base.BaseTestCase):
 
         self.assertEqual(res.username, self.ctx.user_name)
 
-    @mock.patch('solum.common.solum_keystoneclient.KeystoneClientV3')
+    @mock.patch('solum.common.clients.OpenStackClients.keystone')
     def test_create_without_username_in_ctx(self, mock_kc, mock_registry):
         data = {'plan_uuid': 'input_plan_uuid'}
 
@@ -134,7 +140,7 @@ class TestAssemblyHandler(base.BaseTestCase):
         self.assertEqual(res.username, '')
 
     @mock.patch('solum.worker.api.API.build_app')
-    @mock.patch('solum.common.solum_keystoneclient.KeystoneClientV3')
+    @mock.patch('solum.common.clients.OpenStackClients.keystone')
     def test_create_with_private_github_repo(self, mock_kc, mock_pa,
                                              mock_registry):
         data = {'user_id': 'new_user_id',
@@ -179,7 +185,7 @@ class TestAssemblyHandler(base.BaseTestCase):
 
         mock_kc.return_value.create_trust_context.assert_called_once_with()
 
-    @mock.patch('solum.common.solum_keystoneclient.KeystoneClientV3')
+    @mock.patch('solum.common.clients.OpenStackClients.keystone')
     @mock.patch('solum.deployer.api.API.destroy_assembly')
     @mock.patch('solum.conductor.api.API.update_assembly')
     def test_delete(self, mock_cond, mock_deploy, mock_kc, mock_registry):
@@ -194,7 +200,8 @@ class TestAssemblyHandler(base.BaseTestCase):
         mock_cond.assert_called_once_with(db_obj.id, {'status': 'DELETING'})
         mock_deploy.assert_called_once_with(assem_id=db_obj.id)
 
-    def test_trigger_workflow(self, mock_registry):
+    @mock.patch('solum.common.keystone_utils.create_delegation_context')
+    def test_trigger_workflow(self, mock_ksu, mock_registry):
         trigger_id = 1
         artifacts = [{"name": "Test",
                       "artifact_type": "heroku",
@@ -207,20 +214,22 @@ class TestAssemblyHandler(base.BaseTestCase):
         plan_obj.raw_content = {"artifacts": artifacts}
         handler = assembly_handler.AssemblyHandler(self.ctx)
         handler._build_artifact = mock.MagicMock()
-        handler._context_from_trust_id = mock.MagicMock(return_value=self.ctx)
+        mock_ksu.return_value = self.ctx
         handler.trigger_workflow(trigger_id)
         handler._build_artifact.assert_called_once_with(
             assem=db_obj,
             artifact=artifacts[0],
             commit_sha='',
             status_url=None)
-        handler._context_from_trust_id.assert_called_once_with('trust_worthy')
+        mock_ksu.assert_called_once_with(db_obj, mock.ANY)
         mock_registry.Assembly.get_by_trigger_id.assert_called_once_with(
             None, trigger_id)
         mock_registry.Plan.get_by_id.assert_called_once_with(self.ctx,
                                                              db_obj.plan_id)
 
-    def test_trigger_workflow_verify_artifact_failed(self, mock_registry):
+    @mock.patch('solum.common.keystone_utils.create_delegation_context')
+    def test_trigger_workflow_verify_artifact_failed(self, mock_ksu,
+                                                     mock_registry):
         trigger_id = 1
         artifacts = [{"name": "Test",
                       "artifact_type": "heroku",
@@ -234,7 +243,7 @@ class TestAssemblyHandler(base.BaseTestCase):
         handler = assembly_handler.AssemblyHandler(self.ctx)
         handler._build_artifact = mock.MagicMock()
         handler._verify_artifact = mock.MagicMock(return_value=False)
-        handler._context_from_trust_id = mock.MagicMock(return_value=self.ctx)
+        mock_ksu.return_value = self.ctx
         collab_url = 'https://api.github.com/repos/u/r/collaborators/foo'
         handler.trigger_workflow(trigger_id, collab_url=collab_url)
         assert not handler._build_artifact.called

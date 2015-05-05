@@ -186,7 +186,7 @@ class OpenStackClients(object):
 
     @property
     def auth_url(self):
-        return self.keystone().v3_endpoint
+        return self.keystone().endpoint
 
     @property
     def auth_token(self):
@@ -206,7 +206,7 @@ class OpenStackClients(object):
         if self._keystone:
             return self._keystone
 
-        self._keystone = solum_keystoneclient.KeystoneClientV3(self.context)
+        self._keystone = solum_keystoneclient.KeystoneClient(self.context)
         return self._keystone
 
     @exception.wrap_keystone_exception
