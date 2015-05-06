@@ -19,6 +19,7 @@ import mock
 from oslo.config import cfg
 import yaml
 
+from solum.common import exception
 from solum.deployer.handlers import heat as heat_handler
 from solum.objects import assembly
 from solum.tests import base
@@ -231,8 +232,7 @@ class HandlerTest(base.BaseTestCase):
                         'application_uri': 'xyz:80'})
 
         c2 = mock.call(fake_assembly.id,
-                       {'status': 'READY',
-                        'application_uri': 'xyz:80'})
+                       {'status': 'READY'})
 
         calls = [c1, c2]
 
@@ -266,8 +266,7 @@ class HandlerTest(base.BaseTestCase):
                         'application_uri': 'xyz:[80,81]'})
 
         c2 = mock.call(fake_assembly.id,
-                       {'status': 'READY',
-                        'application_uri': 'xyz:[80,81]'})
+                       {'status': 'READY'})
 
         calls = [c1, c2]
 
@@ -304,6 +303,117 @@ class HandlerTest(base.BaseTestCase):
         self.assertIsNone(template)
         mock_update_assembly.assert_called_once_with(fake_assembly.id,
                                                      {'status': STATES.ERROR})
+
+    @mock.patch('solum.conductor.api.API.update_assembly')
+    def test_get_template_vm_glance(self, mock_update_assembly):
+        handler = heat_handler.Handler()
+        fake_assembly = fakes.FakeAssembly()
+
+        image_format = 'vm'
+        image_storage = 'glance'
+        image_id = 'abc'
+        ports = [80]
+        mock_logger = mock.MagicMock()
+        template = handler._get_template(self.ctx, image_format,
+                                         image_storage, image_id,
+                                         fake_assembly, ports, mock_logger)
+        self.assertIsNone(template)
+        mock_update_assembly.assert_called_once_with(fake_assembly.id,
+                                                     {'status': STATES.ERROR})
+
+    @mock.patch('solum.common.catalog.get')
+    def test_get_template_vm_docker_reg(self, mock_catalog_get):
+        handler = heat_handler.Handler()
+        fake_assembly = fakes.FakeAssembly()
+
+        template_getter = mock.MagicMock()
+        template_getter.return_value = self._get_fake_template()
+        handler._get_template_for_docker_reg = template_getter
+
+        image_format = 'vm'
+        image_storage = 'docker_registry'
+        image_id = 'abc'
+        ports = [80]
+        mock_logger = mock.MagicMock()
+        template = handler._get_template(self.ctx, image_format,
+                                         image_storage, image_id,
+                                         fake_assembly, ports, mock_logger)
+        self.assertIsNotNone(template)
+        handler._get_template_for_docker_reg.assert_called_once()
+        mock_catalog_get.assert_called_once_with('templates', 'coreos')
+
+    @mock.patch('solum.common.catalog.get')
+    def test_get_template_vm_swift(self, mock_catalog_get):
+        handler = heat_handler.Handler()
+        fake_assembly = fakes.FakeAssembly()
+
+        template_getter = mock.MagicMock()
+        template_getter.return_value = self._get_fake_template()
+        handler._get_template_for_swift = template_getter
+
+        image_format = 'vm'
+        image_storage = 'swift'
+        image_id = 'abc'
+        ports = [80]
+        mock_logger = mock.MagicMock()
+        template = handler._get_template(self.ctx, image_format,
+                                         image_storage, image_id,
+                                         fake_assembly, ports, mock_logger)
+        self.assertIsNotNone(template)
+        handler._get_template_for_swift.assert_called_once()
+        mock_catalog_get.assert_called_once_with('templates', 'coreos')
+
+    @mock.patch('solum.conductor.api.API.update_assembly')
+    @mock.patch('solum.common.catalog.get')
+    def test_get_template_vm_swift_error(self, mock_catalog_get, mock_ua):
+        handler = heat_handler.Handler()
+        fake_assembly = fakes.FakeAssembly()
+
+        exc_obj = exception.ObjectNotFound()
+        mock_catalog_get.side_effect = exc_obj
+
+        template_getter = mock.MagicMock()
+        template_getter.return_value = self._get_fake_template()
+        handler._get_template_for_swift = template_getter
+
+        image_format = 'vm'
+        image_storage = 'swift'
+        image_id = 'abc'
+        ports = [80]
+        mock_logger = mock.MagicMock()
+        template = handler._get_template(self.ctx, image_format,
+                                         image_storage, image_id,
+                                         fake_assembly, ports, mock_logger)
+        self.assertIsNone(template)
+        mock_ua.assert_called_once_with(fake_assembly.id,
+                                        {'status': STATES.ERROR})
+
+        assert not handler._get_template_for_swift.called
+
+    @mock.patch('solum.conductor.api.API.update_assembly')
+    @mock.patch('solum.common.catalog.get')
+    def test_get_template_docker_read_error(self, mock_catalog_get, mock_ua):
+        handler = heat_handler.Handler()
+        fake_assembly = fakes.FakeAssembly()
+
+        exc_obj = exception.ObjectNotFound()
+        mock_catalog_get.side_effect = exc_obj
+
+        template_getter = mock.MagicMock()
+        template_getter.return_value = self._get_fake_template()
+        handler._get_template_for_swift = template_getter
+
+        image_format = 'docker'
+        image_storage = 'swift'
+        image_id = 'abc'
+        ports = [80]
+        mock_logger = mock.MagicMock()
+        template = handler._get_template(self.ctx, image_format,
+                                         image_storage, image_id,
+                                         fake_assembly, ports, mock_logger)
+        self.assertIsNone(template)
+        mock_ua.assert_called_once_with(fake_assembly.id,
+                                        {'status': STATES.ERROR})
 
     @mock.patch('solum.common.heat_utils.get_network_parameters')
     @mock.patch('solum.common.clients.OpenStackClients')

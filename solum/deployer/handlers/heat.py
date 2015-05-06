@@ -203,6 +203,9 @@ class Handler(object):
 
         LOG.debug(parameters)
 
+        if parameters is None:
+            return
+
         template = self._get_template(ctxt,
                                       cfg.CONF.api.image_format,
                                       cfg.CONF.worker.image_storage,
@@ -288,6 +291,8 @@ class Handler(object):
                 update_assembly(ctxt, assem.id, {'status': STATES.ERROR})
                 t_logger.log(logging.ERROR, "Error reading heat template.")
                 t_logger.upload()
+                return template
+
         elif image_format == 'vm':
             if image_storage == 'glance':
                 msg = ("image_storage %s not supported with image_format %s" %
@@ -304,17 +309,24 @@ class Handler(object):
                     update_assembly(ctxt, assem.id, {'status': STATES.ERROR})
                     t_logger.log(logging.ERROR, "Error reading heat template.")
                     t_logger.upload()
+                    return template
 
                 if image_storage == 'docker_registry':
                     template = self._get_template_for_docker_reg(assem,
                                                                  template,
                                                                  image_id,
                                                                  ports)
-                if image_storage == 'swift':
+                elif image_storage == 'swift':
                     template = self._get_template_for_swift(assem,
                                                             template,
                                                             image_id,
                                                             ports)
+        else:
+            LOG.debug("Image format %s is not supported." % image_format)
+            update_assembly(ctxt, assem.id, {'status': STATES.ERROR})
+            t_logger.log(logging.DEBUG, "Solum config error: Image format.")
+            t_logger.upload()
+
         return template
 
     def _get_parameters(self, ctxt, image_format, image_id, assem, ports, osc,
@@ -430,7 +442,7 @@ class Handler(object):
                 t_logger.log(logging.ERROR, lg_msg)
                 return STATES.ERROR
         if du_is_up:
-            to_update = {'status': STATES.READY, 'application_uri': app_uri}
+            to_update = {'status': STATES.READY}
         else:
             to_update = {'status': STATES.ERROR_CODE_DEPLOYMENT}
             lg_msg = ("App deployment error: unreachable server or port, "
