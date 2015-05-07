@@ -82,7 +82,7 @@ def list_opts():
 cfg.CONF.register_opts(SERVICE_OPTS, group='deployer')
 cfg.CONF.import_opt('image_format', 'solum.api.handlers.assembly_handler',
                     group='api')
-cfg.CONF.import_group('worker', 'solum.worker.handlers.shell')
+cfg.CONF.import_opt('image_storage', 'solum.worker.config', group='worker')
 
 deployer_log_dir = cfg.CONF.deployer.deployer_log_dir
 

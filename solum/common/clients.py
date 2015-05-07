@@ -326,7 +326,6 @@ class OpenStackClients(object):
     def swift(self):
         # Not caching swift connections because of range requests
         # Check how glance_store uses swift client for a reference
-
         endpoint_type = get_client_option('swift', 'endpoint_type')
         region_name = get_client_option('swift', 'region_name')
         args = {

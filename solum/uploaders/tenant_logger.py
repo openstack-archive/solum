@@ -23,8 +23,8 @@ from solum.openstack.common import log as openstack_logger
 import solum.uploaders.local as local_uploader
 import solum.uploaders.swift as swift_uploader
 
-cfg.CONF.import_group('worker', 'solum.worker.handlers.shell')
-
+cfg.CONF.import_opt('log_upload_strategy', 'solum.worker.config',
+                    group='worker')
 LOG = openstack_logger.getLogger(__name__)
 
 

@@ -89,6 +89,13 @@ SERVICE_OPTS = [
     cfg.StrOpt('lp_operator_tenant_name',
                default="demo",
                help='LP operator tenant name.'),
+    cfg.StrOpt('docker_daemon_url',
+               default="unix://var/run/docker.sock",
+               help='docker daemon url.'),
+    cfg.IntOpt('container_mem_limit', default=0,
+               help='max memory a container can consume. No limit by default'),
+    cfg.IntOpt('docker_build_timeout', default=1800,
+               help='max time a docker build can take. Default: 30 minutes'),
 ]
 
 opt_group = cfg.OptGroup(
