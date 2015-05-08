@@ -283,7 +283,7 @@ class Handler(object):
             try:
                 template = catalog.get('templates', 'basic')
             except exception.ObjectNotFound as onf_ex:
-                LOG.excepion(onf_ex)
+                LOG.exception(onf_ex)
                 update_assembly(ctxt, assem.id, {'status': STATES.ERROR})
                 t_logger.log(logging.ERROR, "Error reading heat template.")
                 t_logger.upload()
@@ -299,7 +299,7 @@ class Handler(object):
                 try:
                     template = catalog.get('templates', 'coreos')
                 except exception.ObjectNotFound as onf_ex:
-                    LOG.excepion(onf_ex)
+                    LOG.exception(onf_ex)
                     update_assembly(ctxt, assem.id, {'status': STATES.ERROR})
                     t_logger.log(logging.ERROR, "Error reading heat template.")
                     t_logger.upload()
