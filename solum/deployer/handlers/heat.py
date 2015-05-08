@@ -271,6 +271,7 @@ class Handler(object):
 
         result = self._check_stack_status(ctxt, assembly_id, osc, stack_id,
                                           ports, t_logger)
+        assem.status = result
         t_logger.upload()
         if result == STATES.READY:
             self._destroy_other_assemblies(ctxt, assem)
