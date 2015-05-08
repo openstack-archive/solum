@@ -470,9 +470,11 @@ class Handler(object):
             ports_str += ' -p {pt}:{pt}'.format(pt=port)
         run_docker_str = ('#!/bin/bash -x\n'
                           '# Invoke the container\n'
-                          'docker run {publish_ports} -d {du}')
+                          'docker run {publish_ports} -d {du}\n'
+                          'wc_notify --data-binary {stat}')
         run_docker = run_docker_str.format(publish_ports=ports_str.strip(),
-                                           du=du_name)
+                                           du=du_name,
+                                           stat='\'{"status": "SUCCESS"}\'')
 
         LOG.debug("run_docker:%s" % run_docker)
 
@@ -513,10 +515,12 @@ class Handler(object):
                           '# Invoke the container\n'
                           'wget \"{location}\" --output-document={du}\n'
                           'docker load < {du}\n'
-                          'docker run {publish_ports} -d {du}')
+                          'docker run {publish_ports} -d {du}\n'
+                          'wc_notify --data-binary {stat}')
         run_docker = run_docker_str.format(location=image_tar_location,
                                            publish_ports=ports_str.strip(),
-                                           du=du_name)
+                                           du=du_name,
+                                           stat='\'{"status": "SUCCESS"}\'')
 
         LOG.debug("run_docker:%s" % run_docker)
 

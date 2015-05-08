@@ -31,6 +31,17 @@ resources:
           params:
             count:
               get_param: count
+            wc_notify: { get_attr: ['wait_handle', 'curl_cli'] }
           template: |
       user_data_format: RAW
     type: "OS::Nova::Server"
+
+  wait_on_server:
+    type: OS::Heat::SwiftSignal
+    properties:
+      handle: {get_resource: wait_handle}
+      count: 1
+      timeout: 600
+
+  wait_handle:
+    type: OS::Heat::SwiftSignalHandle

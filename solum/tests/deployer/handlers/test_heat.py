@@ -698,8 +698,10 @@ class HandlerTest(base.BaseTestCase):
 
         run_docker = ('#!/bin/bash -x\n'
                       '# Invoke the container\n'
-                      'docker run -p 80:80 -d {img}')
-        run_docker = run_docker.format(img=image_id)
+                      'docker run -p 80:80 -d {img}\n'
+                      'wc_notify --data-binary {stat}')
+        run_docker = run_docker.format(img=image_id,
+                                       stat='\'{"status": "SUCCESS"}\'')
         comp_instance = template_bdy['resources']['compute_instance']
         user_data = comp_instance['properties']['user_data']
         user_data['str_replace']['template'] = run_docker
@@ -719,9 +721,11 @@ class HandlerTest(base.BaseTestCase):
                       '# Invoke the container\n'
                       'wget \"{image_tar_location}\" --output-document={du}\n'
                       'docker load < {du}\n'
-                      'docker run -p 80:80 -d {du}')
+                      'docker run -p 80:80 -d {du}\n'
+                      'wc_notify --data-binary {stat}')
         run_docker = run_docker.format(image_tar_location=image_tar_location,
-                                       du=du_name)
+                                       du=du_name,
+                                       stat='\'{"status": "SUCCESS"}\'')
 
         comp_instance = template_bdy['resources']['compute_instance']
         user_data = comp_instance['properties']['user_data']
