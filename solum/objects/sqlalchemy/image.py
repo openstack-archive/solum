@@ -91,9 +91,18 @@ class Image(sql.Base, abstract.Image):
         session = Image.get_session()
         result = session.query(cls)
         result = result.filter_by(artifact_type='language_pack')
-        result = result.filter(
-            Image.project_id.in_([operator_id, context.tenant]))
-        return result.all()
+        result = sql.filter_by_project(context, result)
+
+        # Include Languagepacks that have been created by the operator, and
+        # are in the 'READY' state.
+        # The operator LP is identified based on the operator_project_id
+        # config setting in solum.conf
+        oper_result = session.query(cls)
+        oper_result = oper_result.filter_by(artifact_type='language_pack')
+        oper_result = oper_result.filter_by(status='READY')
+        oper_result = oper_result.filter_by(project_id=operator_id)
+
+        return result.union(oper_result).all()
 
 
 class ImageList(abstract.ImageList):
