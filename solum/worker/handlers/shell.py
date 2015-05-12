@@ -28,7 +28,6 @@ import solum
 from solum.common import clients
 from solum.common import exception
 from solum.common import repo_utils
-from solum.common import solum_keystoneclient
 from solum.conductor import api as conductor_api
 from solum.deployer import api as deployer_api
 from solum import objects
@@ -157,7 +156,7 @@ class Handler(object):
             user_env['OS_AUTH_TOKEN'] = ctxt.auth_token
             user_env['OS_AUTH_URL'] = ctxt.auth_url or ''
             user_env['OS_REGION_NAME'] = client_region_name
-            kc = solum_keystoneclient.KeystoneClientV3(ctxt)
+            kc = clients.OpenStackClients(ctxt).keystone()
             user_env['OS_IMAGE_URL'] = kc.client.service_catalog.url_for(
                 service_type='image',
                 endpoint_type='publicURL')
@@ -345,6 +344,7 @@ class Handler(object):
         solum.TLS.trace.support_info(build_cmd=' '.join(build_cmd),
                                      assembly_id=assembly_id)
 
+        user_env = {}
         try:
             user_env = self._get_environment(ctxt, source_uri,
                                              assembly_id=assembly_id,

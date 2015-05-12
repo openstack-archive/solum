@@ -17,10 +17,9 @@ import uuid
 from oslo.config import cfg
 
 from solum.api.handlers import handler
-from solum.common import context
 from solum.common import exception
+from solum.common import keystone_utils
 from solum.common import repo_utils
-from solum.common import solum_keystoneclient
 from solum.conductor import api as conductor_api
 from solum.deployer import api as deploy_api
 from solum import objects
@@ -57,11 +56,6 @@ class AssemblyHandler(handler.Handler):
         """Return an assembly."""
         return objects.registry.Assembly.get_by_uuid(self.context, id)
 
-    def _context_from_trust_id(self, trust_id):
-        cntx = context.RequestContext(trust_id=trust_id)
-        kc = solum_keystoneclient.KeystoneClientV3(cntx)
-        return kc.context
-
     def trigger_workflow(self, trigger_id, commit_sha='',
                          status_url=None, collab_url=None):
         """Get trigger by trigger id and start git workflow associated."""
@@ -69,9 +63,10 @@ class AssemblyHandler(handler.Handler):
         # non-authenticated request.
         db_obj = objects.registry.Assembly.get_by_trigger_id(None,
                                                              trigger_id)
-        # get the trust context and authenticate it.
         try:
-            self.context = self._context_from_trust_id(db_obj.trust_id)
+            # get the trust\impersonation context and authenticate it.
+            self.context = keystone_utils.create_delegation_context(
+                db_obj, self.context)
         except exception.AuthorizationFailure as auth_ex:
             LOG.warn(auth_ex)
             return
@@ -96,9 +91,8 @@ class AssemblyHandler(handler.Handler):
         """Delete a resource."""
         db_obj = objects.registry.Assembly.get_by_uuid(self.context, id)
 
-        # delete the trust.
-        ksc = solum_keystoneclient.KeystoneClientV3(self.context)
-        ksc.delete_trust(db_obj.trust_id)
+        # delete the delegation trust_id\token, if one was created.
+        keystone_utils.delete_delegation_token(self.context, db_obj.trust_id)
 
         conductor_api.API(context=self.context).update_assembly(
             db_obj.id, {'status': ASSEMBLY_STATES.DELETING})
@@ -120,10 +114,8 @@ class AssemblyHandler(handler.Handler):
         db_obj.trigger_id = str(uuid.uuid4())
         db_obj.username = self.context.user_name
 
-        # create the trust_id and store it.
-        ksc = solum_keystoneclient.KeystoneClientV3(self.context)
-        trust_context = ksc.create_trust_context()
-        db_obj.trust_id = trust_context.trust_id
+        # create a delegation trust_id\token, if required
+        db_obj.trust_id = keystone_utils.create_delegation_token(self.context)
 
         db_obj.status = ASSEMBLY_STATES.QUEUED
         db_obj.create(self.context)

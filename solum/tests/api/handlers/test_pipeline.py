@@ -56,7 +56,7 @@ class TestPipelineHandler(base.BaseTestCase):
         mock_registry.Pipeline.update_and_save.assert_called_once_with(
             self.ctx, 'test_id', data)
 
-    @mock.patch('solum.common.solum_keystoneclient.KeystoneClientV3')
+    @mock.patch('solum.common.clients.OpenStackClients.keystone')
     def test_create(self, mock_kc, mock_registry):
         data = {'user_id': 'new_user_id',
                 'uuid': 'input_uuid',
@@ -173,7 +173,7 @@ class TestPipelineHandler(base.BaseTestCase):
         self.assertEqual('heroku', ex_ctx['source_format'])
 
     @mock.patch('solum.common.heat_utils.get_network_parameters')
-    @mock.patch('solum.common.solum_keystoneclient.KeystoneClientV3')
+    @mock.patch('solum.common.clients.OpenStackClients.keystone')
     def test_build_execution_context_first_run(self, mock_ks, mock_net,
                                                mock_registry):
         fpipe = fakes.FakePipeline()
