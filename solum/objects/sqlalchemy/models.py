@@ -75,15 +75,13 @@ def table_args():
 
 def filter_by_project(context, query):
     if context is not None:
-        is_admin = context.is_admin
-        if context.roles is not None:
-            is_admin |= 'admin' in context.roles
-        if not is_admin and context.tenant is not None:
-            try:
-                query = query.filter_by(project_id=context.tenant)
-            except sqla_exc.InvalidRequestError:
-                # No project_id column.
-                pass
+        if context.is_admin:
+            return query
+        try:
+            query = query.filter_by(project_id=context.tenant)
+        except sqla_exc.InvalidRequestError:
+            # No project_id column.
+            pass
     return query
 
 
