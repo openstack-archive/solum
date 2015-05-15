@@ -14,7 +14,18 @@
 
 import inspect
 
+from oslo.config import cfg
+
 from solum.openstack.common import context
+
+AUTH_OPTS = [
+    cfg.StrOpt('solum_admin_tenant_id',
+               default='',
+               help='Tenant id of global admin'),
+]
+
+CONF = cfg.CONF
+CONF.register_opts(AUTH_OPTS)
 
 
 class RequestContext(context.RequestContext):
@@ -36,6 +47,9 @@ class RequestContext(context.RequestContext):
         self.auth_url = auth_url
         self.trust_id = trust_id
         self.auth_token_info = auth_token_info
+        global_admin_id = CONF.get('solum_admin_tenant_id')
+        if global_admin_id and global_admin_id == tenant:
+            self.is_admin = True
 
     def to_dict(self):
         data = super(RequestContext, self).to_dict()
