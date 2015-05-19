@@ -62,8 +62,43 @@ class FakePecanResponse(mock.Mock):
         self.status = None
 
 
-class FakeApp:
-    pass
+class FakeApp(mock.Mock):
+    def __init__(self, **kwargs):
+        super(FakeApp, self).__init__(**kwargs)
+        self.__tablename__ = 'app'
+        self.__resource__ = 'apps'
+        self.user_id = 'fake user id'
+        self.project_id = 'fake_project_id'
+        self.id = 'test_uuid'
+        self.name = 'fakeapp'
+        self.description = 'fake app used for testing'
+        self.language_pack = 'test_lp'
+        self.deleted = False
+        self.source = {
+            'repository': 'http://example.git',
+            'revision': 'master',
+        }
+        self.ports = [80]
+        self.workflow_config = {
+            'run_cmd': 'python ./main.py',
+            'test_cmd': 'python ./tests.py',
+        }
+        self.stack_id = ''
+
+    def as_dict(self):
+        return {
+            'user_id': self.user_id,
+            'project_id': self.project_id,
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'language_pack': self.language_pack,
+            'deleted': self.deleted,
+            'source': self.source,
+            'ports': self.ports,
+            'workflow_config': self.workflow_config,
+            'stack_id': self.stack_id,
+        }
 
 
 class FakeService(mock.Mock):

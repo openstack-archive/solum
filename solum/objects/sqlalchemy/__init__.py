@@ -48,6 +48,7 @@ def cleanup():
 def load():
     """Activate the sqlalchemy backend."""
     from solum import objects
+    from solum.objects import app as abstract_app
     from solum.objects import assembly as abstract_assembly
     from solum.objects import component as abstract_component
     from solum.objects import execution as abstract_execution
@@ -60,6 +61,7 @@ def load():
     from solum.objects import plan as abstract_plan
     from solum.objects import sensor as abstract_sensor
     from solum.objects import service as abstract_srvc
+    from solum.objects.sqlalchemy import app
     from solum.objects.sqlalchemy import assembly
     from solum.objects.sqlalchemy import component
     from solum.objects.sqlalchemy import execution
@@ -75,6 +77,8 @@ def load():
     from solum.objects.sqlalchemy import userlog
     from solum.objects import userlog as abstract_userlog
 
+    objects.registry.add(abstract_app.App, app.App)
+    objects.registry.add(abstract_app.AppList, app.AppList)
     objects.registry.add(abstract_assembly.Assembly, assembly.Assembly)
     objects.registry.add(abstract_assembly.AssemblyList, assembly.AssemblyList)
     objects.registry.add(abstract_infra_stack.InfrastructureStack,
