@@ -207,7 +207,7 @@ class ClientsTest(base.BaseTestCase):
 
     @mock.patch.object(clients.OpenStackClients, 'url_for')
     @mock.patch.object(clients.OpenStackClients, 'auth_url')
-    def test_clients_swift_cached(self, mock_auth, mock_url):
+    def test_clients_swift_not_cached(self, mock_auth, mock_url):
         mock_auth.__get__ = mock.Mock(return_value="keystone_url")
         con = mock.MagicMock()
         con.tenant = "b363706f891f48019483f8bd6503c54b"
@@ -217,7 +217,7 @@ class ClientsTest(base.BaseTestCase):
         obj._swift = None
         swift = obj.swift()
         swift_cached = obj.swift()
-        self.assertEqual(swift, swift_cached)
+        self.assertNotEqual(swift, swift_cached)
 
     @mock.patch.object(neutronclient, 'Client')
     @mock.patch.object(clients.OpenStackClients, 'url_for')

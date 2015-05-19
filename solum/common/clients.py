@@ -177,7 +177,6 @@ class OpenStackClients(object):
         self._glance = None
         self._heat = None
         self._neutron = None
-        self._swift = None
         self._zaqar = None
         self._mistral = None
 
@@ -313,8 +312,8 @@ class OpenStackClients(object):
 
     @exception.wrap_keystone_exception
     def swift(self):
-        if self._swift:
-            return self._swift
+        # Not caching swift connections because of range requests
+        # Check how glance_store uses swift client for a reference
 
         endpoint_type = get_client_option('swift', 'endpoint_type')
         region_name = get_client_option('swift', 'region_name')
@@ -329,5 +328,4 @@ class OpenStackClients(object):
             'cacert': get_client_option('swift', 'cacert'),
             'insecure': get_client_option('swift', 'insecure')
         }
-        self._swift = swiftclient.Connection(**args)
-        return self._swift
+        return swiftclient.Connection(**args)

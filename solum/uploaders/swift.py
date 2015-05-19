@@ -14,11 +14,12 @@
 
 from oslo.config import cfg
 
-from solum.common import clients
+from solum.common import exception as exc
+from solum.common import solum_swiftclient as swiftclient
 from solum.openstack.common import log as logging
 import solum.uploaders.common
 
-from swiftclient import exceptions as swiftexceptions
+from swiftclient import exceptions as swiftexp
 
 LOG = logging.getLogger(__name__)
 
@@ -29,10 +30,9 @@ cfg.CONF.import_opt('log_upload_swift_container', 'solum.worker.config',
 class SwiftUpload(solum.uploaders.common.UploaderBase):
     strategy = "swift"
 
-    def _upload(self, container, filename, filelike):
-        swift = clients.OpenStackClients(self.context).swift()
-        swift.put_container(container)
-        swift.put_object(container, filename, filelike)
+    def _upload(self, container, filename, filepath):
+        swift = swiftclient.SwiftClient(self.context)
+        swift.upload(filepath, container, filename)
 
     def upload_log(self):
         container = cfg.CONF.worker.log_upload_swift_container
@@ -40,15 +40,19 @@ class SwiftUpload(solum.uploaders.common.UploaderBase):
                                         self.stage_name, self.stage_id)
 
         self.transform_jsonlog()
-        with open(self.transformed_path, 'r') as logfile:
-            try:
-                LOG.debug("Uploading log to Swift. %s, %s" %
-                          (container, filename))
-                self._upload(container, filename, logfile)
-            except swiftexceptions.ClientException:
-                LOG.exception("Failed to upload logfile to Swift.")
-                return
-            LOG.debug("Logfile uploaded to Swift.")
+        try:
+            LOG.debug("Uploading log to Swift. %s, %s" %
+                      (container, filename))
+            self._upload(container, filename, self.transformed_path)
+        except exc.InvalidObjectSizeError:
+            LOG.exception("Unable to upload logfile: %s to swift. "
+                          "Invalid size." % self.transformed_path)
+            return
+        except swiftexp.ClientException:
+            LOG.exception("Failed to upload logfile: %s to Swift." %
+                          self.transformed_path)
+            return
+        LOG.debug("Logfile uploaded to Swift.")
 
         swift_info = {
             'container': container,
