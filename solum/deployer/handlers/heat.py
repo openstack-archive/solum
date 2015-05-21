@@ -29,11 +29,11 @@ from solum.common import clients
 from solum.common import exception
 from solum.common import heat_utils
 from solum.common import repo_utils
-from solum.conductor import api as conductor_api
 from solum import objects
 from solum.objects import assembly
 from solum.openstack.common import log as openstack_logger
 from solum.uploaders import tenant_logger as tlog
+
 
 LOG = openstack_logger.getLogger(__name__)
 
@@ -79,7 +79,17 @@ deployer_log_dir = cfg.CONF.deployer.deployer_log_dir
 
 
 def update_assembly(ctxt, assembly_id, data):
-    conductor_api.API(context=ctxt).update_assembly(assembly_id, data)
+    # Here we are updating the assembly synchronously (i.e. without
+    # using the conductor). This is because when using the conductor latency
+    # is introduced between the update call and when assembly's state is
+    # actually updated in the database. This latency leads to concurrency
+    # bugs within deployers' actions when multiple deployers are present
+    # in the system.
+    try:
+        objects.registry.Assembly.update_and_save(ctxt, assembly_id, data)
+    except sqla_exc.SQLAlchemyError as ex:
+        LOG.error("Failed to update assembly status, ID: %s" % assembly_id)
+        LOG.exception(ex)
 
 
 class Handler(object):
@@ -97,6 +107,8 @@ class Handler(object):
                         assembly.uuid])
 
     def destroy_assembly(self, ctxt, assem_id):
+        update_assembly(ctxt, assem_id,
+                        {'status': STATES.DELETING})
         assem = objects.registry.Assembly.get_by_id(ctxt, assem_id)
         stack_id = self._find_id_if_stack_exists(assem)
 
@@ -153,21 +165,28 @@ class Handler(object):
             t_logger.log(logging.ERROR, "Error deleting heat stack.")
             t_logger.upload()
 
-    def _destroy_other_assemblies(self, ctxt, new_assembly):
+    def _destroy_other_assemblies(self, ctxt, assembly_id):
         # Destroy all of an app's READY assemblies except the one named.
-        if new_assembly.status != STATES.READY:
-            return
 
-        app_id = new_assembly.plan_id
+        # We query the newly deployed assembly's object here to
+        # ensure that we get most up-to-date value for created_at attribute.
+        # If we use the already available object then there is a possibility
+        # that the attribute does not have the most up-to-date value due to the
+        # possibility that SQLAlchemy might not synchronize object's db state
+        # with its in-memory representation.
+        new_assembly = objects.registry.Assembly.get_by_id(ctxt, assembly_id)
 
         # Fetch all assemblies by plan id, and self.destroy() them.
-        assemblies = objects.registry.AssemblyList.get_all(ctxt)
+        new_assem_id = new_assembly.id
+        app_id = new_assembly.plan_id
+        created_at = new_assembly.created_at
+        assemblies = objects.registry.AssemblyList.get_earlier(new_assem_id,
+                                                               app_id,
+                                                               STATES.READY,
+                                                               created_at)
         for assem in assemblies:
-            if assem.status != STATES.READY:
-                continue
-            if app_id == assem.plan_id:
-                if assem.id != new_assembly.id:
-                    self.destroy_assembly(ctxt, assem.id)
+            if assem.id != new_assembly.id:
+                self.destroy_assembly(ctxt, assem.id)
 
     def destroy_app(self, ctxt, app_id):
         # Destroy a plan's assemblies, and then the plan.
@@ -226,6 +245,7 @@ class Handler(object):
                                          stack_name=stack_name,
                                          template=template,
                                          parameters=parameters)
+
             except Exception as e:
                 LOG.error("Error updating Heat Stack for,"
                           " assembly %s" % assembly_id)
@@ -273,7 +293,7 @@ class Handler(object):
         assem.status = result
         t_logger.upload()
         if result == STATES.READY:
-            self._destroy_other_assemblies(ctxt, assem)
+            self._destroy_other_assemblies(ctxt, assembly_id)
 
     def _get_template(self, ctxt, image_format, image_storage,
                       image_loc, image_name, assem, ports, t_logger):
@@ -410,7 +430,6 @@ class Handler(object):
             if port_idx > len(ports) - 1:
                 du_is_up = True
                 break
-
             time.sleep(1)
             du_url = 'http://{host}:{port}'.format(host=host_ip,
                                                    port=ports[port_idx])

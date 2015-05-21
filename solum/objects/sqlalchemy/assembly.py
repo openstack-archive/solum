@@ -13,6 +13,7 @@
 # under the License.
 
 import sqlalchemy as sa
+from sqlalchemy.orm import exc
 
 from solum import objects
 from solum.objects import assembly as abstract
@@ -95,3 +96,15 @@ class AssemblyList(abstract.AssemblyList):
         mq = sql.model_query(context, Assembly).order_by(
             'updated_at desc', 'created_at desc')
         return AssemblyList(mq)
+
+    @classmethod
+    def get_earlier(cls, assem_id, app_id, status, created_at):
+        try:
+            session = sql.Base.get_session()
+            result = session.query(Assembly)
+            result = result.filter(Assembly.plan_id == app_id)
+            result = result.filter(Assembly.status == status)
+            result = result.filter(Assembly.created_at < created_at)
+            return result.all()
+        except exc.NoResultFound:
+            cls._raise_not_found(assem_id)
