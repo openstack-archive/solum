@@ -140,8 +140,15 @@ class SwiftClient(object):
 
     def delete_object(self, container, filename):
         swift = self._get_swift_client()
-        swift.delete_object(container, filename)
+        try:
+            swift.delete_object(container, filename)
+        except swiftexp.ClientException as e:
+            if e.http_status == httplib.NOT_FOUND:
+                LOG.debug("Swift could not find object %s." % filename)
+                pass
+            else:
+                raise
 
     def delete_container(self, container):
         swift = self._get_swift_client()
-        swift.delete_object(container)
+        swift.delete_container(container)

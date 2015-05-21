@@ -17,6 +17,7 @@ import uuid
 from oslo.config import cfg
 
 from solum.api.handlers import handler
+from solum.api.handlers import userlog_handler
 from solum.common import exception as exc
 from solum import objects
 from solum.objects import image
@@ -83,6 +84,10 @@ class LanguagePackHandler(handler.Handler):
             lp = plan.raw_content['artifacts'][0]['language_pack']
             if lp == db_obj.name or lp == db_obj.uuid:
                 raise exc.LPStillReferenced(name=uuid)
+
+        # Delete logs
+        log_handler = userlog_handler.UserlogHandler(self.context)
+        log_handler.delete(db_obj.uuid)
 
         return db_obj.destroy(self.context)
 
