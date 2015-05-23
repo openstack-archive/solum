@@ -540,10 +540,12 @@ class HandlerTest(base.BaseTestCase):
         id = handler._find_id_if_stack_exists(assem)
         self.assertEqual(id, '123')
 
+    @mock.patch('solum.api.handlers.userlog_handler.UserlogHandler')
     @mock.patch('solum.deployer.handlers.heat.tlog')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.common.clients.OpenStackClients')
-    def test_destroy_success(self, mock_client, mock_registry, m_log):
+    def test_destroy_success(self, mock_client, mock_registry, m_log,
+                             mock_log_handler):
         fake_assem = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assem
 
@@ -563,6 +565,37 @@ class HandlerTest(base.BaseTestCase):
 
         mock_client.heat.stacks.delete.assert_called_once()
         fake_assem.destroy.assert_called_once()
+        log_handler = mock_log_handler.return_value
+        log_handler.delete.assert_called_once_with(fake_assem.uuid)
+        m_log.log.assert_called_once()
+
+    @mock.patch('solum.api.handlers.userlog_handler.UserlogHandler')
+    @mock.patch('solum.deployer.handlers.heat.tlog')
+    @mock.patch('solum.objects.registry')
+    @mock.patch('solum.common.clients.OpenStackClients')
+    def test_destroy_stack_not_found(self, mock_client, mock_registry, m_log,
+                                     mock_log_handler):
+        fake_assem = fakes.FakeAssembly()
+        mock_registry.Assembly.get_by_id.return_value = fake_assem
+
+        handler = heat_handler.Handler()
+
+        m_log.TenantLogger.call.return_value = mock.MagicMock()
+
+        handler._find_id_if_stack_exists = mock.MagicMock(return_value='42')
+        mock_heat = mock_client.return_value.heat.return_value
+        mock_heat.stacks.delete.side_effect = exc.HTTPNotFound
+
+        cfg.CONF.deployer.max_attempts = 1
+        cfg.CONF.deployer.wait_interval = 0
+        cfg.CONF.deployer.growth_factor = 1.2
+
+        handler.destroy_assembly(self.ctx, fake_assem.id)
+
+        mock_client.heat.stacks.delete.assert_called_once()
+        fake_assem.destroy.assert_called_once()
+        log_handler = mock_log_handler.return_value
+        log_handler.delete.assert_called_once_with(fake_assem.uuid)
         m_log.log.assert_called_once()
 
     @mock.patch('solum.deployer.handlers.heat.tlog')
@@ -596,10 +629,12 @@ class HandlerTest(base.BaseTestCase):
 
         mock_client.heat.stacks.delete.assert_called_once()
 
+    @mock.patch('solum.api.handlers.userlog_handler.UserlogHandler')
     @mock.patch('solum.deployer.handlers.heat.tlog')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.common.clients.OpenStackClients')
-    def test_destroy_absent(self, mock_client, mock_registry, mock_tlogger):
+    def test_destroy_absent(self, mock_client, mock_registry, mock_tlogger,
+                            mock_log_handler):
 
         fake_assem = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assem
@@ -614,6 +649,8 @@ class HandlerTest(base.BaseTestCase):
         fake_assem.destroy.assert_called_once()
         mock_tlogger.log.assert_called_once()
         mock_tlogger.upload.assert_called_once()
+        log_handler = mock_log_handler.return_value
+        log_handler.delete.assert_called_once_with(fake_assem.uuid)
 
     @mock.patch('solum.objects.registry')
     def test_successful_deploy_destroys_twins(self, mr):

@@ -24,6 +24,7 @@ from oslo.config import cfg
 from sqlalchemy import exc as sqla_exc
 import yaml
 
+from solum.api.handlers import userlog_handler
 from solum.common import catalog
 from solum.common import clients
 from solum.common import exception
@@ -106,10 +107,22 @@ class Handler(object):
         return ''.join([assem_name[:min(len(assem_name), prefix_len)], '-',
                         assembly.uuid])
 
+    def _delete_app_artifacts_from_swift(self, ctxt, t_logger,
+                                         logs_resource_id):
+        # Delete logs
+        try:
+            log_handler = userlog_handler.UserlogHandler(ctxt)
+            log_handler.delete(logs_resource_id)
+        except exception.AuthorizationFailure as authexcp:
+            t_logger.log(logging.ERROR, authexcp.message)
+            LOG.debug(authexcp.message)
+            t_logger.upload()
+
     def destroy_assembly(self, ctxt, assem_id):
         update_assembly(ctxt, assem_id,
                         {'status': STATES.DELETING})
         assem = objects.registry.Assembly.get_by_id(ctxt, assem_id)
+        logs_resource_id = assem.uuid
         stack_id = self._find_id_if_stack_exists(assem)
 
         # TODO(devkulkarni) Delete t_logger when returning from this call.
@@ -123,6 +136,8 @@ class Handler(object):
         if stack_id is None:
             assem.destroy(ctxt)
             t_logger.upload()
+            self._delete_app_artifacts_from_swift(ctxt, t_logger,
+                                                  logs_resource_id)
             return
         else:
             osc = clients.OpenStackClients(ctxt)
@@ -134,6 +149,8 @@ class Handler(object):
                 assem.destroy(ctxt)
                 t_logger.log(logging.ERROR, "Heat stack not found.")
                 t_logger.upload()
+                self._delete_app_artifacts_from_swift(ctxt, t_logger,
+                                                      logs_resource_id)
                 return
             except Exception as e:
                 LOG.exception(e)
@@ -155,6 +172,8 @@ class Handler(object):
                     assem.destroy(ctxt)
                     t_logger.log(logging.DEBUG, "Stack delete successful.")
                     t_logger.upload()
+                    self._delete_app_artifacts_from_swift(ctxt, t_logger,
+                                                          logs_resource_id)
                     return
                 time.sleep(wait_interval)
                 wait_interval *= growth_factor
