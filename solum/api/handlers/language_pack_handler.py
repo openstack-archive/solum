@@ -15,10 +15,12 @@
 import uuid
 
 from oslo.config import cfg
+from swiftclient import exceptions as swiftexp
 
 from solum.api.handlers import handler
 from solum.api.handlers import userlog_handler
 from solum.common import exception as exc
+from solum.common import solum_swiftclient
 from solum import objects
 from solum.objects import image
 from solum.openstack.common import log as logging
@@ -84,6 +86,17 @@ class LanguagePackHandler(handler.Handler):
             lp = plan.raw_content['artifacts'][0]['language_pack']
             if lp == db_obj.name or lp == db_obj.uuid:
                 raise exc.LPStillReferenced(name=uuid)
+
+        # Delete image file from swift
+        if db_obj.docker_image_name:
+            img_filename = db_obj.docker_image_name.split('-', 1)[1]
+            try:
+                swift = solum_swiftclient.SwiftClient(self.context)
+                swift.delete_object('solum_lp', img_filename)
+            except swiftexp.ClientException:
+                raise exc.AuthorizationFailure(
+                    client='swift',
+                    message="Unable to delete languagepack image from swift.")
 
         # Delete logs
         log_handler = userlog_handler.UserlogHandler(self.context)

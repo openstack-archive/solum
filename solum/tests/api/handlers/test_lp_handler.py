@@ -57,10 +57,11 @@ class TestLanguagePackHandler(base.BaseTestCase):
         fi.update.assert_called_once_with(data)
         fi.create.assert_called_once_with(self.ctx)
 
+    @mock.patch('solum.common.solum_swiftclient.SwiftClient.delete_object')
     @mock.patch('solum.api.handlers.userlog_handler.UserlogHandler')
     @mock.patch('solum.objects.registry.PlanList')
-    def test_languagepack_delete(self, mock_planlist,
-                                 mock_log_handler, mock_img):
+    def test_languagepack_delete(self, mock_planlist, mock_log_handler,
+                                 mock_swift_delete, mock_img):
         fi = fakes.FakeImage()
         mock_img.get_lp_by_name_or_uuid.return_value = fi
         mock_img.destroy.return_value = {}
@@ -71,6 +72,9 @@ class TestLanguagePackHandler(base.BaseTestCase):
 
         mock_img.get_lp_by_name_or_uuid.assert_called_once_with(
             self.ctx, 'test_lp')
+        docker_image_name = fi.docker_image_name
+        img_filename = docker_image_name.split('-', 1)[1]
+        mock_swift_delete.assert_called_once_with('solum_lp', img_filename)
         log_handler = mock_log_handler.return_value
         log_handler.delete.assert_called_once_with(fi.uuid)
         fi.destroy.assert_called_once_with(self.ctx)
@@ -90,11 +94,13 @@ class TestLanguagePackHandler(base.BaseTestCase):
         mock_planlist.get_all.assert_called_once()
         assert not fi.destroy.called
 
+    @mock.patch('solum.common.solum_swiftclient.SwiftClient.delete_object')
     @mock.patch('solum.api.handlers.userlog_handler.UserlogHandler')
     @mock.patch('solum.objects.registry.PlanList')
     def test_languagepack_delete_with_plan_not_using_lp(self,
                                                         mock_planlist,
                                                         mock_log_handler,
+                                                        mock_swift_delete,
                                                         mock_img):
         fi = fakes.FakeImage()
         mock_img.get_lp_by_name_or_uuid.return_value = fi
@@ -106,6 +112,9 @@ class TestLanguagePackHandler(base.BaseTestCase):
 
         mock_img.get_lp_by_name_or_uuid.assert_called_once_with(
             self.ctx, 'lp_name')
+        docker_image_name = fi.docker_image_name
+        img_filename = docker_image_name.split('-', 1)[1]
+        mock_swift_delete.assert_called_once_with('solum_lp', img_filename)
         mock_planlist.get_all.assert_called_once()
         log_handler = mock_log_handler.return_value
         log_handler.delete.assert_called_once_with(fi.uuid)
