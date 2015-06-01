@@ -37,7 +37,6 @@ class SwiftUploadTest(base.BaseTestCase):
         build_id = "5678"
         container = 'fake-container'
         cfg.CONF.worker.log_upload_swift_container = container
-        mock_file = mock_open.return_value.__enter__.return_value
         stage = "fakestage"
 
         swiftupload = uploader.SwiftUpload(ctxt, orig_path,
@@ -64,22 +63,22 @@ class SwiftUploadTest(base.BaseTestCase):
                                         stage, build_id)
 
         mock_trans_jlog.assert_called_once()
-        mock_upload.assert_called_once_with(container, filename, mock_file)
+        tansf_path = orig_path + '.tf'
+        mock_upload.assert_called_once_with(container, filename, tansf_path)
         mock_write_row.assert_called_once_with(filename, swift_info)
 
     @mock.patch('__builtin__.open')
-    @mock.patch('solum.uploaders.swift.SwiftUpload._upload')
+    @mock.patch('solum.common.solum_swiftclient.SwiftClient.upload')
     @mock.patch('solum.uploaders.common.UploaderBase.transform_jsonlog')
     @mock.patch('solum.uploaders.common.UploaderBase.write_userlog_row')
-    def test_upload(self, mock_write_row, mock_trans_jlog,
-                    mock_upload, mock_open):
+    def test_upload(self, mock_write_row, mock_trans_jlog, mock_swift,
+                    mock_open):
         ctxt = utils.dummy_context()
         orig_path = "original path"
         assembly = fakes.FakeAssembly()
         build_id = "5678"
         container = 'fake-container'
         cfg.CONF.worker.log_upload_swift_container = container
-        mock_file = mock_open.return_value.__enter__.return_value
         stage = "fakestage"
 
         swiftupload = uploader.SwiftUpload(ctxt, orig_path,
@@ -96,5 +95,8 @@ class SwiftUploadTest(base.BaseTestCase):
                                         stage, build_id)
 
         mock_trans_jlog.assert_called_once()
-        mock_upload.assert_called_once_with(container, filename, mock_file)
+        tansf_path = orig_path + '.tf'
+        mock_swift.assert_called_once_with(tansf_path,
+                                           container,
+                                           filename)
         mock_write_row.assert_called_once_with(filename, swift_info)

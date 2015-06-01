@@ -298,3 +298,11 @@ class NotImplemented(SolumException):
 
 class AuthorizationFailure(SolumException):
     msg_fmt = _("%(client)s connection failed. %(message)s")
+
+
+class InvalidObjectSizeError(Exception):
+    msg_fmt = _("Invalid object size.")
+
+
+class MaxRetryReached(Exception):
+    msg_fmt = _("Maximum retries has been reached.")
