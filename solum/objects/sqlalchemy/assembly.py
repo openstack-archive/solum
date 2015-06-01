@@ -43,6 +43,7 @@ class Assembly(sql.Base, abstract.Assembly):
     application_uri = sa.Column(sa.String(1024))
     username = sa.Column(sa.String(256))
     workflow = sa.Column(sql.YAMLEncodedDict(1024))
+    image_id = sa.Column(sa.Integer)
 
     def _non_updatable_fields(self):
         return set(('uuid', 'id', 'project_id'))

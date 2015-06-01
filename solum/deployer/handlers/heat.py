@@ -22,6 +22,7 @@ from heatclient import exc
 import httplib2
 from oslo.config import cfg
 from sqlalchemy import exc as sqla_exc
+from swiftclient import exceptions as swiftexp
 import yaml
 
 from solum.api.handlers import userlog_handler
@@ -30,6 +31,7 @@ from solum.common import clients
 from solum.common import exception
 from solum.common import heat_utils
 from solum.common import repo_utils
+from solum.common import solum_swiftclient
 from solum import objects
 from solum.objects import assembly
 from solum.openstack.common import log as openstack_logger
@@ -108,7 +110,22 @@ class Handler(object):
                         assembly.uuid])
 
     def _delete_app_artifacts_from_swift(self, ctxt, t_logger,
-                                         logs_resource_id):
+                                         logs_resource_id, assem):
+        # Delete image file from swift
+        img = objects.registry.Image.get_by_id(ctxt, assem.image_id)
+        if img.docker_image_name:
+            img_filename = img.docker_image_name.split('-', 1)[1]
+            try:
+                swift = solum_swiftclient.SwiftClient(ctxt)
+                swift.delete_object('solum_du', img_filename)
+            except swiftexp.ClientException:
+                msg = "Unable to delete DU image from swift."
+                t_logger.log(logging.ERROR, msg)
+                LOG.debug(msg)
+                t_logger.upload()
+                return
+        img.destroy(ctxt)
+
         # Delete logs
         try:
             log_handler = userlog_handler.UserlogHandler(ctxt)
@@ -137,7 +154,7 @@ class Handler(object):
             assem.destroy(ctxt)
             t_logger.upload()
             self._delete_app_artifacts_from_swift(ctxt, t_logger,
-                                                  logs_resource_id)
+                                                  logs_resource_id, assem)
             return
         else:
             osc = clients.OpenStackClients(ctxt)
@@ -150,7 +167,7 @@ class Handler(object):
                 t_logger.log(logging.ERROR, "Heat stack not found.")
                 t_logger.upload()
                 self._delete_app_artifacts_from_swift(ctxt, t_logger,
-                                                      logs_resource_id)
+                                                      logs_resource_id, assem)
                 return
             except Exception as e:
                 LOG.exception(e)
@@ -173,7 +190,8 @@ class Handler(object):
                     t_logger.log(logging.DEBUG, "Stack delete successful.")
                     t_logger.upload()
                     self._delete_app_artifacts_from_swift(ctxt, t_logger,
-                                                          logs_resource_id)
+                                                          logs_resource_id,
+                                                          assem)
                     return
                 time.sleep(wait_interval)
                 wait_interval *= growth_factor

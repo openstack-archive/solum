@@ -65,6 +65,11 @@ class Handler(object):
                                                              'Image Build job',
                                                              created_image_id,
                                                              stack_id)
+                # update reference to image in assembly
+                assem_update = {'image_id': build_id}
+                objects.registry.Assembly.update_and_save(ctxt,
+                                                          assembly_id,
+                                                          assem_update)
         except sqla_exc.IntegrityError:
             LOG.error("IntegrityError in creating Image_Build component,"
                       " assembly %s may be deleted" % assembly_id)

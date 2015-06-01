@@ -213,6 +213,7 @@ class FakeAssembly(mock.Mock):
         self.created_at = now
         self.updated_at = now
         self.workflow = ['unittest', 'build', 'deploy']
+        self.image_id = 8
 
     def as_dict(self):
         return dict(user_id=self.user_id,
