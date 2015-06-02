@@ -84,10 +84,12 @@ class HandlerTest(base.BaseTestCase):
     @mock.patch('solum.deployer.handlers.heat.tlog')
     @mock.patch('solum.deployer.handlers.heat.update_assembly')
     @mock.patch('solum.common.catalog.get')
+    @mock.patch('solum.common.catalog.get_from_contrib')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.common.clients.OpenStackClients')
     def test_deploy_docker_on_vm_swift(self, mock_clients, mock_registry,
-                                       mock_get_templ, mock_ua, m_log):
+                                       mock_contrib, mock_get_templ,
+                                       mock_ua, m_log):
         handler = heat_handler.Handler()
 
         m_log.TenantLogger.call.return_value = mock.MagicMock()
@@ -95,13 +97,16 @@ class HandlerTest(base.BaseTestCase):
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
         fake_template = self._get_fake_template()
         img = "http://a.b.c/d?temp_url_sig=v&temp_url_expires=v"
-        template = self._get_tmpl_for_swift(fake_assembly, fake_template, img,
-                                            'tenant-name-ts-commit')
+
+        mock_contrib.return_value = "robust_file"
+        get_file_dict = {}
+        get_file_dict[self._get_key()] = "robust_file"
+
         cfg.CONF.api.image_format = "vm"
         cfg.CONF.worker.image_storage = "swift"
         cfg.CONF.deployer.flavor = "flavor"
         cfg.CONF.deployer.image = "coreos"
-        mock_get_templ.return_value = template
+        mock_get_templ.return_value = fake_template
         handler._find_id_if_stack_exists = mock.MagicMock(return_value=(None))
         stacks = mock_clients.return_value.heat.return_value.stacks
         stacks.create.return_value = {"stack": {
@@ -109,17 +114,22 @@ class HandlerTest(base.BaseTestCase):
             "links": [{"href": "http://fake.ref",
                        "rel": "self"}]}}
         handler._check_stack_status = mock.MagicMock()
+
         handler.deploy(self.ctx, 77, img, 'tenant-name-ts-commit', [80])
+
         stacks = mock_clients.return_value.heat.return_value.stacks
 
         parameters = {'name': fake_assembly.uuid,
-                      'count': 1,
                       'flavor': "flavor",
-                      'image': "coreos"}
+                      'image': "coreos",
+                      'location': img,
+                      'du': 'tenant-name-ts-commit',
+                      'publish_ports': '-p 80:80'}
 
         stacks.create.assert_called_once_with(stack_name='faker-test_uuid',
-                                              template=template,
-                                              parameters=parameters)
+                                              template=fake_template,
+                                              parameters=parameters,
+                                              files=get_file_dict)
         assign_and_create_mock = mock_registry.Component.assign_and_create
         comp_name = 'Heat_Stack_for_%s' % fake_assembly.name
         assign_and_create_mock.assert_called_once_with(self.ctx,
@@ -164,10 +174,11 @@ class HandlerTest(base.BaseTestCase):
     @mock.patch('solum.deployer.handlers.heat.tlog')
     @mock.patch('solum.deployer.handlers.heat.update_assembly')
     @mock.patch('solum.common.catalog.get')
+    @mock.patch('solum.common.catalog.get_from_contrib')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.common.clients.OpenStackClients')
     def test_deploy_docker(self, mock_clients, mock_registry,
-                           mock_get_templ, mock_ua, m_log):
+                           mock_get_contrib, mock_get_templ, mock_ua, m_log):
         handler = heat_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
@@ -175,6 +186,10 @@ class HandlerTest(base.BaseTestCase):
         m_log.TenantLogger.call.return_value = mock.MagicMock()
 
         cfg.CONF.api.image_format = "docker"
+
+        mock_get_contrib.return_value = "robust_file"
+        get_file_dict = {}
+        get_file_dict[self._get_key()] = "robust_file"
 
         fake_template = self._get_fake_template()
         template = self._get_tmpl_for_docker_reg(fake_assembly, fake_template,
@@ -188,13 +203,17 @@ class HandlerTest(base.BaseTestCase):
             "links": [{"href": "http://fake.ref",
                        "rel": "self"}]}}
         handler._check_stack_status = mock.MagicMock()
+
         handler.deploy(self.ctx, 77, 'created_image_id', 'image_name', [80])
+
         parameters = {'image': 'created_image_id',
                       'app_name': 'faker',
                       'port': 80}
+
         stacks.create.assert_called_once_with(stack_name='faker-test_uuid',
                                               template=template,
-                                              parameters=parameters)
+                                              parameters=parameters,
+                                              files=get_file_dict)
         assign_and_create_mock = mock_registry.Component.assign_and_create
         comp_name = 'Heat_Stack_for_%s' % fake_assembly.name
         assign_and_create_mock.assert_called_once_with(self.ctx,
@@ -435,12 +454,13 @@ class HandlerTest(base.BaseTestCase):
 
         image_format = 'docker'
         image_loc = 'abc'
+        image_name = 'abc'
         ports = [80]
 
         mock_logger = mock.MagicMock()
 
         params = handler._get_parameters(self.ctx, image_format,
-                                         image_loc, fake_assembly,
+                                         image_loc, image_name, fake_assembly,
                                          ports, mock_clients, mock_logger)
 
         self.assertEqual(params['app_name'], fake_assembly.name)
@@ -456,6 +476,7 @@ class HandlerTest(base.BaseTestCase):
 
         image_format = 'vm'
         image_loc = 'abc'
+        image_name = 'abc'
         ports = [80]
 
         mock_logger = mock.MagicMock()
@@ -464,11 +485,10 @@ class HandlerTest(base.BaseTestCase):
         cfg.CONF.set_override('image', 'def', group='deployer')
 
         params = handler._get_parameters(self.ctx, image_format,
-                                         image_loc, fake_assembly,
+                                         image_loc, image_name, fake_assembly,
                                          ports, mock_clients, mock_logger)
 
         self.assertEqual(params['name'], str(fake_assembly.uuid))
-        self.assertEqual(params['count'], 1)
         self.assertEqual(params['flavor'], 'abc')
         self.assertEqual(params['image'], 'def')
         self.assertIsNone(params.get('port'))
@@ -485,12 +505,13 @@ class HandlerTest(base.BaseTestCase):
 
         image_format = 'abc'
         image_loc = 'abc'
+        image_name = 'abc'
         ports = [80]
 
         mock_logger = mock.MagicMock()
 
         params = handler._get_parameters(self.ctx, image_format,
-                                         image_loc, fake_assembly,
+                                         image_loc, image_name, fake_assembly,
                                          ports, mock_clients, mock_logger)
 
         self.assertIsNone(params)
@@ -759,6 +780,9 @@ class HandlerTest(base.BaseTestCase):
         handler.destroy_assembly = mock.MagicMock()
         handler._destroy_other_assemblies(self.ctx, new_app.id)
         self.assertEqual(0, handler.destroy_assembly.call_count)
+
+    def _get_key(self):
+        return "robust-du-handling.sh"
 
     def _get_fake_template(self):
         t = "description: test\n"

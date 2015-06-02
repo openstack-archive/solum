@@ -12,27 +12,33 @@ parameters:
     default: CoreOS-Stack
     description: "Name of booted CoreOS machine"
     type: string
-  count:
-    type: number
   flavor:
     type: string
   image:
+    type: string
+  location:
+    type: string
+  du:
+    type: string
+  publish_ports:
     type: string
 resources:
   compute_instance:
     properties:
       config_drive: "true"
-      flavor:
-        get_param: flavor
+      flavor: {get_param: flavor}
       image: {get_param: image}
       name: {get_param: name}
       user_data:
         str_replace:
+          template:
+            get_file: robust-du-handling.sh
           params:
-            count:
-              get_param: count
+            "%location%": { get_param: location }
+            "%du%": { get_param: du }
+            "%publish_ports%": { get_param: publish_ports }
             wc_notify: { get_attr: ['wait_handle', 'curl_cli'] }
-          template: |
+
       user_data_format: RAW
     type: "OS::Nova::Server"
 
