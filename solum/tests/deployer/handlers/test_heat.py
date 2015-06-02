@@ -222,7 +222,7 @@ class HandlerTest(base.BaseTestCase):
         conn.request.return_value = [resp, '']
         mock_http.return_value = conn
 
-        cfg.CONF.deployer.du_attempts = 2
+        cfg.CONF.deployer.du_attempts = 1
 
         mock_logger = mock.MagicMock()
         handler._parse_server_url = mock.MagicMock(return_value=('xyz'))
@@ -257,7 +257,7 @@ class HandlerTest(base.BaseTestCase):
         conn.request.return_value = [resp, '']
         mock_http.return_value = conn
 
-        cfg.CONF.deployer.du_attempts = 3
+        cfg.CONF.deployer.du_attempts = 1
 
         mock_logger = mock.MagicMock()
         handler._parse_server_url = mock.MagicMock(return_value=('xyz'))

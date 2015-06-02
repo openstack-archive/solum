@@ -449,7 +449,6 @@ class Handler(object):
             t_logger.log(logging.ERROR, lg_msg)
             return STATES.ERROR
 
-        du_is_up = False
         app_uri = host_ip
 
         if len(ports) == 1:
@@ -462,32 +461,40 @@ class Handler(object):
                   'application_uri': app_uri}
         update_assembly(ctxt, assembly_id, to_upd)
         LOG.debug("Application URI: %s" % app_uri)
-        port_idx = 0
+
+        successful_ports = set()
+        du_is_up = False
         for count in range(cfg.CONF.deployer.du_attempts):
-            if port_idx > len(ports) - 1:
-                du_is_up = True
+            for prt in ports:
+                if prt not in successful_ports:
+                    du_url = 'http://{host}:{port}'.format(host=host_ip,
+                                                           port=prt)
+                    try:
+                        if repo_utils.is_reachable(du_url):
+                            successful_ports.add(prt)
+                            if len(successful_ports) == len(ports):
+                                du_is_up = True
+                                break
+                    except socket.timeout:
+                        LOG.debug("Connection to %s timed out"
+                                  "assembly ID: %s" % (du_url, assembly_id))
+                    except (httplib2.HttpLib2Error, socket.error) as serr:
+                        if count % 5 == 0:
+                            LOG.exception(serr)
+                        else:
+                            LOG.debug(".")
+                    except Exception as exp:
+                        LOG.exception(exp)
+                        update_assembly(ctxt, assembly_id,
+                                        {'status': STATES.ERROR})
+                        lg_msg = ("App deployment error: unexpected error "
+                                  " when trying to reach app endpoint")
+                        t_logger.log(logging.ERROR, lg_msg)
+                        return STATES.ERROR
+            if du_is_up:
                 break
             time.sleep(1)
-            du_url = 'http://{host}:{port}'.format(host=host_ip,
-                                                   port=ports[port_idx])
-            try:
-                if repo_utils.is_reachable(du_url):
-                    port_idx += 1
-            except socket.timeout:
-                LOG.debug("Connection to %s timed out, assembly ID: %s" %
-                          (du_url, assembly_id))
-            except (httplib2.HttpLib2Error, socket.error) as serr:
-                if count % 5 == 0:
-                    LOG.exception(serr)
-                else:
-                    LOG.debug(".")
-            except Exception as exp:
-                LOG.exception(exp)
-                update_assembly(ctxt, assembly_id, {'status': STATES.ERROR})
-                lg_msg = ("App deployment error: unexpected error when trying"
-                          " to reach app endpoint")
-                t_logger.log(logging.ERROR, lg_msg)
-                return STATES.ERROR
+
         if du_is_up:
             to_update = {'status': STATES.READY}
         else:
