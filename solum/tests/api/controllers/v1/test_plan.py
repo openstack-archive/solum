@@ -63,6 +63,16 @@ class TestPlanModuleFunctions(base.BaseTestCase):
         plan_v1 = plan.init_plan_v1(yml_input_plan)
         self.assertIsInstance(plan_v1, planmodel.Plan)
 
+    @mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
+    def test_init_plan_v1_bad_names(self, mock_req):
+        yml_input_plan = {'version': 1, 'name': 'a' * 101}
+        self.assertRaises(exception.BadRequest, plan.init_plan_v1,
+                          yml_input_plan)
+
+        yml_input_plan = {'version': 1, 'name': 'name with spaces'}
+        self.assertRaises(exception.BadRequest, plan.init_plan_v1,
+                          yml_input_plan)
+
 
 @mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
 @mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
@@ -127,6 +137,27 @@ class TestPlanController(base.BaseTestCase):
         plan.PlanController('test_id').put()
         self.assertEqual(400, resp_mock.status)
 
+    def test_plan_put_needs_name(self, PlanHandler, resp_mock, request_mock):
+        request_mock.content_type = 'application/x-yaml'
+        request_mock.body = 'version: 1\n'
+        hand_update = PlanHandler.return_value.update
+        hand_update.return_value = fakes.FakePlan()
+        plan.PlanController('test_id').put()
+        self.assertEqual(400, resp_mock.status)
+
+    def test_plan_put_bad_names(self, PlanHandler, resp_mock, request_mock):
+        request_mock.content_type = 'application/x-yaml'
+        hand_update = PlanHandler.return_value.update
+        hand_update.return_value = fakes.FakePlan()
+        pc = plan.PlanController('test_id')
+        request_mock.body = 'version: 1\nname: %s' % ('a' * 101)
+        pc.put()
+        self.assertEqual(400, resp_mock.status)
+
+        request_mock.body = 'version: 1\nname: %s' % ('name with spaces')
+        pc.put()
+        self.assertEqual(400, resp_mock.status)
+
     def test_plan_put_invalid_yaml(self, PlanHandler, resp_mock, request_mock):
         request_mock.content_type = 'application/x-yaml'
         request_mock.body = 'invalid yaml file'
@@ -149,7 +180,7 @@ class TestPlanController(base.BaseTestCase):
         request_mock.content_type = 'application/x-yaml'
         hand_update = PlanHandler.return_value.update
         hand_update.side_effect = exception.ResourceNotFound(
-            name='plan', plan_id='test_id')
+            name='plan', id='test_id')
         plan.PlanController('test_id').put()
         hand_update.assert_called_with('test_id', {'name': 'ex_plan1',
                                                    'description': u'dsc1.'})

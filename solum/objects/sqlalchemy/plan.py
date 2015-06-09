@@ -30,7 +30,7 @@ class Plan(sql.Base, abstract.Plan):
     uuid = sa.Column(sa.String(36))
     project_id = sa.Column(sa.String(36))
     user_id = sa.Column(sa.String(36))
-    name = sa.Column(sa.String(255))
+    name = sa.Column(sa.String(255), nullable=False)
     description = sa.Column(sa.String(255))
     raw_content = sa.Column(sql.YAMLEncodedDict(2048))
     trigger_id = sa.Column(sa.String(36))
