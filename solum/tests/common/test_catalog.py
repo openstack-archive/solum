@@ -24,9 +24,11 @@ from solum.tests import base
 class TestCatalog(base.BaseTestCase):
     def setUp(self):
         super(TestCatalog, self).setUp()
-        self.proj_dir = os.path.realpath(
-            os.path.join(os.path.dirname(__file__),
-                         '..', '..', '..'))
+        self.proj_dir = catalog.CONF.get('source_path')
+        if not self.proj_dir:
+            self.proj_dir = os.path.realpath(
+                os.path.join(os.path.dirname(__file__),
+                             '..', '..', '..'))
 
     def test_get_default(self):
         with mock.patch('solum.common.catalog.open',

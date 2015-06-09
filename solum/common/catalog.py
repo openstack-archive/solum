@@ -14,7 +14,18 @@
 
 import os.path
 
+from oslo.config import cfg
+
 from solum.common import exception
+
+OPTS = [
+    cfg.StrOpt('source_path',
+               default='',
+               help='The location the source code.'),
+]
+
+CONF = cfg.CONF
+CONF.register_opts(OPTS)
 
 
 def get(entity, name, content_type='yaml'):
@@ -22,7 +33,9 @@ def get(entity, name, content_type='yaml'):
 
     /etc/solum/<entity>/name.<content_type>
     """
-    proj_dir = os.path.join(os.path.dirname(__file__), '..', '..')
+    proj_dir = CONF.get('source_path')
+    if not proj_dir:
+        proj_dir = os.path.join(os.path.dirname(__file__), '..', '..')
     file_path = os.path.join(proj_dir, 'etc', 'solum', entity,
                              '%s.%s' % (name, content_type))
     file_path = os.path.realpath(file_path)
