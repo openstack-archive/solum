@@ -45,3 +45,20 @@ def get(entity, name, content_type='yaml'):
     except Exception:
         raise exception.ObjectNotFound(
             name=entity, id=name)
+
+
+def get_from_contrib(name):
+    """This reads a file's contents from local storage.
+
+    /contrib/common/name.<content_type>
+    """
+    proj_dir = CONF.get('source_path')
+    if not proj_dir:
+        proj_dir = os.path.join(os.path.dirname(__file__), '..', '..')
+    file_path = os.path.join(proj_dir, 'contrib', 'common', '%s' % name)
+    file_path = os.path.realpath(file_path)
+    try:
+        with open(file_path) as fd:
+            return fd.read()
+    except Exception:
+        raise exception.ObjectNotFound(id=name)

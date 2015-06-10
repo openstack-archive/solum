@@ -253,8 +253,8 @@ class Handler(object):
         LOG.debug("Image loc:%s, image_name:%s" % (image_loc, image_name))
 
         parameters = self._get_parameters(ctxt, cfg.CONF.api.image_format,
-                                          image_loc, assem, ports, osc,
-                                          t_logger)
+                                          image_loc, image_name, assem,
+                                          ports, osc, t_logger)
         LOG.debug(parameters)
 
         if parameters is None:
@@ -293,9 +293,26 @@ class Handler(object):
                 return
         else:
             try:
+                getfile_key = "robust-du-handling.sh"
+                file_cnt = None
+
+                try:
+                    file_cnt = catalog.get_from_contrib(getfile_key)
+                except exception.ObjectNotFound as onf_ex:
+                    LOG.exception(onf_ex)
+                    update_assembly(ctxt, assem.id, {'status': STATES.ERROR})
+                    t_logger.log(logging.ERROR, "Error reading %s"
+                                 % getfile_key)
+                    t_logger.upload()
+                    return
+
+                get_file_dict = {}
+                get_file_dict[getfile_key] = file_cnt
+
                 created_stack = osc.heat().stacks.create(stack_name=stack_name,
                                                          template=template,
-                                                         parameters=parameters)
+                                                         parameters=parameters,
+                                                         files=get_file_dict)
             except Exception as exp:
                 LOG.error("Error creating Heat Stack for,"
                           " assembly %s" % assembly_id)
@@ -367,9 +384,6 @@ class Handler(object):
                 if image_storage == 'docker_registry':
                     template = self._get_template_for_docker_reg(
                         assem, template, image_loc, image_name, ports)
-                elif image_storage == 'swift':
-                    template = self._get_template_for_swift(
-                        assem, template, image_loc, image_name, ports)
         else:
             LOG.debug("Image format %s is not supported." % image_format)
             update_assembly(ctxt, assem.id, {'status': STATES.ERROR})
@@ -378,8 +392,8 @@ class Handler(object):
 
         return template
 
-    def _get_parameters(self, ctxt, image_format, image_loc, assem, ports, osc,
-                        t_logger):
+    def _get_parameters(self, ctxt, image_format, image_loc, image_name,
+                        assem, ports, osc, t_logger):
         parameters = None
         if image_format == 'docker':
             glance_img_uuid = image_loc
@@ -396,9 +410,15 @@ class Handler(object):
 
         elif image_format == 'vm':
             parameters = {'name': str(assem.uuid),
-                          'count': 1,
                           'flavor': cfg.CONF.deployer.flavor,
                           'image': cfg.CONF.deployer.image}
+            ports_str = ''
+            for port in ports:
+                ports_str += ' -p {pt}:{pt}'.format(pt=port)
+
+            parameters['location'] = image_loc
+            parameters['du'] = image_name
+            parameters['publish_ports'] = ports_str.strip()
         else:
             LOG.debug("Image format %s is not supported." % image_format)
             update_assembly(ctxt, assem.id, {'status': STATES.ERROR})
@@ -539,41 +559,4 @@ class Handler(object):
         comp_instance['properties']['user_data'] = user_data
         template_bdy['resources']['compute_instance'] = comp_instance
         template = yaml.dump(template_bdy)
-        return template
-
-    def _get_template_for_swift(self, assem, template,
-                                image_loc, image_name, ports):
-        image_tar_location = image_loc
-        du_name = image_name
-
-        LOG.debug("DU Name:%s" % du_name)
-        LOG.debug("Image tar loc:%s" % image_tar_location)
-
-        ports_str = ''
-        for port in ports:
-            ports_str += ' -p {pt}:{pt}'.format(pt=port)
-        run_docker_str = ('#!/bin/bash -x\n'
-                          '# Invoke the container\n'
-                          'wget \"{location}\" --output-document={du}\n'
-                          'docker load < {du}\n'
-                          'docker run {publish_ports} -d {du}\n'
-                          'wc_notify --data-binary {stat}')
-        run_docker = run_docker_str.format(location=image_tar_location,
-                                           publish_ports=ports_str.strip(),
-                                           du=du_name,
-                                           stat='\'{"status": "SUCCESS"}\'')
-
-        LOG.debug("run_docker:%s" % run_docker)
-
-        template_bdy = yaml.safe_load(template)
-        comp_instance = template_bdy['resources']['compute_instance']
-        user_data = comp_instance['properties']['user_data']
-        user_data['str_replace']['template'] = run_docker
-        comp_instance['properties']['user_data'] = user_data
-        template_bdy['resources']['compute_instance'] = comp_instance
-
-        template = yaml.safe_dump(template_bdy,
-                                  encoding='utf-8',
-                                  allow_unicode=True)
-        LOG.debug("template:%s" % template)
         return template
