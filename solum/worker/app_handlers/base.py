@@ -220,6 +220,15 @@ class BaseHandler(object):
 
         return head_sha
 
+    def _gen_docker_ignore(self, path, prefix=None):
+        # Exclude .git from the docker build context
+        content = '{}/.git'.format(prefix) if prefix else '.git'
+        try:
+            with open('{}/.dockerignore'.format(path), 'w') as f:
+                f.write(content)
+        except OSError:
+            pass
+
     def _docker_build(self, tag, logger, timeout, limits, path=None,
                       dockerfile=None, fileobj=None, forcerm=True, quiet=True,
                       nocache=False, pull=True):
