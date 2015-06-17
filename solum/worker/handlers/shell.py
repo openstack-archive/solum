@@ -173,6 +173,16 @@ class Handler(object):
             user_env['TEMP_URL_SECRET'] = cfg.CONF.worker.temp_url_secret
             user_env['TEMP_URL_PROTOCOL'] = cfg.CONF.worker.temp_url_protocol
             user_env['TEMP_URL_TTL'] = cfg.CONF.worker.temp_url_ttl
+            user_env['OPR_LP_DOWNLOAD_STRATEGY'] = (
+                cfg.CONF.worker.operator_lp_download_strategy)
+
+            # Get LP Operator context for downloading operator LPs
+            lp_kc = clients.OpenStackClients(None).keystone().lp_admin_client
+            user_env['OPER_AUTH_TOKEN'] = lp_kc.auth_token
+            user_env['OPER_OS_STORAGE_URL'] = lp_kc.service_catalog.url_for(
+                service_type='object-store',
+                endpoint_type='publicURL',
+                region_name=client_region_name)
 
         if test_cmd is not None:
             user_env['TEST_CMD'] = test_cmd
@@ -369,6 +379,10 @@ class Handler(object):
         log_env = user_env.copy()
         if 'OS_AUTH_TOKEN' in log_env:
             del log_env['OS_AUTH_TOKEN']
+        if 'OPER_AUTH_TOKEN' in log_env:
+            del log_env['OPER_AUTH_TOKEN']
+        if 'OPER_OS_STORAGE_URL' in log_env:
+            del log_env['OPER_OS_STORAGE_URL']
         solum.TLS.trace.support_info(environment=log_env)
 
         job_update_notification(ctxt, build_id, IMAGE_STATES.BUILDING,
@@ -484,6 +498,10 @@ class Handler(object):
         log_env = user_env.copy()
         if 'OS_AUTH_TOKEN' in log_env:
             del log_env['OS_AUTH_TOKEN']
+        if 'OPER_AUTH_TOKEN' in log_env:
+            del log_env['OPER_AUTH_TOKEN']
+        if 'OPER_OS_STORAGE_URL' in log_env:
+            del log_env['OPER_OS_STORAGE_URL']
         solum.TLS.trace.support_info(environment=log_env)
 
         logpath = "%s/%s-%s.log" % (user_env['SOLUM_TASK_DIR'],
@@ -584,6 +602,10 @@ class Handler(object):
         log_env = user_env.copy()
         if 'OS_AUTH_TOKEN' in log_env:
             del log_env['OS_AUTH_TOKEN']
+        if 'OPER_AUTH_TOKEN' in log_env:
+            del log_env['OPER_AUTH_TOKEN']
+        if 'OPER_OS_STORAGE_URL' in log_env:
+            del log_env['OPER_OS_STORAGE_URL']
         solum.TLS.trace.support_info(environment=log_env)
 
         logpath = "%s/%s-%s.log" % (user_env['SOLUM_TASK_DIR'],

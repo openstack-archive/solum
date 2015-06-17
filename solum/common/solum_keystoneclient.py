@@ -43,6 +43,12 @@ AUTH_OPTS = [
 
 cfg.CONF.register_opts(AUTH_OPTS)
 
+cfg.CONF.import_opt('lp_operator_user', 'solum.worker.config', group='worker')
+cfg.CONF.import_opt('lp_operator_password',
+                    'solum.worker.config', group='worker')
+cfg.CONF.import_opt('lp_operator_tenant_name',
+                    'solum.worker.config', group='worker')
+
 
 class KeystoneClient(object):
     """Keystone client wrapper to initialize the right version of the client.
@@ -79,8 +85,9 @@ class KeystoneClientV3(object):
         self.context = context
         self._client = None
         self._admin_client = None
+        self._lp_admin_client = None
 
-        if self.context.auth_url:
+        if self.context and self.context.auth_url:
             self.endpoint = self.context.auth_url.replace('v2.0', 'v3')
         else:
             # Import auth_token to have keystone_authtoken settings setup.
@@ -88,7 +95,7 @@ class KeystoneClientV3(object):
             self.endpoint = cfg.CONF.keystone_authtoken.auth_uri.replace(
                 'v2.0', 'v3')
 
-        if self.context.trust_id:
+        if self.context and self.context.trust_id:
             # Create a client with the specified trust_id, this
             # populates self.context.auth_token with a trust-scoped token
             self._client = self._v3_client_init()
@@ -112,6 +119,19 @@ class KeystoneClientV3(object):
                 LOG.error("Admin client authentication failed")
                 raise exception.AuthorizationFailure()
         return self._admin_client
+
+    @property
+    def lp_admin_client(self):
+        if not self._lp_admin_client:
+            # Create lp operator client connection to v3 API
+            lp_operator_creds = self._lp_operator_creds()
+            c = kc_v3.Client(**lp_operator_creds)
+            if c.authenticate():
+                self._lp_admin_client = c
+            else:
+                LOG.error("LP Operator client authentication failed")
+                raise exception.AuthorizationFailure()
+        return self._lp_admin_client
 
     def _v3_client_init(self):
         kwargs = {
@@ -176,7 +196,16 @@ class KeystoneClientV3(object):
             'auth_url': self.endpoint,
             'endpoint': self.endpoint,
             'project_name': cfg.CONF.keystone_authtoken.admin_tenant_name}
-        LOG.info('admin creds %s' % creds)
+        return creds
+
+    def _lp_operator_creds(self):
+        # Get LP Operator creds from config.
+        creds = {
+            'username': cfg.CONF.worker.lp_operator_user,
+            'password': cfg.CONF.worker.lp_operator_password,
+            'auth_url': self.endpoint,
+            'endpoint': self.endpoint,
+            'project_name': cfg.CONF.worker.lp_operator_tenant_name}
         return creds
 
     def create_trust_context(self):

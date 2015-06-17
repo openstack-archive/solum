@@ -76,6 +76,19 @@ SERVICE_OPTS = [
     cfg.StrOpt('lp_location_url',
                default="",
                help='url to the container where LPs are stored.'),
+    cfg.StrOpt('operator_lp_download_strategy',
+               default="swift-client",
+               help='Options for downloading operator LPs.'
+               'Possible values are "wget" or "swift-client"'),
+    cfg.StrOpt('lp_operator_user',
+               default="",
+               help='LP operator username.'),
+    cfg.StrOpt('lp_operator_password',
+               default="",
+               help='LP operator password.'),
+    cfg.StrOpt('lp_operator_tenant_name',
+               default="",
+               help='LP operator tenant name.'),
 ]
 
 opt_group = cfg.OptGroup(

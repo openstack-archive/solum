@@ -179,6 +179,30 @@ class KeystoneClientTest(base.BaseTestCase):
         self.assertRaises(exception.AuthorizationFailure,
                           get_admin_client)
 
+    def test_init_lp_admin_client_denied(self, mock_ks):
+        """Test the get_lp_admin_client property, auth failure path."""
+        self.ctx.username = None
+        self.ctx.password = None
+        self.ctx.trust_id = None
+        mock_ks.return_value.authenticate.return_value = False
+
+        solum_ks_client = solum_keystoneclient.KeystoneClientV3(self.ctx)
+
+        # Define wrapper for property or the property raises the exception
+        # outside of the assertRaises which fails the test
+        def get_lp_admin_client():
+            solum_ks_client.lp_admin_client
+
+        self.assertRaises(exception.AuthorizationFailure,
+                          get_lp_admin_client)
+
+    def test_init_with_no_context(self, mock_ks):
+        """Init with no context."""
+        mock_ks.return_value.authenticate.return_value = False
+        solum_ks_client = solum_keystoneclient.KeystoneClientV3(None)
+        self.assertEqual(solum_ks_client.endpoint,
+                         'http://server.test:5000/v3')
+
     def test_trust_init_fail(self, mock_ks):
         """Test consuming a trust when initializing, error scoping."""
         self.ctx.username = None
