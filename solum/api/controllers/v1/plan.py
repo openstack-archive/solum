@@ -13,6 +13,7 @@
 # under the License.
 
 import json
+import re
 import sys
 
 from oslo.db import exception as db_exc
@@ -33,7 +34,19 @@ LOG = logging.getLogger(__name__)
 
 
 def init_plan_v1(yml_input_plan):
-    return plan.Plan(**yml_input_plan)
+    if not yml_input_plan.get('name'):
+        raise exception.BadRequest(reason="Name field is missing.")
+    try:
+        pp = plan.Plan(**yml_input_plan)
+    except ValueError as ve:
+        raise exception.BadRequest(reason=ve.message)
+    try:
+        name_regex = re.compile(r'^([a-zA-Z0-9-_]{1,100})$')
+        assert name_regex.match(pp.name), 'Plan name is invalid.'
+    except AssertionError as ae:
+        raise exception.BadRequest(
+            reason=ae.message)
+    return pp
 
 
 def init_plan_by_version(input_plan):
@@ -108,7 +121,7 @@ class PlanController(rest.RestController):
         handler.get(self._id)
 
         if not pecan.request.body or len(pecan.request.body) < 1:
-            raise exception.BadRequest
+            raise exception.BadRequest(reason="No data.")
 
         if (pecan.request.content_type is not None and
                 'yaml' in pecan.request.content_type):
@@ -150,7 +163,7 @@ class PlansController(rest.RestController):
     def post(self):
         """Create a new plan."""
         if not pecan.request.body or len(pecan.request.body) < 1:
-            raise exception.BadRequest
+            raise exception.BadRequest(reason="No data.")
 
         handler = plan_handler.PlanHandler(pecan.request.security_context)
 
