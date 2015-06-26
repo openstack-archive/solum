@@ -14,7 +14,7 @@
 
 import inspect
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 from solum.openstack.common import context
 

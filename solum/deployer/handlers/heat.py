@@ -20,7 +20,7 @@ import time
 
 from heatclient import exc
 import httplib2
-from oslo.config import cfg
+from oslo_config import cfg
 from sqlalchemy import exc as sqla_exc
 from swiftclient import exceptions as swiftexp
 import yaml

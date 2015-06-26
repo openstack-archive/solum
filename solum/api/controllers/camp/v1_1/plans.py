@@ -16,7 +16,7 @@
 import uuid
 
 import jsonpatch
-from oslo.db import exception as db_exc
+from oslo_db import exception as db_exc
 import pecan
 from pecan import rest
 import wsme

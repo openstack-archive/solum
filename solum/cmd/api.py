@@ -20,7 +20,7 @@ import sys
 
 import eventlet
 from eventlet import wsgi
-from oslo.config import cfg
+from oslo_config import cfg
 
 from solum.api import app as api_app
 from solum.common import service

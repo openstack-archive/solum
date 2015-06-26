@@ -15,8 +15,8 @@
 """Common RPC service and API tools for Solum."""
 
 import eventlet
-from oslo.config import cfg
-from oslo import messaging
+from oslo_config import cfg
+import oslo_messaging as messaging
 
 import solum.common.context
 from solum import objects

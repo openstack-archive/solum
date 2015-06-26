@@ -16,7 +16,7 @@
 import re
 
 from keystonemiddleware import auth_token
-from oslo.config import cfg
+from oslo_config import cfg
 from pecan import hooks
 
 from solum.common import context

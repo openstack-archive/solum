@@ -16,7 +16,7 @@ import json
 import socket
 
 import httplib2
-from oslo.config import cfg
+from oslo_config import cfg
 
 from solum.common import exception
 from solum.openstack.common import log as logging

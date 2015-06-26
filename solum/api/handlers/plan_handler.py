@@ -19,7 +19,7 @@ import shelve
 import uuid
 
 from Crypto.PublicKey import RSA
-from oslo.config import cfg
+from oslo_config import cfg
 
 from solum.api.handlers import assembly_handler
 from solum.api.handlers import handler

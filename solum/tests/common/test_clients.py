@@ -19,7 +19,7 @@ from keystoneclient import session
 from mistralclient.api import client as mistralclient
 import mock
 from neutronclient.neutron import client as neutronclient
-from oslo.config import cfg
+from oslo_config import cfg
 from swiftclient import client as swiftclient
 from zaqarclient.queues.v1 import client as zaqarclient
 

@@ -18,7 +18,7 @@ import os.path
 import uuid
 
 import mock
-from oslo.config import cfg
+from oslo_config import cfg
 
 from solum.openstack.common.gettextutils import _
 from solum.tests import base

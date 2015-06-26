@@ -16,7 +16,7 @@ import json
 import re
 import sys
 
-from oslo.db import exception as db_exc
+from oslo_db import exception as db_exc
 import pecan
 from pecan import rest
 from wsme.rest import json as wsme_json

@@ -15,7 +15,7 @@
 import json
 
 import mock
-from oslo.db import exception as db_exc
+from oslo_db import exception as db_exc
 import pecan
 import yaml
 

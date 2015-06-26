@@ -25,7 +25,7 @@ import threading
 import time
 import weakref
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 from solum.openstack.common import fileutils
 from solum.openstack.common.gettextutils import _

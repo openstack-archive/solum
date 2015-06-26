@@ -17,7 +17,7 @@ import json
 import logging
 import time
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 from solum.openstack.common import log as openstack_logger
 import solum.uploaders.local as local_uploader

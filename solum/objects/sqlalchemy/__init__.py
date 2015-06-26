@@ -14,8 +14,8 @@
 
 import sys
 
-from oslo.config import cfg
-from oslo.db.sqlalchemy import session
+from oslo_config import cfg
+from oslo_db.sqlalchemy import session
 
 
 _FACADE = None
@@ -41,7 +41,6 @@ def cleanup():
     global _FACADE
 
     if _FACADE:
-        _FACADE._session_maker.close_all()
         _FACADE.get_engine().dispose()
         _FACADE = None
 

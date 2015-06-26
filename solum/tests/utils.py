@@ -15,8 +15,8 @@
 import tempfile
 
 import fixtures
-from oslo.config import cfg
-from oslo.db import options
+from oslo_config import cfg
+from oslo_db import options
 
 from solum.common import context
 from solum import objects

@@ -22,7 +22,7 @@ import shelve
 import string
 import subprocess
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 import solum
 from solum.common import clients

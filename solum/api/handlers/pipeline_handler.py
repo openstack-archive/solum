@@ -16,7 +16,7 @@ import json
 import uuid
 
 from mistralclient.api import base
-from oslo.config import cfg
+from oslo_config import cfg
 
 from solum.api.handlers import handler
 from solum.common import catalog

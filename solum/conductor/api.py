@@ -14,7 +14,7 @@
 
 """API for interfacing with Solum Conductor."""
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 from solum.common.rpc import service
 

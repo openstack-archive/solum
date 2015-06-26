@@ -23,7 +23,7 @@ import sys
 import uuid
 
 from keystoneclient import exceptions as keystone_exceptions
-from oslo.config import cfg
+from oslo_config import cfg
 import pecan
 import six
 import wsme

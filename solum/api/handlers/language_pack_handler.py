@@ -14,7 +14,7 @@
 
 import uuid
 
-from oslo.config import cfg
+from oslo_config import cfg
 from swiftclient import exceptions as swiftexp
 
 from solum.api.handlers import handler

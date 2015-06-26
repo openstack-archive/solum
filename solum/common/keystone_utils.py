@@ -14,7 +14,7 @@
 
 """Utilities and helper functions for keystone integration."""
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 from solum.common import clients
 from solum.common import context

@@ -13,7 +13,7 @@
 # under the License.
 
 import mock
-from oslo.config import cfg
+from oslo_config import cfg
 
 from solum.tests import base
 from solum.tests import fakes

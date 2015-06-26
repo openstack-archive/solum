@@ -20,9 +20,9 @@ import functools
 import json
 import time
 
-from oslo.config import cfg
-from oslo.db import exception as db_exc
-from oslo.db.sqlalchemy import models
+from oslo_config import cfg
+from oslo_db import exception as db_exc
+from oslo_db.sqlalchemy import models
 import six
 from six import moves
 from sqlalchemy import exc as sqla_exc
@@ -59,7 +59,7 @@ def retry(fun):
 
 
 def table_args():
-    cfg.CONF.import_opt('connection', 'oslo.db.options',
+    cfg.CONF.import_opt('connection', 'oslo_db.options',
                         group='database')
     if cfg.CONF.database.connection is None:
         # this is only within some object tests where

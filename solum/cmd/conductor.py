@@ -18,7 +18,7 @@ import logging as std_logging
 import os
 import sys
 
-from oslo.config import cfg
+from oslo_config import cfg
 
 from solum.common.rpc import service
 from solum.conductor.handlers import default as default_handler

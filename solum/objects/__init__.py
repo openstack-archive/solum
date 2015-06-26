@@ -25,8 +25,8 @@ and all objects should be retrieved via
 in application code.
 """
 
-from oslo.config import cfg
-from oslo.db import api
+from oslo_config import cfg
+from oslo_db import api
 
 from solum.objects import registry as registry_mod
 
