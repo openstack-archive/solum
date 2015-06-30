@@ -35,6 +35,10 @@ OS_AUTH_TOKEN=${OS_AUTH_TOKEN:-null}
 OS_REGION_NAME=${OS_REGION_NAME:-null}
 OS_STORAGE_URL=${OS_STORAGE_URL:-null}
 
+OPR_LP_DOWNLOAD_STRATEGY=${OPR_LP_DOWNLOAD_STRATEGY:-null}
+OPER_AUTH_TOKEN=${OPER_AUTH_TOKEN:-null}
+OPER_OS_STORAGE_URL=${OPER_OS_STORAGE_URL:-null}
+
 # TLOG, PRUN, ENSURE_LOGFILE, and elapsed defined in app-common
 HERE=$(dirname $0)
 source $HERE/../../common/utils
@@ -135,7 +139,12 @@ if [[ $IMG_EXTERNAL_REF != "auto" ]]; then
       python $HERE/swift-handler.py $OS_REGION_NAME $OS_AUTH_TOKEN $OS_STORAGE_URL download solum_lp $IMG_EXTERNAL_REF $OUTPUT \
       > >(while read ALINE; do TLOG $ALINE; done)
     elif [[ $LP_ACCESS == "operator" ]]; then
-      wget -q "$IMG_EXTERNAL_REF" --output-document=$OUTPUT
+      if [[ $OPR_LP_DOWNLOAD_STRATEGY == "swift-client" ]]; then
+        python $HERE/swift-handler.py $OS_REGION_NAME $OPER_AUTH_TOKEN $OPER_OS_STORAGE_URL download solum_lp $IMG_EXTERNAL_REF $OUTPUT \
+        > >(while read ALINE; do TLOG $ALINE; done)
+      elif [[ $OPR_LP_DOWNLOAD_STRATEGY == "wget" ]]; then
+        wget -q "$IMG_EXTERNAL_REF" --output-document=$OUTPUT
+      fi
     fi
     if [[ $? != 0 ]]; then
       TLOG Failed to download image $IMG_EXTERNAL_REF from swift. && exit 1

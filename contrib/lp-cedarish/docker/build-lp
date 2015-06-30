@@ -18,6 +18,8 @@ TEMP_URL_SECRET=${TEMP_URL_SECRET:-null}
 TEMP_URL_PROTOCOL=${TEMP_URL_PROTOCOL:-null}
 TEMP_URL_TTL=${TEMP_URL_TTL:-null}
 
+OPR_LP_DOWNLOAD_STRATEGY=${OPR_LP_DOWNLOAD_STRATEGY:-null}
+
 # TLOG, PRUN, etc. defined in common/utils
 HERE=$(dirname $0)
 source $HERE/../../common/utils
@@ -128,22 +130,26 @@ if [[ -d "$TMP_LP_DIR/build" ]]; then
     if [[ $LP_ACCESS == "custom" ]]; then
       image_id="${STORAGE_OBJ_NAME}"
     elif [[ $LP_ACCESS == "operator" ]]; then
-      ACCOUNT=$(echo $OS_STORAGE_URL | sed 's/\// /'g | awk '{print $4}')
-      TLOG "ACCOUNT=$ACCOUNT"
-      STORAGE_HOST=$(echo $OS_STORAGE_URL | sed 's/\// /'g | awk '{print $2}')
-      TLOG "STORAGE_HOST=$STORAGE_HOST"
+      if [[ $OPR_LP_DOWNLOAD_STRATEGY == "swift-client" ]]; then
+        image_id="${STORAGE_OBJ_NAME}"
+      elif [[ $OPR_LP_DOWNLOAD_STRATEGY == "wget" ]]; then
+        ACCOUNT=$(echo $OS_STORAGE_URL | sed 's/\// /'g | awk '{print $4}')
+        TLOG "ACCOUNT=$ACCOUNT"
+        STORAGE_HOST=$(echo $OS_STORAGE_URL | sed 's/\// /'g | awk '{print $2}')
+        TLOG "STORAGE_HOST=$STORAGE_HOST"
 
-      TLOG "STORAGE_URL:$OS_STORAGE_URL"
-      TLOG "REGION:$OS_REGION_NAME"
-      TLOG "AUTH_TOKEN:$OS_AUTH_TOKEN"
+        TLOG "STORAGE_URL:$OS_STORAGE_URL"
+        TLOG "REGION:$OS_REGION_NAME"
+        TLOG "AUTH_TOKEN:$OS_AUTH_TOKEN"
 
-      curl -i -X POST -H X-Auth-Token:$OS_AUTH_TOKEN -H X-Account-Meta-Temp-URL-Key:$TEMP_URL_SECRET $TEMP_URL_PROTOCOL://$STORAGE_HOST/v1/$ACCOUNT
-      TLOG "HERE:$HERE"
+        curl -i -X POST -H X-Auth-Token:$OS_AUTH_TOKEN -H X-Account-Meta-Temp-URL-Key:$TEMP_URL_SECRET $TEMP_URL_PROTOCOL://$STORAGE_HOST/v1/$ACCOUNT
+        TLOG "HERE:$HERE"
 
-      TEMP_URL=$(python $HERE/get-temp-url.py $STORAGE_HOST solum_lp $STORAGE_OBJ_NAME $ACCOUNT $TEMP_URL_SECRET $TEMP_URL_TTL $TEMP_URL_PROTOCOL)
-      TLOG "TEMP_URL:$TEMP_URL"
+        TEMP_URL=$(python $HERE/get-temp-url.py $STORAGE_HOST solum_lp $STORAGE_OBJ_NAME $ACCOUNT $TEMP_URL_SECRET $TEMP_URL_TTL $TEMP_URL_PROTOCOL)
+        TLOG "TEMP_URL:$TEMP_URL"
 
-      image_id="${TEMP_URL}"
+        image_id="${TEMP_URL}"
+      fi
     fi
 
     TLOG ===== finished uploading LP to $IMAGE_STORAGE
