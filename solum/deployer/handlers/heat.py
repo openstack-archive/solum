@@ -112,19 +112,20 @@ class Handler(object):
     def _delete_app_artifacts_from_swift(self, ctxt, t_logger,
                                          logs_resource_id, assem):
         # Delete image file from swift
-        img = objects.registry.Image.get_by_id(ctxt, assem.image_id)
-        if img.docker_image_name:
-            img_filename = img.docker_image_name.split('-', 1)[1]
-            try:
-                swift = solum_swiftclient.SwiftClient(ctxt)
-                swift.delete_object('solum_du', img_filename)
-            except swiftexp.ClientException:
-                msg = "Unable to delete DU image from swift."
-                t_logger.log(logging.ERROR, msg)
-                LOG.debug(msg)
-                t_logger.upload()
-                return
-        img.destroy(ctxt)
+        if assem.image_id:
+            img = objects.registry.Image.get_by_id(ctxt, assem.image_id)
+            if img.docker_image_name:
+                img_filename = img.docker_image_name.split('-', 1)[1]
+                try:
+                    swift = solum_swiftclient.SwiftClient(ctxt)
+                    swift.delete_object('solum_du', img_filename)
+                except swiftexp.ClientException:
+                    msg = "Unable to delete DU image from swift."
+                    t_logger.log(logging.ERROR, msg)
+                    LOG.debug(msg)
+                    t_logger.upload()
+                    return
+            img.destroy(ctxt)
 
         # Delete logs
         try:
