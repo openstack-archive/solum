@@ -12,11 +12,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import string
+
 import wsme
 from wsme import types as wtypes
 
 from solum.api.controllers.v1.datamodel import types as api_types
 from solum import objects
+from solum.openstack.common.gettextutils import _
 
 TAGS = (TYPE, COMPILER_VERSION, RUNTIME_VERSION, IMPLEMENTATION,
         BUILD_TOOL, OS_PLATFORM, ATTRIBUTE, DESCRIPTION) = (
@@ -56,6 +59,25 @@ class LanguagePack(api_types.Base):
     For a complete list of language pack attributes please
     refer: https://etherpad.openstack.org/p/Solum-Language-pack-json-format
     """
+
+    def __init__(self, **kwds):
+        self.__name = wsme.Unset
+        super(LanguagePack, self).__init__(**kwds)
+
+    def get_name(self):
+        return self.__name
+
+    def set_name(self, value):
+        if len(value) > 100:
+            raise ValueError(_('Names must not be longer than 100 '
+                               'characters'))
+        allowed_chars = string.lowercase + string.digits + '-_'
+        for ch in value:
+            if ch not in allowed_chars:
+                raise ValueError(_('Names must only contain a-z,0-9,-,_'))
+        self.__name = value
+
+    name = wtypes.wsproperty(str, get_name, set_name, mandatory=True)
 
     language_pack_type = wtypes.text
     """Type of the language pack. Identifies the language supported by the

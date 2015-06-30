@@ -108,3 +108,48 @@ class TestLanguagePacksController(base.BaseTestCase):
         faultstring = str(ret_val['faultstring'])
         self.assertEqual("Missing argument: \"data\"", faultstring)
         self.assertEqual(400, resp_mock.status)
+
+    def test_language_packs_post_badname(self, LanguagePackHandler, resp_mock,
+                                         request_mock):
+        json_create = {'name': 'foo==',
+                       'source_uri': 'github.com/sample',
+                       'lp_metadata': 'some metadata'}
+        request_mock.body = json.dumps(json_create)
+        request_mock.content_type = 'application/json'
+        hand_create = LanguagePackHandler.return_value.create
+        hand_create.return_value = fakes.FakeImage()
+        ret_val = language_pack.LanguagePacksController().post()
+        faultstring = str(ret_val['faultstring'])
+        error_msg = 'Names must only contain a-z,0-9,-,_'
+        self.assertTrue(faultstring.endswith(error_msg))
+        self.assertEqual(400, resp_mock.status)
+
+    def test_language_packs_post_capsname(self, LanguagePackHandler, resp_mock,
+                                          request_mock):
+        json_create = {'name': 'Foo',
+                       'source_uri': 'github.com/sample',
+                       'lp_metadata': 'some metadata'}
+        request_mock.body = json.dumps(json_create)
+        request_mock.content_type = 'application/json'
+        hand_create = LanguagePackHandler.return_value.create
+        hand_create.return_value = fakes.FakeImage()
+        ret_val = language_pack.LanguagePacksController().post()
+        faultstring = str(ret_val['faultstring'])
+        error_msg = 'Names must only contain a-z,0-9,-,_'
+        self.assertTrue(faultstring.endswith(error_msg))
+        self.assertEqual(400, resp_mock.status)
+
+    def test_language_packs_post_longname(self, LanguagePackHandler, resp_mock,
+                                          request_mock):
+        json_create = {'name': 'a' * 101,
+                       'source_uri': 'github.com/sample',
+                       'lp_metadata': 'some metadata'}
+        request_mock.body = json.dumps(json_create)
+        request_mock.content_type = 'application/json'
+        hand_create = LanguagePackHandler.return_value.create
+        hand_create.return_value = fakes.FakeImage()
+        ret_val = language_pack.LanguagePacksController().post()
+        faultstring = str(ret_val['faultstring'])
+        error_msg = 'Names must not be longer than 100 characters'
+        self.assertTrue(faultstring.endswith(error_msg))
+        self.assertEqual(400, resp_mock.status)
