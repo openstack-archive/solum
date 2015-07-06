@@ -18,6 +18,7 @@ Includes decorator for re-raising Solum-type exceptions.
 
 """
 
+import collections
 import functools
 import sys
 import uuid
@@ -174,6 +175,30 @@ def wrap_pecan_controller_exception(func):
     return wrap_controller_exception(func,
                                      _func_server_error,
                                      _func_client_error)
+
+
+def wrap_wsme_pecan_controller_exception(func):
+    """Error handling for controllers decorated with wsmeext.pecan.wsexpose:
+
+    Controllers wrapped with wsme_pecan.wsexpose don't throw
+    exceptions but handle them internally. We need to intercept
+    the response and mask potentially sensitive information.
+    """
+
+    @functools.wraps(func)
+    def wrapped(*args, **kw):
+        ret = func(*args, **kw)
+        ismapping = isinstance(ret, collections.Mapping)
+        if (pecan.response.status >= 500 and ismapping):
+
+            log_correlation_id = str(uuid.uuid4())
+            LOG.error("%s:%s", log_correlation_id, ret.get("faultstring",
+                                                           "Unknown Error"))
+            ret['faultstring'] = six.text_type(OBFUSCATED_MSG %
+                                               log_correlation_id)
+        return ret
+
+    return wrapped
 
 
 def wrap_keystone_exception(func):
