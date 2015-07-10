@@ -34,7 +34,7 @@ class PipelineController(rest.RestController):
         super(PipelineController, self).__init__()
         self._id = pipeline_id
 
-    @exception.wrap_wsme_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(pipeline.Pipeline)
     def get(self):
         """Return this pipeline."""
@@ -43,7 +43,7 @@ class PipelineController(rest.RestController):
         return pipeline.Pipeline.from_db_model(handler.get(self._id),
                                                pecan.request.host_url)
 
-    @exception.wrap_wsme_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(pipeline.Pipeline, body=pipeline.Pipeline)
     def put(self, data):
         """Modify this pipeline."""
@@ -53,7 +53,7 @@ class PipelineController(rest.RestController):
                              data.as_dict(objects.registry.Pipeline))
         return pipeline.Pipeline.from_db_model(res, pecan.request.host_url)
 
-    @exception.wrap_wsme_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(status_code=204)
     def delete(self):
         """Delete this pipeline."""
@@ -71,7 +71,7 @@ class PipelinesController(rest.RestController):
             remainder = remainder[:-1]
         return PipelineController(pipeline_id), remainder
 
-    @exception.wrap_wsme_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(pipeline.Pipeline,
                          body=pipeline.Pipeline,
                          status_code=201)
@@ -100,7 +100,7 @@ class PipelinesController(rest.RestController):
         return pipeline.Pipeline.from_db_model(
             handler.create(js_data), pecan.request.host_url)
 
-    @exception.wrap_wsme_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose([pipeline.Pipeline])
     def get_all(self):
         """Return all pipelines."""

@@ -27,7 +27,7 @@ class ExtensionController(rest.RestController):
     def __init__(self, extension_id):
         self._id = extension_id
 
-    @exception.wrap_wsme_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(extension.Extension, wtypes.text)
     def get(self):
         """Return this extension."""
@@ -36,7 +36,7 @@ class ExtensionController(rest.RestController):
         return extension.Extension.from_db_model(handler.get(self._id),
                                                  pecan.request.host_url)
 
-    @exception.wrap_wsme_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(extension.Extension, wtypes.text,
                          body=extension.Extension)
     def put(self, data):
@@ -47,7 +47,7 @@ class ExtensionController(rest.RestController):
                              data.as_dict(objects.registry.Extension))
         return extension.Extension.from_db_model(obj, pecan.request.host_url)
 
-    @exception.wrap_wsme_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(None, wtypes.text, status_code=204)
     def delete(self):
         """Delete this extension."""
@@ -65,7 +65,7 @@ class ExtensionsController(rest.RestController):
             remainder = remainder[:-1]
         return ExtensionController(extension_id), remainder
 
-    @exception.wrap_wsme_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(extension.Extension, wtypes.text,
                          body=extension.Extension,
                          status_code=201)
@@ -76,7 +76,7 @@ class ExtensionsController(rest.RestController):
         obj = handler.create(data.as_dict(objects.registry.Extension))
         return extension.Extension.from_db_model(obj, pecan.request.host_url)
 
-    @exception.wrap_wsme_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose([extension.Extension])
     def get_all(self):
         """Return all extensions, based on the query provided."""

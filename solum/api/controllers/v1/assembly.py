@@ -41,7 +41,7 @@ class AssemblyController(rest.RestController):
             logs = userlog_controller.UserlogsController(self._id)
             return logs, remainder
 
-    @exception.wrap_wsme_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(assembly.Assembly)
     def get(self):
         """Return this assembly."""
@@ -51,7 +51,7 @@ class AssemblyController(rest.RestController):
         return assembly.Assembly.from_db_model(handler.get(self._id),
                                                pecan.request.host_url)
 
-    @exception.wrap_wsme_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(assembly.Assembly, body=assembly.Assembly)
     def put(self, data):
         """Modify this assembly."""
@@ -61,7 +61,7 @@ class AssemblyController(rest.RestController):
                              data.as_dict(objects.registry.Assembly))
         return assembly.Assembly.from_db_model(res, pecan.request.host_url)
 
-    @exception.wrap_wsme_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(status_code=204)
     def delete(self):
         """Delete this assembly."""
@@ -79,7 +79,7 @@ class AssembliesController(rest.RestController):
             remainder = remainder[:-1]
         return AssemblyController(assembly_id), remainder
 
-    @exception.wrap_wsme_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(assembly.Assembly, body=assembly.Assembly,
                          status_code=201)
     def post(self, data):
@@ -107,7 +107,7 @@ class AssembliesController(rest.RestController):
         return assembly.Assembly.from_db_model(
             handler.create(js_data), pecan.request.host_url)
 
-    @exception.wrap_wsme_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose([assembly.Assembly])
     def get_all(self):
         """Return all assemblies, based on the query provided."""

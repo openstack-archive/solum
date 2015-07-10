@@ -28,7 +28,7 @@ class SensorController(rest.RestController):
         super(SensorController, self).__init__()
         self._id = sensor_id
 
-    @exception.wrap_wsme_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(sensor.Sensor, wtypes.text)
     def get(self):
         """Return this sensor."""
@@ -36,7 +36,7 @@ class SensorController(rest.RestController):
         return sensor.Sensor.from_db_model(handler.get(self._id),
                                            pecan.request.host_url)
 
-    @exception.wrap_wsme_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(sensor.Sensor, wtypes.text, body=sensor.Sensor)
     def put(self, data):
         """Modify this sensor."""
@@ -45,7 +45,7 @@ class SensorController(rest.RestController):
                              data.as_dict(objects.registry.Sensor))
         return sensor.Sensor.from_db_model(obj, pecan.request.host_url)
 
-    @exception.wrap_wsme_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(None, wtypes.text, status_code=204)
     def delete(self):
         """Delete this sensor."""
@@ -62,7 +62,7 @@ class SensorsController(rest.RestController):
             remainder = remainder[:-1]
         return SensorController(sensor_id), remainder
 
-    @exception.wrap_wsme_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(sensor.Sensor, wtypes.text,
                          body=sensor.Sensor, status_code=201)
     def post(self, data):
@@ -71,7 +71,7 @@ class SensorsController(rest.RestController):
         obj = handler.create(data.as_dict(objects.registry.Sensor))
         return sensor.Sensor.from_db_model(obj, pecan.request.host_url)
 
-    @exception.wrap_wsme_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose([sensor.Sensor])
     def get_all(self):
         """Return all sensors, based on the query provided."""

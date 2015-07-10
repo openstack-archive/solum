@@ -25,7 +25,7 @@ from solum.common import exception
 class ExecutionsController(rest.RestController):
     """Manages operations on the executions collection."""
 
-    @exception.wrap_wsme_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose([execution.Execution], wtypes.text)
     def get_all(self, pipeline_id):
         """Return all executions, based on the provided pipeline_id."""

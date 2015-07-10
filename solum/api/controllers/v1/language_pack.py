@@ -38,7 +38,7 @@ class LanguagePackController(rest.RestController):
             logs = userlog_controller.UserlogsController(self._id)
             return logs, remainder
 
-    @exception.wrap_wsme_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(language_pack.LanguagePack)
     def get(self):
         """Return a languagepack."""
@@ -49,7 +49,7 @@ class LanguagePackController(rest.RestController):
         return language_pack.LanguagePack.from_db_model(handler.get(self._id),
                                                         host_url)
 
-    @exception.wrap_wsme_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(status_code=204)
     def delete(self):
         """Delete a languagepack."""
@@ -67,7 +67,7 @@ class LanguagePacksController(rest.RestController):
             remainder = remainder[:-1]
         return LanguagePackController(lp_id), remainder
 
-    @exception.wrap_wsme_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(language_pack.LanguagePack,
                          body=language_pack.LanguagePack,
                          status_code=201)
@@ -80,7 +80,7 @@ class LanguagePacksController(rest.RestController):
             handler.create(data.as_dict(objects.registry.Image),
                            data.lp_metadata), host_url)
 
-    @exception.wrap_wsme_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose([language_pack.LanguagePack])
     def get_all(self):
         """Return all languagepacks, based on the query provided."""

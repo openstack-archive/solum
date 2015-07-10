@@ -29,7 +29,7 @@ class InfrastructureStackController(rest.RestController):
         super(InfrastructureStackController, self).__init__()
         self._id = stack_id
 
-    @exception.wrap_wsme_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(infrastructure.InfrastructureStack)
     def get(self):
         """Return this stack."""
@@ -38,7 +38,7 @@ class InfrastructureStackController(rest.RestController):
         return infrastructure.InfrastructureStack.from_db_model(
             handler.get(self._id), pecan.request.host_url)
 
-    @exception.wrap_wsme_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(infrastructure.InfrastructureStack,
                          body=infrastructure.InfrastructureStack)
     def put(self, data):
@@ -51,7 +51,7 @@ class InfrastructureStackController(rest.RestController):
         return infrastructure.InfrastructureStack.from_db_model(
             res, pecan.request.host_url)
 
-    @exception.wrap_wsme_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(status_code=204)
     def delete(self):
         """Delete this stack."""
@@ -69,7 +69,7 @@ class InfrastructureStacksController(rest.RestController):
             remainder = remainder[:-1]
         return InfrastructureStackController(stack_id), remainder
 
-    @exception.wrap_wsme_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(infrastructure.InfrastructureStack,
                          body=infrastructure.InfrastructureStack,
                          status_code=201)
@@ -81,7 +81,7 @@ class InfrastructureStacksController(rest.RestController):
             handler.create(data.as_dict(objects.registry.InfrastructureStack)),
             pecan.request.host_url)
 
-    @exception.wrap_wsme_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose([infrastructure.InfrastructureStack])
     def get_all(self):
         """Return all stacks, based on the query provided."""
@@ -96,7 +96,7 @@ class InfrastructureController(rest.RestController):
 
     stacks = InfrastructureStacksController()
 
-    @exception.wrap_wsme_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(infrastructure.Infrastructure)
     def index(self):
         host_url = '%s/%s' % (pecan.request.host_url, 'v1')

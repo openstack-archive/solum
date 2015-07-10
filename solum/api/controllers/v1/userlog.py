@@ -28,7 +28,7 @@ class UserlogsController(rest.RestController):
         super(UserlogsController, self).__init__()
         self._resource_id = resource_id
 
-    @exception.wrap_pecan_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose([userlog.Userlog])
     def get_all(self):
         """Return all Userlogs, based on the query provided."""

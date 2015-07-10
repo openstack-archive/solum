@@ -138,7 +138,7 @@ class PlanController(rest.RestController):
         pecan.response.status = 200
         return updated_plan_yml
 
-    @exception.wrap_wsme_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(status_code=202)
     def delete(self):
         """Delete this plan."""

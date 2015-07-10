@@ -27,7 +27,7 @@ class ServiceController(rest.RestController):
         super(ServiceController, self).__init__()
         self._id = service_id
 
-    @exception.wrap_wsme_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(service.Service)
     def get(self):
         """Return this service."""
@@ -36,7 +36,7 @@ class ServiceController(rest.RestController):
         return service.Service.from_db_model(handler.get(self._id),
                                              pecan.request.host_url)
 
-    @exception.wrap_wsme_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(service.Service, body=service.Service)
     def put(self, data):
         """Modify this service."""
@@ -46,7 +46,7 @@ class ServiceController(rest.RestController):
                              data.as_dict(objects.registry.Service))
         return service.Service.from_db_model(res, pecan.request.host_url)
 
-    @exception.wrap_wsme_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(status_code=204)
     def delete(self):
         """Delete this service."""
@@ -64,7 +64,7 @@ class ServicesController(rest.RestController):
             remainder = remainder[:-1]
         return ServiceController(service_id), remainder
 
-    @exception.wrap_wsme_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(service.Service, body=service.Service,
                          status_code=201)
     def post(self, data):
@@ -75,7 +75,7 @@ class ServicesController(rest.RestController):
             handler.create(data.as_dict(objects.registry.Service)),
             pecan.request.host_url)
 
-    @exception.wrap_wsme_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose([service.Service])
     def get_all(self):
         """Return all services, based on the query provided."""

@@ -32,7 +32,7 @@ class AppController(rest.RestController):
         super(AppController, self).__init__()
         self._id = app_id
 
-    @exception.wrap_pecan_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(app.App)
     def get(self):
         """Return this app."""
@@ -43,7 +43,7 @@ class AppController(rest.RestController):
                                           pecan.request.host_url)
         return app_model
 
-    @exception.wrap_pecan_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(app.App, body=app.App, status_code=200)
     def patch(self, data):
         """Modify this app."""
@@ -60,7 +60,7 @@ class AppController(rest.RestController):
 
         return updated_app
 
-    @exception.wrap_wsme_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(status_code=202)
     def delete(self):
         """Delete this app."""
@@ -77,7 +77,7 @@ class AppsController(rest.RestController):
             remainder = remainder[:-1]
         return AppController(app_id), remainder
 
-    @exception.wrap_pecan_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(app.App, body=app.App, status_code=200)
     def post(self, data):
         """Create a new app."""
@@ -92,7 +92,7 @@ class AppsController(rest.RestController):
         created_app = app.App.from_db_model(new_app, pecan.request.host_url)
         return created_app
 
-    @exception.wrap_pecan_controller_exception
+    @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose([app.App])
     def get_all(self):
         """Return all apps, based on the query provided."""
