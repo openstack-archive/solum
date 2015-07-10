@@ -70,7 +70,7 @@ class HandlerTest(base.BaseTestCase):
         handler._check_stack_status = mock.MagicMock()
         handler.deploy(self.ctx, 77, 'created_image_id', 'image_name', [80])
         stacks = mock_clients.return_value.heat.return_value.stacks
-        stacks.create.assert_called_once()
+        self.assertTrue(stacks.create.called)
         assign_and_create_mock = mock_registry.Component.assign_and_create
         comp_name = 'Heat_Stack_for_%s' % fake_assembly.name
         assign_and_create_mock.assert_called_once_with(self.ctx,
@@ -92,7 +92,7 @@ class HandlerTest(base.BaseTestCase):
                                        mock_ua, m_log):
         handler = heat_handler.Handler()
 
-        m_log.TenantLogger.call.return_value = mock.MagicMock()
+        mock_log = m_log.TenantLogger.return_value.log
         fake_assembly = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
         fake_template = self._get_fake_template()
@@ -139,7 +139,7 @@ class HandlerTest(base.BaseTestCase):
                                                        'Heat Stack test',
                                                        'http://fake.ref',
                                                        'fake_id')
-        m_log.log.assert_called_once()
+        self.assertTrue(mock_log.called)
 
     @mock.patch('solum.deployer.handlers.heat.tlog')
     @mock.patch('solum.deployer.handlers.heat.update_assembly')
@@ -150,7 +150,7 @@ class HandlerTest(base.BaseTestCase):
                              mock_get_templ, mock_ua, m_log):
         handler = heat_handler.Handler()
 
-        m_log.TenantLogger.call.return_value = mock.MagicMock()
+        mock_log = m_log.TenantLogger.return_value.log
 
         fake_assembly = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
@@ -169,7 +169,7 @@ class HandlerTest(base.BaseTestCase):
         self.assertRaises(AssertionError,
                           assign_and_create_mock.assert_called_once_with,
                           comp_name)
-        m_log.log.assert_called_once()
+        self.assertTrue(mock_log.called)
 
     @mock.patch('solum.deployer.handlers.heat.tlog')
     @mock.patch('solum.deployer.handlers.heat.update_assembly')
@@ -366,30 +366,32 @@ class HandlerTest(base.BaseTestCase):
                                          image_storage, image_loc, image_name,
                                          fake_assembly, ports, mock_logger)
         self.assertIsNotNone(template)
-        handler._get_template_for_docker_reg.assert_called_once()
+        self.assertTrue(handler._get_template_for_docker_reg.called)
         mock_catalog_get.assert_called_once_with('templates', 'coreos')
 
     @mock.patch('solum.common.catalog.get')
     def test_get_template_vm_swift(self, mock_catalog_get):
         handler = heat_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
-
-        template_getter = mock.MagicMock()
-        template_getter.return_value = self._get_fake_template()
-        handler._get_template_for_swift = template_getter
+        mock_logger = mock.MagicMock()
 
         image_format = 'vm'
         image_storage = 'swift'
         image_loc = 'abc'
         image_name = 'def'
         ports = [80]
-        mock_logger = mock.MagicMock()
+
+        mock_catalog_get.return_value = self._get_fake_template()
+
         template = handler._get_template(self.ctx, image_format,
-                                         image_storage, image_loc, image_name,
-                                         fake_assembly, ports, mock_logger)
-        self.assertIsNotNone(template)
-        handler._get_template_for_swift.assert_called_once()
-        mock_catalog_get.assert_called_once_with('templates', 'coreos')
+                                         image_storage, image_loc,
+                                         image_name, fake_assembly,
+                                         ports, mock_logger)
+
+        self.assertEqual(self._get_fake_template(), template)
+        self.assertEqual(1, mock_catalog_get.call_count)
+        self.assertEqual(mock.call('templates', 'coreos'),
+                         mock_catalog_get.call_args)
 
     @mock.patch('solum.deployer.handlers.heat.update_assembly')
     @mock.patch('solum.common.catalog.get')
@@ -612,28 +614,31 @@ class HandlerTest(base.BaseTestCase):
 
         handler = heat_handler.Handler()
 
-        m_log.TenantLogger.call.return_value = mock.MagicMock()
+        mock_log = m_log.TenantLogger.return_value.log
 
-        handler._find_id_if_stack_exists = mock.MagicMock(return_value='42')
-        mock_heat = mock_client.return_value.heat.return_value
-        mock_heat.stacks.get.side_effect = exc.HTTPNotFound
+        mock_heat = mock_client.return_value.heat
+        mock_del = mock_heat.return_value.stacks.delete
+        mock_del.side_effect = exc.HTTPNotFound
 
         cfg.CONF.deployer.max_attempts = 1
         cfg.CONF.deployer.wait_interval = 0
         cfg.CONF.deployer.growth_factor = 1.2
 
-        handler.destroy_assembly(self.ctx, fake_assem.id)
+        with mock.patch.object(handler, "_find_id_if_stack_exists",
+                               return_value=42):
 
-        mock_client.heat.stacks.delete.assert_called_once()
-        fake_assem.destroy.assert_called_once()
-        mock_registry.Image.get_by_id.assert_called_once_with(
-            mock.ANY, fake_assem.image_id)
-        docker_image_name = fake_image.docker_image_name
-        img_filename = docker_image_name.split('-', 1)[1]
-        mock_swift_delete.assert_called_once_with('solum_du', img_filename)
-        log_handler = mock_log_handler.return_value
-        log_handler.delete.assert_called_once_with(fake_assem.uuid)
-        m_log.log.assert_called_once()
+            handler.destroy_assembly(self.ctx, fake_assem.id)
+
+            self.assertTrue(mock_del.called)
+            self.assertTrue(fake_assem.destroy.called)
+            mock_registry.Image.get_by_id.assert_called_once_with(
+                mock.ANY, fake_assem.image_id)
+            docker_image_name = fake_image.docker_image_name
+            img_filename = docker_image_name.split('-', 1)[1]
+            mock_swift_delete.assert_called_once_with('solum_du', img_filename)
+            log_handler = mock_log_handler.return_value
+            log_handler.delete.assert_called_once_with(fake_assem.uuid)
+            self.assertTrue(mock_log.called)
 
     @mock.patch('solum.common.solum_swiftclient.SwiftClient.delete_object')
     @mock.patch('solum.api.handlers.userlog_handler.UserlogHandler')
@@ -649,28 +654,32 @@ class HandlerTest(base.BaseTestCase):
 
         handler = heat_handler.Handler()
 
-        m_log.TenantLogger.call.return_value = mock.MagicMock()
+        mock_log = m_log.TenantLogger.return_value.log
 
-        handler._find_id_if_stack_exists = mock.MagicMock(return_value='42')
-        mock_heat = mock_client.return_value.heat.return_value
-        mock_heat.stacks.delete.side_effect = exc.HTTPNotFound
+        mock_heat = mock_client.return_value.heat
+        mock_del = mock_heat.return_value.stacks.delete
+        mock_del.side_effect = exc.HTTPNotFound
 
         cfg.CONF.deployer.max_attempts = 1
         cfg.CONF.deployer.wait_interval = 0
         cfg.CONF.deployer.growth_factor = 1.2
 
-        handler.destroy_assembly(self.ctx, fake_assem.id)
+        with mock.patch.object(handler, "_find_id_if_stack_exists",
+                               return_value=42) as mock_find:
 
-        mock_client.heat.stacks.delete.assert_called_once()
-        fake_assem.destroy.assert_called_once()
-        mock_registry.Image.get_by_id.assert_called_once_with(
-            mock.ANY, fake_assem.image_id)
-        docker_image_name = fake_image.docker_image_name
-        img_filename = docker_image_name.split('-', 1)[1]
-        mock_swift_delete.assert_called_once_with('solum_du', img_filename)
-        log_handler = mock_log_handler.return_value
-        log_handler.delete.assert_called_once_with(fake_assem.uuid)
-        m_log.log.assert_called_once()
+            handler.destroy_assembly(self.ctx, fake_assem.id)
+
+            self.assertTrue(mock_find.called)
+            self.assertTrue(mock_del.called)
+            self.assertTrue(fake_assem.destroy.called)
+            mock_registry.Image.get_by_id.assert_called_once_with(
+                mock.ANY, fake_assem.image_id)
+            docker_image_name = fake_image.docker_image_name
+            img_filename = docker_image_name.split('-', 1)[1]
+            mock_swift_delete.assert_called_once_with('solum_du', img_filename)
+            log_handler = mock_log_handler.return_value
+            log_handler.delete.assert_called_once_with(fake_assem.uuid)
+            self.assertTrue(mock_log.called)
 
     @mock.patch('solum.deployer.handlers.heat.tlog')
     @mock.patch('solum.deployer.handlers.heat.update_assembly')
@@ -680,7 +689,8 @@ class HandlerTest(base.BaseTestCase):
         fake_assem = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assem
 
-        m_log.TenantLogger.call.return_value = mock.MagicMock()
+        mock_heat = mock_client.return_value.heat
+        mock_del = mock_heat.return_value.stacks.delete
 
         handler = heat_handler.Handler()
         handler._find_id_if_stack_exists = mock.MagicMock(return_value='42')
@@ -689,19 +699,22 @@ class HandlerTest(base.BaseTestCase):
         cfg.CONF.deployer.wait_interval = 0
         cfg.CONF.deployer.growth_factor = 1.2
 
-        handler.destroy_assembly(self.ctx, fake_assem.id)
+        with mock.patch.object(handler, "_find_id_if_stack_exists",
+                               return_value="42"):
 
-        c1 = mock.call(self.ctx, fake_assem.id,
-                       {'status': STATES.DELETING})
+            handler.destroy_assembly(self.ctx, fake_assem.id)
 
-        c2 = mock.call(self.ctx, fake_assem.id,
-                       {'status': STATES.ERROR_STACK_DELETE_FAILED})
+            c1 = mock.call(self.ctx, fake_assem.id,
+                           {'status': STATES.DELETING})
 
-        calls = [c1, c2]
+            c2 = mock.call(self.ctx, fake_assem.id,
+                           {'status': STATES.ERROR_STACK_DELETE_FAILED})
 
-        mua.assert_has_calls(calls, any_order=False)
+            calls = [c1, c2]
 
-        mock_client.heat.stacks.delete.assert_called_once()
+            mua.assert_has_calls(calls, any_order=False)
+
+        self.assertTrue(mock_del.called)
 
     @mock.patch('solum.common.solum_swiftclient.SwiftClient.delete_object')
     @mock.patch('solum.api.handlers.userlog_handler.UserlogHandler')
@@ -716,23 +729,29 @@ class HandlerTest(base.BaseTestCase):
         fake_image = fakes.FakeImage()
         mock_registry.Image.get_by_id.return_value = fake_image
 
-        mock_tlogger.TenantLogger.call.return_value = mock.MagicMock()
+        mock_log = mock_tlogger.TenantLogger.return_value.log
+        mock_upload = mock_tlogger.TenantLogger.return_value.upload
+        mock_log_del = mock_log_handler.return_value.delete
+        mock_heat = mock_client.return_value.heat
+        mock_del = mock_heat.return_value.stacks.delete
 
         hh = heat_handler.Handler()
-        hh._find_id_if_stack_exists = mock.MagicMock(return_value=None)
-        hh.destroy_assembly(self.ctx, fake_assem.id)
+        with mock.patch.object(hh, "_find_id_if_stack_exists",
+                               return_value=None):
 
-        assert not mock_client.heat.stacks.delete.called
-        fake_assem.destroy.assert_called_once()
+            hh.destroy_assembly(self.ctx, fake_assem.id)
+
+        self.assertFalse(mock_del.called)
+        self.assertTrue(fake_assem.destroy.called)
         mock_registry.Image.get_by_id.assert_called_once_with(
             mock.ANY, fake_assem.image_id)
         docker_image_name = fake_image.docker_image_name
         img_filename = docker_image_name.split('-', 1)[1]
         mock_swift_delete.assert_called_once_with('solum_du', img_filename)
-        mock_tlogger.log.assert_called_once()
-        mock_tlogger.upload.assert_called_once()
-        log_handler = mock_log_handler.return_value
-        log_handler.delete.assert_called_once_with(fake_assem.uuid)
+        self.assertTrue(mock_log.called)
+        self.assertTrue(mock_upload.called)
+        self.assertEqual(1, mock_log_del.call_count)
+        self.assertEqual(mock.call(fake_assem.uuid), mock_log_del.call_args)
 
     @mock.patch('solum.objects.registry')
     def test_successful_deploy_destroys_twins(self, mr):

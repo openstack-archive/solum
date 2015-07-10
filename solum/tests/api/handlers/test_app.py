@@ -49,7 +49,7 @@ class TestAppHandler(base.BaseTestCase):
         handler.delete('test_id')
         get_by_uuid = mock_registry.App.get_by_uuid
         get_by_uuid.assert_called_once_with(self.ctx, 'test_id')
-        db_obj.destroy.assert_called_once()
+        self.assertTrue(db_obj.destroy.called)
 
     def test_app_create(self, mock_registry):
         data = {'name': 'fakeapp',

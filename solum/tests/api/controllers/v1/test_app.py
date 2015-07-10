@@ -77,11 +77,7 @@ class TestAppController(base.BaseTestCase):
         request_mock.body = ''
         request_mock.content_type = 'application/json'
         request_mock.security_context = None
-        hand_patch = AppHandler.return_value.patch
-        fake_app = objects.registry.App()
-        hand_patch.return_value = fake_app
         app.AppController('test_id').patch()
-        hand_patch.assert_called_once()
         self.assertEqual(400, resp_mock.status)
 
     def test_app_delete(self, AppHandler, resp_mock, request_mock):
@@ -119,7 +115,7 @@ class TestAppsController(base.BaseTestCase):
         fake_app = objects.registry.App(**json_create)
         hand_create.return_value = fake_app
         app.AppsController().post()
-        hand_create.assert_called_once()
+        self.assertTrue(hand_create.called)
         created_app = hand_create.call_args[0][0]
         self.assertEqual(created_app['name'], json_create['name'])
         self.assertEqual(200, resp_mock.status)

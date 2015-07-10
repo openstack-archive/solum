@@ -294,7 +294,10 @@ class HandlerTest(base.BaseTestCase):
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
         script = os.path.join(proj_dir, 'contrib/lp-cedarish/docker/build-app')
-        mock_shelve.call().__setitem__.assert_called_once()
+        # TODO(datsun180b): Determine if this commented line should be removed
+        # since I can't seem to find anywhere in shell.py that writes to
+        # shelve.
+        # self.assertTrue(mock_shelve.call().__setitem__.called)
         mock_popen.assert_called_once_with([script, 'git://example.com/foo',
                                             'new_app', self.ctx.tenant,
                                             self.expected_img_id,

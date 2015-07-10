@@ -91,7 +91,7 @@ class TestLanguagePackHandler(base.BaseTestCase):
         self.assertRaises(exc.LPStillReferenced, handler.delete, 'test_lp')
         mock_img.get_lp_by_name_or_uuid.assert_called_once_with(
             self.ctx, 'test_lp')
-        mock_planlist.get_all.assert_called_once()
+        self.assertTrue(mock_planlist.get_all.called)
         assert not fi.destroy.called
 
     @mock.patch('solum.common.solum_swiftclient.SwiftClient.delete_object')
@@ -115,7 +115,7 @@ class TestLanguagePackHandler(base.BaseTestCase):
         docker_image_name = fi.docker_image_name
         img_filename = docker_image_name.split('-', 1)[1]
         mock_swift_delete.assert_called_once_with('solum_lp', img_filename)
-        mock_planlist.get_all.assert_called_once()
+        self.assertTrue(mock_planlist.get_all.called)
         log_handler = mock_log_handler.return_value
         log_handler.delete.assert_called_once_with(fi.uuid)
         fi.destroy.assert_called_once_with(self.ctx)

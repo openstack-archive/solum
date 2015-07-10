@@ -144,7 +144,7 @@ class Handler(object):
         stack_id = self._find_id_if_stack_exists(assem)
 
         # TODO(devkulkarni) Delete t_logger when returning from this call.
-        # This needs to be implemented as a decorator since there are
+        # This needs to be implemented as a context since there are
         # multiple return paths from this method.
         t_logger = tlog.TenantLogger(ctxt, assem, deployer_log_dir, 'delete')
         msg = "Deleting Assembly %s" % assem.uuid
@@ -161,6 +161,7 @@ class Handler(object):
             osc = clients.OpenStackClients(ctxt)
             try:
                 t_logger.log(logging.DEBUG, "Deleting Heat stack.")
+                LOG.debug("Deleting Heat stack %s", stack_id)
                 osc.heat().stacks.delete(stack_id)
             except exc.HTTPNotFound:
                 # stack already deleted

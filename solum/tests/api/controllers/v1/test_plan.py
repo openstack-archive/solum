@@ -40,14 +40,13 @@ class TestPlanModuleFunctions(base.BaseTestCase):
     def test_init_plan_by_version(self, init_plan_v1):
         yml_input_plan = {'version': 1, 'name': 'plan1', 'description': 'dsc'}
         plan.init_plan_by_version(yml_input_plan)
-        init_plan_v1.assert_called_once()
+        self.assertTrue(init_plan_v1.called)
 
     @mock.patch('solum.api.controllers.v1.plan.init_plan_v1')
     def test_init_plan_by_version_missing(self, init_plan_v1):
         yml_input_plan = {'name': 'plan1', 'description': 'dsc'}
         self.assertRaises(exception.BadRequest, plan.init_plan_by_version,
                           yml_input_plan)
-        init_plan_v1.assert_called_once()
 
     @mock.patch('solum.api.controllers.v1.plan.init_plan_v1')
     def test_init_plan_by_version_not_existing(self, init_plan_v1):
@@ -55,7 +54,6 @@ class TestPlanModuleFunctions(base.BaseTestCase):
                           'description': 'dsc'}
         self.assertRaises(exception.BadRequest, plan.init_plan_by_version,
                           yml_input_plan)
-        init_plan_v1.assert_called_once()
 
     @mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
     def test_init_plan_v1(self, mock_req):

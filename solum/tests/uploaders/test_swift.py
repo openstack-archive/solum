@@ -62,7 +62,7 @@ class SwiftUploadTest(base.BaseTestCase):
                                         rs_before_delete.uuid,
                                         stage, build_id)
 
-        mock_trans_jlog.assert_called_once()
+        self.assertTrue(mock_trans_jlog.called)
         tansf_path = orig_path + '.tf'
         mock_upload.assert_called_once_with(container, filename, tansf_path)
         mock_write_row.assert_called_once_with(filename, swift_info)
@@ -94,7 +94,7 @@ class SwiftUploadTest(base.BaseTestCase):
                                         resource.uuid,
                                         stage, build_id)
 
-        mock_trans_jlog.assert_called_once()
+        self.assertTrue(mock_trans_jlog.called)
         tansf_path = orig_path + '.tf'
         mock_swift.assert_called_once_with(tansf_path,
                                            container,
