@@ -241,26 +241,33 @@ function init_solum() {
     # Run Solum db migrations
     solum-db-manage --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE upgrade head
     create_solum_cache_dir
-    if is_service_enabled barbican; then
-        # Fix barbican configuration
-        BARBICAN_API_CONF="/etc/barbican/barbican-api.conf"
-        BARBICAN_HOST_HREF=$(iniget $BARBICAN_API_CONF DEFAULT host_href)
-        BARBICAN_HOST_HREF=${BARBICAN_HOST_HREF/localhost/$SERVICE_HOST}
-        iniset $BARBICAN_API_CONF DEFAULT host_href $BARBICAN_HOST_HREF
-        if is_running barbican; then
-            # NOTE(ravips): barbican.{pid,failure} is removed to overcome current
-            # limitations of stop_barbican. stop_barbican calls screen_stop() only
-            # to remove the pid but not to kill the process and this causes pkill
-            # in screen_stop to return non-zero exit code which is trapped by
-            # devstack/stack.sh
-            rm $SERVICE_DIR/$SCREEN_NAME/barbican.pid
-            stop_barbican
-            if [ -f $SERVICE_DIR/$SCREEN_NAME/barbican.failure ]; then
-                rm $SERVICE_DIR/$SCREEN_NAME/barbican.failure
-            fi
-            start_barbican
-        fi
-    fi
+
+    # NOTE (devkulkarni): Barbican is causing failures such as below
+    # http://logs.openstack.org/33/206633/2/check/gate-solum-devstack-dsvm/933cbc3/logs/devstacklog.txt.gz#_2015-08-03_17_13_40_858
+    # So temorarily commenting out barbican related code below.
+
+    # if is_service_enabled barbican; then
+    #    # Fix barbican configuration
+    #    BARBICAN_API_CONF="/etc/barbican/barbican.conf"
+    #    BARBICAN_HOST_HREF=$(iniget $BARBICAN_API_CONF DEFAULT host_href)
+    #    BARBICAN_HOST_HREF=${BARBICAN_HOST_HREF/localhost/$SERVICE_HOST}
+    #    iniset $BARBICAN_API_CONF DEFAULT host_href $BARBICAN_HOST_HREF
+    #    if is_running barbican; then
+    #        # NOTE(ravips): barbican.{pid,failure} is removed to overcome current
+    #        # limitations of stop_barbican. stop_barbican calls screen_stop() only
+    #        # to remove the pid but not to kill the process and this causes pkill
+    #        # in screen_stop to return non-zero exit code which is trapped by
+    #        # devstack/stack.sh
+    #        if [ -f $SERVICE_DIR/$SCREEN_NAME/barbican.pid ]; then
+    #            rm $SERVICE_DIR/$SCREEN_NAME/barbican.pid
+    #        fi
+    #        stop_barbican
+    #        if [ -f $SERVICE_DIR/$SCREEN_NAME/barbican.failure ]; then
+    #            rm $SERVICE_DIR/$SCREEN_NAME/barbican.failure
+    #        fi
+    #        start_barbican
+    #    fi
+    # fi
 }
 
 # install_solumclient() - Collect source and prepare
