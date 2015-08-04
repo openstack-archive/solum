@@ -81,13 +81,13 @@ SERVICE_OPTS = [
                help='Options for downloading operator LPs.'
                'Possible values are "wget" or "swift-client"'),
     cfg.StrOpt('lp_operator_user',
-               default="",
+               default="demo",
                help='LP operator username.'),
     cfg.StrOpt('lp_operator_password',
-               default="",
+               default="solum",
                help='LP operator password.'),
     cfg.StrOpt('lp_operator_tenant_name',
-               default="",
+               default="demo",
                help='LP operator tenant name.'),
 ]
 
