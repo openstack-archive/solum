@@ -75,6 +75,7 @@ class SolumClient(rest_client.RestClient):
         self.endpoint_url = 'publicURL'
         self.created_assemblies = []
         self.created_plans = []
+        self.created_apps = []
 
     def request_without_auth(self, resource, method, headers={}, body=None):
         dscv = CONF.identity.disable_ssl_certificate_validation
@@ -120,6 +121,16 @@ class SolumClient(rest_client.RestClient):
             self.created_plans.append(uuid)
         return plan_resp
 
+    def create_app(self, data=None):
+        app_data = copy.deepcopy(data)
+        json_data = json.dumps(app_data)
+        resp, body = self.post('v1/apps', json_data)
+
+        app_resp = SolumResponse(resp=resp, body=body, body_type='yaml')
+        if app_resp.id is not None:
+            self.created_apps.append(app_resp.id)
+        return app_resp
+
     def delete_created_assemblies(self):
         [self.delete_assembly(uuid) for uuid in list(self.created_assemblies)]
         self.created_assemblies = []
@@ -134,6 +145,18 @@ class SolumClient(rest_client.RestClient):
         self.delete_created_assemblies()
         [self.delete_plan(uuid) for uuid in list(self.created_plans)]
         self.created_plans = []
+
+    def delete_created_apps(self):
+        self.delete_created_assemblies()
+        [self.delete_app(id) for id in list(self.created_apps)]
+        self.created_apps = []
+
+    def delete_app(self, id):
+        resp, body = self.delete(
+            'v1/apps/%s' % id,
+            headers={'content-type': 'application/json'})
+        self.created_apps.remove(id)
+        return resp, body
 
     def delete_plan(self, uuid):
         resp, body = self.delete(
@@ -151,7 +174,10 @@ class SolumResponse():
             self.data = json.loads(self.body)
         elif body_type == 'yaml':
             self.data = yaml.load(self.body)
-        self.uuid = self.data['uuid']
+        if self.data.get('uuid'):
+            self.uuid = self.data.get('uuid')
+        if self.data.get('id'):
+            self.id = self.data.get('id')
 
     @property
     def status(self):

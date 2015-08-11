@@ -60,7 +60,7 @@ class AppController(rest.RestController):
 
         return updated_app
 
-    @exception.wrap_wsme_pecan_controller_exception
+    @exception.wrap_pecan_controller_exception
     @wsme_pecan.wsexpose(status_code=202)
     def delete(self):
         """Delete this app."""
@@ -71,25 +71,33 @@ class AppController(rest.RestController):
 class AppsController(rest.RestController):
     """Manages operations on the apps collection."""
 
+    def _validate(self, app_data):
+        if not app_data.languagepack:
+            raise exception.BadRequest(reason="Languagepack not specified.")
+
     @pecan.expose()
     def _lookup(self, app_id, *remainder):
         if remainder and not remainder[-1]:
             remainder = remainder[:-1]
         return AppController(app_id), remainder
 
-    @exception.wrap_wsme_pecan_controller_exception
-    @wsme_pecan.wsexpose(app.App, body=app.App, status_code=200)
+    @exception.wrap_pecan_controller_exception
+    @wsme_pecan.wsexpose(app.App, body=app.App, status_code=201)
     def post(self, data):
         """Create a new app."""
         request.check_request_for_https()
         if not data:
             raise exception.BadRequest(reason='No data.')
 
+        self._validate(data)
+
         handler = app_handler.AppHandler(pecan.request.security_context)
 
         app_data = data.as_dict(app.App)
+
         new_app = handler.create(app_data)
         created_app = app.App.from_db_model(new_app, pecan.request.host_url)
+
         return created_app
 
     @exception.wrap_wsme_pecan_controller_exception

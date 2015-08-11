@@ -13,14 +13,13 @@
 # under the License.
 
 import json
+import random
+import string
 import time
 
 from tempest_lib import exceptions as tempest_exceptions
 
 from functionaltests.api import base
-
-sample_lp = {"name": "language_pack_name",
-             "source_uri": "https://github.com/murali44/Solum-lp-Go.git"}
 
 sample_plan = {"version": "1",
                "name": "test_plan",
@@ -31,6 +30,14 @@ sample_plan = {"version": "1",
 
 
 class TestLanguagePackController(base.TestCase):
+
+    def _get_sample_languagepack(self):
+        sample_lp = dict()
+        s = string.lowercase
+        sample_lp["name"] = "lp" + ''.join(random.sample(s, 5))
+        lp_url = "https://github.com/murali44/Solum-lp-Go.git"
+        sample_lp["source_uri"] = lp_url
+        return sample_lp
 
     def setUp(self):
         super(TestLanguagePackController, self).setUp()
@@ -46,16 +53,17 @@ class TestLanguagePackController(base.TestCase):
         self.assertEqual(resp.status, 204)
 
     def _create_language_pack(self):
+        sample_lp = self._get_sample_languagepack()
         jsondata = json.dumps(sample_lp)
         resp, body = self.client.post('v1/language_packs', jsondata)
         self.assertEqual(resp.status, 201)
         out_data = json.loads(body)
         uuid = out_data['uuid']
         self.assertIsNotNone(uuid)
-        return uuid
+        return uuid, sample_lp
 
     def test_language_packs_get_all(self):
-        uuid = self._create_language_pack()
+        uuid, sample_lp = self._create_language_pack()
         resp, body = self.client.get('v1/language_packs')
         data = json.loads(body)
         self.assertEqual(resp.status, 200)
@@ -64,6 +72,7 @@ class TestLanguagePackController(base.TestCase):
         self._delete_language_pack(uuid)
 
     def test_language_packs_create(self):
+        sample_lp = self._get_sample_languagepack()
         sample_json = json.dumps(sample_lp)
         resp, body = self.client.post('v1/language_packs', sample_json)
         self.assertEqual(resp.status, 201)
@@ -77,7 +86,7 @@ class TestLanguagePackController(base.TestCase):
                           self.client.post, 'v1/language_packs', "{}")
 
     def test_language_packs_get(self):
-        uuid = self._create_language_pack()
+        uuid, sample_lp = self._create_language_pack()
         resp, body = self.client.get('v1/language_packs/%s' % uuid)
         self.assertEqual(resp.status, 200)
         json_data = json.loads(body)
@@ -90,7 +99,7 @@ class TestLanguagePackController(base.TestCase):
                           self.client.get, 'v1/language_packs/not_found')
 
     def test_language_packs_delete(self):
-        uuid = self._create_language_pack()
+        uuid, sample_lp = self._create_language_pack()
         resp, body = self.client.delete('v1/language_packs/%s' % uuid)
         self.assertEqual(resp.status, 204)
         self.assertEqual(body, '')
@@ -100,7 +109,12 @@ class TestLanguagePackController(base.TestCase):
                           self.client.delete, 'v1/language_packs/not_found')
 
     def test_language_packs_delete_used_by_app(self):
-        uuid = self._create_language_pack()
+        uuid, sample_lp = self._create_language_pack()
+        artifacts = sample_plan['artifacts']
+        artifacts[0]['language_pack'] = sample_lp['name']
+        sample_plan['artifacts'] = artifacts
+        print("Sample plan")
+        print(sample_plan)
         resp = self.client.create_plan(data=sample_plan)
         self.assertRaises(tempest_exceptions.Conflict,
                           self.client.delete, 'v1/language_packs/%s' % uuid)

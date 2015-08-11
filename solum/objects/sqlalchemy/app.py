@@ -49,7 +49,8 @@ class App(sql.Base, abstract.App):
 
     @classmethod
     def get_by_uuid(cls, context, item_uuid):
-        return cls.get_by_id(context, item_uuid)
+        app = cls.get_by_id(context, item_uuid)
+        return app
 
     @classmethod
     @sql.retry

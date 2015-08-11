@@ -107,7 +107,8 @@ class TestAppsController(base.BaseTestCase):
         objects.load()
 
     def test_apps_post(self, AppHandler, resp_mock, request_mock):
-        json_create = {'name': 'fakeapp'}
+        json_create = {'name': 'fakeapp',
+                       'languagepack': 'fakelp'}
         request_mock.body = json.dumps(json_create)
         request_mock.content_type = 'application/json'
         request_mock.security_context = None
@@ -118,7 +119,7 @@ class TestAppsController(base.BaseTestCase):
         self.assertTrue(hand_create.called)
         created_app = hand_create.call_args[0][0]
         self.assertEqual(created_app['name'], json_create['name'])
-        self.assertEqual(200, resp_mock.status)
+        self.assertEqual(201, resp_mock.status)
 
     def test_apps_post_no_data(self, AppHandler, resp_mock, request_mock):
         request_mock.body = ''
