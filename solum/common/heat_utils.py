@@ -23,5 +23,14 @@ def get_network_parameters(osc):
             params['public_net'] = tenant_network['id']
         else:
             params['private_net'] = tenant_network['id']
-            params['private_subnet'] = tenant_network['subnets'][0]
+            # Note (devkulkarni): Neutron subnet may contain
+            # ipv6 and ipv4 subnets. We want to pick the ipv4 subnet
+            params['private_subnet'] = get_ipv4_subnet_id(osc, tenant_network)
     return params
+
+
+def get_ipv4_subnet_id(osc, tenant_network):
+    for tenant_sub_id in tenant_network['subnets']:
+        subnet_data = osc.neutron().show_subnet(tenant_sub_id)
+        if subnet_data['subnet']['ip_version'] == 4:
+            return tenant_sub_id
