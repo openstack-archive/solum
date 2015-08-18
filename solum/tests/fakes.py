@@ -84,6 +84,7 @@ class FakeApp(mock.Mock):
             'test_cmd': 'python ./tests.py',
         }
         self.stack_id = ''
+        self.trigger_actions = ["unittest", "build", "deploy"]
 
     def as_dict(self):
         return {
@@ -228,6 +229,33 @@ class FakeInfrastructureStack(mock.Mock):
                     image_id=self.image_id,
                     heat_stack_id=self.heat_stack_id,
                     description=self.description)
+
+
+class FakeWorkflow(mock.Mock):
+    def __init__(self, **kwargs):
+        super(FakeWorkflow, self).__init__(**kwargs)
+        self.__tablename__ = 'workflow'
+        self.__resource__ = 'workflows'
+        self.id = ''
+        self.deleted = False
+        self.project_id = 'fake_project_id'
+        self.user_id = 'fake_user_id'
+        self.app_id = 'fake_app_id'
+        self.wf_id = '1'
+        self.source = 'fake_source'
+        self.config = 'fake_config'
+        self.actions = 'fake_actions'
+        self.assembly = 1
+        self.status = 'BUILT'
+
+    def as_dict(self):
+        return dict(user_id=self.user_id,
+                    project_id=self.project_id,
+                    app_id=self.app_id,
+                    source=self.source,
+                    config=self.config,
+                    actions=self.actions,
+                    status=self.status)
 
 
 class FakeAssembly(mock.Mock):

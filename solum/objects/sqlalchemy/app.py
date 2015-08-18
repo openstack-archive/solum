@@ -43,6 +43,8 @@ class App(sql.Base, abstract.App):
     trigger_actions = sa.Column(sql.YAMLEncodedDict(1024))
     trust_id = sa.Column(sa.String(255))
     trust_user = sa.Column(sa.String(256))
+    status = sa.Column(sa.String(36))
+    app_url = sa.Column(sa.String(1024))
 
     def _non_updatable_fields(self):
         return set(('id', 'project_id'))

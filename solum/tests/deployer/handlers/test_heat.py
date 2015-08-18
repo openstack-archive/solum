@@ -224,12 +224,13 @@ class HandlerTest(base.BaseTestCase):
                                                        'http://fake.ref',
                                                        'fake_id')
 
+    @mock.patch('solum.deployer.handlers.heat.update_app')
     @mock.patch('solum.deployer.handlers.heat.update_assembly')
     @mock.patch('solum.common.clients.OpenStackClients')
     @mock.patch('httplib2.Http')
     @mock.patch('solum.common.repo_utils')
     def test_update_assembly_status(self, mock_repo, mock_http,
-                                    mock_clients, mock_ua):
+                                    mock_clients, mock_ua, mock_upd_app):
         handler = heat_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
         stack = mock.MagicMock()
@@ -260,11 +261,13 @@ class HandlerTest(base.BaseTestCase):
 
         mock_ua.assert_has_calls(calls, any_order=False)
 
+    @mock.patch('solum.deployer.handlers.heat.update_app')
     @mock.patch('solum.deployer.handlers.heat.update_assembly')
     @mock.patch('solum.common.clients.OpenStackClients')
     @mock.patch('httplib2.Http')
     def test_update_assembly_status_multiple_ports(self, mock_http,
-                                                   mock_clients, mock_ua):
+                                                   mock_clients, mock_ua,
+                                                   mock_updt_app):
         handler = heat_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
         stack = mock.MagicMock()

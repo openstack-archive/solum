@@ -81,6 +81,20 @@ cfg.CONF.import_group('worker', 'solum.worker.handlers.shell')
 deployer_log_dir = cfg.CONF.deployer.deployer_log_dir
 
 
+def update_app(ctxt, assembly_id, status='', app_url=''):
+    # Update the app object
+    try:
+        wf = objects.registry.Workflow.get_by_assembly_id(assembly_id)
+        app = objects.registry.App.get_by_id(ctxt, wf.app_id)
+        data_dict = dict()
+        data_dict['status'] = status
+        data_dict['app_url'] = app_url
+        objects.registry.App.update_and_save(ctxt, app.id, data_dict)
+    except sqla_exc.SQLAlchemyError as ex:
+        LOG.error("Failed to update app status and app URL: %s" % app.id)
+        LOG.exception(ex)
+
+
 def update_assembly(ctxt, assembly_id, data):
     # Here we are updating the assembly synchronously (i.e. without
     # using the conductor). This is because when using the conductor latency
@@ -519,6 +533,8 @@ class Handler(object):
 
         if du_is_up:
             to_update = {'status': STATES.READY}
+            update_app(ctxt, assembly_id, status=STATES.READY,
+                       app_url=app_uri)
         else:
             to_update = {'status': STATES.ERROR_CODE_DEPLOYMENT}
             lg_msg = ("App deployment error: unreachable server or port, "

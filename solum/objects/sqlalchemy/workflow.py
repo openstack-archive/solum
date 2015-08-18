@@ -36,10 +36,21 @@ class Workflow(sql.Base, abstract.Workflow):
     source = sa.Column(sql.YAMLEncodedDict(1024))
     config = sa.Column(sql.YAMLEncodedDict(1024))
     actions = sa.Column(sql.YAMLEncodedDict(1024))
-    status = sa.Column(sa.String(length=36))
+    assembly = sa.Column(sa.Integer())
+    status = sa.Column(sa.String(36))
 
     def _non_updatable_fields(self):
         return set(('id', 'project_id'))
+
+    @classmethod
+    def get_by_assembly_id(cls, assembly_id):
+        try:
+            session = sql.Base.get_session()
+            result = session.query(Workflow)
+            result = result.filter(Workflow.assembly == assembly_id)
+            return result.one()
+        except orm_exc.NoResultFound:
+            cls._raise_not_found(assembly_id)
 
     @classmethod
     def get_by_uuid(cls, context, item_uuid):
