@@ -461,7 +461,7 @@ class Handler(object):
             t_logger.log(logging.ERROR, lg_msg)
             return STATES.ERROR_STACK_CREATE_FAILED
 
-        host_ip = self._parse_server_url(stack)
+        host_ip = self._parse_server_ip(stack)
         if host_ip is None:
             LOG.exception("Could not parse url from heat stack.")
             update_assembly(ctxt, assembly_id,
@@ -527,10 +527,12 @@ class Handler(object):
         update_assembly(ctxt, assembly_id, to_update)
         return to_update['status']
 
-    def _parse_server_url(self, heat_output):
-        """Parse server url from heat-stack-show output."""
+    def _parse_server_ip(self, heat_output):
+        """Parse server ip from heat-stack-show output."""
         if 'outputs' in heat_output._info:
-            return heat_output._info['outputs'][0]['output_value']
+            for outputs in heat_output._info['outputs']:
+                if outputs['output_key'] == 'public_ip':
+                    return outputs['output_value']
         return None
 
     def _find_id_if_stack_exists(self, assem):

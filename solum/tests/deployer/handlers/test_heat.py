@@ -244,7 +244,7 @@ class HandlerTest(base.BaseTestCase):
         cfg.CONF.deployer.du_attempts = 1
 
         mock_logger = mock.MagicMock()
-        handler._parse_server_url = mock.MagicMock(return_value=('xyz'))
+        handler._parse_server_ip = mock.MagicMock(return_value=('xyz'))
         mock_repo.is_reachable.return_value = True
         handler._check_stack_status(self.ctx, fake_assembly.id, mock_clients,
                                     'fake_id', [80], mock_logger)
@@ -279,7 +279,7 @@ class HandlerTest(base.BaseTestCase):
         cfg.CONF.deployer.du_attempts = 1
 
         mock_logger = mock.MagicMock()
-        handler._parse_server_url = mock.MagicMock(return_value=('xyz'))
+        handler._parse_server_ip = mock.MagicMock(return_value=('xyz'))
         handler._check_stack_status(self.ctx, fake_assembly.id, mock_clients,
                                     'fake_id', [80, 81], mock_logger)
 
@@ -541,7 +541,7 @@ class HandlerTest(base.BaseTestCase):
                                         {'status':
                                          STATES.ERROR_STACK_CREATE_FAILED})
 
-    def test_parse_server_url(self):
+    def test_parse_server_ip(self):
         handler = heat_handler.Handler()
         heat_output = mock.MagicMock()
         heat_output._info = {"id": "fake_id",
@@ -552,7 +552,7 @@ class HandlerTest(base.BaseTestCase):
                                           "http://192.168.78.21:5000",
                                           "description": "URL", "output_key":
                                           "URL"}]}
-        host_url = handler._parse_server_url(heat_output)
+        host_url = handler._parse_server_ip(heat_output)
         self.assertEqual(host_url, "192.168.78.21")
 
     def test_find_id_if_stack_exists(self):
