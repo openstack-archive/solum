@@ -75,7 +75,9 @@ def load():
     from solum.objects.sqlalchemy import sensor
     from solum.objects.sqlalchemy import service
     from solum.objects.sqlalchemy import userlog
+    from solum.objects.sqlalchemy import workflow
     from solum.objects import userlog as abstract_userlog
+    from solum.objects import workflow as abstract_workflow
 
     objects.registry.add(abstract_app.App, app.App)
     objects.registry.add(abstract_app.AppList, app.AppList)
@@ -112,3 +114,5 @@ def load():
     objects.registry.add(abstract_parameter.Parameter, parameter.Parameter)
     objects.registry.add(abstract_parameter.ParameterList,
                          parameter.ParameterList)
+    objects.registry.add(abstract_workflow.Workflow, workflow.Workflow)
+    objects.registry.add(abstract_workflow.WorkflowList, workflow.WorkflowList)

@@ -34,6 +34,7 @@ class App(api_types.Base):
     # project_id
     # user_id
 
+    version = wtypes.wsattr(int)
     id = wtypes.text
     name = wtypes.text
     deleted = bool
@@ -48,6 +49,8 @@ class App(api_types.Base):
     trigger_actions = [wtypes.text]
     trust_id = wtypes.text
     trust_user = wtypes.text
+    app_url = wtypes.text
+    status = wtypes.text
 
     def __init__(self, *args, **kwargs):
         super(App, self).__init__(*args, **kwargs)
