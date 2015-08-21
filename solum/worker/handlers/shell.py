@@ -23,6 +23,7 @@ import string
 import subprocess
 
 from oslo_config import cfg
+from sqlalchemy import exc as sqla_exc
 
 import solum
 from solum.common import clients
@@ -104,6 +105,31 @@ def update_assembly_status(ctxt, assembly_id, status):
     LOG.debug('Updating assembly %s status to %s' % (assembly_id, status))
     data = {'status': status}
     conductor_api.API(context=ctxt).update_assembly(assembly_id, data)
+    try:
+        update_wf_and_app_status(ctxt, assembly_id, status)
+    except Exception as e:
+        LOG.exception(e)
+
+
+def update_wf_and_app_status(ctxt, assembly_id, status):
+    # Update workflow and app objects
+    status_data = dict()
+    status_data['status'] = status
+    try:
+        wf = objects.registry.Workflow.get_by_assembly_id(assembly_id)
+        objects.registry.Workflow.update_and_save(ctxt, wf.id, status_data)
+    except sqla_exc.SQLAlchemyError as ex:
+        LOG.error("Failed to update workflow corresponding to assembly %s"
+                  % assembly_id)
+        LOG.exception(ex)
+
+    if wf is not None:
+        try:
+            app = objects.registry.App.get_by_id(ctxt, wf.app_id)
+            objects.registry.App.update_and_save(ctxt, app.id, status_data)
+        except sqla_exc.SQLAlchemyError as ex:
+            LOG.error("Failed to update app status and app URL: %s" % app.id)
+            LOG.exception(ex)
 
 
 def update_lp_status(ctxt, image_id, status, external_ref=None,

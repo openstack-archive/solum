@@ -81,18 +81,29 @@ cfg.CONF.import_group('worker', 'solum.worker.handlers.shell')
 deployer_log_dir = cfg.CONF.deployer.deployer_log_dir
 
 
-def update_app(ctxt, assembly_id, status='', app_url=''):
-    # Update the app object
+def update_wf_and_app(ctxt, assembly_id, data):
+    # Update workflow and app objects
+    data_dict = dict()
+    if data.get('status') is not None:
+        data_dict['status'] = data['status']
+    if data.get('application_uri') is not None:
+        data_dict['app_url'] = data['application_uri']
+
     try:
         wf = objects.registry.Workflow.get_by_assembly_id(assembly_id)
-        app = objects.registry.App.get_by_id(ctxt, wf.app_id)
-        data_dict = dict()
-        data_dict['status'] = status
-        data_dict['app_url'] = app_url
-        objects.registry.App.update_and_save(ctxt, app.id, data_dict)
+        objects.registry.Workflow.update_and_save(ctxt, wf.id, data_dict)
     except sqla_exc.SQLAlchemyError as ex:
-        LOG.error("Failed to update app status and app URL: %s" % app.id)
+        LOG.error("Failed to update workflow corresponding to assembly %s"
+                  % assembly_id)
         LOG.exception(ex)
+
+    if wf is not None:
+        try:
+            app = objects.registry.App.get_by_id(ctxt, wf.app_id)
+            objects.registry.App.update_and_save(ctxt, app.id, data_dict)
+        except sqla_exc.SQLAlchemyError as ex:
+            LOG.error("Failed to update app status and app URL: %s" % app.id)
+            LOG.exception(ex)
 
 
 def update_assembly(ctxt, assembly_id, data):
@@ -106,6 +117,13 @@ def update_assembly(ctxt, assembly_id, data):
         objects.registry.Assembly.update_and_save(ctxt, assembly_id, data)
     except sqla_exc.SQLAlchemyError as ex:
         LOG.error("Failed to update assembly status, ID: %s" % assembly_id)
+        LOG.exception(ex)
+
+    try:
+        update_wf_and_app(ctxt, assembly_id, data)
+    except Exception as ex:
+        LOG.error("Failed to update workflow and app status for assembly: %s"
+                  % assembly_id)
         LOG.exception(ex)
 
 
@@ -533,8 +551,6 @@ class Handler(object):
 
         if du_is_up:
             to_update = {'status': STATES.READY}
-            update_app(ctxt, assembly_id, status=STATES.READY,
-                       app_url=app_uri)
         else:
             to_update = {'status': STATES.ERROR_CODE_DEPLOYMENT}
             lg_msg = ("App deployment error: unreachable server or port, "
