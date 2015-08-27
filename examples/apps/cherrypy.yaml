@@ -5,10 +5,10 @@ languagepack: python
 source:
   repository: https://github.com/rackspace-solum-samples/solum-python-sample-app.git
   revision: master
-workflow:
+workflow_config:
   test_cmd: ./unit_tests.sh
   run_cmd: python app.py
-trigger:
+trigger_actions:
 - test
 - build
 - deploy
