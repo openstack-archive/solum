@@ -56,6 +56,9 @@ class Component(api_types.Base):
     resource_uri = common_types.Uri
     """Remote resource URI of the component."""
 
+    plan_uri = common_types.Uri
+    """URI of Plan of which the component is a part."""
+
     component_type = wtypes.text
     """Type of component e.g. heat_stack."""
 

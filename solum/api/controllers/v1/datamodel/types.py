@@ -27,6 +27,13 @@ class Base(wtypes.Base):
     uri = common_types.Uri
     "URI to the resource."
 
+    # (devkulkarni) Added base_url to get around strict validation
+    # checking of WSME 0.8.0
+    # https://bugs.launchpad.net/solum/+bug/1491504
+    # https://bugs.launchpad.net/solum/+bug/1491499
+    base_url = common_types.Uri
+    "URI of the base resource."
+
     uuid = wtypes.text
     "Unique Identifier of the resource"
 

@@ -25,7 +25,6 @@ sample_data = {"name": "test_assembly",
                "project_id": "project_id",
                "user_id": "user_id",
                "status": "QUEUED",
-               "trigger_uri": "http://localhost:5000",
                "application_uri": "http://localhost:5000"}
 
 plan_sample_data = {"version": "1",
