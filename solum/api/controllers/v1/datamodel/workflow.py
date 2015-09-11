@@ -26,6 +26,14 @@ class Workflow(wtypes.Base):
 
     A workflow maintains a living creation and deployment of an App.
     """
+
+    # (devkulkarni) Added base_url to get around strict validation
+    # checking of WSME 0.8.0
+    # https://bugs.launchpad.net/solum/+bug/1491504
+    # https://bugs.launchpad.net/solum/+bug/1491499
+    base_url = common_types.Uri
+    "URI of the base resource."
+
     uri = common_types.Uri
     "URI to the resource."
 
