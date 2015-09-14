@@ -21,9 +21,9 @@ set +o xtrace
 # --------
 
 # Set up default repos
-SOLUM_REPO=${SOLUM_REPO:-${GIT_BASE}/stackforge/solum.git}
+SOLUM_REPO=${SOLUM_REPO:-${GIT_BASE}/openstack/solum.git}
 SOLUM_BRANCH=${SOLUM_BRANCH:-master}
-SOLUMCLIENT_REPO=${SOLUMCLIENT_REPO:-${GIT_BASE}/stackforge/python-solumclient.git}
+SOLUMCLIENT_REPO=${SOLUMCLIENT_REPO:-${GIT_BASE}/openstack/python-solumclient.git}
 SOLUMCLIENT_BRANCH=${SOLUMCLIENT_BRANCH:-master}
 
 # Set up default directories

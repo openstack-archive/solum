@@ -5,6 +5,6 @@ artifacts:
 - name: solum8
   artifact_type: heroku
   content:
-    href: https://github.com/stackforge/solum.git
+    href: https://github.com/openstack/solum.git
   language_pack: auto
   unittest_cmd: tox -epep8

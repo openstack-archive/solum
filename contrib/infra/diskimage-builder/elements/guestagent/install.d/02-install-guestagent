@@ -2,4 +2,4 @@
 
 apt-get update
 apt-get install -y python-pip git
-pip install git+https://github.com/stackforge/solum-infra-guestagent.git
+pip install git+https://github.com/openstack/solum-infra-guestagent.git

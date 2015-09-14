@@ -295,13 +295,13 @@ Set up a Development Environment
 These instructions are for those who plan to contribute to Solum, or use features that are not yet in the latest release.
 
 1. Clone the Solum repo.
-At present it is a Stackforge project, and its repository is available on the OpenStack Git server.
+Solum repository is available on the OpenStack Git server.
 
 ::
 
   $ mkdir ~/Solum
   $ cd Solum
-  $ git clone git://git.openstack.org/stackforge/solum
+  $ git clone https://github.com/openstack/solum.git
 
 In addition to Solum, your environment will also need Devstack to configure and run the requisite OpenStack components, including Keystone, Glance, Nova, Neutron, and Heat.
 

@@ -31,7 +31,7 @@ Project Info
 -------------
 
  * Web-site: http://solum.io/
- * Source Code: http://github.com/stackforge/solum
+ * Source Code: http://github.com/openstack/solum
  * Wiki: https://wiki.openstack.org/wiki/Solum
  * Launchpad: https://launchpad.net/solum
  * Blueprints: https://blueprints.launchpad.net/solum
