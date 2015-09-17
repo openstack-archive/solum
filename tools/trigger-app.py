@@ -46,14 +46,14 @@ def _get_solum_client():
 
 def main(args):
     client = _get_solum_client()
-    plan = client.plans.find(name_or_id=args.app)
+    app = client.apps.find(name_or_id=args.app)
     status_url = 'https://api.github.com/repos/{repo}/statuses/{sha}'.format(
         repo=args.repo, sha=args.sha)
     body_dict = {'sender': {'url': 'https://api.github.com'},
                  'pull_request': {'head': {'sha': args.sha}},
                  'repository': {'statuses_url': status_url}}
     body = json.dumps(body_dict)
-    trigger_uri = plan.trigger_uri
+    trigger_uri = app.trigger_uri
     if args.workflow:
         trigger_uri = "%s?workflow=%s" % (trigger_uri, args.workflow)
     resp = requests.post(trigger_uri, data=body)

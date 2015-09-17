@@ -19,29 +19,10 @@ from tempest_lib import exceptions as tempest_exceptions
 import yaml
 
 from functionaltests.api import base
+from functionaltests.api.common import apputils
 
 
 class TestAppController(base.TestCase):
-
-    def _get_sample_data(self):
-        data = dict()
-        data["name"] = "test_app_1"
-        data["description"] = "descp"
-        data["languagepack"] = "python"
-        data["trigger_actions"] = ["test", "build", "deploy"]
-        data["ports"] = [80]
-
-        source = {}
-        source['repository'] = "https://github.com"
-        source['revision'] = "master"
-        data["source"] = source
-
-        workflow = {}
-        workflow["test_cmd"] = "./unit_tests.sh"
-        workflow["run_cmd"] = "python app.py"
-        data["workflow_config"] = workflow
-
-        return data
 
     def _assert_app_data(self, actual, expected):
         self.assertEqual(actual["name"], expected["name"])
@@ -71,13 +52,13 @@ class TestAppController(base.TestCase):
         self.client.delete_created_apps()
 
     def test_app_create(self):
-        data = self._get_sample_data()
+        data = apputils.get_sample_data()
         resp = self.client.create_app(data=data)
         self.assertEqual(resp.status, 201)
 
     def test_app_create_bad_port_data(self):
         try:
-            bad_data = self._get_sample_data()
+            bad_data = apputils.get_sample_data()
             bad_data["ports"][0] = -1
             self.client.create_plan(data=bad_data)
         except tempest_exceptions.BadRequest:
@@ -89,7 +70,7 @@ class TestAppController(base.TestCase):
                           headers={'content-type': 'application/json'})
 
     def test_app_patch(self):
-        data = self._get_sample_data()
+        data = apputils.get_sample_data()
         create_resp = self.client.create_app(data=data)
         self.assertEqual(create_resp.status, 201)
 
@@ -116,7 +97,7 @@ class TestAppController(base.TestCase):
         self.assertEqual(app_body["source"]["repository"], "newrepo")
 
     def test_app_get(self):
-        data = self._get_sample_data()
+        data = apputils.get_sample_data()
         create_resp = self.client.create_app(data=data)
         self.assertEqual(create_resp.status, 201)
         id = create_resp.id
@@ -129,7 +110,7 @@ class TestAppController(base.TestCase):
         self._assert_app_data(yaml_data, data)
 
     def test_apps_get_all(self):
-        data = self._get_sample_data()
+        data = apputils.get_sample_data()
         create_resp = self.client.create_app(data)
         self.assertEqual(create_resp.status, 201)
         resp, body = self.client.get(
@@ -141,7 +122,7 @@ class TestAppController(base.TestCase):
         self.assertEqual(filtered[0]['id'], id)
 
     def test_app_delete(self):
-        data = self._get_sample_data()
+        data = apputils.get_sample_data()
         create_resp = self.client.create_app(data)
         self.assertEqual(create_resp.status, 201)
         id = create_resp.id

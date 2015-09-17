@@ -64,7 +64,7 @@ class WorkflowHandler(handler.Handler):
         db_obj = objects.registry.Workflow.get_by_uuid(self.context, id)
         db_obj.destroy(self.context)
 
-    def create(self, data):
+    def create(self, data, commit_sha, status_url):
         """Create a new workflow."""
         db_obj = objects.registry.Workflow()
         db_obj.id = str(uuid.uuid4())

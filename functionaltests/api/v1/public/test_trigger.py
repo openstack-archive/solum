@@ -16,6 +16,8 @@ import requests
 import yaml
 
 from functionaltests.api import base
+from functionaltests.api.common import apputils
+
 
 assembly_data = {'name': 'test_assembly',
                  'description': 'desc assembly'}
@@ -53,8 +55,15 @@ class TestTriggerController(base.TestCase):
         self.assertIsNotNone(trigger_uri)
         return uuid, trigger_uri
 
+    def _create_app(self):
+        data = apputils.get_sample_data()
+        resp = self.client.create_app(data=data)
+        bdy = json.loads(resp.body)
+        trigger_uri = bdy['trigger_uri']
+        return trigger_uri
+
     def test_trigger_post(self):
-        assembly_uuid, plan_uuid, trigger_uri = self._create_assembly()
+        trigger_uri = self._create_app()
         # Using requests instead of self.client to test unauthenticated request
         status_url = 'https://api.github.com/repos/u/r/statuses/{sha}'
         body_dict = {'sender': {'url': 'https://api.github.com'},
@@ -63,8 +72,6 @@ class TestTriggerController(base.TestCase):
         body = json.dumps(body_dict)
         resp = requests.post(trigger_uri, data=body)
         self.assertEqual(resp.status_code, 202)
-
-        self._delete_assembly(assembly_uuid, plan_uuid)
 
     def test_trigger_post_with_empty_body(self):
         assembly_uuid, plan_uuid, trigger_uri = self._create_assembly()

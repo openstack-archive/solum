@@ -47,10 +47,12 @@ class App(api_types.Base):
     workflow_config = {wtypes.text: wtypes.text}
     trigger_uuid = wtypes.text
     trigger_actions = [wtypes.text]
+    trigger_uri = wtypes.text
     trust_id = wtypes.text
     trust_user = wtypes.text
     app_url = wtypes.text
     status = wtypes.text
+    repo_token = wtypes.text
 
     def __init__(self, *args, **kwargs):
         super(App, self).__init__(*args, **kwargs)
@@ -67,6 +69,8 @@ class App(api_types.Base):
         json = m.as_dict()
         json['type'] = m.__tablename__
         json['uri'] = '%s/v1/apps/%s' % (host_url, m.id)
+        json['trigger_uri'] = ('%s/v1/triggers/%s' %
+                               (host_url, m.trigger_uuid))
         return cls(**(json))
 
     def as_dict(self, db_model):

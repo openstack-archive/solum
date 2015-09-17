@@ -51,7 +51,8 @@ class TestAppHandler(base.BaseTestCase):
         get_by_uuid.assert_called_once_with(self.ctx, 'test_id')
         self.assertTrue(db_obj.destroy.called)
 
-    def test_app_create(self, mock_registry):
+    @mock.patch('solum.common.clients.OpenStackClients.keystone')
+    def test_app_create(self, mock_kc, mock_registry):
         data = {'name': 'fakeapp',
                 'description': 'fake app for testing'}
         db_obj = fakes.FakeApp()

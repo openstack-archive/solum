@@ -106,7 +106,6 @@ class AppsController(rest.RestController):
 
         new_app = handler.create(app_data)
         created_app = app.App.from_db_model(new_app, pecan.request.host_url)
-
         return created_app
 
     @exception.wrap_wsme_pecan_controller_exception

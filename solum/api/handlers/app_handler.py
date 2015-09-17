@@ -15,6 +15,9 @@
 import uuid
 
 from solum.api.handlers import handler
+from solum.api.handlers import workflow_handler
+from solum.common import exception
+from solum.common import keystone_utils
 from solum import objects
 from solum.openstack.common import log as logging
 
@@ -62,6 +65,10 @@ class AppHandler(handler.Handler):
         db_obj.project_id = self.context.tenant
         db_obj.deleted = False
 
+        # create a delegation trust_id\token, if required
+        db_obj.trust_id = keystone_utils.create_delegation_token(self.context)
+        db_obj.trust_user = self.context.user_name
+
         db_obj.name = data.get('name')
         db_obj.description = data.get('description')
         db_obj.languagepack = data.get('languagepack')
@@ -69,13 +76,52 @@ class AppHandler(handler.Handler):
         db_obj.ports = data.get('ports')
         db_obj.source = data.get('source')
         db_obj.workflow_config = data.get('workflow_config')
-        db_obj.trigger_uuid = data.get('trigger_uuid')
+        db_obj.trigger_uuid = str(uuid.uuid4())
         db_obj.trigger_actions = data.get('trigger_actions')
-        db_obj.trust_id = data.get('trust_id')
-        db_obj.trust_user = data.get('trust_user')
 
         db_obj.create(self.context)
         return db_obj
+
+    def trigger_workflow(self, trigger_id, commit_sha='',
+                         status_url=None, collab_url=None, workflow=None):
+        """Get trigger by trigger id and start git workflow associated."""
+        # Note: self.context will be None at this point as this is a
+        # non-authenticated request.
+        app_obj = objects.registry.App.get_by_trigger_id(None, trigger_id)
+        # get the trust context and authenticate it.
+        try:
+            self.context = keystone_utils.create_delegation_context(
+                app_obj, self.context)
+            self.context.tenant = app_obj.project_id
+            self.context.user = app_obj.user_id
+            self.context.user_name = app_obj.trust_user
+
+        except exception.AuthorizationFailure as auth_ex:
+            LOG.warn(auth_ex)
+            return
+
+        # TODO(devkulkarni): Call repo_utils.verify_artifact
+        # as we are calling it in the plan_handler to verify
+        # the collaborator
+        self._build_artifact(app_obj, commit_sha=commit_sha,
+                             status_url=status_url, wf=workflow)
+
+    def _build_artifact(self, app, commit_sha='',
+                        status_url=None, wf=None):
+
+        if wf is None:
+            wf = ['unittest', 'build', 'deploy']
+        wfhand = workflow_handler.WorkflowHandler(self.context)
+
+        wfdata = {
+            'app_id': app.id,
+            'name': "%s" % app.name,
+            'description': '',
+            'source': app.source,
+            'config': app.workflow_config,
+            'actions': wf
+            }
+        wfhand.create(wfdata, commit_sha=commit_sha, status_url=status_url)
 
     def get_all(self):
         """Return all apps."""

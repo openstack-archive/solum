@@ -91,8 +91,7 @@ class TestWorkflowHandler(base.BaseTestCase):
 
         handler = workflow_handler.WorkflowHandler(self.ctx)
 
-        res = handler.create(workflow_data)
-
+        res = handler.create(workflow_data, commit_sha='', status_url='')
         self.assertEqual(wf_obj, res)
         git_info = {
             'source_url': app_obj.source['repository'],
