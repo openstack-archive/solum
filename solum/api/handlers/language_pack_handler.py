@@ -23,8 +23,10 @@ from solum.common import exception as exc
 from solum.common import solum_swiftclient
 from solum import objects
 from solum.objects import image
+from solum.objects.sqlalchemy import app
 from solum.openstack.common import log as logging
 from solum.worker import api
+
 
 LOG = logging.getLogger(__name__)
 
@@ -41,6 +43,30 @@ CONF.register_opts(API_SERVICE_OPTS, group='api')
 
 class LanguagePackHandler(handler.Handler):
     """Fulfills a request on the languagepack resource."""
+
+    def _check_lp_referenced_in_any_plan(self, ctxt, db_obj):
+        plans = objects.registry.PlanList.get_all(ctxt)
+        for plan in plans:
+            # (devkulkarni): Adding check for raw_contents because
+            # there are 'plans' in our db that don't have the
+            # raw_contents field. These plans correspond to the
+            # 'dummy' plans that we are creating corresponding
+            # to 'app deploy' requests.
+            if hasattr(plan, 'raw_content') and plan.raw_content:
+                lp = plan.raw_content['artifacts'][0]['language_pack']
+                if lp == db_obj.name or lp == db_obj.uuid:
+                    return True
+
+    def _check_lp_referenced_in_any_app(self, ctxt, db_obj):
+        apps = app.App.get_all_by_lp(ctxt, db_obj.name)
+        if len(apps) > 0:
+            return True
+        else:
+            apps = app.App.get_all_by_lp(ctxt, db_obj.uuid)
+            if len(apps) > 0:
+                return True
+            else:
+                return False
 
     def get(self, id):
         """Return a languagepack."""
@@ -79,13 +105,10 @@ class LanguagePackHandler(handler.Handler):
         """Delete a languagepack."""
         db_obj = objects.registry.Image.get_lp_by_name_or_uuid(self.context,
                                                                uuid)
-
         # Check if the languagepack is being used.
-        plans = objects.registry.PlanList.get_all(self.context)
-        for plan in plans:
-            lp = plan.raw_content['artifacts'][0]['language_pack']
-            if lp == db_obj.name or lp == db_obj.uuid:
-                raise exc.LPStillReferenced(name=uuid)
+        if (self._check_lp_referenced_in_any_plan(self.context, db_obj) or
+                self._check_lp_referenced_in_any_app(self.context, db_obj)):
+            raise exc.LPStillReferenced(name=uuid)
 
         # Delete image file from swift
         if db_obj.docker_image_name:

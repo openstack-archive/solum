@@ -55,6 +55,23 @@ class App(sql.Base, abstract.App):
         return app
 
     @classmethod
+    def get_by_trigger_id(cls, context, trigger_id):
+        try:
+            session = sql.Base.get_session()
+            return session.query(cls).filter_by(trigger_uuid=trigger_id).one()
+        except sa.orm.exc.NoResultFound:
+            cls._raise_trigger_not_found(trigger_id)
+
+    @classmethod
+    def get_all_by_lp(cls, context, lp):
+        session = sql.SolumBase.get_session()
+        apps = []
+        with session.begin():
+            query = session.query(cls).filter_by(languagepack=lp)
+            apps = sql.filter_by_project(context, query).all()
+            return apps
+
+    @classmethod
     @sql.retry
     def update_and_save(cls, context, id_or_uuid, data):
         try:

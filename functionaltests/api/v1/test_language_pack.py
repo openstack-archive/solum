@@ -20,6 +20,7 @@ import time
 from tempest_lib import exceptions as tempest_exceptions
 
 from functionaltests.api import base
+from functionaltests.api.common import apputils
 
 sample_plan = {"version": "1",
                "name": "test_plan",
@@ -108,17 +109,35 @@ class TestLanguagePackController(base.TestCase):
         self.assertRaises(tempest_exceptions.NotFound,
                           self.client.delete, 'v1/language_packs/not_found')
 
-    def test_language_packs_delete_used_by_app(self):
+    def test_language_packs_delete_used_by_plan(self):
         uuid, sample_lp = self._create_language_pack()
+
         artifacts = sample_plan['artifacts']
         artifacts[0]['language_pack'] = sample_lp['name']
         sample_plan['artifacts'] = artifacts
-        print("Sample plan")
-        print(sample_plan)
         resp = self.client.create_plan(data=sample_plan)
+
         self.assertRaises(tempest_exceptions.Conflict,
                           self.client.delete, 'v1/language_packs/%s' % uuid)
         self.client.delete_plan(resp.uuid)
+        # Sleep for a few seconds to make sure plans are deleted.
+        time.sleep(5)
+        self._delete_language_pack(uuid)
+
+    def test_language_packs_delete_used_by_app(self):
+        uuid, sample_lp = self._create_language_pack()
+
+        sample_app = apputils.get_sample_data()
+
+        sample_app["languagepack"] = sample_lp["name"]
+
+        resp = self.client.create_app(data=sample_app)
+
+        self.assertRaises(tempest_exceptions.Conflict,
+                          self.client.delete, 'v1/language_packs/%s' % uuid)
+        bdy = json.loads(resp.body)
+
+        self.client.delete_app(bdy["id"])
         # Sleep for a few seconds to make sure plans are deleted.
         time.sleep(5)
         self._delete_language_pack(uuid)
