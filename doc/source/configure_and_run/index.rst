@@ -1,3 +1,4 @@
+=======================
 Configure and run Solum
 =======================
 
@@ -62,8 +63,8 @@ Solum deployment infrastrure is dependent on existence of the following Openstac
 To assist with deploying a new Solum architecture, please refer to the following cookbooks to get started:
 
 * https://github.com/rackerlabs/cookbook-openstack-paas
-* https://github.com/stackforge/cookbook-openstack-identity.git
-* https://github.com/stackforge/cookbook-openstack-common.git
+* https://github.com/openstack/cookbook-openstack-identity.git
+* https://github.com/openstack/cookbook-openstack-common.git
 
 Security Guide
 --------------
