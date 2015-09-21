@@ -4,4 +4,4 @@ source = solum
 omit = solum/tests/*,solum/openstack/*
 
 [report]
-ignore-errors = True
+ignore_errors = True
