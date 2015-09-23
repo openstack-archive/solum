@@ -62,10 +62,10 @@ fi
 # perform some very rudimentary platform detection
 lsb_dist=''
 if command_exists lsb_release; then
-  lsb_dist="$(lsb_release -si)"
+  lsb_dist=$(lsb_release -si)
 fi
 if [ -z "$lsb_dist" ] && [ -r /etc/lsb-release ]; then
-  lsb_dist="$(. /etc/lsb-release && echo "$DISTRIB_ID")"
+  lsb_dist=$(. /etc/lsb-release && echo "$DISTRIB_ID")
 fi
 if [ -z "$lsb_dist" ] && [ -r /etc/debian_version ]; then
   lsb_dist='Debian'
