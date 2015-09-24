@@ -12,11 +12,11 @@
 
 
 import json
-import urllib
 
 from oslo_config import cfg
 import pecan
 from pecan import rest
+from six.moves import urllib
 
 from solum.api.handlers import pipeline_handler
 from solum.api.handlers import plan_handler
@@ -30,7 +30,7 @@ CONF = cfg.CONF
 def query_dict(querystring):
     if not querystring:
         return {}
-    query = urllib.unquote(querystring).rstrip()
+    query = urllib.parse.unquote(querystring).rstrip()
     query = query.split('&')
     query = [q.split('=') for q in query]
     return dict([(q[0], ' '.join(q[1:])) for q in query])

@@ -13,10 +13,10 @@
 # under the License.
 
 import json
-import urlparse
 
 import pecan
 from pecan import rest
+from six.moves import urllib
 from wsme.rest import json as wsme_json
 from wsme import types as wsme_types
 import wsmeext.pecan as wsme_pecan
@@ -116,7 +116,7 @@ class AssembliesController(rest.RestController):
                 plan_uri_str = json_ref_doc['plan_uri']
 
                 # figure out if the plan uri is relative or absolute
-                plan_uri = urlparse.urlparse(plan_uri_str)
+                plan_uri = urllib.parse.urlparse(plan_uri_str)
                 uri_path = plan_uri.path
                 if not plan_uri.netloc:
                     # should be something like "../plans/<uuid>" or
