@@ -72,18 +72,10 @@ class WorkflowsController(rest.RestController):
         app_model = ahandler.get(self.app_id)
 
         handler = wf_handler.WorkflowHandler(pecan.request.security_context)
-        all_wfs = [workflow.Workflow.from_db_model(obj, pecan.request.host_url)
-                   for obj in handler.get_all(app_id=self.app_id)]
 
         data.app_id = app_model.id
         data.config = app_model.workflow_config
         data.source = app_model.source
-
-        # TODO(datsun180b): Do this incrementing properly.
-        # This isn't any kind of safe at all.
-        # There isn't even a uniqueness constraint the table,
-        # though there ought to be.
-        data.wf_id = len(all_wfs) + 1
 
         wf_data = data.as_dict(workflow.Workflow)
         return workflow.Workflow.from_db_model(handler.create(wf_data),

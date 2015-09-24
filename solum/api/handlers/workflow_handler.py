@@ -21,6 +21,7 @@ from solum.api.handlers import handler
 from solum.common import repo_utils
 from solum import objects
 from solum.objects import image
+from solum.objects.sqlalchemy import workflow
 from solum.openstack.common import log as logging
 from solum.worker import api as worker_api
 
@@ -72,7 +73,6 @@ class WorkflowHandler(handler.Handler):
         db_obj.deleted = False
 
         db_obj.app_id = data['app_id']
-        db_obj.wf_id = data['wf_id']
         db_obj.source = data['source']
         db_obj.config = data['config']
         db_obj.actions = data['actions']
@@ -90,7 +90,7 @@ class WorkflowHandler(handler.Handler):
 
         db_obj.assembly = assem.id
 
-        db_obj.create(self.context)
+        workflow.Workflow.insert(self.context, db_obj)
 
         self._execute_workflow_actions(db_obj, app_obj, assem,
                                        commit_sha=app_obj.source['revision'])
