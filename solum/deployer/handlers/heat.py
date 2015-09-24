@@ -21,6 +21,7 @@ import time
 from heatclient import exc
 import httplib2
 from oslo_config import cfg
+import six
 from sqlalchemy import exc as sqla_exc
 from swiftclient import exceptions as swiftexp
 import yaml
@@ -164,8 +165,8 @@ class Handler(object):
             log_handler = userlog_handler.UserlogHandler(ctxt)
             log_handler.delete(logs_resource_id)
         except exception.AuthorizationFailure as authexcp:
-            t_logger.log(logging.ERROR, authexcp.message)
-            LOG.debug(authexcp.message)
+            t_logger.log(logging.ERROR, six.text_type(authexcp))
+            LOG.debug(six.text_type(authexcp))
             t_logger.upload()
 
     def destroy_assembly(self, ctxt, assem_id):
