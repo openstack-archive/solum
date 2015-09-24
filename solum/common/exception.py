@@ -218,6 +218,7 @@ def wrap_keystone_exception(func):
     return wrapped
 
 
+@six.python_2_unicode_compatible
 class SolumException(Exception):
     """Base Solum Exception
 
@@ -253,11 +254,6 @@ class SolumException(Exception):
                 raise
 
     def __str__(self):
-        if six.PY3:
-            return self.message
-        return self.message.encode('utf-8')
-
-    def __unicode__(self):
         return self.message
 
 
