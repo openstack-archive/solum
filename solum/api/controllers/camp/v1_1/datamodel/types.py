@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import six
 from wsme.rest import json
 from wsme import types as wtypes
 
@@ -33,8 +34,8 @@ class BooleanType(wtypes.UserType):
 
     @staticmethod
     def validate(value):
-        if not isinstance(value, basestring):
-            value = unicode(value)
+        if not isinstance(value, six.string_types):
+            value = six.text_type(value)
 
         if value in TRUE_STRINGS:
             ret_val = True
