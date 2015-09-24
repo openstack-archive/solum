@@ -203,7 +203,7 @@ class LanguagePack(api_types.Base):
         if ptfm is not wsme.Unset and 'OS' in ptfm and 'version' in ptfm:
             tags.append(OS_PLATFORM + ptfm['OS'] + '::' + ptfm['version'])
         if self.build_tool_chain is not wsme.Unset:
-            for key, value in self.attributes.iteritems():
+            for key, value in self.attributes.items():
                 tags.append(ATTRIBUTE + key + '::' + value)
         # TODO(julienvey) parse specific attributes for image creation from
         # self.attributes, such as image_format...

@@ -32,7 +32,7 @@ class States(object):
 
     @classmethod
     def as_dict(cls):
-        return dict((k, v) for k, v in cls.__dict__.iteritems()
+        return dict((k, v) for k, v in cls.__dict__.items()
                     if k[:2] != '__' and k not in ('values', 'as_dict'))
 
     @classmethod

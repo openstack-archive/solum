@@ -42,7 +42,7 @@ class TraceData(object):
     def import_context(self, context):
         """Accept an Oslo RequestContext and fill in data automatically."""
         context_dict = context.to_dict()
-        for key, val in six.iteritems(context_dict):
+        for key, val in context_dict.items():
             if key == "request_id":
                 self.request_id = val
             elif key in _TRACE_USER_KEYS:

@@ -23,7 +23,6 @@ import time
 from oslo_config import cfg
 from oslo_db import exception as db_exc
 from oslo_db.sqlalchemy import models
-import six
 from six import moves
 from sqlalchemy import exc as sqla_exc
 from sqlalchemy.ext import declarative
@@ -154,7 +153,7 @@ class SolumBase(models.TimestampMixin, models.ModelBase):
         return True
 
     def update(self, data):
-        for field in set(six.iterkeys(data)) - self._non_updatable_fields():
+        for field in set(data) - self._non_updatable_fields():
             if self._lazyhasattr(field):
                 setattr(self, field, data[field])
 
