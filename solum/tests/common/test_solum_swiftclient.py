@@ -23,7 +23,7 @@ from solum.tests import utils
 class SwiftClientTest(base.BaseTestCase):
     """Test cases for solum.common.solum_swiftclient."""
 
-    @mock.patch('__builtin__.open')
+    @mock.patch('six.moves.builtins.open')
     @mock.patch('solum.common.solum_swiftclient.SwiftClient._get_swift_client')
     @mock.patch('solum.common.solum_swiftclient.SwiftClient._get_file_size')
     def test_swift_client_upload(self, mock_file_size, mock_swift_client,
@@ -44,7 +44,7 @@ class SwiftClientTest(base.BaseTestCase):
                                                        mock.ANY,
                                                        content_length=fsize)
 
-    @mock.patch('__builtin__.open')
+    @mock.patch('six.moves.builtins.open')
     @mock.patch('solum.common.solum_swiftclient.SwiftClient._get_swift_client')
     @mock.patch('solum.common.solum_swiftclient.SwiftClient._get_file_size')
     def test_swift_client_upload_exception(self, mock_file_size,
