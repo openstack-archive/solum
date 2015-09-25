@@ -107,7 +107,7 @@ class MultiType(wtypes.UserType):
         for t in self.types:
             try:
                 return wtypes.validate_value(t, value)
-            except ValueError:
+            except (ValueError, TypeError):
                 pass
         else:
             raise ValueError(
