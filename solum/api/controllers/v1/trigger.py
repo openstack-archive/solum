@@ -90,7 +90,9 @@ class TriggerController(rest.RestController):
             else:
                 # Request NOT from a Github repo
                 raise exception.NotImplemented()
-        except StandardError:
+        except Exception as exc:
+            if isinstance(exc, exception.SolumException):
+                raise
             info_msg = "Expected fields not found in request body."
             LOG.info(info_msg)
             raise exception.BadRequest(reason=info_msg)
