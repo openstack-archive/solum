@@ -15,8 +15,9 @@
 import datetime
 import re
 
+from oslo_serialization import jsonutils as json
+
 import solum
-from solum.openstack.common import jsonutils as json
 from solum.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)

@@ -37,6 +37,7 @@ import sys
 import traceback
 
 from oslo_config import cfg
+from oslo_serialization import jsonutils
 import six
 from six import moves
 
@@ -44,7 +45,6 @@ _PY26 = sys.version_info[0:2] == (2, 6)
 
 from solum.openstack.common.gettextutils import _
 from solum.openstack.common import importutils
-from solum.openstack.common import jsonutils
 from solum.openstack.common import local
 # NOTE(flaper87): Pls, remove when graduating this module
 # from the incubator.
