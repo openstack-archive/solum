@@ -59,7 +59,8 @@ class TestWorkflowHandler(base.BaseTestCase):
                                                                    'test_id')
 
     @mock.patch('solum.worker.api.API.build_app')
-    def test_create(self, mock_pa, mock_registry):
+    @mock.patch('solum.objects.sqlalchemy.workflow.Workflow.insert')
+    def test_create(self, mock_wf_insert, mock_pa, mock_registry):
 
         app_obj = fakes.FakeApp()
         app_id = app_obj.id
@@ -69,7 +70,6 @@ class TestWorkflowHandler(base.BaseTestCase):
 
         workflow_data = {"actions": ["unittest", "build", "deploy"],
                          "app_id": app_id,
-                         "wf_id": 1,
                          "source": app_obj.source,
                          "config": app_obj.workflow_config,
                          "actions": app_obj.trigger_actions}
@@ -92,7 +92,7 @@ class TestWorkflowHandler(base.BaseTestCase):
         handler = workflow_handler.WorkflowHandler(self.ctx)
 
         res = handler.create(workflow_data)
-        wf_obj.create.assert_called_once_with(self.ctx)
+
         self.assertEqual(wf_obj, res)
         git_info = {
             'source_url': app_obj.source['repository'],

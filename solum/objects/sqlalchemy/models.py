@@ -48,7 +48,8 @@ def retry(fun):
         for tries in range(max_retries):
             try:
                 return fun(*args, **kwargs)
-            except (db_exc.DBDeadlock, orm_exc.StaleDataError):
+            except (db_exc.DBDeadlock, orm_exc.StaleDataError,
+                    exception.ResourceExists):
                 LOG.warning("Failed DB call %s. Retrying %s more times." %
                             (fun.__name__, max_retries - tries - 1))
                 if tries + 1 >= max_retries:

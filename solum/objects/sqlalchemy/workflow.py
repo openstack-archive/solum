@@ -14,6 +14,7 @@
 
 import sqlalchemy as sa
 from sqlalchemy.orm import exc as orm_exc
+from sqlalchemy.sql import text
 
 from solum.objects.sqlalchemy import models as sql
 from solum.objects import workflow as abstract
@@ -70,6 +71,23 @@ class Workflow(sql.Base, abstract.Workflow):
             return obj
         except orm_exc.NoResultFound:
             cls._raise_not_found(id_or_uuid)
+
+    @classmethod
+    @sql.retry
+    def insert(cls, context, db_obj):
+        try:
+            ss = sql.Base.get_session()
+            with ss.begin():
+                s = text("select max(wf_id) as max_wf_id "
+                         "from workflow where app_id like :app")
+                res = ss.execute(s, params=dict(app=db_obj.app_id)).fetchone()
+                if res.max_wf_id:
+                    db_obj.wf_id = res.max_wf_id + 1
+                else:
+                    db_obj.wf_id = 1
+                db_obj.create(context)
+        except orm_exc.NoResultFound:
+            cls._raise_not_found(db_obj.app_id)
 
 
 class WorkflowList(abstract.WorkflowList):
