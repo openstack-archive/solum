@@ -18,19 +18,16 @@ import mock
 from oslo_config import cfg
 
 from solum.api.controllers.v1 import trigger
-from solum.common import exception
 from solum.tests import base
 from solum.tests import fakes
 
 
 @mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
 @mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
-@mock.patch('solum.api.controllers.v1.trigger.plan_handler'
-            '.PlanHandler')
-@mock.patch('solum.api.controllers.v1.trigger.pipeline_handler'
-            '.PipelineHandler')
+@mock.patch('solum.api.controllers.v1.trigger.app_handler'
+            '.AppHandler')
 class TestTriggerController(base.BaseTestCase):
-    def test_trigger_post_with_empty_body(self, pipe_mock, assem_mock,
+    def test_trigger_post_with_empty_body(self, assem_mock,
                                           resp_mock, request_mock):
         obj = trigger.TriggerController()
         obj.post('test_id')
@@ -38,7 +35,7 @@ class TestTriggerController(base.BaseTestCase):
         tw = assem_mock.return_value.trigger_workflow
         assert not tw.called
 
-    def test_trigger_post_on_github_webhook(self, pipe_mock, assem_mock,
+    def test_trigger_post_on_github_webhook(self, assem_mock,
                                             resp_mock, request_mock):
         status_url = 'https://api.github.com/repos/u/r/statuses/{sha}'
         body_dict = {'sender': {'url': 'https://api.github.com'},
@@ -53,7 +50,7 @@ class TestTriggerController(base.BaseTestCase):
         tw.assert_called_once_with('test_id', 'asdf', expected_st_url, None,
                                    workflow=None)
 
-    def test_trigger_post_on_github_comment_webhook(self, pipe_mock,
+    def test_trigger_post_on_github_comment_webhook(self,
                                                     assem_mock, resp_mock,
                                                     request_mock):
         cfg.CONF.api.rebuild_phrase = "solum retry tests"
@@ -78,7 +75,6 @@ class TestTriggerController(base.BaseTestCase):
 
     @mock.patch('httplib2.Http.request')
     def test_trigger_post_on_mismatch_comment_pub_repo(self, http_mock,
-                                                       pipe_mock,
                                                        assem_mock, resp_mock,
                                                        request_mock):
         cfg.CONF.api.rebuild_phrase = "solum retry tests"
@@ -102,7 +98,6 @@ class TestTriggerController(base.BaseTestCase):
 
     @mock.patch('httplib2.Http.request')
     def test_trigger_post_on_valid_comment_pub_repo(self, http_mock,
-                                                    pipe_mock,
                                                     assem_mock, resp_mock,
                                                     request_mock):
         cfg.CONF.api.rebuild_phrase = "solum retry tests"
@@ -127,7 +122,7 @@ class TestTriggerController(base.BaseTestCase):
         tw.assert_called_once_with('test_id', 'asdf', expected_st_url,
                                    expected_clb_url, workflow=None)
 
-    def test_trigger_post_on_comment_missing_login(self, pipe_mock,
+    def test_trigger_post_on_comment_missing_login(self,
                                                    assem_mock, resp_mock,
                                                    request_mock):
         cfg.CONF.api.rebuild_phrase = "solum retry tests"
@@ -148,7 +143,7 @@ class TestTriggerController(base.BaseTestCase):
         tw = assem_mock.return_value.trigger_workflow
         assert not tw.called
 
-    def test_trigger_post_on_wrong_github_webhook(self, pipe_mock, assem_mock,
+    def test_trigger_post_on_wrong_github_webhook(self, assem_mock,
                                                   resp_mock, request_mock):
         status_url = 'https://api.github.com/repos/u/r/statuses/{sha}'
         body_dict = {'sender': {'url': 'https://api.github.com'},
@@ -161,7 +156,7 @@ class TestTriggerController(base.BaseTestCase):
         tw = assem_mock.return_value.trigger_workflow
         assert not tw.called
 
-    def test_trigger_post_on_unknown_git_webhook(self, pipe_mock, assem_mock,
+    def test_trigger_post_on_unknown_git_webhook(self, assem_mock,
                                                  resp_mock, request_mock):
         body_dict = {"pull_request": {"head": {"sha": "asdf"}}}
         request_mock.body = json.dumps(body_dict)
@@ -171,7 +166,7 @@ class TestTriggerController(base.BaseTestCase):
         tw = assem_mock.return_value.trigger_workflow
         assert not tw.called
 
-    def test_trigger_post_on_non_github_webhook(self, pipe_mock, assem_mock,
+    def test_trigger_post_on_non_github_webhook(self, assem_mock,
                                                 resp_mock, request_mock):
         body_dict = {"sender": {"url": "https://non-github.com"},
                      "pull_request": {"head": {"sha": "asdf"}}}
@@ -182,7 +177,7 @@ class TestTriggerController(base.BaseTestCase):
         tw = assem_mock.return_value.trigger_workflow
         assert not tw.called
 
-    def test_trigger_post_on_github_ping_webhook(self, pipe_mock, assem_mock,
+    def test_trigger_post_on_github_ping_webhook(self, assem_mock,
                                                  resp_mock, request_mock):
         body_dict = {"sender": {"url": "https://api.github.com"},
                      "zen": "Keep it logically awesome."}
@@ -192,40 +187,3 @@ class TestTriggerController(base.BaseTestCase):
         self.assertEqual(501, resp_mock.status)
         tw = assem_mock.return_value.trigger_workflow
         assert not tw.called
-
-    def test_trigger_post_pipeline(self, pipe_mock, assem_mock,
-                                   resp_mock, request_mock):
-        status_url = 'https://api.github.com/repos/u/r/statuses/{sha}'
-        body_dict = {'sender': {'url': 'https://api.github.com'},
-                     'pull_request': {'head': {'sha': 'asdf'}},
-                     'repository': {'statuses_url': status_url}}
-        request_mock.body = json.dumps(body_dict)
-        obj = trigger.TriggerController()
-        assem_mock.return_value.trigger_workflow.side_effect = (
-            exception.ResourceNotFound(name='trigger', id='test_id'))
-        obj.post('test_id')
-
-        self.assertEqual(202, resp_mock.status)
-        tw = pipe_mock.return_value.trigger_workflow
-        tw.assert_called_once_with('test_id')
-
-    def test_trigger_post_none(self, pipe_mock, assem_mock,
-                               resp_mock, request_mock):
-        status_url = 'https://api.github.com/repos/u/r/statuses/{sha}'
-        body_dict = {'sender': {'url': 'https://api.github.com'},
-                     'pull_request': {'head': {'sha': 'asdf'}},
-                     'repository': {'statuses_url': status_url}}
-        request_mock.body = json.dumps(body_dict)
-        expected_st_url = 'https://api.github.com/repos/u/r/statuses/asdf'
-        obj = trigger.TriggerController()
-        assem_mock.return_value.trigger_workflow.side_effect = (
-            exception.ResourceNotFound(name='trigger', id='test_id'))
-        pipe_mock.return_value.trigger_workflow.side_effect = (
-            exception.ResourceNotFound(name='trigger', id='test_id'))
-        obj.post('test_id')
-        self.assertEqual(404, resp_mock.status)
-        tw = assem_mock.return_value.trigger_workflow
-        tw.assert_called_once_with('test_id', 'asdf', expected_st_url, None,
-                                   workflow=None)
-        tw = pipe_mock.return_value.trigger_workflow
-        tw.assert_called_once_with('test_id')

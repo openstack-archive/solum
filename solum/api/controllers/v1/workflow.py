@@ -78,7 +78,9 @@ class WorkflowsController(rest.RestController):
         data.source = app_model.source
 
         wf_data = data.as_dict(workflow.Workflow)
-        return workflow.Workflow.from_db_model(handler.create(wf_data),
+        return workflow.Workflow.from_db_model(handler.create(wf_data,
+                                                              commit_sha='',
+                                                              status_url=''),
                                                pecan.request.host_url)
 
     @exception.wrap_pecan_controller_exception
