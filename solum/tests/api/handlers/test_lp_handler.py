@@ -60,12 +60,16 @@ class TestLanguagePackHandler(base.BaseTestCase):
     @mock.patch('solum.common.solum_swiftclient.SwiftClient.delete_object')
     @mock.patch('solum.api.handlers.userlog_handler.UserlogHandler')
     @mock.patch('solum.objects.registry.PlanList')
-    def test_languagepack_delete(self, mock_planlist, mock_log_handler,
+    @mock.patch('solum.objects.sqlalchemy.app.App')
+    def test_languagepack_delete(self, mock_app, mock_planlist,
+                                 mock_log_handler,
                                  mock_swift_delete, mock_img):
         fi = fakes.FakeImage()
         mock_img.get_lp_by_name_or_uuid.return_value = fi
         mock_img.destroy.return_value = {}
         mock_planlist.get_all.return_value = {}
+
+        mock_app.get_all_by_lp.return_value = {}
 
         handler = language_pack_handler.LanguagePackHandler(self.ctx)
         handler.delete('test_lp')
@@ -97,7 +101,9 @@ class TestLanguagePackHandler(base.BaseTestCase):
     @mock.patch('solum.common.solum_swiftclient.SwiftClient.delete_object')
     @mock.patch('solum.api.handlers.userlog_handler.UserlogHandler')
     @mock.patch('solum.objects.registry.PlanList')
+    @mock.patch('solum.objects.sqlalchemy.app.App')
     def test_languagepack_delete_with_plan_not_using_lp(self,
+                                                        mock_app,
                                                         mock_planlist,
                                                         mock_log_handler,
                                                         mock_swift_delete,
@@ -107,6 +113,7 @@ class TestLanguagePackHandler(base.BaseTestCase):
         mock_img.destroy.return_value = {}
         mock_planlist.get_all.return_value = [fakes.FakePlan()]
 
+        mock_app.get_all_by_lp.return_value = {}
         handler = language_pack_handler.LanguagePackHandler(self.ctx)
         handler.delete('lp_name')
 
