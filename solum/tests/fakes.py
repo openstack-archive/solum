@@ -60,6 +60,7 @@ class FakePecanResponse(mock.Mock):
     def __init__(self, **kwargs):
         super(FakePecanResponse, self).__init__(**kwargs)
         self.status = None
+        self.status_code = 200
 
 
 class FakeApp(mock.Mock):

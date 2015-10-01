@@ -143,11 +143,11 @@ class TestWsmePecanExceptionWrapper(base.BaseTestCase):
         mockpost.__name__ = 'post'
         mockreq.__name__ = 'request'
         mockresp.__name__ = 'response'
+        mockresp.status_code = 500
         mockpost.side_effect = Exception("This is a hidden message")
         mockreq.body = '{"foo":"bar"}'
         mockreq.content_type = "application/json"
         resp = TestWsmePecanController().post()
-        self.assertEqual(500, mockresp.status)
         self.assertIn('Your request could not be handled because of a '
                       'problem in the server.', resp.get('faultstring'))
 

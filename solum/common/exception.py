@@ -189,7 +189,7 @@ def wrap_wsme_pecan_controller_exception(func):
     def wrapped(*args, **kw):
         ret = func(*args, **kw)
         ismapping = isinstance(ret, collections.Mapping)
-        if (pecan.response.status >= 500 and ismapping):
+        if (pecan.response.status_code >= 500 and ismapping):
 
             log_correlation_id = str(uuid.uuid4())
             LOG.error("%s:%s", log_correlation_id, ret.get("faultstring",
