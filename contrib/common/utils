@@ -176,9 +176,9 @@ function git_clone_with_retry () {
 function glance_upload_with_retry () {
   local DU_IMG_TAG=$1
   shift
-  sudo docker save "$DU_IMG_TAG" | glance image-create --container-format=docker --disk-format=raw --name "$DU_IMG_TAG" >& /dev/null  && return 0
+  sudo docker save "$DU_IMG_TAG" | glance --os-image-api-version 1 --os-auth-token $OS_AUTH_TOKEN image-create --container-format=docker --disk-format=raw --name "$DU_IMG_TAG" >& /dev/null  && return 0
   sleep 2
-  sudo docker save "$DU_IMG_TAG" | glance image-create --container-format=docker --disk-format=raw --name "$DU_IMG_TAG" >& /dev/null
+  sudo docker save "$DU_IMG_TAG" | glance --os-image-api-version 1 --os-auth-token $OS_AUTH_TOKEN image-create --container-format=docker --disk-format=raw --name "$DU_IMG_TAG" >& /dev/null
 }
 
 function docker_build_with_retry () {

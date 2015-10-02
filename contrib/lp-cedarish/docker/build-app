@@ -52,7 +52,7 @@ LOG_FILE=$(GET_LOGFILE)
 
 # Get the image_id of the image named $1
 function app_glance_id () {
-  glance image-list --name $1 --sort-key updated_at --sort-dir asc | grep -v "+--" | tail -1 | cut -d'|' -f2
+  glance --os-image-api-version 1 --os-auth-token $OS_AUTH_TOKEN image-list --sort-key updated_at --sort-dir asc | grep $1 | grep -v "+--" | tail -1 | cut -d'|' -f2
 }
 
 function cleanup_on_exit () {
@@ -191,12 +191,12 @@ else
   TLOG downloading LP image from $IMAGE_STORAGE
   if [[ $IMAGE_STORAGE == "glance" ]]; then
     OUTPUT="$TMP_APP_DIR/$LP_IMG_TAG"
-    PRUN silent glance image-list
+    PRUN silent glance --os-image-api-version 1 --os-auth-token $OS_AUTH_TOKEN image-list
     if [[ $? != 0 ]]; then
       TLOG Cannot talk to Glance. Check your OpenStack credentials. && exit 1
     fi
 
-    glance image-download --file $OUTPUT $IMG_EXTERNAL_REF
+    glance --os-image-api-version 1 --os-auth-token $OS_AUTH_TOKEN image-download --file $OUTPUT $IMG_EXTERNAL_REF
     if [[ $? != 0 ]]; then
       TLOG Failed to download image $IMG_EXTERNAL_REF from glance. && exit 1
     fi
