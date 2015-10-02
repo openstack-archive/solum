@@ -9,11 +9,11 @@ Overview
 ::
 
   $ solum languagepack create <NAME> <GIT_REPO>
-  $ solum languagepack show <UUID\Name>
+  $ solum languagepack show <UUID/Name>
   $ solum languagepack logs <UUID>
   $ solum languagepack list
-  $ solum app create --plan-file <plan_file> [--param-file param_file]
-  $ solum assembly show <assembly_uuid>
+  $ solum app create --app-file <app_file> [--param-file param_file]
+  $ solum app show <UUID/Name>
   $ curl <application_uri>
 
 Vagrant Demo Environment
@@ -91,26 +91,32 @@ Create your app
 
 Solum clones code from the user's public Git repository or user's public/private GitHub repository. Before you begin, push your code to a Git repo. From within your devstack host, you can now run solum commands to build and deploy your application.
 
-2. To register an app with Solum, you will need to write a planfile to describe it.
-The following plan file deploys a sample python application.
-You can find other examples in the :code:`examples/plans/` folder of the solum repo on github.
-To learn more, see the planfile section of this document.
+2. To register an app with Solum, you will need to write a appfile to describe it.
+The following appfile deploys a sample python application.
+You can find other examples in the :code:`examples/apps/` folder of the solum repo on github.
+To learn more, see the appfile section of this document.
 
 ::
 
   version: 1
-  name: python-sample-app
-  description: Sample Python web app.
-  artifacts:
-  - name: python-sample-app
-    content:
-      href: https://github.com/rackspace-solum-samples/solum-python-sample-app.git
-    language_pack: python
-    unittest_cmd: pip install -r test-requirements.txt; pep8 app.py
-    run_cmd: ./main.sh
-    ports: 80
+  name: cherrypy
+  description: python web app
+  languagepack: python
+  source:
+    repository: https://github.com/rackspace-solum-samples/solum-python-sample-app.git
+    revision: master
+  workflow_config:
+    test_cmd: ./unit_tests.sh
+    run_cmd: python app.py
+  trigger_actions:
+   - test
+   - build
+   - deploy
+  ports:
+   - 80
 
-The app is named :code:`python-sample-app`, and it describes a single application, running the code from the given Github repo.
+
+The app is named :code:`cherrypy`, and it describes a single application, running the code from the given Github repo.
 The code in that repo is a Python app that listens for HTTP requests and returns environment variables supplied by the user during app creation.
 We have configured this example to listen on port 80.
 
@@ -125,23 +131,23 @@ The easiest way is to use the credentials supplied by Devstack.
 
   $ source ~/devstack/openrc
 
-4. Create an app by supplying the planfile. This registers your app with Solum.
+4. Create an app by supplying the appfile. This registers your app with Solum.
 For demonstration purposes, we will use the provided example.
 
 ::
 
-  $ solum app create --plan-file planfile.yaml --param-file params.yaml
+  $ solum app create --app-file appfile.yaml --param-file params.yaml
   +-------------+---------------------------------------------------------------------+
   | Property    | Value                                                               |
   +-------------+---------------------------------------------------------------------+
   | description | Sample Python web app.                                              |
   | uri         | http://10.0.2.15:9777/v1/plans/4a795b99-936d-4330-be4d-d2099b160075 |
-  | name        | python-sample-app                                                   |
+  | name        | cherrypy                                                   |
   | trigger_uri |                                                                     |
   | uuid        | 4a795b99-936d-4330-be4d-d2099b160075                                |
   +-------------+---------------------------------------------------------------------+
 
-The :code:`uri` field above refers to the newly-registered plan.
+The :code:`uri` field above refers to the newly-registered app.
 At this point, your app is not deployed yet.
 
 5. Your app is now ready to be deployed using the uuid from above to deploy your app.
@@ -155,13 +161,13 @@ At this point, your app is not deployed yet.
   | status          | QUEUED                                                                 |
   | description     | Sample Python web app.                                                 |
   | application_uri | None                                                                   |
-  | name            | python-sample-app                                                      |
+  | name            | cherrypy                                                      |
   | trigger_uri     | http://10.0.2.15:9777/v1/triggers/b6eb26e5-3b7b-416b-b932-302c514071cc |
   | uuid            | 185f2741-61e0-497e-b2b7-c890c7e151dd                                   |
   +-----------------+------------------------------------------------------------------------+
 
 
-Solum builds a docker image by layering your app's code on top of the related language pack's image.
+Solum builds a Docker image by layering your app's code on top of the related languagepack's docker image.
 Then, Solum creates a stack via Heat to deploy your app.
 At this point, Solum is done, and in a matter of minutes your app will be deployed.
 
@@ -170,7 +176,7 @@ The status field will show the progress of your app through the process.
 
 ::
 
-  $ solum assembly show 185f2741-61e0-497e-b2b7-c890c7e151dd
+  $ solum app show 185f2741-61e0-497e-b2b7-c890c7e151dd
   +-----------------+------------------------------------------------------------------------+
   | Property        | Value                                                                  |
   +-----------------+------------------------------------------------------------------------+
@@ -179,16 +185,16 @@ The status field will show the progress of your app through the process.
   | application_uri | None                                                                   |
   | created_at      | 2015-03-10T22:47:04                                                    |
   | updated_at      | 2015-03-10T22:49:59                                                    |
-  | name            | python-sample-app                                                      |
+  | name            | cherrypy                                                      |
   | trigger_uri     | http://10.0.2.15:9777/v1/triggers/b6eb26e5-3b7b-416b-b932-302c514071cc |
   | uuid            | 185f2741-61e0-497e-b2b7-c890c7e151dd                                   |
   +-----------------+------------------------------------------------------------------------+
 
-7. Run the :code:`solum assembly show` command a few times to see the status change. You will notice the :code:`status` field changes to READY and the :code:`application_uri` is available.
+7. Run the :code:`solum app show` command a few times to see the status change. You will notice the :code:`status` field changes to READY and the :code:`application_uri` is available.
 
 ::
 
-  $ solum assembly show 185f2741-61e0-497e-b2b7-c890c7e151dd
+  $ solum app show 185f2741-61e0-497e-b2b7-c890c7e151dd
   +-----------------+------------------------------------------------------------------------+
   | Property        | Value                                                                  |
   +-----------------+------------------------------------------------------------------------+
@@ -197,7 +203,7 @@ The status field will show the progress of your app through the process.
   | application_uri | 192.168.76.21:80                                                       |
   | created_at      | 2015-03-10T22:47:04                                                    |
   | updated_at      | 2015-03-10T22:49:59                                                    |
-  | name            | python-sample-app                                                      |
+  | name            | cherrypy                                                      |
   | trigger_uri     | http://10.0.2.15:9777/v1/triggers/b6eb26e5-3b7b-416b-b932-302c514071cc |
   | uuid            | 185f2741-61e0-497e-b2b7-c890c7e151dd                                   |
   +-----------------+------------------------------------------------------------------------+
@@ -215,7 +221,7 @@ Update Your App
 ---------------
 You can set up your Git repository to fire an on_commit action to make a webhook call to Solum each time you make a commit. The webhook call sends a POST request to http://10.0.2.15:9777/v1/triggers/<trigger_id> causing Solum to automatically build a new image and re-deploy your application.
 
-To do this with a GitHub repo, go to your repo on the web, click on Settings, and then select "Webhooks & Services" form the left navigation menu. In the Webhooks section, click "Add Webhook", and enter your GitHub account password when prompted. Copy and paste the value of trigger_uri from your "solum assembly show" command into the "Payload URL" filed. Note that this will only work if you have a public IP address or hostname in the trigger_uri field. Select the "application/vnd.github.v3+json" Payload version, determine if you only want to trigger this webhook on "git push" or if you want it for other events too by using the radio buttons and Checkboxes provided. Finish by clicking "Add Webhook". Now next time that event is triggered on GitHub, Solum will automatically check out your change, build it, and deploy it for you.
+To do this with a GitHub repo, go to your repo on the web, click on Settings, and then select "Webhooks & Services" form the left navigation menu. In the Webhooks section, click "Add Webhook", and enter your GitHub account password when prompted. Copy and paste the value of trigger_uri from your "solum app show" command into the "Payload URL" filed. Note that this will only work if you have a public IP address or hostname in the trigger_uri field. Select the "application/vnd.github.v3+json" Payload version, determine if you only want to trigger this webhook on "git push" or if you want it for other events too by using the radio buttons and Checkboxes provided. Finish by clicking "Add Webhook". Now next time that event is triggered on GitHub, Solum will automatically check out your change, build it, and deploy it for you.
 
 Languagepacks
 -------------
@@ -235,32 +241,37 @@ Here are some best practices to keep in mind while creating a languagepack
 3. Test tools should be installed in the languagepack
 4. Includes a mandatory build.sh script, which Solum CI expects and executes during the build phase
 
-planfile
+appfile
 --------
 
-A planfile is used to define your application and passed in during application creation.
+An appfile is used to define your application and passed in during application creation.
 
 ::
 
-  $ solum app create --plan-file planfile.yaml --param-file params.yaml
+  $ solum app create --app-file appfile.yaml --param-file params.yaml
 
 In the above command, we use the --plan-file flag to provide
 
 ::
 
   version: 1
-  name: python-sample-app
-  description: Sample Python web app.
-  artifacts:
-  - name: python-sample-app
-    content:
-      href: https://github.com/rackspace-solum-samples/solum-python-sample-app.git
-    language_pack: python
-    unittest_cmd: pip install -r test-requirements.txt; pep8 app.py
-    run_cmd: ./main.sh
-    ports: 80
+  name: cherrypy
+  description: python web app
+  languagepack: python
+  source:
+    repository: https://github.com/rackspace-solum-samples/solum-python-sample-app.git
+    revision: master
+  workflow_config:
+    test_cmd: ./unit_tests.sh
+    run_cmd: python app.py
+  trigger_actions:
+   - test
+   - build
+   - deploy
+  ports:
+   - 80
 
-The planfile is used to define the following
+The appfile is used to define the following
 
 1. The git repo where your code exists
 2. The languagepack to use
@@ -273,11 +284,11 @@ The planfile is used to define the following
 App configuration and environment variables
 -------------------------------------------
 
-Applications deployed using solum can be configured using environment variables. Provide a parameter file during application creation to inject environment variables
+Applications deployed using Solum can be configured using environment variables. Provide a parameter file during application creation to inject environment variables
 
 ::
 
-  $ solum app create --plan-file planfile.yaml --param-file params.yaml
+  $ solum app create --app-file appfile.yaml --param-file params.yaml
 
 In the example above, we pass in the parameter file (shown in the table below) using the --param-file flag.
 The parameter file contains key value pairs which are injected into the application run time environment.
@@ -292,7 +303,7 @@ The parameter file contains key value pairs which are injected into the applicat
 Set up a Development Environment
 --------------------------------
 
-These instructions are for those who plan to contribute to Solum, or use features that are not yet in the latest release.
+These instructions are for those who want to contribute to Solum, or use features that are not yet in the latest release.
 
 1. Clone the Solum repo.
 Solum repository is available on the OpenStack Git server.
@@ -305,11 +316,11 @@ Solum repository is available on the OpenStack Git server.
 
 In addition to Solum, your environment will also need Devstack to configure and run the requisite OpenStack components, including Keystone, Glance, Nova, Neutron, and Heat.
 
-Vagrant Dev Environment (optional, for developers)
---------------------------------------------------
+Vagrant Dev Environment
+------------------------
 
 2. We have provided a Vagrant environment to deploy Solum and its required OpenStack components via Devstack. We recommend using this approach if you are planning to contribute to Solum. This takes about the same amount of time as setting up Devstack manually, but it automates the setup for you.
-By default, it uses virtualbox as its provisioner. We have tested this with Vagrant 1.5.4.
+By default, it uses Virtualbox as its provisioner. We have tested this with Vagrant 1.5.4.
 The environment will need to know where your Solum code is, via the environment variable :code:`SOLUM`.
 
 ::
@@ -327,9 +338,9 @@ This may take a while. Allow about an hour, more or less depending on your machi
   $ vagrant up --provision devstack
   $ vagrant ssh devstack
 
-Devstack (alternate, for experts)
----------------------------------
+Devstack
+---------
 
 Using Vagrant is not a requirement for deploying Solum.
-You may instead opt to install Solum and Devstack yourself. Keep in mind that this approach is much slower than using the Vagrant option. It may take an hour or more to complete this setup step. Please set your expectations accordingly.
+You may instead opt to install Solum and Devstack yourself.
 The details of integrating Solum with Devstack can be found in :code:`contrib/devstack/README.rst`.
