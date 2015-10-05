@@ -13,6 +13,8 @@
 # under the License.
 
 
+import datetime
+
 import wsme
 from wsme import types as wtypes
 
@@ -53,6 +55,7 @@ class App(api_types.Base):
     app_url = wtypes.text
     status = wtypes.text
     repo_token = wtypes.text
+    created_at = datetime.datetime
 
     def __init__(self, *args, **kwargs):
         super(App, self).__init__(*args, **kwargs)
