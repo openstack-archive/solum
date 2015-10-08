@@ -80,29 +80,23 @@ function create_solum_service_and_endpoint() {
     openstack role add $SOLUM_UPDATE_ROLE --project admin --user admin
 
     if [[ "$KEYSTONE_CATALOG_BACKEND" = 'sql' ]]; then
-        SOLUM_SERVICE=$(keystone service-create \
+        SOLUM_SERVICE=$(openstack service create application_deployment \
             --name=solum \
-            --type=application_deployment \
             --description="Solum" \
             | grep " id " | get_field 2)
-        keystone endpoint-create \
-            --region RegionOne \
-            --service_id $SOLUM_SERVICE \
-            --publicurl "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_SERVICE_PORT" \
-            --adminurl "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_SERVICE_PORT" \
-            --internalurl "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_SERVICE_PORT"
+        openstack endpoint create --region RegionOne $SOLUM_SERVICE public "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_SERVICE_PORT"
+        openstack endpoint create --region RegionOne $SOLUM_SERVICE admin "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_SERVICE_PORT"
+        openstack endpoint create --region RegionOne $SOLUM_SERVICE internal "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_SERVICE_PORT"
 
-        SOLUM_BUILDER_SERVICE=$(keystone service-create \
+        SOLUM_BUILDER_SERVICE=$(openstack service create image_builder \
             --name=solum \
-            --type=image_builder \
             --description="Solum Image Builder" \
             | grep " id " | get_field 2)
-        keystone endpoint-create \
-            --region RegionOne \
-            --service_id $SOLUM_BUILDER_SERVICE \
-            --publicurl "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_BUILDER_SERVICE_PORT" \
-            --adminurl "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_BUILDER_SERVICE_PORT" \
-            --internalurl "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_BUILDER_SERVICE_PORT"
+
+        openstack endpoint create --region RegionOne $SOLUM_BUILDER_SERVICE public "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_BUILDER_SERVICE_PORT"
+        openstack endpoint create --region RegionOne $SOLUM_BUILDER_SERVICE admin "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_BUILDER_SERVICE_PORT"
+        openstack endpoint create --region RegionOne $SOLUM_BUILDER_SERVICE internal "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_BUILDER_SERVICE_PORT"
+
     fi
 }
 
@@ -187,19 +181,19 @@ function add_solum_user() {
     echo "SERVICE_TENANT=$SERVICE_TENANT"
 
     # Register new service user as other services do
-    SOLUM_USER_ID=$(keystone user-create --name=$SOLUM_USER \
-       --pass=$ADMIN_PASSWORD \
-       --tenant_id $SERVICE_TENANT \
+    SOLUM_USER_ID=$(openstack user create $SOLUM_USER \
+       --password=$ADMIN_PASSWORD \
+       --project $SERVICE_TENANT \
        --email=$SOLUM_USER@example.com \
        | grep " id " | get_field 2)
 
-    local ADMIN_ROLE=$(keystone role-list | awk "/ admin / { print \$2 }")
+    local ADMIN_ROLE=$(openstack role list | awk "/ admin / { print \$2 }")
     echo "ADMIN_ROLE=$ADMIN_ROLE"
 
-     keystone user-role-add \
-       --user-id $SOLUM_USER_ID \
-       --role-id $ADMIN_ROLE \
-       --tenant-id $SERVICE_TENANT
+     openstack role add \
+       --project $SERVICE_TENANT \
+       --user $SOLUM_USER_ID \
+       $ADMIN_ROLE
 }
 
 function add_additional_solum_users() {
@@ -208,7 +202,7 @@ function add_additional_solum_users() {
         solum_assembly_update \
         | grep " id " | get_field 2)
 
-    ROLE_ID=$(keystone role-create --name solum_user \
+    ROLE_ID=$(openstack role create solum_user \
               | grep " id " | get_field 2)
     for _LETTER in a b c; do
         local TENANTNAME=solum_tenant_$_LETTER

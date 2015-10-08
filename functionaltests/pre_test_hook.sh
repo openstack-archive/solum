@@ -29,8 +29,3 @@ sed -e 's/ERROR_ON_CLONE=True/ERROR_ON_CLONE=False/' -i $DEVSTACK_GATE/devstack-
 BARBICAN_BASE=/opt/stack/new/barbican/contrib/devstack
 cp $BARBICAN_BASE/lib/* $DEVSTACK_BASE/lib
 cp $BARBICAN_BASE/extras.d/* $DEVSTACK_BASE/extras.d
-
-# Install mistral devstack integration
-MISTRAL_BASE=/opt/stack/new/mistral/contrib/devstack
-cp $MISTRAL_BASE/lib/* $DEVSTACK_BASE/lib
-cp $MISTRAL_BASE/extras.d/* $DEVSTACK_BASE/extras.d

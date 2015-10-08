@@ -71,6 +71,8 @@ class ClientsTest(base.BaseTestCase):
             secret.store()
         except exceptions.ConnectionRefused:
             self.assertTrue(True)
+        except exceptions.RequestTimeout:
+            self.assertTrue(True)
 
     @mock.patch.object(barbicanclient, 'Client')
     @mock.patch.object(identity_v2, 'Password')
