@@ -23,6 +23,7 @@ import string
 import subprocess
 
 from oslo_config import cfg
+import six
 from sqlalchemy import exc as sqla_exc
 
 import solum
@@ -289,7 +290,7 @@ class Handler(object):
         def _sanitize_param(s):
             if s is None:
                 return ''
-            elif type(s) in [str, unicode]:
+            elif isinstance(s, six.string_types):
                 # Handles the case of exporting a var with a multi-line string
                 return ''.join(['"', s.strip('\n').replace('"', '\\"'), '"'])
             else:
