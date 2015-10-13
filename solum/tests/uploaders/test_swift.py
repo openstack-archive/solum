@@ -25,7 +25,7 @@ class SwiftUploadTest(base.BaseTestCase):
     def setUp(self):
         super(SwiftUploadTest, self).setUp()
 
-    @mock.patch('__builtin__.open')
+    @mock.patch('six.moves.builtins.open')
     @mock.patch('solum.uploaders.swift.SwiftUpload._upload')
     @mock.patch('solum.uploaders.common.UploaderBase.transform_jsonlog')
     @mock.patch('solum.uploaders.common.UploaderBase.write_userlog_row')
@@ -67,7 +67,7 @@ class SwiftUploadTest(base.BaseTestCase):
         mock_upload.assert_called_once_with(container, filename, tansf_path)
         mock_write_row.assert_called_once_with(filename, swift_info)
 
-    @mock.patch('__builtin__.open')
+    @mock.patch('six.moves.builtins.open')
     @mock.patch('solum.common.solum_swiftclient.SwiftClient.upload')
     @mock.patch('solum.uploaders.common.UploaderBase.transform_jsonlog')
     @mock.patch('solum.uploaders.common.UploaderBase.write_userlog_row')

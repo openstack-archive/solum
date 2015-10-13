@@ -13,15 +13,15 @@
 # limitations under the License.
 
 import errno
-import httplib
 import os
+
+import six
+from six.moves import http_client
+from swiftclient import exceptions as swiftexp
 
 from solum.common import clients
 from solum.common import exception as exc
 from solum.openstack.common import log as logging
-
-import six
-from swiftclient import exceptions as swiftexp
 
 
 CHUNKSIZE = 65536
@@ -84,7 +84,7 @@ class SwiftClient(object):
                 container=container, obj=name, resp_chunk_size=CHUNKSIZE,
                 headers=headers)
         except swiftexp.ClientException as e:
-            if e.http_status == httplib.NOT_FOUND:
+            if e.http_status == http_client.NOT_FOUND:
                 LOG.debug("Swift could not find object %s." % name)
             raise
 
@@ -143,7 +143,7 @@ class SwiftClient(object):
         try:
             swift.delete_object(container, filename)
         except swiftexp.ClientException as e:
-            if e.http_status == httplib.NOT_FOUND:
+            if e.http_status == http_client.NOT_FOUND:
                 LOG.debug("Swift could not find object %s." % filename)
                 pass
             else:
