@@ -71,7 +71,7 @@ class LanguagePack(api_types.Base):
         if len(value) > 100:
             raise ValueError(_('Names must not be longer than 100 '
                                'characters'))
-        allowed_chars = string.lowercase + string.digits + '-_'
+        allowed_chars = string.ascii_lowercase + string.digits + '-_'
         for ch in value:
             if ch not in allowed_chars:
                 raise ValueError(_('Names must only contain a-z,0-9,-,_'))

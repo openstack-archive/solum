@@ -41,7 +41,7 @@ class Base(wtypes.Base):
         return self.__name
 
     def set_name(self, value):
-        allowed_chars = string.letters + string.digits + '-_'
+        allowed_chars = string.ascii_letters + string.digits + '-_'
         for ch in value:
             if ch not in allowed_chars:
                 raise ValueError(_('Names must only contain a-z,A-Z,0-9,-,_'))
