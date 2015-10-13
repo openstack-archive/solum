@@ -80,23 +80,23 @@ class TestTypes(base.BaseTestCase):
 class TestMultiType(base.BaseTestCase):
 
     def test_valid_values(self):
-        vt = api_types.MultiType(wtypes.text, six.types.BooleanType)
+        vt = api_types.MultiType(wtypes.text, bool)
         value = vt.validate("somestring")
         self.assertEqual("somestring", value)
         value = vt.validate(True)
         self.assertEqual(True, value)
 
     def test_invalid_values(self):
-        vt = api_types.MultiType(wtypes.text, six.types.BooleanType)
+        vt = api_types.MultiType(wtypes.text, bool)
         self.assertRaises(ValueError, vt.validate, 10)
         self.assertRaises(ValueError, vt.validate, 0.10)
         self.assertRaises(ValueError, vt.validate, object())
 
     def test_multitype_tostring(self):
-        vt = api_types.MultiType(wtypes.text, six.types.BooleanType)
+        vt = api_types.MultiType(wtypes.text, bool)
         vts = str(vt)
         self.assertIn(str(wtypes.text), vts)
-        self.assertIn(str(six.types.BooleanType), vts)
+        self.assertIn(str(bool), vts)
         self.assertNotIn(str(six.integer_types[0]), vts)
 
 

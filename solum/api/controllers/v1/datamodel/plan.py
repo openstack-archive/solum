@@ -52,8 +52,7 @@ class Artifact(wtypes.Base):
     artifact_type = wtypes.text
     "Type of artifact."
 
-    content = {wtypes.text: api_types.MultiType(wtypes.text,
-                                                six.types.BooleanType)}
+    content = {wtypes.text: api_types.MultiType(wtypes.text, bool)}
     "Type specific content as a flat dict."
 
     ports = api_types.MultiType(api_types.PortType, [api_types.PortType],
@@ -105,8 +104,8 @@ class Plan(api_types.Base):
 
     parameters = {wtypes.text: api_types.MultiType(wtypes.text,
                                                    six.integer_types,
-                                                   six.types.BooleanType,
-                                                   six.types.FloatType)}
+                                                   bool,
+                                                   float)}
     """User defined parameters"""
 
     def __init__(self, **kwargs):
