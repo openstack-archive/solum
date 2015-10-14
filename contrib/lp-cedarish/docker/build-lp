@@ -28,7 +28,7 @@ LOG_FILE=$(GET_LOGFILE)
 
 # Get the image uuid of the image named $1
 function app_glance_id () {
-  glance --os-auth-token $OS_AUTH_TOKEN image-list --name $1 --sort-key updated_at --sort-dir asc | grep -v "+--" | tail -1 | cut -d'|' -f2
+  glance --os-image-api-version 1 --os-auth-token $OS_AUTH_TOKEN image-list --sort-key updated_at --sort-dir asc | grep $1 | grep -v "+--" | tail -1 | cut -d'|' -f2
 }
 
 function cleanup_on_exit () {
@@ -93,7 +93,7 @@ if [[ -d "$TMP_LP_DIR/build" ]]; then
 
   TLOG Building LP
   if [[ $IMAGE_STORAGE == "glance" ]]; then
-    PRUN silent glance --os-auth-token $OS_AUTH_TOKEN image-list
+    PRUN silent glance --os-image-api-version 1 --os-auth-token $OS_AUTH_TOKEN image-list
     if [[ $? != 0 ]]; then
       TLOG Cannot talk to Glance. Check your OpenStack credentials. && exit 1
     fi
@@ -102,7 +102,7 @@ if [[ -d "$TMP_LP_DIR/build" ]]; then
     [[ $? != 0 ]] && TLOG Docker build failed. && exit 1
     TLOG ===== finished docker build
 
-    sudo docker save "$LP_IMG_TAG" | glance --os-auth-token $OS_AUTH_TOKEN image-create --container-format=docker --disk-format=raw --name "$STORAGE_OBJ_NAME"
+    sudo docker save "$LP_IMG_TAG" | glance --os-image-api-version 1 --os-auth-token $OS_AUTH_TOKEN image-create --container-format=docker --disk-format=raw --name "$STORAGE_OBJ_NAME"
     if [[ $? != 0 ]]; then
       TLOG Failed to upload languagepack to glance. && exit 1
     fi
