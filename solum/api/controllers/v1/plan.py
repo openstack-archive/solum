@@ -19,6 +19,7 @@ import sys
 from oslo_db import exception as db_exc
 import pecan
 from pecan import rest
+import six
 from wsme.rest import json as wsme_json
 from wsme import types as wsme_types
 import wsmeext.pecan as wsme_pecan
@@ -39,13 +40,12 @@ def init_plan_v1(yml_input_plan):
     try:
         pp = plan.Plan(**yml_input_plan)
     except ValueError as ve:
-        raise exception.BadRequest(reason=ve.message)
+        raise exception.BadRequest(reason=six.text_type(ve))
     try:
         name_regex = re.compile(r'^([a-zA-Z0-9-_]{1,100})$')
         assert name_regex.match(pp.name), 'Plan name is invalid.'
     except AssertionError as ae:
-        raise exception.BadRequest(
-            reason=ae.message)
+        raise exception.BadRequest(reason=six.text_type(ae))
     return pp
 
 
@@ -67,7 +67,7 @@ def init_yml_plan_by_version():
     except ValueError as excp:
         LOG.error("Invalid plan.")
         raise exception.BadRequest(reason='Plan is invalid. '
-                                          + excp.message)
+                                          + six.text_type(excp))
     return init_plan_by_version(yml_input_plan)
 
 
@@ -76,7 +76,7 @@ def init_json_plan_by_version():
         json_input_plan = json.loads(pecan.request.body)
     except ValueError as excp:
         raise exception.BadRequest(reason='Plan is invalid. '
-                                          + excp.message)
+                                          + six.text_type(excp))
     return init_plan_by_version(json_input_plan)
 
 

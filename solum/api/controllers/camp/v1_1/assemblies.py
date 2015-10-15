@@ -16,6 +16,7 @@ import json
 
 import pecan
 from pecan import rest
+import six
 from six.moves import urllib
 from wsme.rest import json as wsme_json
 from wsme import types as wsme_types
@@ -110,7 +111,7 @@ class AssembliesController(rest.RestController):
                 json_ref_doc = json.loads(payload)
             except ValueError as excp:
                 raise exception.BadRequest(reason='JSON object is invalid. '
-                                           + excp.message)
+                                           + six.text_type(excp))
 
             if 'plan_uri' in json_ref_doc:
                 plan_uri_str = json_ref_doc['plan_uri']

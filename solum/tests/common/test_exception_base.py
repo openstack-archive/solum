@@ -80,7 +80,7 @@ class ExceptionTestCase(base.BaseTestCase):
         try:
             exception.wrap_wsme_controller_exception(error_func)()
         except wsme.exc.ClientSideError as e:
-            correlation_id = e.message.split(":")[1].strip()
+            correlation_id = six.text_type(e).split(":")[1].strip()
 
         self.assertIsNotNone(correlation_id)
         self.assertIsInstance(uuid.UUID(correlation_id), uuid.UUID)
@@ -117,7 +117,7 @@ class ExceptionTestCase(base.BaseTestCase):
         try:
             exception.wrap_wsme_controller_exception(error_func)()
         except wsme.exc.ClientSideError as e:
-            correlation_id = e.message.split(":")[1].strip()
+            correlation_id = six.text_type(e).split(":")[1].strip()
 
         self.assertIsNotNone(correlation_id)
         self.assertIsInstance(uuid.UUID(correlation_id), uuid.UUID)
