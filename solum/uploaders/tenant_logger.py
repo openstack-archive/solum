@@ -30,7 +30,7 @@ LOG = openstack_logger.getLogger(__name__)
 
 class TenantLogger(object):
 
-    def __init__(self, ctxt, assem, deployer_log_dir, stage):
+    def __init__(self, ctxt, assem, workflow_id, deployer_log_dir, stage):
         strategy = cfg.CONF.worker.log_upload_strategy
         LOG.debug("User log upload strategy: %s" % strategy)
 
@@ -41,7 +41,7 @@ class TenantLogger(object):
         # Note: assembly type is used by uploader
         self.assem.type = 'app'
 
-        tenant_log_file = "%s-%s" % (stage, assem.uuid)
+        tenant_log_file = "%s-%s" % (stage, workflow_id)
         self.path = "%s/%s.log" % (deployer_log_dir, tenant_log_file)
         LOG.debug("Deployer logs stored at %s" % self.path)
 
@@ -50,9 +50,9 @@ class TenantLogger(object):
             'swift': swift_uploader.SwiftUpload,
         }.get(strategy, local_uploader.LocalStorage)
 
-        self.uploader = uploadr(ctxt, self.path, assem, assem.uuid, stage)
+        self.uploader = uploadr(ctxt, self.path, assem, workflow_id, stage)
 
-        self.assem_logger = logging.getLogger(assem.uuid)
+        self.assem_logger = logging.getLogger(workflow_id)
         self.assem_logger.setLevel(logging.DEBUG)
 
         self.handler = logging.FileHandler(self.path, "a", encoding=None,

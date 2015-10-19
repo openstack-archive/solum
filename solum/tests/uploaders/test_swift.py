@@ -59,7 +59,7 @@ class SwiftUploadTest(base.BaseTestCase):
         swift_info = {'container': container}
 
         filename = "%s-%s/%s-%s.log" % (rs_before_delete.name,
-                                        rs_before_delete.uuid,
+                                        build_id,
                                         stage, build_id)
 
         self.assertTrue(mock_trans_jlog.called)
@@ -91,7 +91,7 @@ class SwiftUploadTest(base.BaseTestCase):
         swift_info = {'container': container}
 
         filename = "%s-%s/%s-%s.log" % (resource.name,
-                                        resource.uuid,
+                                        build_id,
                                         stage, build_id)
 
         self.assertTrue(mock_trans_jlog.called)

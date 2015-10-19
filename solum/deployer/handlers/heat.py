@@ -175,11 +175,23 @@ class Handler(object):
         assem = objects.registry.Assembly.get_by_id(ctxt, assem_id)
         logs_resource_id = assem.uuid
         stack_id = self._find_id_if_stack_exists(assem)
+        try:
+            workflow = objects.registry.Workflow.get_by_assembly_id(assem_id)
+            workflow_id = workflow.id
+        except Exception:
+            # get_by_assembly_id would result in ResourceNotFound exception
+            # if assembly is created directly. In that case use assembly_id
+            # with TenantLogger
+            workflow_id = assem.uuid
 
         # TODO(devkulkarni) Delete t_logger when returning from this call.
         # This needs to be implemented as a context since there are
         # multiple return paths from this method.
-        t_logger = tlog.TenantLogger(ctxt, assem, deployer_log_dir, 'delete')
+        t_logger = tlog.TenantLogger(ctxt,
+                                     assem,
+                                     workflow_id,
+                                     deployer_log_dir,
+                                     'delete')
         msg = "Deleting Assembly %s" % assem.uuid
         t_logger.log(logging.DEBUG, msg)
         LOG.debug(msg)
@@ -278,11 +290,17 @@ class Handler(object):
         assem = objects.registry.Assembly.get_by_id(ctxt,
                                                     assembly_id)
 
+        workflow = objects.registry.Workflow.get_by_assembly_id(assembly_id)
+
         # TODO(devkulkarni) Delete t_logger when returning from this call.
         # This needs to be implemented as a decorator since there are
         # multiple return paths from this method.
-        t_logger = tlog.TenantLogger(ctxt, assem, deployer_log_dir, 'deploy')
-        msg = "Deploying Assembly %s" % assem.uuid
+        t_logger = tlog.TenantLogger(ctxt,
+                                     assem,
+                                     workflow.id,
+                                     deployer_log_dir,
+                                     'deploy')
+        msg = "Deploying Assembly %s Workflow %s" % (assem.uuid, workflow.id)
         t_logger.log(logging.DEBUG, msg)
 
         LOG.debug("Image loc:%s, image_name:%s" % (image_loc, image_name))

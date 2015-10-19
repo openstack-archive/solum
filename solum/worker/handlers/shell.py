@@ -441,8 +441,8 @@ class Handler(object):
 
         if assem is not None:
             assem.type = 'app'
-            upload_task_log(ctxt, logpath, assem, user_env['BUILD_ID'],
-                            'build')
+            wf = objects.registry.Workflow.get_by_assembly_id(assem.id)
+            upload_task_log(ctxt, logpath, assem, wf.id, 'build')
 
         '''
         we expect two lines in the output that looks like:
@@ -553,8 +553,8 @@ class Handler(object):
 
         if assem is not None:
             assem.type = 'app'
-            upload_task_log(ctxt, logpath, assem, user_env['BUILD_ID'],
-                            'unittest')
+            wf = objects.registry.Workflow.get_by_assembly_id(assem.id)
+            upload_task_log(ctxt, logpath, assem, wf.id, 'unittest')
 
         if returncode == 0:
             update_assembly_status(ctxt, assembly_id,

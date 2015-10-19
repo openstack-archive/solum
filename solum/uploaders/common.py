@@ -75,7 +75,7 @@ class UploaderBase(object):
         ulog.created_at = now
         ulog.updated_at = now
         ulog.resource_type = self.resource.type
-        ulog.resource_uuid = self.resource.uuid
+        ulog.resource_uuid = self.stage_id
         ulog.project_id = self.resource.project_id
         ulog.location = location
         ulog.strategy = self.strategy

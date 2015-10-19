@@ -17,6 +17,7 @@ from pecan import rest
 import wsmeext.pecan as wsme_pecan
 
 from solum.api.controllers.v1.datamodel import workflow
+from solum.api.controllers.v1 import userlog as userlog_controller
 from solum.api.handlers import app_handler
 from solum.api.handlers import workflow_handler as wf_handler
 from solum.common import exception
@@ -33,6 +34,14 @@ class WorkflowController(rest.RestController):
         super(WorkflowController, self).__init__(self)
         self.app_id = app_id
         self.wf_id = wf_id
+
+    @pecan.expose()
+    def _lookup(self, primary_key, *remainder):
+        if remainder and not remainder[-1]:
+            remainder = remainder[:-1]
+        if primary_key == 'logs':
+            logs = userlog_controller.UserlogsController(self.wf_id)
+            return logs, remainder
 
     @exception.wrap_pecan_controller_exception
     @wsme_pecan.wsexpose(workflow.Workflow)

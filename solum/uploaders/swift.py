@@ -36,7 +36,7 @@ class SwiftUpload(solum.uploaders.common.UploaderBase):
 
     def upload_log(self):
         container = cfg.CONF.worker.log_upload_swift_container
-        filename = "%s-%s/%s-%s.log" % (self.resource.name, self.resource.uuid,
+        filename = "%s-%s/%s-%s.log" % (self.resource.name, self.stage_id,
                                         self.stage_name, self.stage_id)
 
         self.transform_jsonlog()
