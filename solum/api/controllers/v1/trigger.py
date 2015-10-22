@@ -38,6 +38,39 @@ def query_dict(querystring):
 class TriggerController(rest.RestController):
     """Manages triggers."""
 
+    def _process_request(self, body):
+        commit_sha = ''
+        collab_url = None
+
+        phrase = body['comment']['body']
+        commenter = body['comment']['user']['login']
+        private_repo = body['repository']['private']
+        # An example of collab_url
+        # https://api.github.com/repos/:user/:repo/collaborators{/collaborator}
+        if not private_repo:
+            # Only verify collaborator for public repos
+            collab_url = (
+                body['repository']['collaborators_url'].format(
+                    **{'/collaborator': '/' + commenter}))
+        if (phrase.strip('. ').lower() !=
+                CONF.api.rebuild_phrase.lower()):
+            err_msg = 'Rebuild phrase does not match'
+            raise exception.RequestForbidden(reason=err_msg)
+        else:
+            commit_sha = body['comment']['commit_id']
+        return commit_sha, collab_url
+
+    def _get_workflow(self, query):
+        workflow = None
+
+        if 'workflow' in query:
+            valid_stages = ['unittest', 'build', 'deploy']
+            workflow = query['workflow'].replace('+', ' ').split(' ')
+            workflow = filter(lambda x: x in valid_stages, workflow)
+            if not workflow:
+                workflow = None
+        return workflow
+
     @exception.wrap_pecan_controller_exception
     @pecan.expose()
     def post(self, trigger_id):
@@ -45,37 +78,17 @@ class TriggerController(rest.RestController):
         commit_sha = ''
         status_url = None
         collab_url = None
-        workflow = None
 
         try:
             query = query_dict(pecan.request.query_string)
-            if 'workflow' in query:
-                valid_stages = ['unittest', 'build', 'deploy']
-                workflow = query['workflow'].replace('+', ' ').split(' ')
-                workflow = filter(lambda x: x in valid_stages, workflow)
-                if not workflow:
-                    workflow = None
+            workflow = self._get_workflow(query)
+
             body = json.loads(pecan.request.body)
             if ('sender' in body and 'url' in body['sender'] and
                     'api.github.com' in body['sender']['url']):
                 if 'comment' in body:
                     # Process a request for rebuilding
-                    phrase = body['comment']['body']
-                    commenter = body['comment']['user']['login']
-                    private_repo = body['repository']['private']
-                    # An example of collab_url
-                    # https://api.github.com/repos/:user/:repo/collaborators{/collaborator}
-                    if not private_repo:
-                        # Only verify collaborator for public repos
-                        collab_url = (
-                            body['repository']['collaborators_url'].format(
-                                **{'/collaborator': '/' + commenter}))
-                    if (phrase.strip('. ').lower() !=
-                            CONF.api.rebuild_phrase.lower()):
-                        err_msg = 'Rebuild phrase does not match'
-                        raise exception.RequestForbidden(reason=err_msg)
-                    else:
-                        commit_sha = body['comment']['commit_id']
+                    commit_sha, collab_url = self._process_request(body)
                 elif 'pull_request' in body:
                     # Process a GitHub pull request
                     commit_sha = body['pull_request']['head']['sha']
