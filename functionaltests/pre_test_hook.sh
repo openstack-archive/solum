@@ -21,11 +21,3 @@ DEVSTACK_GATE=/opt/stack/new/devstack-gate
 SOLUM_BASE=/opt/stack/new/solum/contrib/devstack
 cp $SOLUM_BASE/lib/* $DEVSTACK_BASE/lib
 cp $SOLUM_BASE/extras.d/* $DEVSTACK_BASE/extras.d
-
-# TODO(ravips): Workaround until barbican, mistral gets into devstack
-# Allow devstack to do git clone when directory doesn't exist
-sed -e 's/ERROR_ON_CLONE=True/ERROR_ON_CLONE=False/' -i $DEVSTACK_GATE/devstack-vm-gate.sh
-# Install barbican devstack integration
-BARBICAN_BASE=/opt/stack/new/barbican/contrib/devstack
-cp $BARBICAN_BASE/lib/* $DEVSTACK_BASE/lib
-cp $BARBICAN_BASE/extras.d/* $DEVSTACK_BASE/extras.d
