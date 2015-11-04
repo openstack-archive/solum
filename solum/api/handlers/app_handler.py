@@ -54,6 +54,10 @@ class AppHandler(handler.Handler):
 
     def delete(self, id):
         """Delete an existing app."""
+        # First delete workflows based on app_id
+        objects.registry.Workflow.destroy(id)
+
+        # Now delete the app
         db_obj = objects.registry.App.get_by_uuid(self.context, id)
         db_obj.destroy(self.context)
 
