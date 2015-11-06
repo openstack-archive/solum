@@ -676,4 +676,4 @@ class Handler(object):
         update_lp_status(ctxt, image_id, status, image_external_ref,
                          docker_image_name)
         upload_task_log(ctxt, logpath, img,
-                        user_env['BUILD_ID'], 'languagepack')
+                        img.uuid, 'languagepack')
