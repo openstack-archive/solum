@@ -51,7 +51,7 @@ Solum application deployment follows this flow:
   * Deployer service also blocks on this call so your infrastructure should scale out to support your user load
 * Deployer service persists application state to Trove via Conductor service
 
-Solum deployment infrastrure is dependent on existence of the following Openstack services:
+Solum deployment infrastructure is dependent on existence of the following OpenStack services:
 
 * Nova
 * Keystone
