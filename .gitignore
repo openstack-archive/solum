@@ -34,6 +34,9 @@ solum.sqlite
 # functional tests
 functionaltests/tempest.log
 
+# Files created by releasenotes build
+releasenotes/build
+
 # Translations
 *.mo
 
