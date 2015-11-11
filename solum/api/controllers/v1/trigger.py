@@ -82,7 +82,7 @@ class TriggerController(rest.RestController):
                 else:
                     raise exception.NotImplemented()
 
-                # An exmaple of Github statuses_url
+                # An example of Github statuses_url
                 # https://api.github.com/repos/:user/:repo/statuses/{sha}
                 if commit_sha:
                     status_url = body['repository']['statuses_url'].format(

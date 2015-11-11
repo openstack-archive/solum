@@ -21,7 +21,7 @@ class Pipeline(api_types.Base):
     """Representation of an Pipeline.
 
     A pipeline is the association between a plan, a mistral workbook
-    and a git trigger. Together they form a working developement "pipeline".
+    and a git trigger. Together they form a working development "pipeline".
     """
 
     plan_uri = wtypes.text

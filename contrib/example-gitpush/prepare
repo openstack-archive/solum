@@ -26,7 +26,7 @@ sudo su git -c "$DIR/install"
 cd ~
 
 # we do this to accept the ssh-key for git@localhost
-# to avoid 'Yes' prompt from subsquent git commands.
+# to avoid 'Yes' prompt from subsequent git commands.
 ssh -o StrictHostKeyChecking=no git@127.0.0.1
 
 git clone git@127.0.0.1:gitolite-admin ~/gitolite-admin

@@ -31,7 +31,7 @@ from solum.openstack.common import jsonutils
 eventlet.monkey_patch()
 
 # NOTE(asalkeld):
-# The solum.openstack.common.rpc entries are for compatability
+# The solum.openstack.common.rpc entries are for compatibility
 # with devstack rpc_backend configuration values.
 TRANSPORT_ALIASES = {
     'solum.openstack.common.rpc.impl_kombu': 'rabbit',
