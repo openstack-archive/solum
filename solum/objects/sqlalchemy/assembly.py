@@ -19,6 +19,7 @@ from solum import objects
 from solum.objects import assembly as abstract
 from solum.objects.sqlalchemy import component
 from solum.objects.sqlalchemy import models as sql
+from solum.objects.sqlalchemy import plan as plan_obj
 
 ASSEMBLY_STATES = abstract.States
 retry = sql.retry
@@ -102,9 +103,15 @@ class AssemblyList(abstract.AssemblyList):
     def get_earlier(cls, assem_id, app_id, status, created_at):
         try:
             session = sql.Base.get_session()
+            result = session.query(plan_obj.Plan)
+            result = result.filter(plan_obj.Plan.id == app_id)
+            app_uuid = result.one().uuid
+            result = session.query(plan_obj.Plan)
+            result = result.filter(plan_obj.Plan.uuid == app_uuid).all()
+            plan_id_list = [plan.id for plan in result]
+
             result = session.query(Assembly)
-            result = result.filter(Assembly.plan_id == app_id)
-            result = result.filter(Assembly.status == status)
+            result = result.filter(Assembly.plan_id.in_(plan_id_list))
             result = result.filter(Assembly.created_at < created_at)
             return result.all()
         except exc.NoResultFound:

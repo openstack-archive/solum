@@ -250,7 +250,7 @@ class Handler(object):
             t_logger.upload()
 
     def _destroy_other_assemblies(self, ctxt, assembly_id):
-        # Destroy all of an app's READY assemblies except the one named.
+        # Except current app's stack, destroy all other app stacks
 
         # We query the newly deployed assembly's object here to
         # ensure that we get most up-to-date value for created_at attribute.
@@ -269,8 +269,36 @@ class Handler(object):
                                                                STATES.READY,
                                                                created_at)
         for assem in assemblies:
-            if assem.id != new_assembly.id:
-                self.destroy_assembly(ctxt, assem.id)
+            if assem.id == new_assembly.id:
+                continue
+
+            # Just delete the old heat stacks and don't delete assemblies
+            stack_id = self._find_id_if_stack_exists(assem)
+            osc = clients.OpenStackClients(ctxt)
+            try:
+                LOG.debug("Deleting Heat stack %s", stack_id)
+                osc.heat().stacks.delete(stack_id)
+            except exc.HTTPNotFound:
+                # stack already deleted
+                LOG.debug("Heat stack not found %s", stack_id)
+                continue
+            except Exception as e:
+                LOG.exception(e)
+                continue
+
+            # wait for deletion to complete
+            wait_interval = cfg.CONF.deployer.wait_interval
+            growth_factor = cfg.CONF.deployer.growth_factor
+            stack_name = self._get_stack_name(assem)
+            for count in range(cfg.CONF.deployer.max_attempts):
+                try:
+                    # Must use stack_name for expecting a 404
+                    osc.heat().stacks.get(stack_name)
+                except exc.HTTPNotFound:
+                    LOG.debug("Heat stack deleted %s", stack_id)
+                    continue
+                time.sleep(wait_interval)
+                wait_interval *= growth_factor
 
     def destroy_app(self, ctxt, app_id):
         # Destroy a plan's assemblies, and then the plan.

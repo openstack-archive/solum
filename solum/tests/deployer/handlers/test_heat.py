@@ -757,7 +757,8 @@ class HandlerTest(base.BaseTestCase):
         self.assertEqual(mock.call(fake_assem.uuid), mock_log_del.call_args)
 
     @mock.patch('solum.objects.registry')
-    def test_successful_deploy_destroys_twins(self, mr):
+    @mock.patch('solum.common.clients.OpenStackClients')
+    def test_successful_deploy_destroys_twins(self, mock_client, mr):
         handler = heat_handler.Handler()
         old_app = fakes.FakeAssembly()
         old_app.name = 'old app'
@@ -769,34 +770,58 @@ class HandlerTest(base.BaseTestCase):
         new_app.name = 'new app'
         new_app.status = 'READY'
 
+        cfg.CONF.set_override('wait_interval', 0, group='deployer')
+        cfg.CONF.set_override('growth_factor', 0, group='deployer')
+        cfg.CONF.set_override('max_attempts', 1, group='deployer')
+
         self.assertEqual(old_app.plan_id, new_app.plan_id)
         self.assertEqual(old_app.plan_uuid, new_app.plan_uuid)
         mr.AssemblyList.get_earlier.return_value = [old_app]
 
+        mock_heat = mock_client.return_value.heat
+        mock_st_del = mock_heat.return_value.stacks.delete
+        mock_st_get = mock_heat.return_value.stacks.get
+
         handler.destroy_assembly = mock.MagicMock()
         handler._destroy_other_assemblies(self.ctx, new_app.id)
-        handler.destroy_assembly.assert_called_once_with(self.ctx, old_app.id)
+        self.assertTrue(mock_st_del.called)
+        self.assertTrue(mock_st_get.called)
 
     @mock.patch('solum.objects.registry')
-    def test_successful_deploy_preserves_others(self, mr):
+    @mock.patch('solum.common.clients.OpenStackClients')
+    def test_successful_deploy_preserves_others(self, mock_client, mr):
         handler = heat_handler.Handler()
         old_app = fakes.FakeAssembly()
         old_app.name = 'old app'
+        old_app.plan_id = 1
+        old_app.id = 1
         old_app.status = 'READY'
 
         new_app = fakes.FakeAssembly()
-        new_app.id = 9
+        new_app.id = 1
+        new_app.plan_id = 2
         new_app.plan_uuid = 'new fake plan uuid'
         new_app.name = 'new app'
         new_app.status = 'READY'
+
+        cfg.CONF.set_override('wait_interval', 0, group='deployer')
+        cfg.CONF.set_override('growth_factor', 0, group='deployer')
+        cfg.CONF.set_override('max_attempts', 1, group='deployer')
 
         self.assertNotEqual(old_app.plan_id, new_app.plan_id)
         self.assertNotEqual(old_app.plan_uuid, new_app.plan_uuid)
         mr.AssemblyList.get_earlier.return_value = [old_app]
 
+        mr.Assembly.get_by_id.return_value = new_app
+
+        mock_heat = mock_client.return_value.heat
+        mock_st_del = mock_heat.return_value.stacks.delete
+        mock_st_get = mock_heat.return_value.stacks.get
+
         handler.destroy_assembly = mock.MagicMock()
         handler._destroy_other_assemblies(self.ctx, new_app.id)
-        self.assertEqual(1, handler.destroy_assembly.call_count)
+        self.assertFalse(mock_st_del.called)
+        self.assertFalse(mock_st_get.called)
 
     @mock.patch('solum.objects.registry')
     def test_successful_deploy_preserves_notreadies(self, mr):

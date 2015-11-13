@@ -180,7 +180,7 @@ class PlanAssemblyAdapter():
 
     def create_dummies(self):
         plan = objects.registry.Plan()
-        plan.uuid = str(uuid.uuid4())
+        plan.uuid = self.app_obj.id
         plan.user_id = self.context.user
         plan.project_id = self.context.tenant
         plan.name = self.app_obj.name
