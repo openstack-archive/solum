@@ -25,17 +25,17 @@ Getting started with Solum
 
 See the getting_started_ guide.
 
-.. _getting_started: https://solum.readthedocs.org/en/latest/getting_started/index.html
+.. _getting_started: http://docs.openstack.org/developer/solum/getting_started/
 
 Project Info
 -------------
 
- * Web-site: http://solum.io/
  * Source Code: http://github.com/openstack/solum
  * Wiki: https://wiki.openstack.org/wiki/Solum
  * Launchpad: https://launchpad.net/solum
  * Blueprints: https://blueprints.launchpad.net/solum
  * Bugs: https://bugs.launchpad.net/solum
  * Code Reviews: https://review.openstack.org/#q,status:open+solum,n,z
- * IRC: #solum at freenode
+                 https://review.openstack.org/#/q/status:open+python-solumclient,n,z
+ * IRC: #solum at chat.freenode.net
 
