@@ -1,0 +1,99 @@
+# Set up default repos
+#----------------------
+SOLUM_REPO=${SOLUM_REPO:-${GIT_BASE}/openstack/solum.git}
+SOLUM_BRANCH=${SOLUM_BRANCH:-master}
+SOLUMCLIENT_REPO=${SOLUMCLIENT_REPO:-${GIT_BASE}/openstack/python-solumclient.git}
+SOLUMCLIENT_BRANCH=${SOLUMCLIENT_BRANCH:-master}
+NOVADOCKER_REPO=${NOVADOCKER_REPO:-${GIT_BASE}/openstack/nova-docker.git}
+NOVADOCKER_BRANCH=${NOVADOCKER_BRANCH:-master}
+
+# Set up default directories
+#----------------------------
+SOLUM_DIR=$DEST/solum
+SOLUMCLIENT_DIR=$DEST/python-solumclient
+SOLUM_CONF_DIR=${SOLUM_CONF_DIR:-/etc/solum}
+NOVA_CONF_DIR=${NOVA_CONF_DIR:-/etc/nova}
+SOLUM_CONF_FILE=solum.conf
+NOVA_CONF_FILE=nova.conf
+ADMIN_TENANT_NAME=${ADMIN_TENANT_NAME:-admin}
+ADMIN_NAME=${ADMIN_NAME:-admin}
+ADMIN_PASSWORD=${ADMIN_PASSWORD:-nova}
+SOLUM_DEBUG=${SOLUM_DEBUG:-True}
+SOLUM_USER=solum
+SOLUM_AUTH_CACHE_DIR=${SOLUM_AUTH_CACHE_DIR:-/var/cache/solum}
+SOLUM_INSTALL_CEDARISH=${SOLUM_INSTALL_CEDARISH:-False}
+
+SOLUM_SERVICE_HOST=${SOLUM_SERVICE_HOST:-$SERVICE_HOST}
+SOLUM_SERVICE_PORT=${SOLUM_SERVICE_PORT:-9777}
+SOLUM_BUILDER_SERVICE_PORT=${SOLUM_BUILDER_SERVICE_PORT:-9778}
+SOLUM_SERVICE_PROTOCOL=${SOLUM_SERVICE_PROTOCOL:-$SERVICE_PROTOCOL}
+SOLUM_IMAGE_FORMAT=${SOLUM_IMAGE_FORMAT:-'docker'}
+
+SOLUM_MAX_ATTEMPTS=${SOLUM_MAX_ATTEMPTS:-2000}
+SOLUM_WAIT_INTERVAL=${SOLUM_WAIT_INTERVAL:-1}
+SOLUM_GROWTH_FACTOR=${SOLUM_GROWTH_FACTOR:-1.1}
+
+SOLUM_DRONE_URL=${SOLUM_DRONE_URL:-http://downloads.drone.io/master/drone.deb}
+SOLUM_INSTALL_DRONE=${SOLUM_INSTALL_DRONE:-False}
+
+SOLUM_PROJ_DIR=${SOLUM_PROJ_DIR:-/opt/stack/solum}
+NOVADOCKER_PROJ_DIR=${NOVADOCKER_PROJ_DIR:-/opt/stack/nova-docker}
+
+SOLUM_INSTALL_DOCKER_REGISTRY=${SOLUM_INSTALL_DOCKER_REGISTRY:-False}
+SOLUM_DEPLOYMENT_MECHANISM=${SOLUM_DEPLOYMENT_MECHANISM:-'docker_on_nova'}
+
+DEVSTACK_DIR=${HOME}/devstack
+
+# Devstack/local.conf settings
+#-----------------------------
+
+LOGFILE=/opt/stack/logs/stack.sh.log
+NOVNC_FROM_PACKAGE=false
+SCREEN_LOGDIR=/opt/stack/logs
+SOLUM_INSTALL_CEDARISH=True
+SOLUM_INSTALL_DOCKERFILE=True
+GIT_BASE=https://git.openstack.org
+
+# DOCKER_REGISTRY_IMAGE=registry:0.6.9
+VIRT_DRIVER=docker
+SOLUM_IMAGE_FORMAT=docker
+SOLUM_INSTALL_DRONE=True
+SOLUM_DRONE_URL=http://f4e976e84d9bb06108f6-ff40fde470ff7ecea31955ec7c479471.r49.cf2.rackcdn.com/drone.deb
+
+DEFAULT_IMAGE_NAME=cirros
+IMAGE_URLS=" "
+
+#enable_service mistral
+# Enable neutron services
+enable_service q-svc
+enable_service q-agt
+enable_service q-dhcp
+enable_service q-l3
+enable_service q-meta
+enable_service neutron
+disable_service n-net
+
+
+# Enable solum services
+enable_service solum-api
+enable_service solum-conductor
+enable_service solum-deployer
+enable_service solum-worker
+
+
+# Enable swift services
+enable_service s-proxy
+enable_service s-object
+enable_service s-container
+enable_service s-account
+
+
+# Enable heat services
+enable_service heat
+enable_service h-api
+enable_service h-api-cfn
+enable_service h-api-cw
+enable_service h-eng
+
+enable_service barbican
+
