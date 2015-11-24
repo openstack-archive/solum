@@ -1,0 +1,8 @@
+version: 1
+name: mysql_server
+description: mysql server
+languagepack: docker
+
+source:
+  repository: https://github.com/paulczar/docker-mysql.git
+

@@ -1,0 +1,8 @@
+version: 1
+name: solum8
+description: solum with pep8
+languagepack: auto
+source:
+  repository: https://github.com/openstack/solum.git
+workflow_config:
+  test_cmd: tox -epep8
