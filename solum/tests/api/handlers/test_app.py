@@ -42,14 +42,11 @@ class TestAppHandler(base.BaseTestCase):
         self.assertIsNotNone(res)
         mock_registry.AppList.get_all.assert_called_once_with(self.ctx)
 
-    def test_app_delete(self, mock_registry):
-        db_obj = fakes.FakeApp()
-        mock_registry.App.get_by_uuid.return_value = db_obj
+    @mock.patch('solum.deployer.api.API.destroy_app')
+    def test_app_delete(self, mock_destroy, mock_registry):
         handler = app_handler.AppHandler(self.ctx)
         handler.delete('test_id')
-        get_by_uuid = mock_registry.App.get_by_uuid
-        get_by_uuid.assert_called_once_with(self.ctx, 'test_id')
-        self.assertTrue(db_obj.destroy.called)
+        mock_destroy.assert_called_once_with('test_id')
 
     @mock.patch('solum.common.clients.OpenStackClients.keystone')
     def test_app_create(self, mock_kc, mock_registry):

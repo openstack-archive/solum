@@ -633,7 +633,6 @@ class HandlerTest(base.BaseTestCase):
             handler.destroy_assembly(self.ctx, fake_assem.id)
 
             self.assertTrue(mock_del.called)
-            self.assertTrue(fake_assem.destroy.called)
             mock_registry.Image.get_by_id.assert_called_once_with(
                 mock.ANY, fake_assem.image_id)
             docker_image_name = fake_image.docker_image_name
@@ -674,7 +673,6 @@ class HandlerTest(base.BaseTestCase):
 
             self.assertTrue(mock_find.called)
             self.assertTrue(mock_del.called)
-            self.assertTrue(fake_assem.destroy.called)
             mock_registry.Image.get_by_id.assert_called_once_with(
                 mock.ANY, fake_assem.image_id)
             docker_image_name = fake_image.docker_image_name

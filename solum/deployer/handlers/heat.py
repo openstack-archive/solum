@@ -210,7 +210,6 @@ class Handler(object):
                 osc.heat().stacks.delete(stack_id)
             except exc.HTTPNotFound:
                 # stack already deleted
-                assem.destroy(ctxt)
                 t_logger.log(logging.ERROR, "Heat stack not found.")
                 t_logger.upload()
                 self._delete_app_artifacts_from_swift(ctxt, t_logger,
@@ -233,7 +232,6 @@ class Handler(object):
                     # Must use stack_name for expecting a 404
                     osc.heat().stacks.get(stack_name)
                 except exc.HTTPNotFound:
-                    assem.destroy(ctxt)
                     t_logger.log(logging.DEBUG, "Stack delete successful.")
                     t_logger.upload()
                     self._delete_app_artifacts_from_swift(ctxt, t_logger,
@@ -301,16 +299,37 @@ class Handler(object):
                 wait_interval *= growth_factor
 
     def destroy_app(self, ctxt, app_id):
-        # Destroy a plan's assemblies, and then the plan.
-        plan = objects.registry.Plan.get_by_id(ctxt, app_id)
+        try:
+            # Destroy a plan's assemblies, and then the plan
+            plan = objects.registry.Plan.get_by_id(ctxt, app_id)
 
-        # Fetch all assemblies by plan id, and self.destroy() them.
-        assemblies = objects.registry.AssemblyList.get_all(ctxt)
-        for assem in assemblies:
-            if app_id == assem.plan_id:
-                self.destroy_assembly(ctxt, assem.id)
+            # Fetch all assemblies by plan id, and self.destroy() them.
+            assemblies = objects.registry.AssemblyList.get_all(ctxt)
+            for assem in assemblies:
+                if app_id == assem.plan_id:
+                    self.destroy_assembly(ctxt, assem.id)
 
-        plan.destroy(ctxt)
+            plan.destroy(ctxt)
+
+        except exception.ResourceNotFound:
+            LOG.error("Plan not found for app_id", app_id)
+
+        # Get all the workflows for app_id
+        workflows = objects.registry.WorkflowList.get_all(ctxt, app_id)
+
+        # For each workflow get the assembly and call destroy assembly to
+        # remove heat stacks.
+        for workflow in workflows:
+            assemblie = objects.registry.Assembly.get_by_id(ctxt,
+                                                            workflow.assembly)
+            self.destroy_assembly(ctxt, assemblie.id)
+
+        # Delete workflow based on app_id
+        objects.registry.Workflow.destroy(app_id)
+
+        # Delete app
+        db_obj = objects.registry.App.get_by_uuid(ctxt, app_id)
+        db_obj.destroy(ctxt)
 
     def deploy(self, ctxt, assembly_id, image_loc, image_name, ports):
         osc = clients.OpenStackClients(ctxt)

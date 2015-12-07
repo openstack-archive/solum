@@ -18,6 +18,7 @@ from solum.api.handlers import handler
 from solum.api.handlers import workflow_handler
 from solum.common import exception
 from solum.common import keystone_utils
+from solum.deployer import api as deploy_api
 from solum import objects
 from solum.openstack.common import log as logging
 
@@ -54,12 +55,12 @@ class AppHandler(handler.Handler):
 
     def delete(self, id):
         """Delete an existing app."""
-        # First delete workflows based on app_id
-        objects.registry.Workflow.destroy(id)
+        try:
+            objects.registry.App.get_by_uuid(self.context, id)
+        except exception.ResourceNotFound as ex:
+            raise ex
 
-        # Now delete the app
-        db_obj = objects.registry.App.get_by_uuid(self.context, id)
-        db_obj.destroy(self.context)
+        deploy_api.API(context=self.context).destroy_app(id)
 
     def create(self, data):
         """Create a new app."""
