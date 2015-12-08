@@ -15,6 +15,7 @@
 
 import datetime
 
+import six
 import wsme
 from wsme import types as wtypes
 
@@ -57,6 +58,12 @@ class App(api_types.Base):
     repo_token = wtypes.text
     created_at = datetime.datetime
 
+    parameters = {wtypes.text: api_types.MultiType(wtypes.text,
+                                                   six.integer_types,
+                                                   bool,
+                                                   float)}
+    """User defined parameters"""
+
     def __init__(self, *args, **kwargs):
         super(App, self).__init__(*args, **kwargs)
 
@@ -92,6 +99,10 @@ class App(api_types.Base):
             'stack_id',
             ]
         base = super(App, self).as_dict(db_model)
+
+        if self.parameters is not wsme.Unset:
+            base.update({'parameters': self.parameters})
+
         for a in attrs:
             if getattr(self, a) is wsme.Unset:
                 continue
