@@ -17,6 +17,17 @@ Overview
   $ solum app show <UUID/Name>
   $ curl <application_uri>
 
+Use Cases
+~~~~~~~~~
+A languagepack must exist in Solum, as every application deployed
+with Solum requires an association to a languagepack to run (even
+if the languagepack only implements a no-op). Languagepacks can be
+added to Solum in the following ways:
+
+1. Solum comes with pre-existing languagepacks
+2. Solum System Operator creates and adds languagepack(s) available for all users
+3. Solum User creates and adds languagepack(s) available only to that user
+
 Vagrant Demo Environment
 ------------------------
 
