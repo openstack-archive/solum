@@ -14,7 +14,7 @@ from barbicanclient import client as barbicanclient
 from glanceclient import client as glanceclient
 from heatclient import client as heatclient
 from keystoneclient.auth.identity import v2 as identity_v2
-from keystoneclient.openstack.common.apiclient import exceptions
+from keystoneclient import exceptions
 from keystoneclient import session
 from mistralclient.api import client as mistralclient
 import mock
