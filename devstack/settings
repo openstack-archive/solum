@@ -61,7 +61,8 @@ SOLUM_INSTALL_DRONE=True
 SOLUM_DRONE_URL=http://f4e976e84d9bb06108f6-ff40fde470ff7ecea31955ec7c479471.r49.cf2.rackcdn.com/drone.deb
 
 DEFAULT_IMAGE_NAME=cirros
-IMAGE_URLS=" "
+IMAGE_URLS=http://download.cirros-cloud.net/0.3.1/cirros-0.3.1-x86_64-uec.tar.gz
+IMAGE_URLS+=,http://cc42a68525a2dda0151c-9a7653a0ba84bd9342f239dc5349667e.r38.cf1.rackcdn.com/cedarish.qcow2
 
 #enable_service mistral
 # Enable neutron services

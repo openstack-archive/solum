@@ -15,9 +15,8 @@
 # This script is executed inside post_test_hook function in devstack gate.
 
 # Install packages from test-requirements.txt
-sudo pip install -r /opt/stack/new/solum/test-requirements.txt
 
-sudo pip uninstall tempest-lib
+sudo pip install -r /opt/stack/new/solum/test-requirements.txt
 
 sudo pip install -U tempest-lib
 

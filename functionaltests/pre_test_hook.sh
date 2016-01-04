@@ -16,8 +16,3 @@
 
 DEVSTACK_BASE=/opt/stack/new/devstack
 DEVSTACK_GATE=/opt/stack/new/devstack-gate
-
-# Install solum devstack integration
-SOLUM_BASE=/opt/stack/new/solum/contrib/devstack
-cp $SOLUM_BASE/lib/* $DEVSTACK_BASE/lib
-cp $SOLUM_BASE/extras.d/* $DEVSTACK_BASE/extras.d
