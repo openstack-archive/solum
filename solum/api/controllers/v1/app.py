@@ -12,6 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import json
+
 import pecan
 from pecan import rest
 import wsmeext.pecan as wsme_pecan
@@ -21,6 +23,7 @@ from solum.api.controllers.v1 import workflow
 from solum.api.handlers import app_handler
 from solum.common import exception
 from solum.common import request
+from solum.common import yamlutils
 from solum.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
@@ -103,6 +106,17 @@ class AppsController(rest.RestController):
         handler = app_handler.AppHandler(pecan.request.security_context)
 
         app_data = data.as_dict(app.App)
+
+        try:
+            raw_content = yamlutils.load(pecan.request.body)
+        except ValueError:
+            try:
+                raw_content = json.loads(pecan.request.body)
+            except ValueError as exp:
+                LOG.exception(exp)
+                raise exception.BadRequest(reason='Invalid app data.')
+
+        app_data['raw_content'] = json.dumps(raw_content)
 
         new_app = handler.create(app_data)
         created_app = app.App.from_db_model(new_app, pecan.request.host_url)

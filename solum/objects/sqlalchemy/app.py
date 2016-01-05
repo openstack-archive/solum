@@ -45,6 +45,7 @@ class App(sql.Base, abstract.App):
     trust_user = sa.Column(sa.String(256))
     status = sa.Column(sa.String(36))
     app_url = sa.Column(sa.String(1024))
+    raw_content = sa.Column(sa.String(2048))
 
     def _non_updatable_fields(self):
         return set(('id', 'project_id'))

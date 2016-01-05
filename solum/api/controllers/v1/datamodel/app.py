@@ -57,12 +57,16 @@ class App(api_types.Base):
     status = wtypes.text
     repo_token = wtypes.text
     created_at = datetime.datetime
+    raw_content = wtypes.text
 
-    parameters = {wtypes.text: api_types.MultiType(wtypes.text,
-                                                   six.integer_types,
-                                                   bool,
-                                                   float)}
-    """User defined parameters"""
+    parameters = wtypes.DictType(
+        wtypes.text,
+        wtypes.DictType(wtypes.text,
+                        api_types.MultiType(
+                            wtypes.text,
+                            six.integer_types,
+                            bool,
+                            float)))
 
     def __init__(self, *args, **kwargs):
         super(App, self).__init__(*args, **kwargs)
@@ -97,6 +101,7 @@ class App(api_types.Base):
             'trigger_actions',
             'workflow_config',
             'stack_id',
+            'raw_content',
             ]
         base = super(App, self).as_dict(db_model)
 

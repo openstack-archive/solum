@@ -83,6 +83,7 @@ class AppHandler(handler.Handler):
         db_obj.workflow_config = data.get('workflow_config')
         db_obj.trigger_uuid = str(uuid.uuid4())
         db_obj.trigger_actions = data.get('trigger_actions')
+        db_obj.raw_content = data.get('raw_content')
 
         db_obj.create(self.context)
         return db_obj
