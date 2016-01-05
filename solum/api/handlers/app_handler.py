@@ -101,7 +101,7 @@ class AppHandler(handler.Handler):
             self.context.user_name = app_obj.trust_user
 
         except exception.AuthorizationFailure as auth_ex:
-            LOG.warn(auth_ex)
+            LOG.warning(auth_ex)
             return
 
         # TODO(devkulkarni): Call repo_utils.verify_artifact

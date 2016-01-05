@@ -372,8 +372,8 @@ class Handler(object):
             if (not image or not image.project_id or not image.status or
                     not image.external_ref or not image.docker_image_name or
                     image.status.lower() != 'ready'):
-                LOG.warn("Error building due to language pack not ready."
-                         " assembly ID: %s" % assembly_id)
+                LOG.warning("Error building due to language pack not ready."
+                            " assembly ID: %s" % assembly_id)
                 job_update_notification(ctxt, build_id, IMAGE_STATES.ERROR,
                                         description='language pack not ready',
                                         assembly_id=assembly_id)
@@ -500,8 +500,8 @@ class Handler(object):
             if (not image or not image.project_id or not image.status or
                     not image.external_ref or not image.docker_image_name or
                     image.status.lower() != 'ready'):
-                LOG.warn("Error running unittest due to language pack"
-                         " not ready. assembly ID: %s" % assembly_id)
+                LOG.warning("Error running unittest due to language pack"
+                            " not ready. assembly ID: %s" % assembly_id)
                 update_assembly_status(ctxt, assembly_id,
                                        ASSEMBLY_STATES.ERROR)
                 return

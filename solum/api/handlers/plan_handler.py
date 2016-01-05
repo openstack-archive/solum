@@ -191,7 +191,7 @@ class PlanHandler(handler.Handler):
             self.context.user_name = plan_obj.username
 
         except exception.AuthorizationFailure as auth_ex:
-            LOG.warn(auth_ex)
+            LOG.warning(auth_ex)
             return
 
         artifacts = plan_obj.raw_content.get('artifacts', [])
