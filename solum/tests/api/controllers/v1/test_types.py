@@ -84,7 +84,7 @@ class TestMultiType(base.BaseTestCase):
         value = vt.validate("somestring")
         self.assertEqual("somestring", value)
         value = vt.validate(True)
-        self.assertEqual(True, value)
+        self.assertTrue(value)
 
     def test_invalid_values(self):
         vt = api_types.MultiType(wtypes.text, bool)
