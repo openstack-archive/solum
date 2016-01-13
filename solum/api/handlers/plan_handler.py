@@ -46,6 +46,11 @@ API_PARAMETER_OPTS = [
                     "system_param_store is set to 'local_file'"),
 ]
 
+
+def list_opts():
+    yield 'api', API_PARAMETER_OPTS
+
+
 CONF = cfg.CONF
 CONF.register_opts(API_PARAMETER_OPTS, group='api')
 

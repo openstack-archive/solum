@@ -21,6 +21,11 @@ OPTS = [
                help='The current build of Solum.'),
 ]
 
+
+def list_opts():
+    yield None, OPTS
+
+
 CONF = cfg.CONF
 CONF.register_opts(OPTS)
 

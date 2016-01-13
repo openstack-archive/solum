@@ -41,6 +41,12 @@ AUTH_OPTS = [
                help='The keystone version to use with Solum'),
 ]
 
+
+def list_opts():
+    yield None, AUTH_OPTS
+    yield None, trust_opts
+
+
 cfg.CONF.register_opts(AUTH_OPTS)
 
 cfg.CONF.import_opt('lp_operator_user', 'solum.worker.config', group='worker')

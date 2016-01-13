@@ -24,6 +24,11 @@ AUTH_OPTS = [
                help='Tenant id of global admin'),
 ]
 
+
+def list_opts():
+    yield None, AUTH_OPTS
+
+
 CONF = cfg.CONF
 CONF.register_opts(AUTH_OPTS)
 

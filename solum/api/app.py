@@ -41,6 +41,13 @@ API_PLAN_OPTS = [
 CONF = cfg.CONF
 opt_group = cfg.OptGroup(name='api',
                          title='Options for the solum-api service')
+
+
+def list_opts():
+    yield 'api', API_SERVICE_OPTS
+    yield None, API_PLAN_OPTS
+
+
 CONF.register_group(opt_group)
 CONF.register_opts(API_SERVICE_OPTS, opt_group)
 CONF.register_opts(API_PLAN_OPTS)

@@ -37,6 +37,11 @@ API_SERVICE_OPTS = [
                help='Comment phrase to trigger rebuilding'),
 ]
 
+
+def list_opts():
+    yield 'api', API_SERVICE_OPTS
+
+
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 CONF.register_opts(API_SERVICE_OPTS, group='api')
