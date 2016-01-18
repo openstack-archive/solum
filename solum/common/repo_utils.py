@@ -78,8 +78,9 @@ def send_status(test_result, status_url, repo_token, pending=False):
                           "status_url %s, repo_token %s" %
                           (resp['status'], status_url, repo_token))
         except (httplib2.HttpLib2Error, socket.error) as ex:
-            LOG.warn("Error in sending status, status url: %s, repo token: %s,"
-                     " error: %s" % (status_url, repo_token, ex))
+            LOG.warning(
+                "Error in sending status, status url: %s, repo token: %s,"
+                " error: %s" % (status_url, repo_token, ex))
     else:
         LOG.debug("No url or token available to send back status")
 
@@ -104,6 +105,6 @@ def verify_artifact(artifact, collab_url):
                 reason="User %s not allowed to do rebuild" %
                        collab_url.split('/')[-1])
     except (httplib2.HttpLib2Error, socket.error) as ex:
-        LOG.warn("Error in verifying collaborator, collab url: %s,"
-                 " error: %s" % (collab_url, ex))
+        LOG.warning("Error in verifying collaborator, collab url: %s,"
+                    " error: %s" % (collab_url, ex))
     return False

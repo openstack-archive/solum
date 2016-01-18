@@ -68,7 +68,7 @@ class AssemblyHandler(handler.Handler):
             self.context = keystone_utils.create_delegation_context(
                 db_obj, self.context)
         except exception.AuthorizationFailure as auth_ex:
-            LOG.warn(auth_ex)
+            LOG.warning(auth_ex)
             return
 
         plan_obj = objects.registry.Plan.get_by_id(self.context,

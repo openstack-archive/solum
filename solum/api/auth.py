@@ -152,8 +152,8 @@ class AuthInformationHook(hooks.PecanHook):
             # Fallback to deprecated role header:
             roles = req.headers.get('X-Role', '')
             if roles:
-                LOG.warn(_("X-Roles is missing. Using deprecated X-Role "
-                           "header"))
+                LOG.warning(_("X-Roles is missing. Using deprecated X-Role "
+                              "header"))
         return [r.strip() for r in roles.split(',')]
 
 

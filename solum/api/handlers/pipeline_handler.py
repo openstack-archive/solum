@@ -59,7 +59,7 @@ class PipelineHandler(handler.Handler):
         try:
             self.context = self._context_from_trust_id(db_obj.trust_id)
         except exception.AuthorizationFailure as auth_ex:
-            LOG.warn(auth_ex)
+            LOG.warning(auth_ex)
             return
 
         self._execute_workbook(db_obj)
