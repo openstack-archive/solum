@@ -47,7 +47,7 @@ class ClientsTest(base.BaseTestCase):
         mock_sess.return_value = "keystone_session"
         mock_call.return_value = "barbican_client_handle"
         obj = clients.OpenStackClients(None)
-        self.assertEqual(None, obj._barbican)
+        self.assertIsNone(obj._barbican)
         obj.barbican().admin_client
         self.assertNotEqual(None, obj._barbican)
         mock_call.assert_called_once_with(session='keystone_session')
