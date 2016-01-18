@@ -1,0 +1,7 @@
+version: 1
+name: ex1
+description: Nodejs express.
+languagepack: javascript
+source:
+  repository: https://github.com/paulczar/example-nodejs-express.git
+  revision: master

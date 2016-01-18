@@ -1,0 +1,7 @@
+version: 1
+name: docker_registry
+description: docker registry
+languagepack: docker
+source:
+  repository: https://github.com/dotcloud/docker-registry.git
+  revision: master
