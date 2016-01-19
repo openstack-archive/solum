@@ -42,6 +42,7 @@ class Workflow(sql.Base, abstract.Workflow):
     actions = sa.Column(sql.YAMLEncodedDict(1024))
     assembly = sa.Column(sa.Integer())
     status = sa.Column(sa.String(36))
+    result = sa.Column(sa.Text)
 
     def _non_updatable_fields(self):
         return set(('id', 'project_id'))
