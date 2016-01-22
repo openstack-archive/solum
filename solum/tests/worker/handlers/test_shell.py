@@ -20,6 +20,7 @@ import uuid
 import mock
 from oslo_config import cfg
 
+from solum.common import exception
 from solum.openstack.common.gettextutils import _
 from solum.tests import base
 from solum.tests import fakes
@@ -88,6 +89,58 @@ class HandlerTest(base.BaseTestCase):
     def setUp(self):
         super(HandlerTest, self).setUp()
         self.ctx = utils.dummy_context()
+
+    @mock.patch('solum.common.clients.OpenStackClients')
+    def test_get_du_details_glance(self, mock_client):
+        handler = shell_handler.Handler()
+        du_id = 'dummy_du_id'
+        cfg.CONF.set_override('image_storage', 'glance',
+                              group='worker')
+        fake_du = fakes.FakeImage()
+        fake_du.id = 2
+        fake_du.name = 'name'
+
+        mock_glance = mock_client.return_value.glance
+        mock_get = mock_glance.return_value.images.get
+        mock_get.return_value = fake_du
+
+        du_loc, du_name = handler.get_du_details(self.ctx, du_id)
+
+        self.assertTrue(mock_get.called)
+        self.assertTrue(du_loc, 2)
+        self.assertTrue(du_name, 'name')
+
+    @mock.patch('solum.common.clients.OpenStackClients')
+    def test_get_du_details_GLANCE(self, mock_client):
+        handler = shell_handler.Handler()
+        du_id = 'dummy_du_id'
+        cfg.CONF.set_override('image_storage', 'GLANCE',
+                              group='worker')
+        fake_du = fakes.FakeImage()
+        fake_du.id = 2
+        fake_du.name = 'name'
+
+        mock_glance = mock_client.return_value.glance
+        mock_get = mock_glance.return_value.images.get
+        mock_get.return_value = fake_du
+
+        du_loc, du_name = handler.get_du_details(self.ctx, du_id)
+
+        self.assertTrue(mock_get.called)
+        self.assertTrue(du_loc, 2)
+        self.assertTrue(du_name, 'name')
+
+    @mock.patch('solum.common.clients.OpenStackClients')
+    def test_get_du_details_swift(self, mock_client):
+        handler = shell_handler.Handler()
+        du_id = 'dummy_du_id'
+        cfg.CONF.set_override('image_storage', 'swift',
+                              group='worker')
+        try:
+            handler.get_du_details(self.ctx, du_id)
+            self.assertTrue(False)
+        except exception.NotImplemented:
+            self.assertTrue(True)
 
     @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
     @mock.patch('solum.objects.registry')
@@ -223,7 +276,7 @@ class HandlerTest(base.BaseTestCase):
             workflow=['unittest', 'build', 'deploy'], ports=[80],
             name='new_app', base_image_id=self.base_image_id,
             source_format='heroku', image_format='docker', assembly_id=44,
-            test_cmd=None, run_cmd=None)
+            test_cmd=None, run_cmd=None, du_id=None)
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
@@ -289,7 +342,7 @@ class HandlerTest(base.BaseTestCase):
             workflow=['unitetst', 'build', 'deploy'], ports=[80],
             name='new_app', base_image_id=self.base_image_id,
             source_format='heroku', image_format='docker', assembly_id=44,
-            test_cmd=None, run_cmd=None)
+            test_cmd=None, run_cmd=None, du_id=None)
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
@@ -497,7 +550,7 @@ class HandlerTest(base.BaseTestCase):
             workflow=['unittest', 'build', 'deploy'], ports=[80],
             name='new_app', base_image_id=self.base_image_id,
             source_format='heroku', image_format='docker', assembly_id=44,
-            test_cmd='faketests', run_cmd=None)
+            test_cmd='faketests', run_cmd=None, du_id=None)
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
@@ -553,7 +606,8 @@ class HandlerTest(base.BaseTestCase):
             self.ctx, build_id=5, git_info=git_info, name='new_app',
             base_image_id=self.base_image_id, source_format='chef',
             image_format='docker', assembly_id=44, ports=[80],
-            test_cmd='faketests', run_cmd=None, workflow=['unittest', 'build'])
+            test_cmd='faketests', run_cmd=None, workflow=['unittest', 'build'],
+            du_id=None)
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))

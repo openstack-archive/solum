@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from oslo_config import cfg
 import pecan
 from pecan import rest
 import wsmeext.pecan as wsme_pecan
@@ -20,11 +21,14 @@ from solum.api.controllers.v1.datamodel import workflow
 from solum.api.controllers.v1 import userlog as userlog_controller
 from solum.api.handlers import app_handler
 from solum.api.handlers import workflow_handler as wf_handler
+from solum.common import clients
 from solum.common import exception
 from solum.common import request
 from solum.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
+
+cfg.CONF.import_opt('image_storage', 'solum.worker.config', group='worker')
 
 
 class WorkflowController(rest.RestController):
@@ -87,9 +91,16 @@ class WorkflowsController(rest.RestController):
         data.source = app_model.source
 
         wf_data = data.as_dict(workflow.Workflow)
+
+        du_id = None
+        if data.du_id:
+            du_id = data.du_id
+            self._verify_du_exists(pecan.request.security_context, du_id)
+
         return workflow.Workflow.from_db_model(handler.create(wf_data,
                                                               commit_sha='',
-                                                              status_url=''),
+                                                              status_url='',
+                                                              du_id=du_id),
                                                pecan.request.host_url)
 
     @exception.wrap_pecan_controller_exception
@@ -102,3 +113,22 @@ class WorkflowsController(rest.RestController):
                                                    pecan.request.host_url)
                    for obj in handler.get_all(app_id=self.app_id)]
         return all_wfs
+
+    def _verify_du_exists(self, ctxt, du_id):
+        du_image_backend = cfg.CONF.worker.image_storage
+        if du_image_backend.lower() == 'glance':
+            self._verify_du_image_exists_in_glance(ctxt, du_id)
+        elif du_image_backend.lower() == 'swift':
+            self._verify_du_image_exists_in_swift(ctxt, du_id)
+        else:
+            raise exception.BadRequest(message="DU image id not recognized.")
+        return
+
+    def _verify_du_image_exists_in_glance(self, ctxt, du_id):
+        osc = clients.OpenStackClients(ctxt)
+        osc.glance().images.get(du_id)
+        return
+
+    def _verify_du_image_exists_in_swift(self, du_id):
+        # TODO(devkulkarni): Check if specified du_id exists in swift
+        return

@@ -51,6 +51,7 @@ class Workflow(wtypes.Base):
     source = {wtypes.text: wtypes.text}
     config = {wtypes.text: wtypes.text}
     actions = [wtypes.text]
+    du_id = wtypes.text
     status = wtypes.text
     result = wtypes.text
     scale_target = wtypes.text

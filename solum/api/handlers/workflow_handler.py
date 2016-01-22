@@ -89,7 +89,7 @@ class WorkflowHandler(handler.Handler):
         db_obj = objects.registry.Workflow.get_by_uuid(self.context, id)
         db_obj.destroy(self.context)
 
-    def create(self, data, commit_sha, status_url):
+    def create(self, data, commit_sha, status_url, du_id):
         """Create a new workflow."""
         db_obj = objects.registry.Workflow()
         db_obj.id = str(uuid.uuid4())
@@ -120,7 +120,8 @@ class WorkflowHandler(handler.Handler):
         workflow.Workflow.insert(self.context, db_obj)
 
         self._execute_workflow_actions(db_obj, app_obj, assem,
-                                       commit_sha=app_obj.source['revision'])
+                                       commit_sha=app_obj.source['revision'],
+                                       du_id=du_id)
 
         # TODO(devkulkarni): Update status of actions
 
@@ -137,7 +138,8 @@ class WorkflowHandler(handler.Handler):
 
     def _execute_workflow_actions(self, wf_obj, app_obj, assem,
                                   verb='launch_workflow',
-                                  commit_sha='', status_url=None):
+                                  commit_sha='', status_url=None,
+                                  du_id=None):
         image = objects.registry.Image()
 
         image.name = app_obj.name
@@ -182,7 +184,8 @@ class WorkflowHandler(handler.Handler):
             assembly_id=assem.id,
             workflow=assem.workflow,
             test_cmd=test_cmd,
-            run_cmd=run_cmd)
+            run_cmd=run_cmd,
+            du_id=du_id)
 
 
 class PlanAssemblyAdapter():
