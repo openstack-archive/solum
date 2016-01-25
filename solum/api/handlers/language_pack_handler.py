@@ -37,6 +37,11 @@ API_SERVICE_OPTS = [
                help='Tenant id of the operator account used to create LPs'),
 ]
 
+
+def list_opts():
+    yield 'api', API_SERVICE_OPTS
+
+
 CONF = cfg.CONF
 CONF.register_opts(API_SERVICE_OPTS, group='api')
 

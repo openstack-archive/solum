@@ -29,5 +29,11 @@ SERVICE_OPTS = [
 opt_group = cfg.OptGroup(
     name='conductor',
     title='Options for the solum-conductor service')
+
+
+def list_opts():
+    yield opt_group, SERVICE_OPTS
+
+
 cfg.CONF.register_group(opt_group)
 cfg.CONF.register_opts(SERVICE_OPTS, opt_group)

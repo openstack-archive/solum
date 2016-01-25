@@ -43,6 +43,11 @@ exc_log_opts = [
                 help='make exception message format errors fatal')
 ]
 
+
+def list_opts():
+    yield None, exc_log_opts
+
+
 CONF = cfg.CONF
 CONF.register_opts(exc_log_opts)
 

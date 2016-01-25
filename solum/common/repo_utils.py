@@ -30,6 +30,11 @@ http_timeout_opt = [
                help='Timeout value in seconds for sending http requests')
 ]
 
+
+def list_opts():
+    yield 'api', http_timeout_opt
+
+
 CONF = cfg.CONF
 CONF.register_opts(http_timeout_opt, group='api')
 

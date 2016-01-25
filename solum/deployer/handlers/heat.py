@@ -74,6 +74,11 @@ SERVICE_OPTS = [
                help='Deployer logs location'),
 ]
 
+
+def list_opts():
+    yield 'deployer', SERVICE_OPTS
+
+
 cfg.CONF.register_opts(SERVICE_OPTS, group='deployer')
 cfg.CONF.import_opt('image_format', 'solum.api.handlers.assembly_handler',
                     group='api')

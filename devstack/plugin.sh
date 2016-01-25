@@ -85,7 +85,7 @@ function configure_solum() {
     # Generate sample config and configure common parameters.
     mkdir -p /tmp/solum
     pushd $SOLUM_DIR
-        OUTPUTDIR=/tmp/solum/ ./tools/config/generate_sample.sh
+        oslo-config-generator --config-file=${SOLUM_DIR}/etc/solum/config-generator.conf --output-file=/tmp/solum/solum.conf.sample
     popd
     cp /tmp/solum/solum.conf.sample $SOLUM_CONF_DIR/$SOLUM_CONF_FILE
 

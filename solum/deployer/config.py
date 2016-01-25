@@ -32,5 +32,11 @@ SERVICE_OPTS = [
 opt_group = cfg.OptGroup(
     name='deployer',
     title='Options for the solum-deployer service')
+
+
+def list_opts():
+    yield opt_group, SERVICE_OPTS
+
+
 cfg.CONF.register_group(opt_group)
 cfg.CONF.register_opts(SERVICE_OPTS, opt_group)

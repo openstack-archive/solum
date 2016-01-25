@@ -37,6 +37,11 @@ db_opts = [
                     "running: 'old', 'transition', 'new'")
 ]
 
+
+def list_opts():
+    yield "database", db_opts
+
+
 CONF = cfg.CONF
 CONF.register_opts(db_opts, "database")
 

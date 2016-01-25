@@ -24,6 +24,11 @@ OPTS = [
                help='The location the source code.'),
 ]
 
+
+def list_opts():
+    yield None, OPTS
+
+
 CONF = cfg.CONF
 CONF.register_opts(OPTS)
 

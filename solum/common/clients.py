@@ -148,6 +148,18 @@ mistral_client_opts = [
                 help=_("If set the server certificate will not be verified "
                        "while using Mistral."))]
 
+
+def list_opts():
+    yield None, GLOBAL_CLIENT_OPTS
+    yield 'barbican_client', barbican_client_opts
+    yield 'glance_client', glance_client_opts
+    yield 'heat_client', heat_client_opts
+    yield 'zaqar_client', zaqar_client_opts
+    yield 'neutron_client', neutron_client_opts
+    yield 'swift_client', swift_client_opts
+    yield 'mistral_client', mistral_client_opts
+
+
 cfg.CONF.register_opts(GLOBAL_CLIENT_OPTS)
 cfg.CONF.register_opts(barbican_client_opts, group='barbican_client')
 cfg.CONF.register_opts(glance_client_opts, group='glance_client')

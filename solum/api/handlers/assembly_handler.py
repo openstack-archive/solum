@@ -28,6 +28,9 @@ from solum.objects import image
 from solum.openstack.common import log as logging
 from solum.worker import api as worker_api
 
+
+LOG = logging.getLogger(__name__)
+
 # Register options for the service
 API_SERVICE_OPTS = [
     cfg.StrOpt('image_format',
@@ -41,7 +44,11 @@ API_SERVICE_OPTS = [
                help='Comment phrase to trigger rebuilding'),
 ]
 
-LOG = logging.getLogger(__name__)
+
+def list_opts():
+    yield 'api', API_SERVICE_OPTS
+
+
 CONF = cfg.CONF
 CONF.register_opts(API_SERVICE_OPTS, group='api')
 

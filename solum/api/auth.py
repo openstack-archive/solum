@@ -36,6 +36,11 @@ AUTH_OPTS = [
                 'via keystone. Default value is True.'),
 ]
 
+
+def list_opts():
+    yield None, AUTH_OPTS
+
+
 CONF = cfg.CONF
 CONF.register_opts(AUTH_OPTS)
 

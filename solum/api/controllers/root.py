@@ -36,6 +36,11 @@ CAMP_API_OPTS = [
                       "API. Default value is True."))
 ]
 
+
+def list_opts():
+    yield camp_group, CAMP_API_OPTS
+
+
 CONF = cfg.CONF
 CONF.register_group(camp_group)
 CONF.register_opts(CAMP_API_OPTS, group=camp_group)
