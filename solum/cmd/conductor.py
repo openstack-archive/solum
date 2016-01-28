@@ -20,7 +20,8 @@ import sys
 
 from oslo_config import cfg
 
-from solum.common.rpc import service
+from solum.common.rpc import service as rpc_service
+from solum.common import service
 from solum.conductor.handlers import default as default_handler
 from solum.openstack.common.gettextutils import _
 from solum.openstack.common import log as logging
@@ -29,8 +30,7 @@ LOG = logging.getLogger(__name__)
 
 
 def main():
-    cfg.CONF(sys.argv[1:], project='solum')
-    logging.setup('solum')
+    service.prepare_service(sys.argv)
 
     LOG.info(_('Starting server in PID %s') % os.getpid())
     LOG.debug("Configuration:")
@@ -41,6 +41,6 @@ def main():
     endpoints = [
         default_handler.Handler(),
     ]
-    server = service.Service(cfg.CONF.conductor.topic,
-                             cfg.CONF.conductor.host, endpoints)
+    server = rpc_service.Service(cfg.CONF.conductor.topic,
+                                 cfg.CONF.conductor.host, endpoints)
     server.serve()
