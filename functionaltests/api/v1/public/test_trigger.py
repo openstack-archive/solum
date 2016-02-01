@@ -13,57 +13,16 @@
 import json
 
 import requests
-import yaml
 
 from functionaltests.api import base
-from functionaltests.api.common import apputils
-
-
-assembly_data = {'name': 'test_assembly',
-                 'description': 'desc assembly'}
-
-plan_data = {'version': '1',
-             'name': 'test_plan',
-             'artifacts': [],
-             'description': 'A test to create plan'}
 
 
 class TestTriggerController(base.TestCase):
 
-    def _create_assembly(self):
-        plan_uuid, trigger_uri = self._create_plan()
-        assembly_data['plan_uri'] = "%s/v1/plans/%s" % (self.client.base_url,
-                                                        plan_uuid)
-        data = json.dumps(assembly_data)
-        resp, body = self.client.post('v1/assemblies', data)
-        self.assertEqual(resp.status, 201)
-        out_data = json.loads(body)
-        uuid = out_data['uuid']
-        self.assertIsNotNone(uuid)
-        return uuid, plan_uuid, trigger_uri
-
-    def _create_plan(self):
-        data = yaml.dump(plan_data)
-        resp, body = self.client.post(
-            'v1/plans', data,
-            headers={'content-type': 'application/x-yaml'})
-        self.assertEqual(resp.status, 201)
-        out_data = yaml.load(body)
-        uuid = out_data['uuid']
-        trigger_uri = out_data['trigger_uri']
-        self.assertIsNotNone(uuid)
-        self.assertIsNotNone(trigger_uri)
-        return uuid, trigger_uri
-
-    def _create_app(self):
-        data = apputils.get_sample_data()
-        resp = self.client.create_app(data=data)
+    def test_trigger_post(self):
+        resp = self.client.create_app()
         bdy = json.loads(resp.body)
         trigger_uri = bdy['trigger_uri']
-        return trigger_uri
-
-    def test_trigger_post(self):
-        trigger_uri = self._create_app()
         # Using requests instead of self.client to test unauthenticated request
         status_url = 'https://api.github.com/repos/u/r/statuses/{sha}'
         body_dict = {'sender': {'url': 'https://api.github.com'},
@@ -74,21 +33,9 @@ class TestTriggerController(base.TestCase):
         self.assertEqual(resp.status_code, 202)
 
     def test_trigger_post_with_empty_body(self):
-        assembly_uuid, plan_uuid, trigger_uri = self._create_assembly()
+        resp = self.client.create_app()
+        bdy = json.loads(resp.body)
+        trigger_uri = bdy['trigger_uri']
         # Using requests instead of self.client to test unauthenticated request
         resp = requests.post(trigger_uri)
         self.assertEqual(resp.status_code, 400)
-
-        self._delete_assembly(assembly_uuid, plan_uuid)
-
-    def _delete_assembly(self, assembly_uuid, plan_uuid):
-        resp, body = self.client.delete('v1/assemblies/%s' % assembly_uuid)
-        self.assertEqual(resp.status, 204)
-        self.assertTrue(self.client.assembly_delete_done(assembly_uuid))
-        self._delete_plan(plan_uuid)
-
-    def _delete_plan(self, plan_uuid):
-        resp, body = self.client.delete(
-            'v1/plans/%s' % plan_uuid,
-            headers={'content-type': 'application/x-yaml'})
-        self.assertEqual(resp.status, 202)
