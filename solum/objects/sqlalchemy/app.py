@@ -46,6 +46,7 @@ class App(sql.Base, abstract.App):
     status = sa.Column(sa.String(36))
     app_url = sa.Column(sa.String(1024))
     raw_content = sa.Column(sa.String(2048))
+    scale_config = sa.Column(sql.JSONEncodedDict(1024))
 
     def _non_updatable_fields(self):
         return set(('id', 'project_id'))
