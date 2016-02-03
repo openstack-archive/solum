@@ -87,6 +87,33 @@ cfg.CONF.import_opt('image_storage', 'solum.worker.config', group='worker')
 deployer_log_dir = cfg.CONF.deployer.deployer_log_dir
 
 
+def save_du_ref_for_scaling(ctxt, assembly_id, du=None):
+
+    try:
+        wf = objects.registry.Workflow.get_by_assembly_id(assembly_id)
+    except sqla_exc.SQLAlchemyError as ex:
+        LOG.error("Failed to get workflow corresponding "
+                  "to assembly %s" % assembly_id)
+        LOG.exception(ex)
+        return
+
+    if wf is not None:
+        try:
+            app = objects.registry.App.get_by_id(ctxt, wf.app_id)
+            current_scale_config = app.scale_config
+            if current_scale_config:
+                current_config = current_scale_config[app.name]
+                current_config['du'] = du
+                current_scale_config[app.name] = current_config
+                scale_config = dict()
+                scale_config['scale_config'] = current_scale_config
+                objects.registry.App.update_and_save(ctxt, app.id,
+                                                     scale_config)
+        except sqla_exc.SQLAlchemyError as ex:
+            LOG.error("Failed to update app scale_config: %s" % app.id)
+            LOG.exception(ex)
+
+
 def update_wf_and_app(ctxt, assembly_id, data):
     # Update workflow and app objects
     data_dict = dict()
@@ -336,7 +363,14 @@ class Handler(object):
         db_obj = objects.registry.App.get_by_uuid(ctxt, app_id)
         db_obj.destroy(ctxt)
 
+    def scale(self, ctxt, assembly_id):
+        # TODO(devkulkarni) Find out scale target by querying the app table
+        # deploy that many number of dus
+        raise exception.NotImplemented()
+
     def deploy(self, ctxt, assembly_id, image_loc, image_name, ports):
+        save_du_ref_for_scaling(ctxt, assembly_id, du=image_loc)
+
         osc = clients.OpenStackClients(ctxt)
 
         assem = objects.registry.Assembly.get_by_id(ctxt,

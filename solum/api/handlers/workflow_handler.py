@@ -54,6 +54,26 @@ LOG = logging.getLogger(__name__)
 class WorkflowHandler(handler.Handler):
     """Fulfills a request on the workflow resource."""
 
+    def _update_app_scale_config(self, app, data):
+
+        scale_config = dict()
+        target = data.get('scale_target', '1')
+        current_config = app.scale_config
+
+        if current_config:
+            current_config[app.name]['target'] = target
+            scale_config['scale_config'] = current_config
+        else:
+            config_data = dict()
+            config_data['target'] = target
+            app_scale_config = dict()
+            app_scale_config[app.name] = config_data
+            scale_config = dict()
+            scale_config['scale_config'] = app_scale_config
+
+        objects.registry.App.update_and_save(self.context, app.id,
+                                             scale_config)
+
     def get(self, id):
         """Return a workflow."""
         wf = objects.registry.Workflow.get_by_uuid(self.context, id)
@@ -88,6 +108,8 @@ class WorkflowHandler(handler.Handler):
 
         app_obj = objects.registry.App.get_by_id(self.context,
                                                  db_obj.app_id)
+
+        self._update_app_scale_config(app_obj, data)
 
         plan, assem = PlanAssemblyAdapter(self.context,
                                           db_obj,

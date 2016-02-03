@@ -86,6 +86,7 @@ class FakeApp(mock.Mock):
         }
         self.stack_id = ''
         self.trigger_actions = ["unittest", "build", "deploy"]
+        self.scale_config = dict()
 
     def as_dict(self):
         return {

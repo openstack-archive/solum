@@ -342,9 +342,17 @@ class Handler(object):
                 ctxt, build_id, git_info, name, base_image_id, source_format,
                 image_format, assembly_id, run_cmd)
 
-        if 'deploy' in workflow and du_image_loc and du_image_name:
-            self._do_deploy(ctxt, assembly_id, ports, du_image_loc,
-                            du_image_name)
+        if 'deploy' in workflow:
+            if du_image_loc and du_image_name:
+                self._do_deploy(ctxt, assembly_id, ports, du_image_loc,
+                                du_image_name)
+            else:
+                LOG.warning("Deploy called without DU details. "
+                            "Cannot continue.")
+                return
+
+        if 'scale' in workflow:
+            self._do_scale(ctxt, assembly_id)
 
     def build(self, ctxt, build_id, git_info, name, base_image_id,
               source_format, image_format, assembly_id, run_cmd):
@@ -362,6 +370,9 @@ class Handler(object):
                                               image_loc=du_image_loc,
                                               image_name=du_image_name,
                                               ports=ports)
+
+    def _do_scale(self, ctxt, assembly_id):
+        deployer_api.API(context=ctxt).scale(assembly_id=assembly_id)
 
     def _do_build(self, ctxt, build_id, git_info, name, base_image_id,
                   source_format, image_format, assembly_id, run_cmd):

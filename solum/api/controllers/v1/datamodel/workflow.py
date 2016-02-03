@@ -53,6 +53,7 @@ class Workflow(wtypes.Base):
     actions = [wtypes.text]
     status = wtypes.text
     result = wtypes.text
+    scale_target = wtypes.text
 
     def __init__(self, *args, **kwargs):
         super(Workflow, self).__init__(*args, **kwargs)
@@ -94,7 +95,8 @@ class Workflow(wtypes.Base):
             'config',
             'actions',
             'status',
-            'result'
+            'result',
+            'scale_target'
             ]
         for a in attrs:
             if getattr(self, a) is wsme.Unset:

@@ -30,6 +30,9 @@ class API(service.API):
         self._cast('deploy', assembly_id=assembly_id, image_loc=image_loc,
                    image_name=image_name, ports=ports)
 
+    def scale(self, assembly_id):
+        self._cast('scale', assembly_id=assembly_id)
+
     def destroy_assembly(self, assem_id):
         self._cast('destroy_assembly', assem_id=assem_id)
 
