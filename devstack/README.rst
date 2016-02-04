@@ -2,7 +2,7 @@
 Enabling Solum in DevStack
 ==========================
 
-1. Install Docker version 1.7.0 using following steps (Solum has been tested with this version of Docker):
+1. Install Docker version 1.7.0 using following steps (Solum has been tested with this version of Docker)::
 
     echo deb http://get.docker.com/ubuntu docker main | sudo tee /etc/apt/sources.list.d/docker.list
     sudo apt-key adv --keyserver pgp.mit.edu --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
