@@ -22,6 +22,10 @@ set -o xtrace
 # Defaults
 # --------
 
+GITREPO["solum-dashboard"]=${SOLUMDASHBOARD_REPO:-${GIT_BASE}/openstack/solum-dashboard.git}
+GITBRANCH["solum-dashboard"]=${SOLUMDASHBOARD_BRANCH:-master}
+GITDIR["solum-dashboard"]=$DEST/solum-dashboard
+
 # Support entry points installation of console scripts
 if [[ -d $SOLUM_DIR/bin ]]; then
     SOLUM_BIN_DIR=$SOLUM_DIR/bin
@@ -302,6 +306,17 @@ function install_docker() {
     solum_install_docker_registry
 }
 
+function install_solum_dashboard() {
+    git_clone_by_name "solum-dashboard"
+    setup_dev_lib "solum-dashboard"
+    ln -s $DEST/solum-dashboard/_50_solum.py.example $HORIZON_DIR/openstack_dashboard/local/enabled/_50_solum.py
+    restart_apache_server
+}
+
+function cleanup_solum_dashboard() {
+    rm $HORIZON_DIR/openstack_dashboard/local/enabled/_50_solum.py
+}
+
 # start_solum() - Start running processes, including screen
 function start_solum() {
     screen_it solum-api "cd $SOLUM_DIR && $SOLUM_BIN_DIR/solum-api --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE"
@@ -387,6 +402,10 @@ if is_service_enabled solum-api solum-conductor solum-deployer solum-worker; the
         echo_summary "Installing Solum"
         install_solum
         install_solumclient
+        if is_service_enabled horizon; then
+            echo_summary "Installing Solum Dashboard"
+            install_solum_dashboard
+        fi
     elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
         echo_summary "Configuring Solum"
         add_solum_user
@@ -404,6 +423,10 @@ if is_service_enabled solum-api solum-conductor solum-deployer solum-worker; the
 
     if [[ "$1" == "unstack" ]]; then
         stop_solum
+        if is_service_enabled horizon; then
+            echo_summary "Cleaning Solum Dashboard up"
+            cleanup_solum_dashboard
+        fi
     fi
 fi
 
