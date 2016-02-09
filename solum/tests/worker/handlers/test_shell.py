@@ -588,7 +588,7 @@ class HandlerUtilityTest(base.BaseTestCase):
     @mock.patch('six.moves.builtins.open')
     @mock.patch('os.makedirs')
     def test_get_parameter_files(self, mock_mkdirs, mock_open, mock_param):
-        mock_param.return_value = fakes.FakeParameter()
+        mock_param.return_value = {"user_params": {'key': 'ab"cd'}}
         fake_build_id = '1-2-3-4'
         cfg.CONF.set_override('param_file_path', '/tmp/test', group='worker')
         path = '/tmp/test/' + fake_build_id

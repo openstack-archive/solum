@@ -16,6 +16,7 @@
 
 import ast
 import base64
+import json
 import os
 import random
 import shelve
@@ -97,6 +98,13 @@ def get_parameter_by_assem_id(ctxt, assembly_id):
     assem = get_assembly_by_id(ctxt, assembly_id)
     param_obj = solum.objects.registry.Parameter.get_by_plan_id(ctxt,
                                                                 assem.plan_id)
+
+    if not param_obj:
+        plan = solum.objects.registry.Plan.get_by_id(ctxt, assem.plan_id)
+        app = solum.objects.registry.App.get_by_id(ctxt, plan.uuid)
+        app = json.loads(app.raw_content)
+        param_obj = app['parameters']
+
     return param_obj
 
 
@@ -298,8 +306,8 @@ class Handler(object):
 
         with open(user_param_file, 'w') as f:
             f.write("#!/bin/bash\n")
-            if param_obj.user_defined_params:
-                for k, v in param_obj.user_defined_params.items():
+            if param_obj.get('user_params'):
+                for k, v in param_obj['user_params'].items():
                     if k and k.startswith('_SYSTEM'):
                         # Variables for control purpose, e.g. _SYSTEM_USE_DRONE
                         param_env[k] = _sanitize_param(v)
@@ -307,8 +315,8 @@ class Handler(object):
                         f.write("export %s=%s\n" % (k, _sanitize_param(v)))
         with open(solum_param_file, 'w') as f:
             f.write("#!/bin/bash\n")
-            if param_obj.sys_defined_params:
-                for k, v in param_obj.sys_defined_params.items():
+            if param_obj.get('solum_params'):
+                for k, v in param_obj['solum_params'].items():
                     if k == 'REPO_DEPLOY_KEYS':
                         # Pass in deploy key as an environment variable
                         param_env[k] = self._get_private_key(v, source_uri)
