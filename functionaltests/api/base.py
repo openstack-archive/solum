@@ -27,6 +27,9 @@ from tempest_lib.common import rest_client
 import testtools
 import yaml
 
+from functionaltests.api.common import apputils
+
+
 CONF = config.CONF
 
 assembly_sample_data = {"name": "test_assembly",
@@ -122,7 +125,7 @@ class SolumClient(rest_client.RestClient):
         return plan_resp
 
     def create_app(self, data=None):
-        app_data = copy.deepcopy(data)
+        app_data = copy.deepcopy(data) or apputils.get_sample_data()
         json_data = json.dumps(app_data)
         resp, body = self.post('v1/apps', json_data)
 
@@ -201,6 +204,10 @@ class TestCase(testtools.TestCase):
         auth_provider = manager.get_auth_provider(credentials)
         self.client = SolumClient(auth_provider)
         self.builderclient = SolumClient(auth_provider, 'image_builder')
+
+    def tearDown(self):
+        super(TestCase, self).tearDown()
+        self.client.delete_created_apps()
 
 
 class SolumCredentials(auth.KeystoneV2Credentials):
