@@ -262,6 +262,10 @@ class SolumException(Exception):
         return self.message
 
 
+class ResourceLimitExceeded(SolumException):
+    msg_fmt = _("Resource limit exceeded. Reason: %(reason)s")
+
+
 class BadRequest(SolumException):
     msg_fmt = _("The request is malformed. Reason: %(reason)s")
     code = 400

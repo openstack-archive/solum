@@ -29,7 +29,10 @@ API_SERVICE_OPTS = [
                help='The port for the solum API server'),
     cfg.StrOpt('host',
                default='127.0.0.1',
-               help='The listen IP for the solum API server')
+               help='The listen IP for the solum API server'),
+    cfg.IntOpt('max_apps_per_tenant',
+               default=10,
+               help='Maximum number of application allowed per tenant'),
 ]
 
 API_PLAN_OPTS = [
