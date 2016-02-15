@@ -17,10 +17,10 @@
 import eventlet
 from oslo_config import cfg
 import oslo_messaging as messaging
+from oslo_serialization import jsonutils
 
 import solum.common.context
 from solum import objects
-from solum.openstack.common import jsonutils
 
 
 # NOTE(paulczar):
