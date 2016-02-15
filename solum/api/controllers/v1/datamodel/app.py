@@ -58,6 +58,9 @@ class App(api_types.Base):
     repo_token = wtypes.text
     created_at = datetime.datetime
     raw_content = wtypes.text
+    scale_config = wtypes.DictType(
+        wtypes.text,
+        wtypes.DictType(wtypes.text, wtypes.text))
 
     parameters = wtypes.DictType(
         wtypes.text,
@@ -80,6 +83,7 @@ class App(api_types.Base):
 
     @classmethod
     def from_db_model(cls, m, host_url):
+
         json = m.as_dict()
         json['type'] = m.__tablename__
         json['uri'] = '%s/v1/apps/%s' % (host_url, m.id)
@@ -101,7 +105,7 @@ class App(api_types.Base):
             'trigger_actions',
             'workflow_config',
             'stack_id',
-            'raw_content',
+            'raw_content'
             ]
         base = super(App, self).as_dict(db_model)
 

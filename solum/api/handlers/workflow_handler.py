@@ -80,11 +80,11 @@ class WorkflowHandler(handler.Handler):
         current_config = app.scale_config
 
         if current_config:
-            current_config[app.name]['target'] = target
+            current_config[app.name]['target'] = str(target)
             scale_config['scale_config'] = current_config
         else:
             config_data = dict()
-            config_data['target'] = target
+            config_data['target'] = str(target)
             app_scale_config = dict()
             app_scale_config[app.name] = config_data
             scale_config = dict()
