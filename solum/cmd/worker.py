@@ -21,7 +21,8 @@ import sys
 from oslo_config import cfg
 
 import solum
-from solum.common.rpc import service
+from solum.common.rpc import service as rpc_service
+from solum.common import service
 from solum.common import trace_data
 from solum.openstack.common.gettextutils import _
 from solum.openstack.common import log as logging
@@ -41,8 +42,7 @@ cli_opts = [
 
 def main():
     cfg.CONF.register_cli_opts(cli_opts)
-    cfg.CONF(sys.argv[1:], project='solum')
-    logging.setup('solum')
+    service.prepare_service(sys.argv)
     solum.TLS.trace = trace_data.TraceData()
 
     LOG.info(_('Starting server in PID %s') % os.getpid())
@@ -62,6 +62,6 @@ def main():
         handlers[cfg.CONF.worker.handler](),
     ]
 
-    server = service.Service(cfg.CONF.worker.topic,
-                             cfg.CONF.worker.host, endpoints)
+    server = rpc_service.Service(cfg.CONF.worker.topic,
+                                 cfg.CONF.worker.host, endpoints)
     server.serve()
