@@ -18,6 +18,7 @@ import uuid
 from oslo_config import cfg
 
 from solum.api.handlers import handler
+from solum.common import exception
 from solum.common import repo_utils
 from solum import objects
 from solum.objects import image
@@ -35,6 +36,9 @@ API_SERVICE_OPTS = [
     cfg.StrOpt('rebuild_phrase',
                default='solum retry tests',
                help='Comment phrase to trigger rebuilding'),
+    cfg.IntOpt('max_instances_per_app',
+               default=100,
+               help='Application scale limit'),
 ]
 
 
@@ -58,6 +62,21 @@ class WorkflowHandler(handler.Handler):
 
         scale_config = dict()
         target = data.get('scale_target', '1')
+        try:
+            target = int(target)
+        except ValueError:
+            msg = "Must provide integer value for scale target."
+            raise exception.BadRequest(reason=msg)
+
+        if target <= 0:
+            msg = "Scale target must be greater than zero."
+            raise exception.BadRequest(reason=msg)
+
+        if target > cfg.CONF.api.max_instances_per_app:
+            msg = "Target scale '%s' exceeds maximum scale limit '%s'." % (
+                target, cfg.CONF.api.max_instances_per_app)
+            raise exception.ResourceLimitExceeded(reason=msg)
+
         current_config = app.scale_config
 
         if current_config:
