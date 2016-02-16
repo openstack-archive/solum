@@ -27,6 +27,79 @@ from solum.tests import fakes
 @mock.patch('solum.api.controllers.v1.trigger.app_handler'
             '.AppHandler')
 class TestTriggerController(base.BaseTestCase):
+
+    def test_trigger_get_workflow_with_empty_body(self, assem_mock,
+                                                  resp_mock, request_mock):
+        obj = trigger.TriggerController()
+        workflow = obj._get_workflow({})
+        self.assertEqual(None, workflow)
+
+    def test_trigger_get_workflow_with_deploy(self, assem_mock,
+                                              resp_mock, request_mock):
+        obj = trigger.TriggerController()
+        query = {'workflow': 'deploy'}
+        workflow = obj._get_workflow(query)
+        self.assertEqual(['deploy'], list(workflow))
+
+    def test_trigger_get_workflow_with_build_deploy(self, assem_mock,
+                                                    resp_mock, request_mock):
+        obj = trigger.TriggerController()
+        query = {'workflow': 'build+deploy'}
+        workflow = obj._get_workflow(query)
+        self.assertEqual(['build', 'deploy'], list(workflow))
+
+    def test_trigger_get_workflow_with_all(self, assem_mock,
+                                           resp_mock, request_mock):
+        obj = trigger.TriggerController()
+        query = {'workflow': 'unittest+build+deploy'}
+        workflow = obj._get_workflow(query)
+        self.assertEqual(['unittest', 'build', 'deploy'], list(workflow))
+
+    def test_trigger_get_workflow_with_invalid_stage(self, assem_mock,
+                                                     resp_mock, request_mock):
+        obj = trigger.TriggerController()
+        query = {'workflow': 'unittest+unitunitunittest'}
+        workflow = obj._get_workflow(query)
+        self.assertEqual(['unittest'], list(workflow))
+
+    def test_trigger_process_request_private_repo(self, assem_mock,
+                                                  resp_mock, request_mock):
+        cfg.CONF.api.rebuild_phrase = "solum retry tests"
+        status_url = 'https://api.github.com/repos/u/r/statuses/{sha}'
+        collab_url = ('https://api.github.com/repos/u/r/' +
+                      'collaborators{/collaborator}')
+        body_dict = {'sender': {'url': 'https://api.github.com'},
+                     'comment': {'commit_id': 'asdf',
+                                 'body': '  SOLUM retry tests ',
+                                 'user': {'login': 'u'}},
+                     'repository': {'statuses_url': status_url,
+                                    'collaborators_url': collab_url,
+                                    'private': True}}
+        obj = trigger.TriggerController()
+        commit_sha, collab_url = obj._process_request(body_dict)
+        self.assertEqual(None, collab_url)
+        self.assertEqual('asdf', commit_sha)
+
+    def test_trigger_process_request_on_valid_pub_repo(self,
+                                                       assem_mock, resp_mock,
+                                                       request_mock):
+        cfg.CONF.api.rebuild_phrase = "solum retry tests"
+        status_url = 'https://api.github.com/repos/u/r/statuses/{sha}'
+        collab_url = ('https://api.github.com/repos/u/r/' +
+                      'collaborators{/collaborator}')
+        body_dict = {'sender': {'url': 'https://api.github.com'},
+                     'comment': {'commit_id': 'asdf',
+                                 'body': 'solum retry tests',
+                                 'user': {'login': 'u'}},
+                     'repository': {'statuses_url': status_url,
+                                    'collaborators_url': collab_url,
+                                    'private': False}}
+        obj = trigger.TriggerController()
+        commit_sha, collab_url = obj._process_request(body_dict)
+        self.assertEqual('https://api.github.com/repos/u/r/collaborators/u',
+                         collab_url)
+        self.assertEqual('asdf', commit_sha)
+
     def test_trigger_post_with_empty_body(self, assem_mock,
                                           resp_mock, request_mock):
         obj = trigger.TriggerController()
