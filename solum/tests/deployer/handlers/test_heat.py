@@ -722,13 +722,18 @@ class HandlerTest(base.BaseTestCase):
     @mock.patch('solum.deployer.handlers.heat.tlog')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.common.clients.OpenStackClients')
-    def test_destroy_absent(self, mock_client, mock_registry, mock_tlogger,
-                            mock_log_handler, mock_swift_delete):
+    def test_destroy_absent_no_wf(self, mock_client, mock_registry,
+                                  mock_tlogger, mock_log_handler,
+                                  mock_swift_delete):
 
         fake_assem = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assem
         fake_image = fakes.FakeImage()
         mock_registry.Image.get_by_id.return_value = fake_image
+
+        nfe = exception.ResourceNotFound(name=fake_assem.name,
+                                         id=fake_assem.id)
+        mock_registry.Workflow.get_by_assembly_id.side_effect = nfe
 
         mock_log = mock_tlogger.TenantLogger.return_value.log
         mock_upload = mock_tlogger.TenantLogger.return_value.upload
@@ -744,6 +749,47 @@ class HandlerTest(base.BaseTestCase):
 
         self.assertFalse(mock_del.called)
         self.assertTrue(fake_assem.destroy.called)
+        mock_registry.Image.get_by_id.assert_called_once_with(
+            mock.ANY, fake_assem.image_id)
+        docker_image_name = fake_image.docker_image_name
+        img_filename = docker_image_name.split('-', 1)[1]
+        mock_swift_delete.assert_called_once_with('solum_du', img_filename)
+        self.assertTrue(mock_log.called)
+        self.assertTrue(mock_upload.called)
+        self.assertEqual(1, mock_log_del.call_count)
+        self.assertEqual(mock.call(fake_assem.uuid), mock_log_del.call_args)
+
+    @mock.patch('solum.common.solum_swiftclient.SwiftClient.delete_object')
+    @mock.patch('solum.api.handlers.userlog_handler.UserlogHandler')
+    @mock.patch('solum.deployer.handlers.heat.tlog')
+    @mock.patch('solum.objects.registry')
+    @mock.patch('solum.common.clients.OpenStackClients')
+    def test_destroy_absent_wf_present(self, mock_client, mock_registry,
+                                       mock_tlogger, mock_log_handler,
+                                       mock_swift_delete):
+
+        fake_assem = fakes.FakeAssembly()
+        mock_registry.Assembly.get_by_id.return_value = fake_assem
+        fake_image = fakes.FakeImage()
+        mock_registry.Image.get_by_id.return_value = fake_image
+
+        fake_wf = fakes.FakeWorkflow()
+        mock_registry.Workflow.get_by_assembly_id.side_effect = fake_wf
+
+        mock_log = mock_tlogger.TenantLogger.return_value.log
+        mock_upload = mock_tlogger.TenantLogger.return_value.upload
+        mock_log_del = mock_log_handler.return_value.delete
+        mock_heat = mock_client.return_value.heat
+        mock_del = mock_heat.return_value.stacks.delete
+
+        hh = heat_handler.Handler()
+        with mock.patch.object(hh, "_find_id_if_stack_exists",
+                               return_value=None):
+
+            hh.destroy_assembly(self.ctx, fake_assem.id)
+
+        self.assertFalse(mock_del.called)
+        self.assertFalse(fake_assem.destroy.called)
         mock_registry.Image.get_by_id.assert_called_once_with(
             mock.ANY, fake_assem.image_id)
         docker_image_name = fake_image.docker_image_name

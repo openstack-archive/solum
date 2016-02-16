@@ -25,6 +25,7 @@ from solum.api.handlers import app_handler
 from solum.common import exception
 from solum.common import request
 from solum.common import yamlutils
+from solum import objects
 from solum.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
@@ -96,6 +97,16 @@ class AppsController(rest.RestController):
 
         if not app_data.name:
             raise exception.BadRequest(reason='App name cannot be empty.')
+
+        # check if languagepack exists or not
+        try:
+            objects.registry.Image.get_lp_by_name_or_uuid(
+                pecan.request.security_context,
+                app_data.languagepack,
+                include_operators_lp=True)
+        except exception.ResourceNotFound:
+            raise exception.ObjectNotFound(name="Languagepack",
+                                           id=app_data.languagepack)
 
     @pecan.expose()
     def _lookup(self, app_id, *remainder):

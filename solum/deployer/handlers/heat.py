@@ -122,12 +122,17 @@ def update_wf_and_app(ctxt, assembly_id, data):
     if data.get('application_uri') is not None:
         data_dict['app_url'] = data['application_uri']
 
+    wf = None
     try:
         wf = objects.registry.Workflow.get_by_assembly_id(assembly_id)
         objects.registry.Workflow.update_and_save(ctxt, wf.id, data_dict)
     except sqla_exc.SQLAlchemyError as ex:
         LOG.error("Failed to update workflow corresponding to assembly %s"
                   % assembly_id)
+        LOG.exception(ex)
+    except exception.ResourceNotFound as ex:
+        #  This happens  if plan (deprecated) was directly created
+        LOG.error("Workflow not found for assembly %s" % assembly_id)
         LOG.exception(ex)
 
     if wf is not None:
@@ -210,11 +215,13 @@ class Handler(object):
         try:
             workflow = objects.registry.Workflow.get_by_assembly_id(assem_id)
             workflow_id = workflow.id
-        except Exception:
+            wf_found = True
+        except exception.ResourceNotFound:
             # get_by_assembly_id would result in ResourceNotFound exception
             # if assembly is created directly. In that case use assembly_id
             # with TenantLogger
             workflow_id = assem.uuid
+            wf_found = False
 
         # TODO(devkulkarni) Delete t_logger when returning from this call.
         # This needs to be implemented as a context since there are
@@ -229,10 +236,11 @@ class Handler(object):
         LOG.debug(msg)
 
         if stack_id is None:
-            assem.destroy(ctxt)
             t_logger.upload()
             self._delete_app_artifacts_from_swift(ctxt, t_logger,
                                                   logs_resource_id, assem)
+            if not wf_found:
+                assem.destroy(ctxt)
             return
         else:
             osc = clients.OpenStackClients(ctxt)
@@ -246,6 +254,8 @@ class Handler(object):
                 t_logger.upload()
                 self._delete_app_artifacts_from_swift(ctxt, t_logger,
                                                       logs_resource_id, assem)
+                if not wf_found:
+                    assem.destroy(ctxt)
                 return
             except Exception as e:
                 LOG.exception(e)
@@ -269,6 +279,8 @@ class Handler(object):
                     self._delete_app_artifacts_from_swift(ctxt, t_logger,
                                                           logs_resource_id,
                                                           assem)
+                    if not wf_found:
+                        assem.destroy(ctxt)
                     return
                 time.sleep(wait_interval)
                 wait_interval *= growth_factor
@@ -331,21 +343,6 @@ class Handler(object):
                 wait_interval *= growth_factor
 
     def destroy_app(self, ctxt, app_id):
-        try:
-            # Destroy a plan's assemblies, and then the plan
-            plan = objects.registry.Plan.get_by_id(ctxt, app_id)
-
-            # Fetch all assemblies by plan id, and self.destroy() them.
-            assemblies = objects.registry.AssemblyList.get_all(ctxt)
-            for assem in assemblies:
-                if app_id == assem.plan_id:
-                    self.destroy_assembly(ctxt, assem.id)
-
-            plan.destroy(ctxt)
-
-        except exception.ResourceNotFound:
-            LOG.error("Plan not found for app_id", app_id)
-
         # Get all the workflows for app_id
         workflows = objects.registry.WorkflowList.get_all(ctxt, app_id)
 
@@ -360,8 +357,11 @@ class Handler(object):
         objects.registry.Workflow.destroy(app_id)
 
         # Delete app
-        db_obj = objects.registry.App.get_by_uuid(ctxt, app_id)
-        db_obj.destroy(ctxt)
+        try:
+            db_obj = objects.registry.App.get_by_uuid(ctxt, app_id)
+            db_obj.destroy(ctxt)
+        except exception.ResourceNotFound:
+            LOG.error("App %s not found ", app_id)
 
     def scale(self, ctxt, assembly_id):
         # TODO(devkulkarni) Find out scale target by querying the app table

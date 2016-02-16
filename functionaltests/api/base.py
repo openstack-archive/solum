@@ -79,6 +79,7 @@ class SolumClient(rest_client.RestClient):
         self.created_assemblies = []
         self.created_plans = []
         self.created_apps = []
+        self.created_lps = []
 
     def request_without_auth(self, resource, method, headers={}, body=None):
         dscv = CONF.identity.disable_ssl_certificate_validation
@@ -124,6 +125,14 @@ class SolumClient(rest_client.RestClient):
             self.created_plans.append(uuid)
         return plan_resp
 
+    def create_lp(self, data=None):
+        sample_lp = dict()
+        sample_lp["name"] = "python"
+        lp_url = "https://github.com/murali44/Solum-lp-Go.git"
+        sample_lp["source_uri"] = lp_url
+        jsondata = json.dumps(sample_lp)
+        resp, body = self.post('v1/language_packs', jsondata)
+
     def create_app(self, data=None):
         app_data = copy.deepcopy(data) or apputils.get_sample_data()
         json_data = json.dumps(app_data)
@@ -148,6 +157,14 @@ class SolumClient(rest_client.RestClient):
         self.delete_created_assemblies()
         [self.delete_plan(uuid) for uuid in list(self.created_plans)]
         self.created_plans = []
+
+    def delete_created_lps(self):
+        resp, body = self.get('v1/language_packs')
+        data = json.loads(body)
+        [self._delete_language_pack(pl['uuid']) for pl in data]
+
+    def _delete_language_pack(self, uuid):
+        resp, _ = self.delete('v1/language_packs/%s' % uuid)
 
     def delete_created_apps(self):
         self.delete_created_assemblies()

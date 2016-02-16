@@ -18,6 +18,7 @@ from sqlalchemy.sql import text
 
 from solum.objects.sqlalchemy import assembly
 from solum.objects.sqlalchemy import component
+from solum.objects.sqlalchemy import image
 from solum.objects.sqlalchemy import models as sql
 from solum.objects.sqlalchemy import plan
 from solum.objects import workflow as abstract
@@ -99,22 +100,32 @@ class Workflow(sql.Base, abstract.Workflow):
         # Delete relevant plan, assembly, component on workflow delete
         try:
             session = sql.Base.get_session()
+            plan_id = None
+            image_name = None
             with session.begin():
                 wfs = session.query(cls).filter_by(app_id=app_id).all()
                 for wf_obj in wfs:
                     asm = session.query(assembly.Assembly).filter_by(
                         id=wf_obj.assembly).one()
                     plan_id = asm.plan_id
+                    image_name = asm.name
                     # delete component
                     session.query(component.Component).filter_by(
                         assembly_id=wf_obj.assembly).delete()
                     # delete assembly
                     session.query(assembly.Assembly).filter_by(
                         id=wf_obj.assembly).delete()
-                    # delete plan
-                    session.query(plan.Plan).filter_by(id=plan_id).delete()
+
+                # delete plan
+                if not plan_id:
+                    plan_id = app_id
+                session.query(plan.Plan).filter_by(id=plan_id).delete()
                 # delete workflows
                 session.query(cls).filter_by(app_id=app_id).delete()
+                # delete image
+                if image_name:
+                    session.query(image.Image).filter_by(
+                        name=image_name).delete()
         except orm_exc.NoResultFound:
             cls._raise_not_found(app_id)
 
