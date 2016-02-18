@@ -15,8 +15,7 @@
 import inspect
 
 from oslo_config import cfg
-
-from solum.openstack.common import context
+from oslo_context import context
 
 AUTH_OPTS = [
     cfg.StrOpt('solum_admin_tenant_id',
@@ -39,7 +38,8 @@ class RequestContext(context.RequestContext):
                  read_only=False, request_id=None, user_name=None, roles=None,
                  auth_url=None, trust_id=None, auth_token_info=None):
         super(RequestContext, self).__init__(auth_token=auth_token,
-                                             user=user, tenant=tenant,
+                                             user=user,
+                                             tenant=tenant,
                                              domain=domain,
                                              user_domain=user_domain,
                                              project_domain=project_domain,
@@ -47,7 +47,7 @@ class RequestContext(context.RequestContext):
                                              read_only=read_only,
                                              show_deleted=False,
                                              request_id=request_id)
-        self.roles = roles
+        self.roles = roles or []
         self.user_name = user_name
         self.auth_url = auth_url
         self.trust_id = trust_id
@@ -57,12 +57,14 @@ class RequestContext(context.RequestContext):
             self.is_admin = True
 
     def to_dict(self):
-        data = super(RequestContext, self).to_dict()
-        data.update(roles=self.roles, user_name=self.user_name,
-                    auth_url=self.auth_url,
-                    auth_token_info=self.auth_token_info,
-                    trust_id=self.trust_id)
-        return data
+        values = super(RequestContext, self).to_dict()
+        values.update({
+            'roles': self.roles,
+            'user_name': self.user_name,
+            'auth_url': self.auth_url,
+            'auth_token_info': self.auth_token_info,
+            'trust_id': self.trust_id})
+        return values
 
     @classmethod
     def from_dict(cls, values):

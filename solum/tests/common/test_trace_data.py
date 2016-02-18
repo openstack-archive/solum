@@ -22,7 +22,7 @@ solum.TLS.trace = trace_data.TraceData()
 # Just putting highly recognizable values in context
 CONTEXT = context.RequestContext(
     '_auth_token_', '_user_', '_tenant_', '_domain_', '_user_domain_',
-    '_project_domain_', '_is_admin_', '_read_only_', '_request_id_',
+    '_project_domain_', False, False, '_request_id_',
     '_user_name_', '_roles_', '_auth_url_',
     auth_token_info='_auth_token_info_')
 
@@ -49,10 +49,10 @@ class TestTraceData(base.BaseTestCase):
             {'user': '_user_', 'tenant': '_tenant_'})
         self.assertEqual(({
             'domain': '_domain_',
-            'instance_uuid': None,
-            'is_admin': '_is_admin_',
+            'is_admin': False,
             'project_domain': '_project_domain_',
-            'read_only': '_read_only_',
+            'read_only': False,
+            'resource_uuid': None,
             'roles': '_roles_',
             'show_deleted': False,
             'user_domain': '_user_domain_',
