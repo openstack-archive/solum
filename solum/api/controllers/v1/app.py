@@ -14,6 +14,7 @@
 
 import json
 
+from oslo_config import cfg
 import pecan
 from pecan import rest
 import wsmeext.pecan as wsme_pecan
@@ -84,6 +85,12 @@ class AppsController(rest.RestController):
     """Manages operations on the apps collection."""
 
     def _validate(self, app_data):
+        # check max apps created for given tenant
+        handler = app_handler.AppHandler(pecan.request.security_context)
+        if len(handler.get_all()) >= cfg.CONF.api.max_apps_per_tenant:
+            msg = "Cannot create application as maximum allowed limit reached."
+            raise exception.ResourceLimitExceeded(reason=msg)
+
         if not app_data.languagepack:
             raise exception.BadRequest(reason="Languagepack not specified.")
 
