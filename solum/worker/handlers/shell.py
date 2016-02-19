@@ -164,6 +164,23 @@ class Handler(object):
         LOG.debug("%s" % message)
 
     @exception.wrap_keystone_exception
+    def get_du_details(self, ctxt, du_id):
+        du_loc = None
+        du_name = None
+        du_image_backend = cfg.CONF.worker.image_storage
+
+        if du_image_backend.lower() == 'glance':
+            img = clients.OpenStackClients(ctxt).glance().images.get(du_id)
+            du_loc = img.id
+            du_name = img.name
+        elif du_image_backend.lower() == 'swift':
+            raise exception.NotImplemented()
+        else:
+            LOG.error("Invalid image storage option.")
+            raise exception.ResourceNotFound()
+        return du_loc, du_name
+
+    @exception.wrap_keystone_exception
     def _get_environment(self, ctxt, source_uri, assembly_id=None,
                          test_cmd=None, run_cmd=None, lp_access=None):
         # create a minimal environment
@@ -328,7 +345,8 @@ class Handler(object):
 
     def launch_workflow(self, ctxt, build_id, git_info, ports, name,
                         base_image_id, source_format, image_format,
-                        assembly_id, workflow, test_cmd, run_cmd):
+                        assembly_id, workflow, test_cmd, run_cmd, du_id):
+
         if 'unittest' in workflow:
             if self._do_unittest(ctxt, build_id, git_info, name, base_image_id,
                                  source_format, image_format, assembly_id,
@@ -343,6 +361,8 @@ class Handler(object):
                 image_format, assembly_id, run_cmd)
 
         if 'deploy' in workflow:
+            if du_id:
+                du_image_loc, du_image_name = self.get_du_details(ctxt, du_id)
             if du_image_loc and du_image_name:
                 self._do_deploy(ctxt, assembly_id, ports, du_image_loc,
                                 du_image_name)

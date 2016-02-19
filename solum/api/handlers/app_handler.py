@@ -127,7 +127,8 @@ class AppHandler(handler.Handler):
             'config': app.workflow_config,
             'actions': wf
             }
-        wfhand.create(wfdata, commit_sha=commit_sha, status_url=status_url)
+        wfhand.create(wfdata, commit_sha=commit_sha, status_url=status_url,
+                      du_id=None)
 
     def get_all(self):
         """Return all apps."""
