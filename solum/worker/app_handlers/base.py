@@ -32,7 +32,7 @@ from solum.common import exception as exc
 from solum.common import solum_swiftclient
 from solum.openstack.common import log as solum_log
 from solum.uploaders import tenant_logger
-from solum.worker.lp_handlers import utils
+from solum.worker.app_handlers import utils
 
 from swiftclient import exceptions as swiftexp
 

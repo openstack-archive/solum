@@ -14,6 +14,7 @@
 
 """LP handler for building apps running on solum language packs"""
 
+import io
 import logging
 import os
 import random
@@ -25,8 +26,8 @@ from oslo_config import cfg
 from solum.common import clients
 from solum.common import solum_swiftclient
 from solum.openstack.common import log as solum_log
-from solum.worker.lp_handlers import base
-from solum.worker.lp_handlers import utils
+from solum.worker.app_handlers import base
+from solum.worker.app_handlers import utils
 
 from swiftclient import exceptions as swiftexp
 
@@ -36,6 +37,7 @@ LOG = solum_log.getLogger(__name__)
 cfg.CONF.import_opt('container_mem_limit', 'solum.worker.config',
                     group='worker')
 mem_limit = cfg.CONF.worker.container_mem_limit
+build_timeout = cfg.CONF.worker.docker_build_timeout
 UNITTEST_TIMEOUT = 1800  # 30 minutes
 
 
@@ -243,5 +245,128 @@ class DockerHandler(base.BaseHandler):
         logger.upload()
         return result
 
-    def build_app(self, *args):
-        pass
+    def build_app(self, app_name, git_info, lp_obj_name, lp_img_tag,
+                  run_cmd):
+        logger = self._get_tenant_logger('build')
+        if not self._prepare(git_info, lp_obj_name, lp_img_tag, logger):
+            logger.upload()
+            return
+
+        timeout_cmd = ('timeout --signal=SIGKILL {t} {cmd}').format(
+            t=build_timeout, cmd='./build.sh')
+
+        # username = (''.join(random.choice(string.ascii_lowercase)
+        #                    for _ in range(8)))
+        # useradd_cmd = ('useradd -s /bin/bash -u {uid} -m {uname} ||'
+        #               ' usermod -d /app $(getent passwd {uid}'
+        #               ' | cut -d: -f1)').format(uid=self.docker_cmd_uid,
+        #                                         uname=username)
+
+        # Will run user's arbitrary build.sh as root in container,
+        # waiting for the following docker patch to remap the root in
+        # a container to an unprivileged user on host:
+        # https://github.com/docker/docker/pull/12648
+        # If the docker patch is finally abandoned, we should run build.sh as
+        # unprivileged by using the commented code above, in which case
+        # we may want to leverage the following docker feature:
+        # https://github.com/docker/docker/pull/10775/commits
+        content_build = ('FROM {lp}\n'
+                         'COPY code /app\n'
+                         'WORKDIR /solum/bin\n'
+                         'RUN chmod +x build.sh\n'
+                         'CMD {cmd}').format(lp=self.lp, cmd=timeout_cmd)
+        df = 'Dockerfile.build'
+        fname = '{}/{}'.format(self.work_dir, df)
+        try:
+            with open(fname, 'w') as f:
+                f.write(content_build)
+        except OSError as e:
+            LOG.error('Error in creating Dockerfile %s, %s' % (fname, str(e)))
+            logger.log(logging.ERROR, 'Preparing building app DU image failed')
+            logger.upload()
+            return
+
+        tenant = self.context.tenant
+        ts = utils.timestamp()
+        storage_obj_name = '{name}-{ts}-{sha}'.format(name=app_name, ts=ts,
+                                                      sha=self.source_sha)
+        du_image = '{tenant}-{obj}'.format(tenant=tenant,
+                                           obj=storage_obj_name)
+        du_image_in_build = '{img}:{tag}'.format(img=du_image, tag='build')
+
+        logger.log(logging.INFO, 'Building DU image, preparing to run'
+                                 ' build script')
+        build_result = self._docker_build_with_retry(du_image_in_build, logger,
+                                                     path=self.work_dir,
+                                                     dockerfile=df,
+                                                     pull=False)
+        self.images.append(du_image_in_build)
+        if build_result != 0:
+            logger.log(logging.ERROR, 'Failed building DU image.')
+            logger.upload()
+            return
+
+        logger.log(logging.INFO, 'Building DU image, running build script')
+        ct = None
+        result = -1
+        try:
+            ct = self.docker.create_container(image=du_image_in_build,
+                                              mem_limit=mem_limit,
+                                              memswap_limit=-1)
+            self.containers.append(ct)
+            self.docker.start(container=ct.get('Id'))
+            result = self.docker.wait(container=ct.get('Id'))
+        except (errors.DockerException, errors.APIError) as e:
+            LOG.error('Error running build script, assembly: %s, %s' %
+                      (self.assembly.uuid, str(e)))
+            logger.log(logging.ERROR, 'Running build script failed')
+            logger.upload()
+            return
+
+        if result != 0:
+            logger.log(logging.ERROR, 'Build script returns with %s' % result)
+            logger.upload()
+            return
+
+        try:
+            self.docker.commit(container=ct.get('Id'), repository=du_image,
+                               tag='build')
+        except (errors.DockerException, errors.APIError) as e:
+            LOG.error('Error committing the built image layer from build'
+                      ' script, assembly: %s, %s' %
+                      (self.assembly.uuid, str(e)))
+            logger.log(logging.ERROR, 'Error building DU with the output'
+                                      ' of build script')
+            logger.upload()
+            return
+
+        content_run = ('FROM {img}\n'
+                       'WORKDIR /app\n'
+                       'CMD {cmd}').format(img=du_image_in_build, cmd=run_cmd)
+        f = io.BytesIO(content_run.encode('utf-8'))
+        build_result = self._docker_build_with_retry(du_image, logger,
+                                                     fileobj=f, pull=False)
+        self.images.append(du_image)
+        if build_result != 0:
+            logger.log(logging.ERROR, 'Failed building DU image.')
+            logger.upload()
+            return
+
+        du_file = '{}/{}'.format(self.work_dir, storage_obj_name)
+        result = self._docker_save(du_image, du_file)
+        if result != 0:
+            logger.log(logging.ERROR, 'Failed saving DU image.')
+            logger.upload()
+            return
+
+        logger.log(logging.INFO, 'Persisting DU image to backend')
+        image_loc = self._persist_to_backend(du_file, 'solum_du',
+                                             storage_obj_name, logger)
+        if image_loc is None:
+            logger.log(logging.ERROR, 'Failed persist DU to backend.')
+            logger.upload()
+            return
+        else:
+            logger.log(logging.INFO, 'Successfully created DU image.')
+            logger.upload()
+            return (image_loc, du_image)
