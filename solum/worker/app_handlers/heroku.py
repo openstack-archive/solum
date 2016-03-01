@@ -14,7 +14,7 @@
 
 """LP handler for building apps running on cedarish build packs"""
 
-from solum.worker.lp_handlers import base
+from solum.worker.app_handlers import base
 
 
 class HerokuHandler(base.BaseHandler):
