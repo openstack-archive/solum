@@ -47,7 +47,7 @@ class TestLanguagePackHandler(base.BaseTestCase):
                 'LanguagePackHandler._start_build')
     def test_languagepack_create(self, mock_lp_build, mock_img):
         data = {'name': 'new app',
-                'source_uri': 'git://example.com/foo'}
+                'source_uri': 'git://github.com/foo/foo.git'}
         fi = fakes.FakeImage()
         mock_img.get_lp_by_name_or_uuid.side_effect = exc.ResourceNotFound()
         mock_img.return_value = fi
@@ -56,6 +56,16 @@ class TestLanguagePackHandler(base.BaseTestCase):
         mock_lp_build.assert_called_once_with(res)
         fi.update.assert_called_once_with(data)
         fi.create.assert_called_once_with(self.ctx)
+
+    def test_lp_create_bad_git_url(self, mock_img):
+        data = {'name': 'new app',
+                'source_uri': 'git://123'}
+        handler = language_pack_handler.LanguagePackHandler(self.ctx)
+        try:
+            handler.create(data, lp_metadata=None)
+            self.assertTrue(False)
+        except exc.BadRequest:
+            self.assertTrue(True)
 
     @mock.patch('solum.common.solum_swiftclient.SwiftClient.delete_object')
     @mock.patch('solum.api.handlers.userlog_handler.UserlogHandler')
