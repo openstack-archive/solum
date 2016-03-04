@@ -81,12 +81,5 @@ def setup_app(config=None):
     # Create a CORS wrapper, and attach solum-specific defaults that must be
     # supported on all CORS responses.
     app = cors_middleware.CORS(app, CONF)
-    app.set_latent(
-        allow_headers=['X-Auth-Token', 'X-Openstack-Request-Id',
-                       'X-Subject-Token'],
-        allow_methods=['GET', 'PUT', 'POST', 'DELETE', 'PATCH'],
-        expose_headers=['X-Auth-Token', 'X-Openstack-Request-Id',
-                        'X-Subject-Token']
-    )
 
     return app

@@ -16,6 +16,7 @@
 
 from oslo_config import cfg
 
+from solum.common import config
 from solum import version
 
 
@@ -24,3 +25,4 @@ def parse_args(argv, default_config_files=None):
              project='solum',
              version=version.version_string(),
              default_config_files=default_config_files)
+    config.set_config_defaults()

@@ -14,6 +14,7 @@
 
 from oslo_config import cfg
 
+from solum.common import config
 from solum import objects
 from solum.openstack.common import log as logging
 
@@ -21,4 +22,5 @@ from solum.openstack.common import log as logging
 def prepare_service(argv=[]):
     cfg.CONF(argv[1:], project='solum')
     logging.setup('solum')
+    config.set_config_defaults()
     objects.load()
