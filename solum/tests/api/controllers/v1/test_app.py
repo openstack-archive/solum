@@ -128,6 +128,18 @@ class TestAppsController(base.BaseTestCase):
         app.AppsController().post()
         self.assertEqual(400, resp_mock.status)
 
+    def test_apps_post_no_app_name(self, AppHandler, resp_mock, request_mock):
+        json_create = {'name': '',
+                       'languagepack': 'fakelp'}
+        request_mock.body = json.dumps(json_create)
+        request_mock.content_type = 'application/json'
+        request_mock.security_context = None
+        hand_create = AppHandler.return_value.create
+        fake_app = objects.registry.App(**json_create)
+        hand_create.return_value = fake_app
+        app.AppsController().post()
+        self.assertEqual(400, resp_mock.status)
+
     def test_apps_get_all(self, AppHandler, resp_mock, request_mock):
         hand_get = AppHandler.return_value.get_all
         fake_app = fakes.FakeApp()
