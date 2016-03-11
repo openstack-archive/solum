@@ -53,18 +53,32 @@ from solum.openstack.common.strutils import mask_password  # noqa
 
 _DEFAULT_LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
+DEFAULT_LOG_LEVELS = ['amqp=WARN', 'amqplib=WARN', 'boto=WARN',
+                      'qpid=WARN', 'sqlalchemy=WARN', 'suds=INFO',
+                      'oslo.messaging=INFO', 'iso8601=WARN',
+                      'requests.packages.urllib3.connectionpool=WARN',
+                      'urllib3.connectionpool=WARN', 'websocket=WARN',
+                      'requests.packages.urllib3.util.retry=WARN',
+                      'urllib3.util.retry=WARN',
+                      'keystonemiddleware=WARN', 'routes.middleware=WARN',
+                      'stevedore=WARN', 'taskflow=WARN',
+                      'keystoneauth=WARN', 'oslo.cache=INFO',
+                      'dogpile.core.dogpile=INFO']
+
+_IGNORE_MESSAGE = "This option is ignored if log_config_append is set."
 
 common_cli_opts = [
     cfg.BoolOpt('debug',
                 short='d',
                 default=False,
-                help='Print debugging output (set logging level to '
-                     'DEBUG instead of default WARNING level).'),
+                help='If set to true, the logging level will be set to '
+                     'DEBUG instead of the default INFO level.'),
     cfg.BoolOpt('verbose',
                 short='v',
-                default=False,
-                help='Print more verbose output (set logging level to '
-                     'INFO instead of default WARNING level).'),
+                default=True,
+                help='If set to false, the logging level will be set to '
+                     'WARNING instead of the default INFO level.',
+                deprecated_for_removal=True),
 ]
 
 logging_cli_opts = [
@@ -74,7 +88,11 @@ logging_cli_opts = [
                help='The name of a logging configuration file. This file '
                     'is appended to any existing logging configuration '
                     'files. For details about logging configuration files, '
-                    'see the Python logging module documentation.'),
+                    'see the Python logging module documentation. Note that '
+                    'when logging configuration files are used then all '
+                    'logging configuration is set in the configuration file '
+                    'and other logging configuration options are ignored '
+                    '(for example, logging_context_format_string).'),
     cfg.StrOpt('log-format',
                metavar='FORMAT',
                help='DEPRECATED. '
@@ -86,47 +104,40 @@ logging_cli_opts = [
     cfg.StrOpt('log-date-format',
                default=_DEFAULT_LOG_DATE_FORMAT,
                metavar='DATE_FORMAT',
-               help='Format string for %%(asctime)s in log records. '
-                    'Default: %(default)s .'),
+               help='Defines the format string for %%(asctime)s in log '
+                    'records. Default: %(default)s . '
+                    + _IGNORE_MESSAGE),
     cfg.StrOpt('log-file',
                metavar='PATH',
                deprecated_name='logfile',
-               help='(Optional) Name of log file to output to. '
-                    'If no default is set, logging will go to stdout.'),
+               help='(Optional) Name of log file to send logging output to. '
+                    'If no default is set, logging will go to stderr as '
+                    'defined by use_stderr. '
+                    + _IGNORE_MESSAGE),
     cfg.StrOpt('log-dir',
                deprecated_name='logdir',
-               help='(Optional) The base directory used for relative '
-                    '--log-file paths.'),
+               help='(Optional) The base directory used for relative log_file '
+                    ' paths. '
+                    + _IGNORE_MESSAGE),
     cfg.BoolOpt('use-syslog',
                 default=False,
                 help='Use syslog for logging. '
-                     'Existing syslog format is DEPRECATED during I, '
-                     'and will change in J to honor RFC5424.'),
-    cfg.BoolOpt('use-syslog-rfc-format',
-                # TODO(bogdando) remove or use True after existing
-                #    syslog format deprecation in J
-                default=False,
-                help='(Optional) Enables or disables syslog rfc5424 format '
-                     'for logging. If enabled, prefixes the MSG part of the '
-                     'syslog message with APP-NAME (RFC5424). The '
-                     'format without the APP-NAME is deprecated in I, '
-                     'and will be removed in J.'),
+                     'Existing syslog format is DEPRECATED '
+                     'and will be changed later to honor RFC5424. '
+                     + _IGNORE_MESSAGE),
     cfg.StrOpt('syslog-log-facility',
                default='LOG_USER',
-               help='Syslog facility to receive log lines.')
+               help='Syslog facility to receive log lines. '
+                    + _IGNORE_MESSAGE),
+
 ]
 
 generic_log_opts = [
     cfg.BoolOpt('use_stderr',
                 default=True,
-                help='Log output to standard error.')
+                help='Log output to standard error. '
+                     + _IGNORE_MESSAGE),
 ]
-
-DEFAULT_LOG_LEVELS = ['amqp=WARN', 'amqplib=WARN', 'boto=WARN',
-                      'qpid=WARN', 'sqlalchemy=WARN', 'suds=INFO',
-                      'oslo.messaging=INFO', 'iso8601=WARN',
-                      'requests.packages.urllib3.connectionpool=WARN',
-                      'urllib3.connectionpool=WARN', 'websocket=WARN']
 
 log_opts = [
     cfg.StrOpt('logging_context_format_string',
@@ -137,17 +148,20 @@ log_opts = [
     cfg.StrOpt('logging_default_format_string',
                default='%(asctime)s.%(msecs)03d %(process)d %(levelname)s '
                        '%(name)s [-] %(instance)s%(message)s',
-               help='Format string to use for log messages without context.'),
+               help='Format string to use for log messages when context is '
+                    'undefined.'),
     cfg.StrOpt('logging_debug_format_suffix',
                default='%(funcName)s %(pathname)s:%(lineno)d',
-               help='Data to append to log format when level is DEBUG.'),
+               help='Additional data to append to log message when logging '
+                    'level for the message is DEBUG.'),
     cfg.StrOpt('logging_exception_prefix',
-               default='%(asctime)s.%(msecs)03d %(process)d TRACE %(name)s '
+               default='%(asctime)s.%(msecs)03d %(process)d ERROR %(name)s '
                '%(instance)s',
                help='Prefix each line of exception output with this format.'),
     cfg.ListOpt('default_log_levels',
                 default=DEFAULT_LOG_LEVELS,
-                help='List of logger=LEVEL pairs.'),
+                help='List of package logging levels in logger=LEVEL pairs. '
+                     + _IGNORE_MESSAGE),
     cfg.BoolOpt('publish_errors',
                 default=False,
                 help='Enables or disables publication of error events.'),
