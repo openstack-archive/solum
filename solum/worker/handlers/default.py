@@ -71,8 +71,8 @@ def validate_lp(ctxt, lp_id, assembly_id):
     if (not image or not image.project_id or not image.status or
         not image.external_ref or not image.docker_image_name or
             image.status.lower() != 'ready'):
-        LOG.warn("Error building due to language pack %s not ready."
-                 " assembly ID: %s" % (lp_id, assembly_id))
+        LOG.warning("Error building due to language pack %s not ready."
+                    " assembly ID: %s" % (lp_id, assembly_id))
         return
 
     return image
