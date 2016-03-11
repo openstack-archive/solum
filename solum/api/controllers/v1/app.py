@@ -94,6 +94,9 @@ class AppsController(rest.RestController):
         if not app_data.languagepack:
             raise exception.BadRequest(reason="Languagepack not specified.")
 
+        if not app_data.name:
+            raise exception.BadRequest(reason='App name cannot be empty.')
+
     @pecan.expose()
     def _lookup(self, app_id, *remainder):
         if remainder and not remainder[-1]:
