@@ -9,7 +9,7 @@ workflow_config:
   test_cmd: ./unit_tests.sh
   run_cmd: python app.py
 trigger_actions:
-- test
+- unittest
 - build
 - deploy
 ports:
