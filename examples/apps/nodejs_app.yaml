@@ -1,0 +1,16 @@
+version: 1
+name: nodejs-express-2
+description: Nodejs express.
+languagepack: nodejs-1
+source:
+  repository: https://github.com/paulczar/example-nodejs-express.git
+  revision: master
+workflow_config:
+  run_cmd: node server.js
+  test_cmd: ''
+trigger_actions:
+- unittest
+- build
+- deploy
+ports:
+- 80

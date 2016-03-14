@@ -1,0 +1,23 @@
+This directory contains Solum sample applications. Below we give brief description of each application
+by refering to the application's app file.
+
+1) python_app.yaml
+
+This is a python application. In order to use it, you will need to create
+a python languagepack in solum. You can use following repository for this purpose.
+https://github.com/rackspace-solum-samples/solum-languagepack-python.git
+
+
+1) nodejs_app.yaml
+
+This is a Nodejs application. In order to use it, you will need to create
+a nodejs languagepack in solum. You can use following repository for this purpose.
+https://github.com/devdattakulkarni/solum-languagepack-nodejs.git
+
+
+
+
+
+
+
+
