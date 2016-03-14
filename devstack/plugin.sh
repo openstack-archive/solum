@@ -289,34 +289,6 @@ function install_docker() {
     solum_install_docker_registry
 }
 
-# install_lp-cedarish() - Install tooling to support cedarish LP
-function install_lp-cedarish() {
-    $SOLUM_DIR/contrib/lp-cedarish/docker/prepare
-    install_drone
-}
-
-# install_lp-dockerfile() - Install tooling to support dockerfile LP
-function install_lp-dockerfile() {
-    if [[ $SOLUM_IMAGE_FORMAT == 'docker' ]]; then
-        $SOLUM_DIR/contrib/lp-dockerfile/docker/prepare
-        install_drone
-    else
-        echo does not support VMs
-        exit 1
-    fi
-}
-
-# install_lp-chef() - Install tooling to support chef LP
-function install_lp-chef() {
-    if [[ $SOLUM_IMAGE_FORMAT == 'docker' ]]; then
-        $SOLUM_DIR/contrib/lp-chef/docker/prepare
-        install_drone
-    else
-        echo does not support VMs
-        exit 1
-    fi
-}
-
 # start_solum() - Start running processes, including screen
 function start_solum() {
     screen_it solum-api "cd $SOLUM_DIR && $SOLUM_BIN_DIR/solum-api --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE"
@@ -392,23 +364,15 @@ solum_install_core_os() {
 if is_service_enabled solum-api solum-conductor solum-deployer solum-worker; then
     echo "Checking for Docker"
     if [ ! -f /usr/bin/docker ] ; then
-        lsb_release -a | grep -i ubuntu
-        [[ $? != 0 ]] && echo "Currently only Ubuntu supported." && exit 1
-        sudo apt-get -y install docker.io
+       echo deb http://get.docker.com/ubuntu docker main | sudo tee /etc/apt/sources.list.d/docker.list
+       sudo apt-key adv --keyserver pgp.mit.edu --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
+       sudo apt-get update
+       sudo apt-get install -y lxc-docker-1.7.0
     fi
     if [[ "$1" == "stack" && "$2" == "install" ]]; then
         echo_summary "Installing Solum"
         install_solum
         install_solumclient
-        if [[ "$SOLUM_INSTALL_CEDARISH" == "True" ]]; then
-            install_lp-cedarish
-        fi
-        if [[ "$SOLUM_INSTALL_DOCKERFILE" == "True" ]]; then
-            install_lp-dockerfile
-        fi
-        if [[ "$SOLUM_INSTALL_CHEF" == "True" ]]; then
-            install_lp-chef
-        fi
     elif [[ "$1" == "stack" && "$2" == "post-config" ]]; then
         echo_summary "Configuring Solum"
         add_solum_user

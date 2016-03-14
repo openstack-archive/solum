@@ -33,9 +33,6 @@ SOLUM_MAX_ATTEMPTS=${SOLUM_MAX_ATTEMPTS:-2000}
 SOLUM_WAIT_INTERVAL=${SOLUM_WAIT_INTERVAL:-1}
 SOLUM_GROWTH_FACTOR=${SOLUM_GROWTH_FACTOR:-1.1}
 
-SOLUM_DRONE_URL=${SOLUM_DRONE_URL:-http://downloads.drone.io/master/drone.deb}
-SOLUM_INSTALL_DRONE=${SOLUM_INSTALL_DRONE:-False}
-
 SOLUM_PROJ_DIR=${SOLUM_PROJ_DIR:-/opt/stack/solum}
 NOVADOCKER_PROJ_DIR=${NOVADOCKER_PROJ_DIR:-/opt/stack/nova-docker}
 
@@ -50,19 +47,10 @@ DEVSTACK_DIR=${HOME}/devstack
 LOGFILE=/opt/stack/logs/stack.sh.log
 NOVNC_FROM_PACKAGE=false
 SCREEN_LOGDIR=/opt/stack/logs
-SOLUM_INSTALL_CEDARISH=True
-SOLUM_INSTALL_DOCKERFILE=True
 GIT_BASE=https://git.openstack.org
 
-# DOCKER_REGISTRY_IMAGE=registry:0.6.9
 VIRT_DRIVER=docker
 SOLUM_IMAGE_FORMAT=docker
-SOLUM_INSTALL_DRONE=True
-SOLUM_DRONE_URL=http://f4e976e84d9bb06108f6-ff40fde470ff7ecea31955ec7c479471.r49.cf2.rackcdn.com/drone.deb
-
-DEFAULT_IMAGE_NAME=cirros
-IMAGE_URLS=http://download.cirros-cloud.net/0.3.1/cirros-0.3.1-x86_64-uec.tar.gz
-IMAGE_URLS+=,http://cc42a68525a2dda0151c-9a7653a0ba84bd9342f239dc5349667e.r38.cf1.rackcdn.com/cedarish.qcow2
 
 #enable_service mistral
 # Enable neutron services
@@ -95,6 +83,4 @@ enable_service h-api
 enable_service h-api-cfn
 enable_service h-api-cw
 enable_service h-eng
-
-enable_service barbican
 
