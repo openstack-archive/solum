@@ -46,10 +46,13 @@ class TestAppController(base.TestCase):
 
     def setUp(self):
         super(TestAppController, self).setUp()
+        self.client.delete_created_lps()
+        self.client.create_lp()
 
     def tearDown(self):
         super(TestAppController, self).tearDown()
         self.client.delete_created_apps()
+        self.client.delete_created_lps()
 
     def test_app_create(self):
         data = apputils.get_sample_data()

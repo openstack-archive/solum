@@ -98,6 +98,7 @@ class TestAppController(base.BaseTestCase):
         self.assertEqual(404, resp_mock.status)
 
 
+@mock.patch('solum.objects.registry.Image')
 @mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
 @mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
 @mock.patch('solum.api.handlers.app_handler.AppHandler')
@@ -106,9 +107,10 @@ class TestAppsController(base.BaseTestCase):
         super(TestAppsController, self).setUp()
         objects.load()
 
-    def test_apps_post(self, AppHandler, resp_mock, request_mock):
+    def test_apps_post(self, AppHandler, resp_mock, request_mock, mock_img):
         json_create = {'name': 'fakeapp',
                        'languagepack': 'fakelp'}
+        mock_img.get_lp_by_name_or_uuid.return_value = {}
         request_mock.body = json.dumps(json_create)
         request_mock.content_type = 'application/json'
         request_mock.security_context = None
@@ -121,14 +123,34 @@ class TestAppsController(base.BaseTestCase):
         self.assertEqual(created_app['name'], json_create['name'])
         self.assertEqual(201, resp_mock.status)
 
-    def test_apps_post_no_data(self, AppHandler, resp_mock, request_mock):
+    def test_apps_post_lp_not_found(self, AppHandler, resp_mock, request_mock,
+                                    mock_img):
+        json_create = {'name': 'fakeapp',
+                       'languagepack': 'fakelp'}
+        fi = fakes.FakeImage()
+        not_found = exception.ResourceNotFound(name='lp', id='fakelp')
+        mock_img.get_lp_by_name_or_uuid.side_effect = not_found
+        mock_img.return_value = fi
+        request_mock.body = json.dumps(json_create)
+        request_mock.content_type = 'application/json'
+        request_mock.security_context = None
+        hand_create = AppHandler.return_value.create
+        fake_app = objects.registry.App(**json_create)
+        hand_create.return_value = fake_app
+        ret = app.AppsController().post()
+        expected = 'The Languagepack fakelp could not be found.'
+        self.assertEqual(expected, ret['faultstring'])
+
+    def test_apps_post_no_data(self, AppHandler, resp_mock, request_mock,
+                               mock_img):
         request_mock.body = ''
         request_mock.content_type = 'application/json'
         request_mock.security_context = None
         app.AppsController().post()
         self.assertEqual(400, resp_mock.status)
 
-    def test_apps_post_no_app_name(self, AppHandler, resp_mock, request_mock):
+    def test_apps_post_no_app_name(self, AppHandler, resp_mock, request_mock,
+                                   mock_img):
         json_create = {'name': '',
                        'languagepack': 'fakelp'}
         request_mock.body = json.dumps(json_create)
@@ -140,7 +162,8 @@ class TestAppsController(base.BaseTestCase):
         app.AppsController().post()
         self.assertEqual(400, resp_mock.status)
 
-    def test_apps_get_all(self, AppHandler, resp_mock, request_mock):
+    def test_apps_get_all(self, AppHandler, resp_mock, request_mock,
+                          mock_img):
         hand_get = AppHandler.return_value.get_all
         fake_app = fakes.FakeApp()
         hand_get.return_value = [fake_app]

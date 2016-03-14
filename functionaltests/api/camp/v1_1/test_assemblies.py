@@ -121,7 +121,7 @@ class TestAssembliesController(base.TestCase):
             self.client.created_assemblies.append(uuid)
 
     def test_delete_plan_with_assemblies(self):
-        """Test deleting a plan what has assemblies associated with it.
+        """Test deleting a plan that has assemblies associated with it.
 
         Creates a plan, an assembly, then tries to delete the plan.
         """

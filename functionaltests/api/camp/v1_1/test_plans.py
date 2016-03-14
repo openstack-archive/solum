@@ -28,7 +28,7 @@ sample_data = {"camp_version": "CAMP 1.1",
                "artifacts": [{
                    "name": "train spotter service",
                    "artifact_type": "org.python:python",
-                   "language_pack": "python",
+                   "language_pack": "python1",
                    "content": {"href": "https://sporgil.com/git/spotter.git"},
                    "requirements": [{
                        "requirement_type": "org.python:runtime",
