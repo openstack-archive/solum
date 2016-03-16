@@ -15,6 +15,7 @@
 import mock
 
 from solum.api.handlers import app_handler
+from solum.common import exception as exc
 from solum import objects
 from solum.tests import base
 from solum.tests import fakes
@@ -51,13 +52,42 @@ class TestAppHandler(base.BaseTestCase):
     @mock.patch('solum.common.clients.OpenStackClients.keystone')
     def test_app_create(self, mock_kc, mock_registry):
         data = {'name': 'fakeapp',
-                'description': 'fake app for testing'}
+                'description': 'fake app for testing',
+                'source': {
+                    'repository': 'https://github.com/example/a.git',
+                    'revision': 'master'
+                }}
         db_obj = fakes.FakeApp()
         mock_registry.App.return_value = db_obj
         handler = app_handler.AppHandler(self.ctx)
         res = handler.create(data)
         db_obj.create.assert_called_once_with(self.ctx)
         self.assertEqual(db_obj, res)
+
+    @mock.patch('solum.common.clients.OpenStackClients.keystone')
+    def test_app_create_invalid_repo_url(self, mock_kc, mock_registry):
+        invalid_urls_list = list()
+        invalid_urls_list.append('http://github.com/skdhfskjhdks')
+        invalid_urls_list.append('github.com/abc/xyz')
+        invalid_urls_list.append('xyz://github.com/abc/xyz.git')
+        invalid_urls_list.append('xyz://github.com/abc/xyz')
+        invalid_urls_list.append('abc')
+        invalid_urls_list.append('http')
+        invalid_urls_list.append('git')
+
+        for invalid_url in invalid_urls_list:
+            data = {'name': 'fakeapp',
+                    'description': 'fake app for testing',
+                    'source': {
+                        'repository': invalid_url,
+                        'revision': 'master'
+                    }}
+            db_obj = fakes.FakeApp()
+            mock_registry.App.return_value = db_obj
+            handler = app_handler.AppHandler(self.ctx)
+
+            self.assertRaises(exc.BadRequest, handler.create, data)
+            assert not db_obj.create.called, 'db_obj.create called'
 
     def test_app_patch(self, mock_registry):
         mock_registry.App.side_effect = [mock.MagicMock(), mock.MagicMock()]
@@ -93,7 +123,7 @@ class TestAppHandler(base.BaseTestCase):
                          updated['workflow_config']['run_cmd'])
         self.assertEqual('python ./tests.py',
                          updated['workflow_config']['test_cmd'])
-        self.assertEqual('http://example.git',
+        self.assertEqual('http://github.com/example/a.git',
                          updated['source']['repository'])
         self.assertEqual('experimental',
                          updated['source']['revision'])

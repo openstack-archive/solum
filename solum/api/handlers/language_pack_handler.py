@@ -12,12 +12,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import re
 import uuid
 
 from oslo_config import cfg
 from swiftclient import exceptions as swiftexp
 
+from solum.api.handlers import common
 from solum.api.handlers import handler
 from solum.api.handlers import userlog_handler
 from solum.common import exception as exc
@@ -74,17 +74,6 @@ class LanguagePackHandler(handler.Handler):
             else:
                 return False
 
-    def check_lp_url(self, data):
-
-        # try to use a correct git uri
-        pt = re.compile(r'github\.com[:/](.+?)/(.+?)($|/.*$|\.git$|\.git/.*$)')
-        match = pt.search(data['source_uri'])
-        if not match:
-            msg = ("Bad git url. Provide git url in the following format: \n"
-                   "Public repo: https://github.com/<USER>/<REPO>.git\n"
-                   "Private repo: git@github.com:<USER>/<REPO>.git\n")
-            raise exc.BadRequest(reason=msg)
-
     def get(self, id):
         """Return a languagepack."""
         return objects.registry.Image.get_lp_by_name_or_uuid(
@@ -97,7 +86,7 @@ class LanguagePackHandler(handler.Handler):
     def create(self, data, lp_metadata):
         """Create a new languagepack."""
 
-        self.check_lp_url(data)
+        common.check_url(data['source_uri'])
 
         try:
             # Check if an LP with the same name exists.

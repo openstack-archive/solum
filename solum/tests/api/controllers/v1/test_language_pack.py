@@ -87,7 +87,7 @@ class TestLanguagePacksController(base.BaseTestCase):
     def test_language_packs_post(self, LanguagePackHandler, resp_mock,
                                  request_mock):
         json_create = {'name': 'foo',
-                       'source_uri': 'github.com/sample',
+                       'source_uri': 'git@github.com/sample/a.git',
                        'lp_metadata': 'some metadata'}
         request_mock.body = json.dumps(json_create)
         request_mock.content_type = 'application/json'
@@ -112,7 +112,7 @@ class TestLanguagePacksController(base.BaseTestCase):
     def test_language_packs_post_badname(self, LanguagePackHandler, resp_mock,
                                          request_mock):
         json_create = {'name': 'foo==',
-                       'source_uri': 'github.com/sample',
+                       'source_uri': 'git@github.com/sample/a.git',
                        'lp_metadata': 'some metadata'}
         request_mock.body = json.dumps(json_create)
         request_mock.content_type = 'application/json'
@@ -127,7 +127,7 @@ class TestLanguagePacksController(base.BaseTestCase):
     def test_language_packs_post_capsname(self, LanguagePackHandler, resp_mock,
                                           request_mock):
         json_create = {'name': 'Foo',
-                       'source_uri': 'github.com/sample',
+                       'source_uri': 'git@github.com/sample/a.git',
                        'lp_metadata': 'some metadata'}
         request_mock.body = json.dumps(json_create)
         request_mock.content_type = 'application/json'
@@ -142,7 +142,7 @@ class TestLanguagePacksController(base.BaseTestCase):
     def test_language_packs_post_longname(self, LanguagePackHandler, resp_mock,
                                           request_mock):
         json_create = {'name': 'a' * 101,
-                       'source_uri': 'github.com/sample',
+                       'source_uri': 'git@github.com/sample/a.git',
                        'lp_metadata': 'some metadata'}
         request_mock.body = json.dumps(json_create)
         request_mock.content_type = 'application/json'

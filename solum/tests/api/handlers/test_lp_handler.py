@@ -47,7 +47,7 @@ class TestLanguagePackHandler(base.BaseTestCase):
                 'LanguagePackHandler._start_build')
     def test_languagepack_create(self, mock_lp_build, mock_img):
         data = {'name': 'new app',
-                'source_uri': 'git://github.com/foo/foo.git'}
+                'source_uri': 'git@github.com/foo/foo.git'}
         fi = fakes.FakeImage()
         mock_img.get_lp_by_name_or_uuid.side_effect = exc.ResourceNotFound()
         mock_img.return_value = fi
@@ -58,14 +58,23 @@ class TestLanguagePackHandler(base.BaseTestCase):
         fi.create.assert_called_once_with(self.ctx)
 
     def test_lp_create_bad_git_url(self, mock_img):
-        data = {'name': 'new app',
-                'source_uri': 'git://123'}
-        handler = language_pack_handler.LanguagePackHandler(self.ctx)
-        try:
-            handler.create(data, lp_metadata=None)
-            self.assertTrue(False)
-        except exc.BadRequest:
-            self.assertTrue(True)
+
+        invalid_urls_list = list()
+        invalid_urls_list.append('http://github.com/skdhfskjhdks')
+        invalid_urls_list.append('github.com/abc/xyz')
+        invalid_urls_list.append('xyz://github.com/abc/xyz.git')
+        invalid_urls_list.append('xyz://github.com/abc/xyz')
+        invalid_urls_list.append('abc')
+        invalid_urls_list.append('http')
+        invalid_urls_list.append('git')
+
+        for invalid_url in invalid_urls_list:
+            data = {'name': 'new app',
+                    'source_uri': invalid_url}
+            handler = language_pack_handler.LanguagePackHandler(self.ctx)
+
+            self.assertRaises(exc.BadRequest, handler.create, data,
+                              lp_metadata=None)
 
     @mock.patch('solum.common.solum_swiftclient.SwiftClient.delete_object')
     @mock.patch('solum.api.handlers.userlog_handler.UserlogHandler')

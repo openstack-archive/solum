@@ -76,7 +76,7 @@ class FakeApp(mock.Mock):
         self.language_pack = 'test_lp'
         self.deleted = False
         self.source = {
-            'repository': 'http://example.git',
+            'repository': 'http://github.com/example/a.git',
             'revision': 'master',
         }
         self.ports = [80]
