@@ -1,0 +1,16 @@
+version: 1
+name: java_app
+description: Java web app
+languagepack: java
+source:
+  repository: git@github.com:rackspace-solum-samples/solum-tomcat-app.git
+  revision: master
+workflow_config:
+  test_cmd: ''
+  run_cmd: ./run
+trigger_actions:
+- unittest
+- build
+- deploy
+ports:
+- 80

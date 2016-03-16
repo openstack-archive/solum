@@ -3,12 +3,43 @@ by refering to the application's app file.
 
 1) python_app.yaml
 
-This is a python application. In order to use it, you will need to create
-a python languagepack in solum. You can use following repository for this purpose.
+This is a Python application. The name of the application is 'cherrypy'
+and it is defined in the app file. The app file defines that this app needs 'python' languagepack.
+So in order to build and deploy this app to Solum, you will need to create a 'python' languagepack first. 
+You can use following repository to create this languagepack:
 https://github.com/rackspace-solum-samples/solum-languagepack-python.git
 
+Use following commands to deploy this app:
 
-1) nodejs_app.yaml
+solum lp create python https://github.com/rackspace-solum-samples/solum-languagepack-python.git
+solum app create --app-file examples/apps/python_app.yaml
+solum app deploy cherrypy
+solum app show cherrypy
+
+Once the app is READY, you can curl to app_url that is displayed in the output
+of the 'app show' command.
+
+
+2) java_app.yaml
+
+This is a Java application. In the app file, we have set the name for this app
+as 'java_app'. The app file defines that this app needs 'java' languagepack.
+So to build and deploy this app in Solum, you will need to create a 'java' languagepack.
+You can use following repository to create this languagepack:
+https://github.com/rackspace-solum-samples/solum-languagepack-java.git
+
+Use following commands to deploy this app:
+
+solum lp create java https://github.com/rackspace-solum-samples/solum-languagepack-java.git
+solum app create --app-file examples/apps/java_app.yaml
+solum app deploy java_app
+solum app show java_app
+
+Once the app is READY, you can curl to app_url that is displayed in the output
+of the 'app show' command.
+
+
+3) nodejs_app.yaml
 
 This is a Nodejs application. In order to use it, you will need to create
 a nodejs languagepack in solum. You can use following repository for this purpose.
