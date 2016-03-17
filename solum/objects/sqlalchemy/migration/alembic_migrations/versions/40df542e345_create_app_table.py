@@ -23,7 +23,8 @@ from alembic import op
 import sqlalchemy as sa
 
 from solum.objects.sqlalchemy import models
-from solum.openstack.common import timeutils
+
+from oslo_utils import timeutils
 
 # revision identifiers, used by Alembic.
 revision = '40df542e345'

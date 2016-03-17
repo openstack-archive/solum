@@ -20,9 +20,8 @@ Create Date: 2014-09-29 20:43:55.544682
 
 """
 from alembic import op
+from oslo_utils import timeutils
 import sqlalchemy as sa
-
-from solum.openstack.common import timeutils
 
 # revision identifiers, used by Alembic.
 revision = '450600086a09'
