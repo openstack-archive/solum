@@ -14,17 +14,17 @@ import random
 import string
 
 
-def get_sample_data():
+def get_sample_data(languagepack=''):
     data = dict()
     s = string.lowercase
     data["name"] = "test_app" + ''.join(random.sample(s, 5))
     data["description"] = "descp"
-    data["languagepack"] = "python"
+    data["languagepack"] = languagepack
     data["trigger_actions"] = ["test", "build", "deploy"]
     data["ports"] = [80]
 
     source = {}
-    source['repository'] = "https://github.com"
+    source['repository'] = "https://github.com/a/b.git"
     source['revision'] = "master"
     data["source"] = source
 

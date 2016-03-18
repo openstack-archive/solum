@@ -17,6 +17,8 @@
 import copy
 import json
 import os
+import random
+import string
 import time
 
 from tempest import config
@@ -127,11 +129,13 @@ class SolumClient(rest_client.RestClient):
 
     def create_lp(self, data=None):
         sample_lp = dict()
-        sample_lp["name"] = "python"
+        s = string.lowercase
+        sample_lp["name"] = "lp" + ''.join(random.sample(s, 5))
         lp_url = "https://github.com/murali44/Solum-lp-Go.git"
         sample_lp["source_uri"] = lp_url
         jsondata = json.dumps(sample_lp)
         resp, body = self.post('v1/language_packs', jsondata)
+        return sample_lp["name"]
 
     def create_app(self, data=None):
         app_data = copy.deepcopy(data) or apputils.get_sample_data()
@@ -166,6 +170,9 @@ class SolumClient(rest_client.RestClient):
     def _delete_language_pack(self, uuid):
         resp, _ = self.delete('v1/language_packs/%s' % uuid)
 
+    def delete_language_pack(self, name):
+        resp, _ = self.delete('v1/language_packs/%s' % name)
+
     def delete_created_apps(self):
         self.delete_created_assemblies()
         [self.delete_app(id) for id in list(self.created_apps)]
@@ -175,7 +182,8 @@ class SolumClient(rest_client.RestClient):
         resp, body = self.delete(
             'v1/apps/%s' % id,
             headers={'content-type': 'application/json'})
-        self.created_apps.remove(id)
+        if id in self.created_apps:
+            self.created_apps.remove(id)
         return resp, body
 
     def delete_plan(self, uuid):

@@ -14,6 +14,7 @@
 # under the License.
 
 import json
+import time
 
 from tempest_lib import exceptions as tempest_exceptions
 import yaml
@@ -46,18 +47,18 @@ class TestAppController(base.TestCase):
 
     def setUp(self):
         super(TestAppController, self).setUp()
-        self.client.delete_created_lps()
-        self.client.create_lp()
 
     def tearDown(self):
         super(TestAppController, self).tearDown()
-        self.client.delete_created_apps()
-        self.client.delete_created_lps()
 
     def test_app_create(self):
-        data = apputils.get_sample_data()
+        lp_name = self.client.create_lp()
+        data = apputils.get_sample_data(languagepack=lp_name)
         resp = self.client.create_app(data=data)
         self.assertEqual(resp.status, 201)
+        self.client.delete_app(resp.id)
+        time.sleep(2)
+        self.client.delete_language_pack(lp_name)
 
     def test_app_create_bad_port_data(self):
         try:
@@ -73,7 +74,8 @@ class TestAppController(base.TestCase):
                           headers={'content-type': 'application/json'})
 
     def test_app_patch(self):
-        data = apputils.get_sample_data()
+        lp_name = self.client.create_lp()
+        data = apputils.get_sample_data(languagepack=lp_name)
         create_resp = self.client.create_app(data=data)
         self.assertEqual(create_resp.status, 201)
 
@@ -98,9 +100,13 @@ class TestAppController(base.TestCase):
         self.assertEqual(app_body["name"], 'newfakeappname')
         self.assertEqual(app_body["workflow_config"]["run_cmd"], "newruncmd")
         self.assertEqual(app_body["source"]["repository"], "newrepo")
+        self.client.delete_app(create_resp.id)
+        time.sleep(2)
+        self.client.delete_language_pack(lp_name)
 
     def test_app_get(self):
-        data = apputils.get_sample_data()
+        lp_name = self.client.create_lp()
+        data = apputils.get_sample_data(languagepack=lp_name)
         create_resp = self.client.create_app(data=data)
         self.assertEqual(create_resp.status, 201)
         id = create_resp.id
@@ -111,9 +117,13 @@ class TestAppController(base.TestCase):
         self.assertEqual(resp.status, 200)
         yaml_data = yaml.load(body)
         self._assert_app_data(yaml_data, data)
+        self.client.delete_app(create_resp.id)
+        time.sleep(2)
+        self.client.delete_language_pack(lp_name)
 
     def test_apps_get_all(self):
-        data = apputils.get_sample_data()
+        lp_name = self.client.create_lp()
+        data = apputils.get_sample_data(languagepack=lp_name)
         create_resp = self.client.create_app(data)
         self.assertEqual(create_resp.status, 201)
         resp, body = self.client.get(
@@ -123,15 +133,21 @@ class TestAppController(base.TestCase):
         id = create_resp.id
         filtered = [app for app in resp_data if app['id'] == id]
         self.assertEqual(filtered[0]['id'], id)
+        self.client.delete_app(id)
+        time.sleep(2)
+        self.client.delete_language_pack(lp_name)
 
     def test_app_delete(self):
-        data = apputils.get_sample_data()
+        lp_name = self.client.create_lp()
+        data = apputils.get_sample_data(languagepack=lp_name)
         create_resp = self.client.create_app(data)
         self.assertEqual(create_resp.status, 201)
         id = create_resp.id
         resp, body = self.client.delete_app(id)
         self.assertEqual(resp.status, 202)
         self.assertEqual(body, '')
+        time.sleep(2)
+        self.client.delete_language_pack(lp_name)
 
     def test_app_delete_not_found(self):
         self.assertRaises(tempest_exceptions.NotFound,

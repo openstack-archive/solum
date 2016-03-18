@@ -14,6 +14,7 @@
 
 import uuid
 
+from solum.api.handlers import common
 from solum.api.handlers import handler
 from solum.api.handlers import workflow_handler
 from solum.common import exception
@@ -84,6 +85,8 @@ class AppHandler(handler.Handler):
         db_obj.trigger_uuid = str(uuid.uuid4())
         db_obj.trigger_actions = data.get('trigger_actions')
         db_obj.raw_content = data.get('raw_content')
+
+        common.check_url(db_obj.source['repository'])
 
         db_obj.create(self.context)
         return db_obj

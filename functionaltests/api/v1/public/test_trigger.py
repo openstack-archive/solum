@@ -16,13 +16,15 @@ import time
 import requests
 
 from functionaltests.api import base
+from functionaltests.api.common import apputils
 
 
 class TestTriggerController(base.TestCase):
 
     def test_trigger_post(self):
-        self.client.create_lp()
-        resp = self.client.create_app()
+        lp_name = self.client.create_lp()
+        data = apputils.get_sample_data(languagepack=lp_name)
+        resp = self.client.create_app(data=data)
         bdy = json.loads(resp.body)
         trigger_uri = bdy['trigger_uri']
         # Using requests instead of self.client to test unauthenticated request
@@ -37,12 +39,13 @@ class TestTriggerController(base.TestCase):
         # since app delete is an async operation, wait few seconds for app
         # delete and then delete language pack (otherwise language pack
         # cannot be deleted)
-        time.sleep(5)
+        time.sleep(2)
         self.client.delete_created_lps()
 
     def test_trigger_post_with_empty_body(self):
-        self.client.create_lp()
-        resp = self.client.create_app()
+        lp_name = self.client.create_lp()
+        data = apputils.get_sample_data(languagepack=lp_name)
+        resp = self.client.create_app(data=data)
         bdy = json.loads(resp.body)
         trigger_uri = bdy['trigger_uri']
         # Using requests instead of self.client to test unauthenticated request
@@ -52,5 +55,5 @@ class TestTriggerController(base.TestCase):
         # since app delete is an async operation, wait few seconds for app
         # delete and then delete language pack (otherwise language pack
         # cannot be deleted)
-        time.sleep(5)
+        time.sleep(2)
         self.client.delete_created_lps()
