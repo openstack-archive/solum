@@ -62,7 +62,6 @@ enable_service q-meta
 enable_service neutron
 disable_service n-net
 
-
 # Enable solum services
 enable_service solum-api
 enable_service solum-conductor

@@ -49,3 +49,10 @@ sudo more /etc/tempest/tempest.conf
 
 cd /opt/stack/new/solum/functionaltests
 sudo ./run_tests.sh
+
+# Hack
+sudo touch /opt/stack/logs/screen-n-dhcp.log
+sudo sh -c 'echo creating temporary dhcp log file >> /opt/stack/logs/screen-n-dhcp.log'
+
+sudo touch /opt/stack/logs/screen-n-dhcp.txt
+sudo sh -c 'echo creating temporary dhcp log file >> /opt/stack/logs/screen-n-dhcp.txt'

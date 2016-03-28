@@ -362,14 +362,14 @@ solum_install_core_os() {
 #----------------
 
 if is_service_enabled solum-api solum-conductor solum-deployer solum-worker; then
-    echo "Checking for Docker"
-    if [ ! -f /usr/bin/docker ] ; then
-       echo deb http://get.docker.com/ubuntu docker main | sudo tee /etc/apt/sources.list.d/docker.list
-       sudo apt-key adv --keyserver pgp.mit.edu --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
-       sudo apt-get install -y apt-transport-https
-       sudo apt-get update
-       sudo apt-get install -y lxc-docker-1.7.0
-    fi
+    #echo "Checking for Docker"
+    #if [ ! -f /usr/bin/docker ] ; then
+    #   echo deb http://get.docker.com/ubuntu docker main | sudo tee /etc/apt/sources.list.d/docker.list
+    #   sudo apt-key adv --keyserver pgp5.ai.mit.edu --recv-keys 36A1D7869245C8950F966E92D8576A8BA88D21E9
+    #   sudo apt-get install -y apt-transport-https
+    #   sudo apt-get update
+    #   sudo apt-get install -y --force-yes lxc-docker-1.7.0
+    #fi
     if [[ "$1" == "stack" && "$2" == "install" ]]; then
         echo_summary "Installing Solum"
         install_solum
