@@ -2,6 +2,11 @@
 Solum Quick Start Guide
 =======================
 
+Setup Solum development environment
+------------------------------------
+
+https://wiki.openstack.org/wiki/Solum/solum-development-setup
+
 The following is a guide to deploying an app with Solum.
 
 Overview
@@ -17,32 +22,20 @@ Overview
   $ solum app show <UUID/Name>
   $ curl <application_uri>
 
-Use Cases
-~~~~~~~~~
-A languagepack must exist in Solum, as every application deployed
-with Solum requires an association to a languagepack to run (even
-if the languagepack only implements a no-op). Languagepacks can be
-added to Solum in the following ways:
+
+In this document we will work with a python example to demonstrate how you can use solum to deploy an application.
+
+
+Create a languagepack
+---------------------
+Before deploying an app on Solum, we need to create a run time environment, called languagepack, for the application.
+A languagepack must exist in Solum, as every application deployed with Solum requires an association to a languagepack to run (even
+if the languagepack only implements a no-op). Languagepacks can be added to Solum in the following ways:
 
 1. Solum comes with pre-existing languagepacks
 2. Solum System Operator creates and adds languagepack(s) available for all users
 3. Solum User creates and adds languagepack(s) available only to that user
 
-Vagrant Demo Environment
-------------------------
-
-We strongly recommend using this approach if you are setting up Solum for the first time.
-
-1. Follow the `Solum Demo Instructions`__
-
-__ https://wiki.openstack.org/wiki/Solum/Demo
-
-In this document we will work with a python example to demonstrate how you can use solum to deploy an application.
-
-Create a languagepack
----------------------
-
-Before deploying an app on Solum, we need to create a run time environment, called languagepack, for the application.
 To learn more, see the languagepacks section of this document.
 
 ::
@@ -121,7 +114,7 @@ To learn more, see the appfile section of this document.
     test_cmd: ./unit_tests.sh
     run_cmd: python app.py
   trigger_actions:
-   - test
+   - unittest
    - build
    - deploy
   ports:
