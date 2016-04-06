@@ -46,8 +46,8 @@ class RequestContext(context.RequestContext):
                                              is_admin=is_admin,
                                              read_only=read_only,
                                              show_deleted=False,
-                                             request_id=request_id)
-        self.roles = roles or []
+                                             request_id=request_id,
+                                             roles=roles)
         self.user_name = user_name
         self.auth_url = auth_url
         self.trust_id = trust_id
@@ -59,7 +59,6 @@ class RequestContext(context.RequestContext):
     def to_dict(self):
         values = super(RequestContext, self).to_dict()
         values.update({
-            'roles': self.roles,
             'user_name': self.user_name,
             'auth_url': self.auth_url,
             'auth_token_info': self.auth_token_info,
