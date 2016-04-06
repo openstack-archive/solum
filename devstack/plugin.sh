@@ -143,18 +143,31 @@ function configure_solum() {
 
     # Integrate nova-docker with Devstack
 
-    #git_clone $NOVADOCKER_REPO $NOVADOCKER_PROJ_DIR $NOVADOCKER_BRANCH
-    #cp -R $NOVADOCKER_PROJ_DIR/contrib/devstack/lib/* ${DEVSTACK_DIR}/lib/
-    #cp $NOVADOCKER_PROJ_DIR/contrib/devstack/extras.d/* ${DEVSTACK_DIR}/extras.d/
+    # Install docker
+    sudo wget -O docker.deb https://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.7.1-0~trusty_amd64.deb
+    sudo apt-get install -y libapparmor1
+    sudo dpkg -i docker.deb
 
-    #if [ ! -d $NOVA_CONF_DIR/rootwrap.d ] ; then
-    #    mkdir -p $NOVA_CONF_DIR/rootwrap.d
-    #fi
+    # Install docker driver
+    sudo git clone https://github.com/openstack/nova-docker.git /opt/stack/nova-docker
+    cd /opt/stack/nova-docker
 
-    #cp $NOVADOCKER_PROJ_DIR/$NOVA_CONF_DIR/rootwrap.d/docker.filters $NOVA_CONF_DIR/rootwrap.d/docker.filters
+    # We pin to this version as Solum is known to work with it
+    sudo git checkout 7e55fd551ef4faf3499a8db056efc9535c20e434
+
+    sudo python setup.py install
+    sudo gpasswd -a ${USER} docker
+    sudo usermod -aG docker ${USER}
+    sudo chmod o=rwx /var/run/docker.sock
+
+    if [ ! -d $NOVA_CONF_DIR/rootwrap.d ] ; then
+        mkdir -p $NOVA_CONF_DIR/rootwrap.d
+    fi
+
+    sudo cp /opt/stack/nova-docker/etc/nova/rootwrap.d/docker.filters /etc/nova/rootwrap.d/.
 
     # configure Virtdriver in /etc/nova/nova.conf
-    # iniset $NOVA_CONF_DIR/$NOVA_CONF_FILE DEFAULT compute_driver novadocker.virt.docker.driver.DockerDriver
+    iniset $NOVA_CONF_DIR/$NOVA_CONF_FILE DEFAULT compute_driver novadocker.virt.docker.driver.DockerDriver
 
 }
 
