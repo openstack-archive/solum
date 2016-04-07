@@ -41,28 +41,30 @@ To learn more, see the languagepacks section of this document.
 ::
 
   $ solum languagepack create python https://github.com/rackspace-solum-samples/solum-languagepack-python.git
-  +-------------+--------------------------------------+
-  | Property    | Value                                |
-  +-------------+--------------------------------------+
-  | status      | PENDING                              |
-  | description | None                                 |
-  | uuid        | 96f889e7-e8db-4ae3-a38d-0bfda8268e30 |
-  | name        | python                               |
-  +-------------+--------------------------------------+
+
+  +-------------+--------------------------------------------------------------------------+
+  | Property    | Value                                                                    |
+  +-------------+--------------------------------------------------------------------------+
+  | status      | QUEUED                                                                   |
+  | source_uri  | https://github.com/rackspace-solum-samples/solum-languagepack-python.git |
+  | description | None                                                                     |
+  | uuid        | 0233f461-5fb0-4de7-8f06-5527721c3e97                                     |
+  | name        | python                                                                   |
+  +-------------+--------------------------------------------------------------------------+
 
 Solum takes a few minutes to build your languagepack. You can check the state by using the languagepack show command.
 A languagepack is ready for use once the state changes to 'READY'.
 
 ::
 
-  $ solum languagepack show 96f889e7-e8db-4ae3-a38d-0bfda8268e30
+  $ solum languagepack show python
   +-------------+--------------------------------------------------------------------------+
   | Property    | Value                                                                    |
   +-------------+--------------------------------------------------------------------------+
   | status      | READY                                                                    |
   | source_uri  | https://github.com/rackspace-solum-samples/solum-languagepack-python.git |
   | description | None                                                                     |
-  | uuid        | 96f889e7-e8db-4ae3-a38d-0bfda8268e30                                     |
+  | uuid        | 0233f461-5fb0-4de7-8f06-5527721c3e97                                     |
   | name        | python                                                                   |
   +-------------+--------------------------------------------------------------------------+
 
@@ -71,12 +73,12 @@ This is a great way to debug your languagepack if it fails to build.
 
 ::
 
-  $ solum languagepack logs 96f889e7-e8db-4ae3-a38d-0bfda8268e30
-  +--------------------------------------+-----------------------------------------------------------------------------+
-  | resource_uuid                        | local_storage                                                               |
-  +--------------------------------------+-----------------------------------------------------------------------------+
-  | 96f889e7-e8db-4ae3-a38d-0bfda8268e30 | /var/log/solum/worker/languagepack-840d51c0-7a4d-4a3c-a2af-452de076eed8.log |
-  +--------------------------------------+-----------------------------------------------------------------------------+
+  $ solum languagepack logs python
+  +--------------------------------------+---------------------+-----------------------------------------------------------------------------+
+  | resource_uuid                        | created_at          | local_storage                                                               |
+  +--------------------------------------+---------------------+-----------------------------------------------------------------------------+
+  | 0233f461-5fb0-4de7-8f06-5527721c3e97 | 2016-04-07 13:33:35 | /var/log/solum/worker/languagepack-2a8cd98e-8b37-4ec7-b17b-f511814a7d6f.log |
+  +--------------------------------------+---------------------+-----------------------------------------------------------------------------+
 
 You can find all available languagepacks with the following command
 
@@ -160,16 +162,19 @@ At this point, your app is not deployed yet.
 ::
 
   $ solum app deploy 4a795b99-936d-4330-be4d-d2099b160075
-  +-----------------+------------------------------------------------------------------------+
-  | Property        | Value                                                                  |
-  +-----------------+------------------------------------------------------------------------+
-  | status          | QUEUED                                                                 |
-  | description     | Sample Python web app.                                                 |
-  | application_uri | None                                                                   |
-  | name            | cherrypy                                                      |
-  | trigger_uri     | http://10.0.2.15:9777/v1/triggers/b6eb26e5-3b7b-416b-b932-302c514071cc |
-  | uuid            | 185f2741-61e0-497e-b2b7-c890c7e151dd                                   |
-  +-----------------+------------------------------------------------------------------------+
+  +------------+---------------------------------------------------------------------+
+  | Property   | Value                                                               |
+  +------------+---------------------------------------------------------------------+
+  | wf_id      | 1                                                                   |
+  | created_at | 2016-04-07T13:36:45.497519                                          |
+  | app_id     | 7d64347c-93d6-4adf-bf70-309f9d53c034                                |
+  | actions    | [u'unittest', u'build', u'deploy']                                  |
+  | updated_at | 2016-04-07T13:36:45.497519                                          |
+  | source     | {u'repository': u'https://github.com/rackspace-solum-samples/solum- |
+  |            | python-sample-app.git', u'revision': u'master'}                     |
+  | config     | {u'run_cmd': u'python app.py', u'test_cmd': u'./unit_tests.sh'}     |
+  | id         | 97e7e2c1-8ba1-4320-9831-b5baef1d480d                                |
+  +------------+---------------------------------------------------------------------+
 
 
 Solum builds a Docker image by layering your app's code on top of the related languagepack's docker image.
@@ -181,7 +186,7 @@ The status field will show the progress of your app through the process.
 
 ::
 
-  $ solum app show 185f2741-61e0-497e-b2b7-c890c7e151dd
+  $ solum app show 4a795b99-936d-4330-be4d-d2099b160075
   +-----------------+------------------------------------------------------------------------+
   | Property        | Value                                                                  |
   +-----------------+------------------------------------------------------------------------+
@@ -199,19 +204,32 @@ The status field will show the progress of your app through the process.
 
 ::
 
-  $ solum app show 185f2741-61e0-497e-b2b7-c890c7e151dd
-  +-----------------+------------------------------------------------------------------------+
-  | Property        | Value                                                                  |
-  +-----------------+------------------------------------------------------------------------+
-  | status          | READY                                                                  |
-  | description     | Sample Python web app.                                                 |
-  | application_uri | 192.168.76.21:80                                                       |
-  | created_at      | 2015-03-10T22:47:04                                                    |
-  | updated_at      | 2015-03-10T22:49:59                                                    |
-  | name            | cherrypy                                                      |
-  | trigger_uri     | http://10.0.2.15:9777/v1/triggers/b6eb26e5-3b7b-416b-b932-302c514071cc |
-  | uuid            | 185f2741-61e0-497e-b2b7-c890c7e151dd                                   |
-  +-----------------+------------------------------------------------------------------------+
+  $ solum app show cherrypy
+
+  +------------------+---------------------------------------------------------------------+
+  | Property         | Value                                                               |
+  +------------------+---------------------------------------------------------------------+
+  | app_url          | 172.24.4.3:80                                                       |
+  | entry_points     |                                                                     |
+  | description      | python web app                                                      |
+  | created_at       | 2016-04-07T13:36:32                                                 |
+  | languagepack     | python                                                              |
+  | target_instances | 1                                                                   |
+  | ports            | [80]                                                                |
+  | source           | {u'repository': u'https://github.com/rackspace-solum-samples/solum- |
+  |                  | python-sample-app.git', u'revision': u'master'}                     |
+  | trigger          | [u'unittest', u'build', u'deploy']                                  |
+  | trigger_uuid     | b85bdf42-d126-4223-9a64-8c10930447e3                                |
+  | id               | 4a795b99-936d-4330-be4d-d2099b160075                                |
+  | name             | cherrypy                                                            |
+  +------------------+---------------------------------------------------------------------+
+  'cherrypy' workflows and their status:
+  +-------+--------------------------------------+--------+
+  | wf_id | id                                   | status |
+  +-------+--------------------------------------+--------+
+  | 1     | 97e7e2c1-8ba1-4320-9831-b5baef1d480d | READY  |
+  +-------+--------------------------------------+--------+
+
 
 Connect to Your App
 -------------------
