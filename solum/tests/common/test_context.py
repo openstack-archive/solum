@@ -23,11 +23,19 @@ class TestContext(base.BaseTestCase):
         self.CONF = self.useFixture(config.Config())
 
     def test_context_to_dict(self):
-        ctx = context.RequestContext('_token_', '_user_', '_tenant_',
-                                     '_domain_', '_user_domain_',
-                                     '_project_domain_', False, False,
-                                     '_request_id_', '_user_name_',
-                                     ['admin', 'member'], 'fake_auth_url',
+        ctx = context.RequestContext(auth_token='_token_',
+                                     user='_user_',
+                                     tenant='_tenant_',
+                                     domain='_domain_',
+                                     user_domain='_user_domain_',
+                                     project_domain='_project_domain_',
+                                     is_admin=False,
+                                     read_only=False,
+                                     request_id='_request_id_',
+                                     user_name='_user_name_',
+                                     roles=['admin', 'member'],
+                                     auth_url='fake_auth_url',
+                                     auth_token_info='_auth_token_info_',
                                      trust_id='fake_trust_id')
         ctx_dict = ctx.to_dict()
         self.assertEqual(ctx_dict['auth_token'], '_token_')
@@ -44,15 +52,24 @@ class TestContext(base.BaseTestCase):
         self.assertEqual(ctx_dict['user_name'], '_user_name_')
         self.assertEqual(ctx_dict['roles'], ['admin', 'member'])
         self.assertEqual(ctx_dict['auth_url'], 'fake_auth_url')
+        self.assertEqual(ctx_dict['auth_token_info'], '_auth_token_info_')
         self.assertEqual(ctx_dict['trust_id'], 'fake_trust_id')
 
     def test_glabal_admin_true(self):
         self.CONF.config(solum_admin_tenant_id='fake_tenant_id')
-        ctx = context.RequestContext('_token_', '_user_', 'fake_tenant_id',
-                                     '_domain_', '_user_domain_',
-                                     '_project_domain_', False, False,
-                                     '_request_id_', '_user_name_',
-                                     ['admin', 'member'], 'fake_auth_url',
+        ctx = context.RequestContext(auth_token='_token_',
+                                     user='_user_',
+                                     tenant='fake_tenant_id',
+                                     domain='_domain_',
+                                     user_domain='_user_domain_',
+                                     project_domain='_project_domain_',
+                                     is_admin=False,
+                                     read_only=False,
+                                     request_id='_request_id_',
+                                     user_name='_user_name_',
+                                     roles=['admin', 'member'],
+                                     auth_url='fake_auth_url',
+                                     auth_token_info='_auth_token_info_',
                                      trust_id='fake_trust_id')
         ctx_dict = ctx.to_dict()
         self.assertEqual(ctx_dict['auth_token'], '_token_')
@@ -71,13 +88,21 @@ class TestContext(base.BaseTestCase):
         self.assertEqual(ctx_dict['auth_url'], 'fake_auth_url')
         self.assertEqual(ctx_dict['trust_id'], 'fake_trust_id')
 
-    def test_glabal_admin_false(self):
+    def test_global_admin_false(self):
         self.CONF.config(solum_admin_tenant_id='fake_tenant_id')
-        ctx = context.RequestContext('_token_', '_user_', '_tenant_id_',
-                                     '_domain_', '_user_domain_',
-                                     '_project_domain_', False, False,
-                                     '_request_id_', '_user_name_',
-                                     ['admin', 'member'], 'fake_auth_url',
+        ctx = context.RequestContext(auth_token='_token_',
+                                     user='_user_',
+                                     tenant='_tenant_id_',
+                                     domain='_domain_',
+                                     user_domain='_user_domain_',
+                                     project_domain='_project_domain_',
+                                     is_admin=False,
+                                     read_only=False,
+                                     request_id='_request_id_',
+                                     user_name='_user_name_',
+                                     roles=['admin', 'member'],
+                                     auth_url='fake_auth_url',
+                                     auth_token_info='_auth_token_info_',
                                      trust_id='fake_trust_id')
         ctx_dict = ctx.to_dict()
         self.assertEqual(ctx_dict['auth_token'], '_token_')

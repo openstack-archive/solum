@@ -20,11 +20,19 @@ from solum.tests import base
 solum.TLS.trace = trace_data.TraceData()
 
 # Just putting highly recognizable values in context
-CONTEXT = context.RequestContext(
-    '_auth_token_', '_user_', '_tenant_', '_domain_', '_user_domain_',
-    '_project_domain_', False, False, '_request_id_',
-    '_user_name_', '_roles_', '_auth_url_',
-    auth_token_info='_auth_token_info_')
+CONTEXT = context.RequestContext(auth_token='_auth_token_',
+                                 user='_user_',
+                                 tenant='_tenant_',
+                                 domain='_domain_',
+                                 user_domain='_user_domain_',
+                                 project_domain='_project_domain_',
+                                 is_admin=False,
+                                 read_only=False,
+                                 request_id='_request_id_',
+                                 user_name='_user_name_',
+                                 roles='_roles_',
+                                 auth_url='_auth_url_',
+                                 auth_token_info='_auth_token_info_')
 
 
 class TestTraceData(base.BaseTestCase):

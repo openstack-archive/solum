@@ -27,7 +27,8 @@ CONF = cfg.CONF
 
 def dummy_context(user='test_username', tenant_id='fake_project_id',
                   user_name='usr_name'):
-    return context.RequestContext(user=user, tenant=tenant_id,
+    return context.RequestContext(user=user,
+                                  tenant=tenant_id,
                                   user_name=user_name)
 
 
