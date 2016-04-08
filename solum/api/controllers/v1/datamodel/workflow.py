@@ -54,7 +54,7 @@ class Workflow(wtypes.Base):
     du_id = wtypes.text
     status = wtypes.text
     result = wtypes.text
-    scale_target = wtypes.text
+    scale_target = int
 
     def __init__(self, *args, **kwargs):
         super(Workflow, self).__init__(*args, **kwargs)
