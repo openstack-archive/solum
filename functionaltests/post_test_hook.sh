@@ -56,3 +56,7 @@ sudo sh -c 'echo creating temporary dhcp log file >> /opt/stack/logs/screen-n-dh
 
 sudo touch /opt/stack/logs/screen-n-dhcp.txt
 sudo sh -c 'echo creating temporary dhcp log file >> /opt/stack/logs/screen-n-dhcp.txt'
+
+
+# Reset the virt driver in nova's /etc/nova/nova.conf
+sudo sed -i s'/compute_driver = novadocker.virt.docker.driver.DockerDriver//'g /etc/nova/nova.conf
