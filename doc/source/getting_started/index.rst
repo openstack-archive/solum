@@ -38,6 +38,15 @@ if the languagepack only implements a no-op). Languagepacks can be added to Solu
 
 To learn more, see the languagepacks section of this document.
 
+1. Authenticate to Keystone.
+The easiest way is to use the credentials supplied by Devstack.
+
+::
+
+  $ source ~/devstack/openrc
+
+2. Create languagepack
+
 ::
 
   $ solum languagepack create python https://github.com/rackspace-solum-samples/solum-languagepack-python.git
@@ -130,15 +139,9 @@ We have configured this example to listen on port 80.
 Deploy your app
 ---------------
 
-3. Authenticate to Keystone.
-The easiest way is to use the credentials supplied by Devstack.
 
 
-::
-
-  $ source ~/devstack/openrc
-
-4. Create an app by supplying the appfile. This registers your app with Solum.
+3. Create an app by supplying the appfile. This registers your app with Solum.
 For demonstration purposes, we will use the provided example.
 
 ::
@@ -157,7 +160,9 @@ For demonstration purposes, we will use the provided example.
 The :code:`uri` field above refers to the newly-registered app.
 At this point, your app is not deployed yet.
 
-5. Your app is now ready to be deployed using the uuid from above to deploy your app.
+Your app is now ready to be deployed using the uuid from above to deploy your app.
+
+4. Deploy app
 
 ::
 
@@ -181,7 +186,7 @@ Solum builds a Docker image by layering your app's code on top of the related la
 Then, Solum creates a stack via Heat to deploy your app.
 At this point, Solum is done, and in a matter of minutes your app will be deployed.
 
-6. You can monitor the progress of your app as it builds and deploys.
+5. You can monitor the progress of your app as it builds and deploys.
 The status field will show the progress of your app through the process.
 
 ::
@@ -200,7 +205,7 @@ The status field will show the progress of your app through the process.
   | uuid            | 185f2741-61e0-497e-b2b7-c890c7e151dd                                   |
   +-----------------+------------------------------------------------------------------------+
 
-7. Run the :code:`solum app show` command a few times to see the status change. You will notice the :code:`status` field changes to READY and the :code:`application_uri` is available.
+6. Run the :code:`solum app show` command a few times to see the status change. You will notice the :code:`status` field changes to READY and the :code:`application_uri` is available.
 
 ::
 
@@ -233,12 +238,12 @@ The status field will show the progress of your app through the process.
 
 Connect to Your App
 -------------------
-8. Connect to your app using the value in the :code:`application_uri` field.
+7. Connect to your app using the value in the :code:`app_url` field.
 
 ::
 
   $ curl <your_application_uri_here>
-  Hello World
+
 
 Update Your App
 ---------------
