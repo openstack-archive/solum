@@ -36,6 +36,9 @@ API_SERVICE_OPTS = [
     cfg.StrOpt('operator_project_id',
                default='',
                help='Tenant id of the operator account used to create LPs'),
+    cfg.IntOpt('max_languagepack_limit',
+               default=10,
+               help='Maximum number of languagepacks allowed'),
 ]
 
 
@@ -74,6 +77,13 @@ class LanguagePackHandler(handler.Handler):
             else:
                 return False
 
+    def _check_if_limit_of_lps_reached(self, ctxt):
+        num_of_lps = objects.registry.Image.get_num_of_lps(ctxt)
+        if num_of_lps >= int(cfg.CONF.api.max_languagepack_limit):
+            msg = "Number of languagepacks reached limit of '%s'." % (
+                cfg.CONF.api.max_languagepack_limit)
+            raise exc.ResourceLimitExceeded(reason=msg)
+
     def get(self, id):
         """Return a languagepack."""
         return objects.registry.Image.get_lp_by_name_or_uuid(
@@ -85,6 +95,8 @@ class LanguagePackHandler(handler.Handler):
 
     def create(self, data, lp_metadata):
         """Create a new languagepack."""
+
+        self._check_if_limit_of_lps_reached(self.context)
 
         common.check_url(data['source_uri'])
 

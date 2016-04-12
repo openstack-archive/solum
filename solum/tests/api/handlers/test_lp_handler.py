@@ -13,6 +13,7 @@
 # under the License.
 
 import mock
+from oslo_config import cfg
 
 from solum.api.handlers import language_pack_handler
 from solum.common import exception as exc
@@ -49,6 +50,10 @@ class TestLanguagePackHandler(base.BaseTestCase):
         data = {'name': 'new app',
                 'source_uri': 'git@github.com/foo/foo.git'}
         fi = fakes.FakeImage()
+        cfg.CONF.set_override('max_languagepack_limit', '10',
+                              group='api')
+        mock_img.get_num_of_lps.return_value = 1
+
         mock_img.get_lp_by_name_or_uuid.side_effect = exc.ResourceNotFound()
         mock_img.return_value = fi
         handler = language_pack_handler.LanguagePackHandler(self.ctx)
@@ -56,6 +61,22 @@ class TestLanguagePackHandler(base.BaseTestCase):
         mock_lp_build.assert_called_once_with(res)
         fi.update.assert_called_once_with(data)
         fi.create.assert_called_once_with(self.ctx)
+
+    @mock.patch('solum.api.handlers.language_pack_handler.'
+                'LanguagePackHandler._start_build')
+    def test_languagepack_create_limit_reached(self, mock_lp_build,
+                                               mock_img):
+
+        data = {'name': 'new app1',
+                'source_uri': 'git@github.com/foo/foo.git'}
+        cfg.CONF.set_override('max_languagepack_limit', '1',
+                              group='api')
+        mock_img.get_num_of_lps.return_value = 1
+
+        handler = language_pack_handler.LanguagePackHandler(self.ctx)
+
+        self.assertRaises(exc.ResourceLimitExceeded, handler.create,
+                          data, lp_metadata=None)
 
     def test_lp_create_bad_git_url(self, mock_img):
 
@@ -68,8 +89,12 @@ class TestLanguagePackHandler(base.BaseTestCase):
         invalid_urls_list.append('http')
         invalid_urls_list.append('git')
 
+        cfg.CONF.set_override('max_languagepack_limit', '10',
+                              group='api')
+        mock_img.get_num_of_lps.return_value = 1
+
         for invalid_url in invalid_urls_list:
-            data = {'name': 'new app',
+            data = {'name': 'new app2',
                     'source_uri': invalid_url}
             handler = language_pack_handler.LanguagePackHandler(self.ctx)
 

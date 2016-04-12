@@ -18,6 +18,7 @@ from sqlalchemy.orm import exc
 
 from solum.objects import image as abstract
 from solum.objects.sqlalchemy import models as sql
+from solum.openstack.common import log as logging
 from solum.openstack.common import uuidutils
 
 cfg.CONF.import_opt('operator_project_id',
@@ -25,6 +26,8 @@ cfg.CONF.import_opt('operator_project_id',
                     group='api')
 
 operator_id = cfg.CONF.api.operator_project_id
+
+LOG = logging.getLogger(__name__)
 
 
 class Image(sql.Base, abstract.Image):
@@ -50,6 +53,18 @@ class Image(sql.Base, abstract.Image):
     artifact_type = sa.Column(sa.String(36))
     external_ref = sa.Column(sa.String(1024))
     docker_image_name = sa.Column(sa.String(512))
+
+    @classmethod
+    def get_num_of_lps(cls, context):
+        try:
+            session = Image.get_session()
+            oper_result = session.query(cls).filter_by(
+                project_id=context.tenant, status='READY')
+            cnt = oper_result.count()
+            return cnt
+        except exc.NoResultFound:
+            LOG.debug("Exception encountered in getting count of number"
+                      " of languagepacks")
 
     @classmethod
     def get_lp_by_name_or_uuid(cls, context, name_or_uuid,
