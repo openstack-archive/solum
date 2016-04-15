@@ -99,14 +99,15 @@ class AppsController(rest.RestController):
             raise exception.BadRequest(reason='App name cannot be empty.')
 
         # check if languagepack exists or not
-        try:
-            objects.registry.Image.get_lp_by_name_or_uuid(
-                pecan.request.security_context,
-                app_data.languagepack,
-                include_operators_lp=True)
-        except exception.ResourceNotFound:
-            raise exception.ObjectNotFound(name="Languagepack",
-                                           id=app_data.languagepack)
+        if str(app_data.languagepack).lower() != "false":
+            try:
+                objects.registry.Image.get_lp_by_name_or_uuid(
+                    pecan.request.security_context,
+                    app_data.languagepack,
+                    include_operators_lp=True)
+            except exception.ResourceNotFound:
+                raise exception.ObjectNotFound(name="Languagepack",
+                                               id=app_data.languagepack)
 
     @pecan.expose()
     def _lookup(self, app_id, *remainder):
