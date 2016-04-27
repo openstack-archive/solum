@@ -1,7 +1,7 @@
 version: 1
 name: nodejs-express-2
 description: Nodejs express.
-languagepack: nodejs-1
+languagepack: nodejs
 source:
   repository: https://github.com/paulczar/example-nodejs-express.git
   revision: master

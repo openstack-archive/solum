@@ -46,6 +46,15 @@ a nodejs languagepack in solum. You can use following repository for this purpos
 https://github.com/devdattakulkarni/solum-languagepack-nodejs.git
 
 
+Use following commands to deploy this app:
+
+solum lp create nodejs https://github.com/devdattakulkarni/solum-languagepack-nodejs.git
+solum app create --app-file examples/apps/nodejs_app.yaml
+solum app deploy nodejs-express-2
+solum app show nodejs-express-2
+
+Once the app is READY, you can curl to app_url that is displayed in the output
+of the 'app show' command.
 
 
 
