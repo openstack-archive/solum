@@ -205,7 +205,7 @@ The status field will show the progress of your app through the process.
   | uuid            | 185f2741-61e0-497e-b2b7-c890c7e151dd                                   |
   +-----------------+------------------------------------------------------------------------+
 
-6. Run the :code:`solum app show` command a few times to see the status change. You will notice the :code:`status` field changes to READY and the :code:`application_uri` is available.
+6. Run the :code:`solum app show` command a few times to see the status change. You will notice the :code:`status` field changes to DEPLOYMENT_COMPLETE and the :code:`application_uri` is available.
 
 ::
 
@@ -232,7 +232,7 @@ The status field will show the progress of your app through the process.
   +-------+--------------------------------------+--------+
   | wf_id | id                                   | status |
   +-------+--------------------------------------+--------+
-  | 1     | 97e7e2c1-8ba1-4320-9831-b5baef1d480d | READY  |
+  | 1     | 97e7e2c1-8ba1-4320-9831-b5baef1d480d | DEPLOYMENT_COMPLETE  |
   +-------+--------------------------------------+--------+
 
 

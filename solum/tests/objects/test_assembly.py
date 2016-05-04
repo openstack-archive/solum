@@ -79,7 +79,7 @@ class TestAssembly(base.BaseTestCase):
 
         # second update, 'DELETING' status is not updatable
         assembly.Assembly().update_and_save(self.ctx, self.data[0]['id'],
-                                            {'status': 'READY'})
+                                            {'status': 'DEPLOYMENT_COMPLETE'})
         updated = assembly.Assembly().get_by_id(self.ctx, self.data[0]['id'])
         self.assertEqual('DELETING', getattr(updated, 'status'))
 

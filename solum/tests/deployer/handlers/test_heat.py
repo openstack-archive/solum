@@ -255,7 +255,7 @@ class HandlerTest(base.BaseTestCase):
                         'application_uri': 'xyz:80'})
 
         c2 = mock.call(self.ctx, fake_assembly.id,
-                       {'status': 'READY'})
+                       {'status': 'DEPLOYMENT_COMPLETE'})
 
         calls = [c1, c2]
 
@@ -291,7 +291,7 @@ class HandlerTest(base.BaseTestCase):
                         'application_uri': 'xyz:[80,81]'})
 
         c2 = mock.call(self.ctx, fake_assembly.id,
-                       {'status': 'READY'})
+                       {'status': 'DEPLOYMENT_COMPLETE'})
 
         calls = [c1, c2]
 
@@ -806,13 +806,13 @@ class HandlerTest(base.BaseTestCase):
         handler = heat_handler.Handler()
         old_app = fakes.FakeAssembly()
         old_app.name = 'old app'
-        old_app.status = 'READY'
+        old_app.status = 'DEPLOYMENT_COMPLETE'
 
         new_app = fakes.FakeAssembly()
         new_app.id = 9
         new_app.plan_id = old_app.plan_id
         new_app.name = 'new app'
-        new_app.status = 'READY'
+        new_app.status = 'DEPLOYMENT_COMPLETE'
 
         cfg.CONF.set_override('wait_interval', 0, group='deployer')
         cfg.CONF.set_override('growth_factor', 0, group='deployer')
@@ -839,14 +839,14 @@ class HandlerTest(base.BaseTestCase):
         old_app.name = 'old app'
         old_app.plan_id = 1
         old_app.id = 1
-        old_app.status = 'READY'
+        old_app.status = 'DEPLOYMENT_COMPLETE'
 
         new_app = fakes.FakeAssembly()
         new_app.id = 1
         new_app.plan_id = 2
         new_app.plan_uuid = 'new fake plan uuid'
         new_app.name = 'new app'
-        new_app.status = 'READY'
+        new_app.status = 'DEPLOYMENT_COMPLETE'
 
         cfg.CONF.set_override('wait_interval', 0, group='deployer')
         cfg.CONF.set_override('growth_factor', 0, group='deployer')
@@ -878,7 +878,7 @@ class HandlerTest(base.BaseTestCase):
         new_app.id = 9
         new_app.plan_id = old_app.plan_id
         new_app.name = 'new app'
-        new_app.status = 'READY'
+        new_app.status = 'DEPLOYMENT_COMPLETE'
 
         self.assertEqual(old_app.plan_id, new_app.plan_id)
         self.assertEqual(old_app.plan_uuid, new_app.plan_uuid)
@@ -893,7 +893,7 @@ class HandlerTest(base.BaseTestCase):
         handler = heat_handler.Handler()
         old_app = fakes.FakeAssembly()
         old_app.name = 'old app'
-        old_app.status = 'READY'
+        old_app.status = 'DEPLOYMENT_COMPLETE'
 
         new_app = fakes.FakeAssembly()
         new_app.id = 9

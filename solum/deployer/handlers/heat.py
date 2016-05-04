@@ -306,10 +306,11 @@ class Handler(object):
         new_assem_id = new_assembly.id
         app_id = new_assembly.plan_id
         created_at = new_assembly.created_at
-        assemblies = objects.registry.AssemblyList.get_earlier(new_assem_id,
-                                                               app_id,
-                                                               STATES.READY,
-                                                               created_at)
+        assemblies = objects.registry.AssemblyList.get_earlier(
+            new_assem_id,
+            app_id,
+            STATES.DEPLOYMENT_COMPLETE,
+            created_at)
         for assem in assemblies:
             if assem.id == new_assembly.id:
                 continue
@@ -485,7 +486,7 @@ class Handler(object):
                                           ports, t_logger)
         assem.status = result
         t_logger.upload()
-        if result == STATES.READY:
+        if result == STATES.DEPLOYMENT_COMPLETE:
             self._destroy_other_assemblies(ctxt, assembly_id)
 
     def _get_template(self, ctxt, image_format, image_storage,
@@ -655,7 +656,7 @@ class Handler(object):
             time.sleep(1)
 
         if du_is_up:
-            to_update = {'status': STATES.READY}
+            to_update = {'status': STATES.DEPLOYMENT_COMPLETE}
         else:
             to_update = {'status': STATES.ERROR_CODE_DEPLOYMENT}
             lg_msg = ("App deployment error: unreachable server or port, "
