@@ -84,6 +84,7 @@ cfg.CONF.import_opt('image_format', 'solum.api.handlers.assembly_handler',
                     group='api')
 cfg.CONF.import_opt('image_storage', 'solum.worker.config', group='worker')
 
+
 deployer_log_dir = cfg.CONF.deployer.deployer_log_dir
 
 
@@ -179,6 +180,29 @@ class Handler(object):
         return ''.join([assem_name[:min(len(assem_name), prefix_len)], '-',
                         assembly.uuid])
 
+    def _clean_up_artifacts(self, ctxt, t_logger,
+                            logs_resource_id, assem):
+        try:
+            if cfg.CONF.worker.image_storage == 'swift':
+                self._delete_app_artifacts_from_swift(ctxt, t_logger,
+                                                      logs_resource_id,
+                                                      assem)
+            elif cfg.CONF.worker.image_storage == 'glance':
+                self._delete_app_artifacts_from_glance(ctxt, t_logger,
+                                                       logs_resource_id,
+                                                       assem)
+            else:
+                LOG.debug("image_storage option %s not recognized." %
+                          cfg.CONF.worker.image_storage)
+        except Exception as e:
+            LOG.exception(e)
+
+    def _delete_app_artifacts_from_glance(self, ctxt, t_logger,
+                                          logs_resource_id, assem):
+
+        # TODO(devkulkarni) Delete the DU images from Glance
+        raise exception.NotImplemented()
+
     def _delete_app_artifacts_from_swift(self, ctxt, t_logger,
                                          logs_resource_id, assem):
         # Delete image file from swift
@@ -237,8 +261,7 @@ class Handler(object):
 
         if stack_id is None:
             t_logger.upload()
-            self._delete_app_artifacts_from_swift(ctxt, t_logger,
-                                                  logs_resource_id, assem)
+            self._clean_up_artifacts(ctxt, t_logger, logs_resource_id, assem)
             if not wf_found:
                 assem.destroy(ctxt)
             return
@@ -252,8 +275,8 @@ class Handler(object):
                 # stack already deleted
                 t_logger.log(logging.ERROR, "Heat stack not found.")
                 t_logger.upload()
-                self._delete_app_artifacts_from_swift(ctxt, t_logger,
-                                                      logs_resource_id, assem)
+                self._clean_up_artifacts(ctxt, t_logger, logs_resource_id,
+                                         assem)
                 if not wf_found:
                     assem.destroy(ctxt)
                 return
@@ -276,9 +299,8 @@ class Handler(object):
                 except exc.HTTPNotFound:
                     t_logger.log(logging.DEBUG, "Stack delete successful.")
                     t_logger.upload()
-                    self._delete_app_artifacts_from_swift(ctxt, t_logger,
-                                                          logs_resource_id,
-                                                          assem)
+                    self._clean_up_artifacts(ctxt, t_logger, logs_resource_id,
+                                             assem)
                     if not wf_found:
                         assem.destroy(ctxt)
                     return

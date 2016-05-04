@@ -610,6 +610,7 @@ class HandlerTest(base.BaseTestCase):
     @mock.patch('solum.common.clients.OpenStackClients')
     def test_destroy_success(self, mock_client, mock_registry, m_log,
                              mock_log_handler, mock_swift_delete):
+        cfg.CONF.worker.image_storage = "swift"
         fake_assem = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assem
         fake_image = fakes.FakeImage()
@@ -649,6 +650,7 @@ class HandlerTest(base.BaseTestCase):
     @mock.patch('solum.common.clients.OpenStackClients')
     def test_destroy_stack_not_found(self, mock_client, mock_registry, m_log,
                                      mock_log_handler, mock_swift_delete):
+        cfg.CONF.worker.image_storage = "swift"
         fake_assem = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assem
         fake_image = fakes.FakeImage()
@@ -726,6 +728,7 @@ class HandlerTest(base.BaseTestCase):
                                   mock_tlogger, mock_log_handler,
                                   mock_swift_delete):
 
+        cfg.CONF.worker.image_storage = "swift"
         fake_assem = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assem
         fake_image = fakes.FakeImage()
@@ -768,6 +771,7 @@ class HandlerTest(base.BaseTestCase):
                                        mock_tlogger, mock_log_handler,
                                        mock_swift_delete):
 
+        cfg.CONF.worker.image_storage = "swift"
         fake_assem = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assem
         fake_image = fakes.FakeImage()
