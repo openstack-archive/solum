@@ -13,6 +13,7 @@
 # under the License.
 
 import json
+import re
 
 from oslo_config import cfg
 import pecan
@@ -97,6 +98,14 @@ class AppsController(rest.RestController):
 
         if not app_data.name:
             raise exception.BadRequest(reason='App name cannot be empty.')
+
+        # check if app name contains any invalid characters
+        try:
+            re.match(r'^([a-z0-9-_]{1,100})$', app_data.name).group(0)
+        except AttributeError:
+            msg = ("App name must be 1-100 characters long and must "
+                   "only contain a-z,0-9,-,_")
+            raise exception.BadRequest(reason=msg)
 
         # check if languagepack exists or not
         try:
