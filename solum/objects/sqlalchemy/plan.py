@@ -17,6 +17,10 @@ import sqlalchemy as sa
 from solum.common import exception
 from solum.objects import plan as abstract
 from solum.objects.sqlalchemy import models as sql
+from solum.openstack.common import log as openstack_logger
+
+
+LOG = openstack_logger.getLogger(__name__)
 
 
 class Plan(sql.Base, abstract.Plan):
@@ -49,6 +53,15 @@ class Plan(sql.Base, abstract.Plan):
             return session.query(cls).filter_by(trigger_id=trigger_id).one()
         except sa.orm.exc.NoResultFound:
             cls._raise_trigger_not_found(trigger_id)
+
+    @classmethod
+    def get_by_uuid(cls, context, app_id):
+        try:
+            session = sql.Base.get_session()
+            return session.query(cls).filter_by(uuid=app_id).one()
+        except sa.orm.exc.NoResultFound as e:
+            LOG.exception(e)
+            raise exception.ResourceNotFound(id=app_id, name='plan')
 
     def _non_updatable_fields(self):
         return set(('uuid', 'id', 'project_id'))

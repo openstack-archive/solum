@@ -228,12 +228,17 @@ class PlanAssemblyAdapter():
         self.app_obj = app_obj
 
     def create_dummies(self):
-        plan = objects.registry.Plan()
-        plan.uuid = self.app_obj.id
-        plan.user_id = self.context.user
-        plan.project_id = self.context.tenant
-        plan.name = self.app_obj.name
-        plan.create(self.context)
+        # Create only one plan
+        try:
+            plan = objects.registry.Plan.get_by_uuid(self.context,
+                                                     self.app_obj.id)
+        except exception.ResourceNotFound:
+            plan = objects.registry.Plan()
+            plan.uuid = self.app_obj.id
+            plan.user_id = self.context.user
+            plan.project_id = self.context.tenant
+            plan.name = self.app_obj.name
+            plan.create(self.context)
 
         assembly = objects.registry.Assembly()
         assembly.plan_id = plan.id
