@@ -13,6 +13,7 @@
 # under the License.
 
 import mock
+from oslo_config import cfg
 
 from solum.api.handlers import language_pack_handler
 from solum.common import exception as exc
@@ -83,6 +84,8 @@ class TestLanguagePackHandler(base.BaseTestCase):
     def test_languagepack_delete(self, mock_app, mock_planlist,
                                  mock_log_handler,
                                  mock_swift_delete, mock_img):
+
+        cfg.CONF.worker.image_storage = "swift"
         fi = fakes.FakeImage()
         mock_img.get_lp_by_name_or_uuid.return_value = fi
         mock_img.destroy.return_value = {}
@@ -127,6 +130,7 @@ class TestLanguagePackHandler(base.BaseTestCase):
                                                         mock_log_handler,
                                                         mock_swift_delete,
                                                         mock_img):
+        cfg.CONF.worker.image_storage = "swift"
         fi = fakes.FakeImage()
         mock_img.get_lp_by_name_or_uuid.return_value = fi
         mock_img.destroy.return_value = {}
