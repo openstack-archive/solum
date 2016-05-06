@@ -28,7 +28,7 @@ class GlanceClient(object):
         # Create a new non-cached glance client/connection
         return clients.OpenStackClients(self.context).glance()
 
-    def delete_image(self, image_name):
+    def delete_image_by_name(self, image_name):
         try:
             glance = self._get_glance_client()
             imgs = glance.images.list()
@@ -37,4 +37,9 @@ class GlanceClient(object):
                     glance.images.delete(i.id)
         except Exception as e:
             LOG.exception(e)
-            raise e
+
+    def delete_image_by_id(self, image_id):
+        try:
+            self._get_glance_client().images.delete(image_id)
+        except Exception as e:
+            LOG.exception(e)

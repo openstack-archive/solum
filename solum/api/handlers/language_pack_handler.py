@@ -136,7 +136,7 @@ class LanguagePackHandler(handler.Handler):
                                 "from swift.")
             elif cfg.CONF.worker.image_storage == 'glance':
                 glance = solum_glanceclient.GlanceClient(self.context)
-                glance.delete_image(img_filename)
+                glance.delete_image_by_name(img_filename)
             else:
                 LOG.error("Unrecognized image_storage option specified.")
                 return

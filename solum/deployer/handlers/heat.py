@@ -32,6 +32,7 @@ from solum.common import clients
 from solum.common import exception
 from solum.common import heat_utils
 from solum.common import repo_utils
+from solum.common import solum_glanceclient
 from solum.common import solum_swiftclient
 from solum import objects
 from solum.objects import assembly
@@ -185,11 +186,9 @@ class Handler(object):
         try:
             if cfg.CONF.worker.image_storage == 'swift':
                 self._delete_app_artifacts_from_swift(ctxt, t_logger,
-                                                      logs_resource_id,
                                                       assem)
             elif cfg.CONF.worker.image_storage == 'glance':
                 self._delete_app_artifacts_from_glance(ctxt, t_logger,
-                                                       logs_resource_id,
                                                        assem)
             else:
                 LOG.debug("image_storage option %s not recognized." %
@@ -197,15 +196,31 @@ class Handler(object):
         except Exception as e:
             LOG.exception(e)
 
-    def _delete_app_artifacts_from_glance(self, ctxt, t_logger,
-                                          logs_resource_id, assem):
+        # Delete logs
+        try:
+            log_handler = userlog_handler.UserlogHandler(ctxt)
+            log_handler.delete(logs_resource_id)
+        except exception.AuthorizationFailure as authexcp:
+            t_logger.log(logging.ERROR, six.text_type(authexcp))
+            LOG.debug(six.text_type(authexcp))
+            t_logger.upload()
 
-        # TODO(devkulkarni) Delete the DU images from Glance
-        raise exception.NotImplemented()
+    def _delete_app_artifacts_from_glance(self, ctxt, t_logger, assem):
+        if assem.image_id:
+            img = objects.registry.Image.get_by_id(ctxt, assem.image_id)
+            if img.external_ref:
+                try:
+                    glance = solum_glanceclient.GlanceClient(ctxt)
+                    glance.delete_image_by_id(img.external_ref)
+                except swiftexp.ClientException:
+                    msg = "Unable to delete DU image from glance."
+                    t_logger.log(logging.ERROR, msg)
+                    LOG.debug(msg)
+                    t_logger.upload()
+                    return
+            img.destroy(ctxt)
 
-    def _delete_app_artifacts_from_swift(self, ctxt, t_logger,
-                                         logs_resource_id, assem):
-        # Delete image file from swift
+    def _delete_app_artifacts_from_swift(self, ctxt, t_logger, assem):
         if assem.image_id:
             img = objects.registry.Image.get_by_id(ctxt, assem.image_id)
             if img.docker_image_name:
@@ -220,15 +235,6 @@ class Handler(object):
                     t_logger.upload()
                     return
             img.destroy(ctxt)
-
-        # Delete logs
-        try:
-            log_handler = userlog_handler.UserlogHandler(ctxt)
-            log_handler.delete(logs_resource_id)
-        except exception.AuthorizationFailure as authexcp:
-            t_logger.log(logging.ERROR, six.text_type(authexcp))
-            LOG.debug(six.text_type(authexcp))
-            t_logger.upload()
 
     def destroy_assembly(self, ctxt, assem_id):
         update_assembly(ctxt, assem_id,
