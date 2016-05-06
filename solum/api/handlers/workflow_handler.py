@@ -128,6 +128,15 @@ class WorkflowHandler(handler.Handler):
         app_obj = objects.registry.App.get_by_id(self.context,
                                                  db_obj.app_id)
 
+        if str(app_obj.languagepack).lower() == 'false' and not du_id:
+            msg = ("App {app} registered without a languagepack and no "
+                   "du id specified. Either register the app with"
+                   " a languagepack, or if there is already a pre"
+                   "built du for the app, specify its id with --du-id"
+                   " command line flag.")
+            msg = msg.format(app=app_obj.name)
+            raise exception.BadRequest(reason=msg)
+
         self._update_app_scale_config(app_obj, data)
 
         plan, assem = PlanAssemblyAdapter(self.context,
