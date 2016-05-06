@@ -21,6 +21,7 @@ from solum.api.handlers import common
 from solum.api.handlers import handler
 from solum.api.handlers import userlog_handler
 from solum.common import exception as exc
+from solum.common import solum_glanceclient
 from solum.common import solum_swiftclient
 from solum import objects
 from solum.objects import image
@@ -45,6 +46,7 @@ def list_opts():
 
 CONF = cfg.CONF
 CONF.register_opts(API_SERVICE_OPTS, group='api')
+cfg.CONF.import_opt('image_storage', 'solum.worker.config', group='worker')
 
 
 class LanguagePackHandler(handler.Handler):
@@ -119,16 +121,25 @@ class LanguagePackHandler(handler.Handler):
                 self._check_lp_referenced_in_any_app(self.context, db_obj)):
             raise exc.LPStillReferenced(name=uuid)
 
-        # Delete image file from swift
         if db_obj.docker_image_name:
             img_filename = db_obj.docker_image_name.split('-', 1)[1]
-            try:
-                swift = solum_swiftclient.SwiftClient(self.context)
-                swift.delete_object('solum_lp', img_filename)
-            except swiftexp.ClientException:
-                raise exc.AuthorizationFailure(
-                    client='swift',
-                    message="Unable to delete languagepack image from swift.")
+
+            if cfg.CONF.worker.image_storage == 'swift':
+                # Delete image file from swift
+                try:
+                    swift = solum_swiftclient.SwiftClient(self.context)
+                    swift.delete_object('solum_lp', img_filename)
+                except swiftexp.ClientException:
+                    raise exc.AuthorizationFailure(
+                        client='swift',
+                        message="Unable to delete languagepack image "
+                                "from swift.")
+            elif cfg.CONF.worker.image_storage == 'glance':
+                glance = solum_glanceclient.GlanceClient(self.context)
+                glance.delete_image(img_filename)
+            else:
+                LOG.error("Unrecognized image_storage option specified.")
+                return
 
         # Delete logs
         log_handler = userlog_handler.UserlogHandler(self.context)
