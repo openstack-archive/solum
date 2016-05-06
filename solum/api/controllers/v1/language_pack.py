@@ -79,15 +79,14 @@ class LanguagePacksController(rest.RestController):
             pecan.request.security_context)
         host_url = pecan.request.host_url
 
-        if not data.name:
-            msg = 'Languagepack name cannot be empty.'
+        msg = ("Languagepack name must be 1-100 characters long, only contain "
+               "a-z,0-9,-,_ and start with an alphabet character.")
+        if not data.name or not data.name[0].isalpha():
             raise exception.BadRequest(reason=msg)
 
         try:
             re.match(r'^([a-z0-9-_]{1,100})$', data.name).group(0)
         except AttributeError:
-            msg = ("Languagepack name must be 1-100 characters long and must "
-                   "only contain a-z,0-9,-,_")
             raise exception.BadRequest(reason=msg)
 
         return language_pack.LanguagePack.from_db_model(
