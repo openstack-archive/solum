@@ -12,6 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import re
+
 import pecan
 from pecan import rest
 import wsmeext.pecan as wsme_pecan
@@ -76,6 +78,18 @@ class LanguagePacksController(rest.RestController):
         handler = language_pack_handler.LanguagePackHandler(
             pecan.request.security_context)
         host_url = pecan.request.host_url
+
+        if not data.name:
+            msg = 'Languagepack name cannot be empty.'
+            raise exception.BadRequest(reason=msg)
+
+        try:
+            re.match(r'^([a-z0-9-_]{1,100})$', data.name).group(0)
+        except AttributeError:
+            msg = ("Languagepack name must be 1-100 characters long and must "
+                   "only contain a-z,0-9,-,_")
+            raise exception.BadRequest(reason=msg)
+
         return language_pack.LanguagePack.from_db_model(
             handler.create(data.as_dict(objects.registry.Image),
                            data.lp_metadata), host_url)
