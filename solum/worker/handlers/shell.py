@@ -640,7 +640,8 @@ class Handler(object):
         return source_private_key
 
     def build_lp(self, ctxt, image_id, git_info, name, source_format,
-                 image_format, artifact_type):
+                 image_format, artifact_type, lp_params):
+
         update_lp_status(ctxt, image_id, IMAGE_STATES.BUILDING)
 
         solum.TLS.trace.clear()

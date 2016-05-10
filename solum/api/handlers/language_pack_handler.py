@@ -95,7 +95,7 @@ class LanguagePackHandler(handler.Handler):
         """Return all languagepacks."""
         return objects.registry.Image.get_all_languagepacks(self.context)
 
-    def create(self, data, lp_metadata):
+    def create(self, data, lp_metadata, lp_params):
         """Create a new languagepack."""
 
         self._check_if_limit_of_lps_reached(self.context)
@@ -119,7 +119,7 @@ class LanguagePackHandler(handler.Handler):
                 db_obj.tags.append(lp_metadata)
 
             db_obj.create(self.context)
-            self._start_build(db_obj)
+            self._start_build(db_obj, lp_params)
             return db_obj
         else:
             raise exc.ResourceExists(name=data['name'])
@@ -159,7 +159,7 @@ class LanguagePackHandler(handler.Handler):
 
         return db_obj.destroy(self.context)
 
-    def _start_build(self, image):
+    def _start_build(self, image, lp_params):
         git_info = {
             'source_url': image.source_uri,
         }
@@ -169,4 +169,5 @@ class LanguagePackHandler(handler.Handler):
             name=image.name,
             source_format=image.source_format,
             image_format=image.image_format,
-            artifact_type=image.artifact_type)
+            artifact_type=image.artifact_type,
+            lp_params=lp_params)

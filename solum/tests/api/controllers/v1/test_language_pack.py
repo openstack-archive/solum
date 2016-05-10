@@ -88,14 +88,15 @@ class TestLanguagePacksController(base.BaseTestCase):
                                  request_mock):
         json_create = {'name': 'foo',
                        'source_uri': 'git@github.com/sample/a.git',
-                       'lp_metadata': 'some metadata'}
+                       'lp_metadata': 'some metadata', 'lp_params': {}}
         request_mock.body = json.dumps(json_create)
         request_mock.content_type = 'application/json'
         hand_create = LanguagePackHandler.return_value.create
         hand_create.return_value = fakes.FakeImage()
         language_pack.LanguagePacksController().post()
         del json_create['lp_metadata']
-        hand_create.assert_called_with(json_create, 'some metadata')
+        del json_create['lp_params']
+        hand_create.assert_called_with(json_create, 'some metadata', {})
         self.assertEqual(201, resp_mock.status)
 
     def test_language_packs_post_nodata(self, LanguagePackHandler, resp_mock,
