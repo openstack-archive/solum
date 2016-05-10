@@ -99,12 +99,15 @@ class AppsController(rest.RestController):
         if not app_data.name:
             raise exception.BadRequest(reason='App name cannot be empty.')
 
+        msg = ("Application name must be 1-100 characters long, only contain "
+               "a-z,0-9,-,_ and start with an alphabet character.")
         # check if app name contains any invalid characters
+        if not app_data.name or not app_data.name[0].isalpha():
+            raise exception.BadRequest(reason=msg)
+
         try:
             re.match(r'^([a-z0-9-_]{1,100})$', app_data.name).group(0)
         except AttributeError:
-            msg = ("App name must be 1-100 characters long and must "
-                   "only contain a-z,0-9,-,_")
             raise exception.BadRequest(reason=msg)
 
         # check if languagepack exists or not
