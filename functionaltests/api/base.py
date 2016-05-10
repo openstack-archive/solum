@@ -241,7 +241,7 @@ class SolumCredentials(auth.KeystoneV2Credentials):
         creds = dict(
             username=CONF.identity.username,
             password=CONF.identity.password,
-            tenant_name=CONF.identity.tenant_name
+            tenant_name=CONF.identity.project_name
         )
 
         super(SolumCredentials, self).__init__(**creds)
