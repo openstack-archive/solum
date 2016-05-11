@@ -112,6 +112,7 @@ class TestTriggerController(base.BaseTestCase):
                                             resp_mock, request_mock):
         status_url = 'https://api.github.com/repos/u/r/statuses/{sha}'
         body_dict = {'sender': {'url': 'https://api.github.com'},
+                     'action': 'opened',
                      'pull_request': {'head': {'sha': 'asdf'}},
                      'repository': {'statuses_url': status_url}}
         expected_st_url = 'https://api.github.com/repos/u/r/statuses/asdf'
@@ -131,6 +132,7 @@ class TestTriggerController(base.BaseTestCase):
         collab_url = ('https://api.github.com/repos/u/r/' +
                       'collaborators{/collaborator}')
         body_dict = {'sender': {'url': 'https://api.github.com'},
+                     'action': 'created',
                      'comment': {'commit_id': 'asdf',
                                  'body': '  SOLUM retry tests ',
                                  'user': {'login': 'u'}},
@@ -155,6 +157,7 @@ class TestTriggerController(base.BaseTestCase):
         collab_url = ('https://api.github.com/repos/u/r/' +
                       'collaborators{/collaborator}')
         body_dict = {'sender': {'url': 'https://api.github.com'},
+                     'action': 'created',
                      'comment': {'commit_id': 'asdf',
                                  'body': 'solum is awesome',
                                  'user': {'login': 'u'}},
@@ -178,6 +181,7 @@ class TestTriggerController(base.BaseTestCase):
         collab_url = ('https://api.github.com/repos/u/r/' +
                       'collaborators{/collaborator}')
         body_dict = {'sender': {'url': 'https://api.github.com'},
+                     'action': 'created',
                      'comment': {'commit_id': 'asdf',
                                  'body': 'solum retry tests',
                                  'user': {'login': 'u'}},

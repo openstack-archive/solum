@@ -86,6 +86,7 @@ class TriggerController(rest.RestController):
             body = json.loads(pecan.request.body)
             if ('sender' in body and 'url' in body['sender'] and
                     'api.github.com' in body['sender']['url']):
+                action = body.get('action', None)
                 if 'comment' in body:
                     # Process a request for rebuilding
                     commit_sha, collab_url = self._process_request(body)
@@ -111,9 +112,11 @@ class TriggerController(rest.RestController):
             raise exception.BadRequest(reason=info_msg)
 
         try:
-            handler = app_handler.AppHandler(None)
-            handler.trigger_workflow(trigger_id, commit_sha, status_url,
-                                     collab_url, workflow=workflow)
+            # Trigger workflow only on PR create and on rebuild request
+            if action in ['created', 'opened', 'edited', 'reopened']:
+                handler = app_handler.AppHandler(None)
+                handler.trigger_workflow(trigger_id, commit_sha, status_url,
+                                         collab_url, workflow=workflow)
         except exception.ResourceNotFound as e:
             LOG.error("Incorrect trigger url.")
             raise e
