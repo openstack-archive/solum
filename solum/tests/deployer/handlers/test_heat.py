@@ -575,16 +575,14 @@ class HandlerTest(base.BaseTestCase):
         fake_assembly = fakes.FakeAssembly()
         fake_image = fakes.FakeImage()
         mock_registry.Image.get_by_id.return_value = fake_image
-        log_handler = mock_log_handler.return_value
         handler = heat_handler.Handler()
         handler._delete_app_artifacts_from_swift(self.ctx, mock_log_handler,
-                                                 'fake_log_id', fake_assembly)
+                                                 fake_assembly)
         mock_registry.Image.get_by_id.assert_called_once_with(
             mock.ANY, fake_assembly.image_id)
         docker_image_name = fake_image.docker_image_name
         img_filename = docker_image_name.split('-', 1)[1]
         mock_swift_delete.assert_called_once_with('solum_du', img_filename)
-        log_handler.delete.assert_called_once_with('fake_log_id')
 
     @mock.patch('solum.common.solum_swiftclient.SwiftClient.delete_object')
     @mock.patch('solum.objects.registry')
@@ -595,13 +593,11 @@ class HandlerTest(base.BaseTestCase):
                                                       mock_swift_delete):
         fake_assembly = fakes.FakeAssembly()
         fake_assembly.image_id = None
-        log_handler = mock_log_handler.return_value
         handler = heat_handler.Handler()
         handler._delete_app_artifacts_from_swift(self.ctx, mock_log_handler,
-                                                 'fake_log_id', fake_assembly)
+                                                 fake_assembly)
         self.assertFalse(mock_registry.Image.get_by_id.called)
         self.assertFalse(mock_swift_delete.called)
-        log_handler.delete.assert_called_once_with('fake_log_id')
 
     @mock.patch('solum.common.solum_swiftclient.SwiftClient.delete_object')
     @mock.patch('solum.api.handlers.userlog_handler.UserlogHandler')
