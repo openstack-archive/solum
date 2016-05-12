@@ -91,7 +91,7 @@ class LanguagePacksController(rest.RestController):
 
         return language_pack.LanguagePack.from_db_model(
             handler.create(data.as_dict(objects.registry.Image),
-                           data.lp_metadata), host_url)
+                           data.lp_metadata, data.lp_params), host_url)
 
     @exception.wrap_pecan_controller_exception
     @wsme_pecan.wsexpose([language_pack.LanguagePack])

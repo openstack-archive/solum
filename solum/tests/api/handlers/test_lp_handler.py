@@ -57,8 +57,8 @@ class TestLanguagePackHandler(base.BaseTestCase):
         mock_img.get_lp_by_name_or_uuid.side_effect = exc.ResourceNotFound()
         mock_img.return_value = fi
         handler = language_pack_handler.LanguagePackHandler(self.ctx)
-        res = handler.create(data, lp_metadata=None)
-        mock_lp_build.assert_called_once_with(res)
+        res = handler.create(data, lp_metadata=None, lp_params=None)
+        mock_lp_build.assert_called_once_with(res, None)
         fi.update.assert_called_once_with(data)
         fi.create.assert_called_once_with(self.ctx)
 
@@ -76,7 +76,7 @@ class TestLanguagePackHandler(base.BaseTestCase):
         handler = language_pack_handler.LanguagePackHandler(self.ctx)
 
         self.assertRaises(exc.ResourceLimitExceeded, handler.create,
-                          data, lp_metadata=None)
+                          data, lp_metadata=None, lp_params=None)
 
     def test_lp_create_bad_git_url(self, mock_img):
 
@@ -99,7 +99,7 @@ class TestLanguagePackHandler(base.BaseTestCase):
             handler = language_pack_handler.LanguagePackHandler(self.ctx)
 
             self.assertRaises(exc.BadRequest, handler.create, data,
-                              lp_metadata=None)
+                              lp_metadata=None, lp_params=None)
 
     @mock.patch('solum.common.solum_swiftclient.SwiftClient.delete_object')
     @mock.patch('solum.api.handlers.userlog_handler.UserlogHandler')

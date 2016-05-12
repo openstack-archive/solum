@@ -14,6 +14,7 @@
 
 import string
 
+import six
 import wsme
 from wsme import types as wtypes
 
@@ -140,6 +141,16 @@ class LanguagePack(api_types.Base):
 
     lp_metadata = wtypes.text
     """The languagepack meta data."""
+
+    """Parameters that can be used as part of lp building process."""
+    lp_params = wtypes.DictType(
+        wtypes.text,
+        wtypes.DictType(wtypes.text,
+                        api_types.MultiType(
+                            wtypes.text,
+                            six.integer_types,
+                            bool,
+                            float)))
 
     @classmethod
     def from_image(cls, image, host_url):

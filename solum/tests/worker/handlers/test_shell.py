@@ -782,7 +782,8 @@ class TestLanguagePackBuildCommand(base.BaseTestCase):
         git_info = mock_git_info()
         handler.build_lp(self.ctx, image_id=5, git_info=git_info,
                          name='lp_name', source_format='heroku',
-                         image_format='docker', artifact_type='language_pack')
+                         image_format='docker', artifact_type='language_pack',
+                         lp_params='')
 
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
