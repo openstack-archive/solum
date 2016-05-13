@@ -91,7 +91,7 @@ class TestWorkflowHandler(base.BaseTestCase):
 
         handler = workflow_handler.WorkflowHandler(self.ctx)
 
-        res = handler.create(workflow_data, commit_sha='', status_url='',
+        res = handler.create(workflow_data, commit_sha='master', status_url='',
                              du_id='')
         self.assertEqual(wf_obj, res)
         git_info = {

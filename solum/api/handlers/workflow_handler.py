@@ -148,7 +148,7 @@ class WorkflowHandler(handler.Handler):
         workflow.Workflow.insert(self.context, db_obj)
 
         self._execute_workflow_actions(db_obj, app_obj, assem,
-                                       commit_sha=app_obj.source['revision'],
+                                       commit_sha=commit_sha,
                                        du_id=du_id)
 
         # TODO(devkulkarni): Update status of actions

@@ -98,8 +98,8 @@ if [[ -z "$OS_AUTH_TOKEN" ]]; then
 fi
 
 # Check command line arguments
-if [[ $# -lt 5 ]]; then
-  TLOG Usage: $0 git_url appname project_id img_external_ref lp_img_tag && exit 1
+if [[ $# -lt 6 ]]; then
+  TLOG Usage: $0 git_url commit_sha appname project_id img_external_ref lp_img_tag && exit 1
 fi
 
 PRUN silent sudo docker ps
@@ -107,6 +107,8 @@ PRUN silent sudo docker ps
 
 
 GIT=$1
+shift
+COMMIT_ID=$1
 shift
 APP=$1
 shift
@@ -152,12 +154,14 @@ if [[ -d "$APP_DIR/build" ]]; then
     fi
   fi
 else
-  git_clone_with_retry $GIT $APP_DIR/build
+  git_clone_with_commit_sha_retry $GIT $APP_DIR/build $COMMIT_ID
   [[ $? != 0 ]] && TLOG Git clone failed. Check repo $GIT && exit 1
 fi
 
 cd $APP_DIR/build
-COMMIT_ID=$(git log -1 --pretty=%H)
+if [[ "$COMMIT_ID" == "" ]]; then
+  COMMIT_ID=$(git log -1 --pretty=%H)
+fi
 
 # if $RUN_CMD contains a run script in repo ($APP_DIR/build)
 # and not executable, make it executable

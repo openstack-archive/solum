@@ -173,6 +173,21 @@ function git_clone_with_retry () {
   return 1
 }
 
+function git_clone_with_commit_sha_retry () {
+  local GIT_REPO=$1
+  local DESTINATION=$2
+  local COMMIT_SHA=$3
+
+  RETRIES=0
+  until [ $RETRIES -ge 5 ]; do
+    rm -rf $DESTINATION
+    PRUN git clone $GIT_REPO $DESTINATION;cd  $DESTINATION; git checkout $COMMIT_SHA;cd - && return 0
+    RETRIES=$[$RETRIES+1]
+    sleep 5
+  done
+  return 1
+}
+
 function glance_upload_with_retry () {
   local DU_IMG_TAG=$1
   shift

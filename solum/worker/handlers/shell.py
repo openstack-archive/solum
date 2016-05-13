@@ -290,8 +290,8 @@ class Handler(object):
                     base_image_id, lp_image_tag]
         elif stage == 'build':
             build_app = os.path.join(build_app_path, 'build-app')
-            return [build_app, source_uri, name, ctxt.tenant, base_image_id,
-                    lp_image_tag]
+            return [build_app, source_uri, commit_sha, name, ctxt.tenant,
+                    base_image_id, lp_image_tag]
 
     def _get_parameter_env(self, ctxt, source_uri, assembly_id, build_id):
         param_env = {}
@@ -402,6 +402,7 @@ class Handler(object):
         solum.TLS.trace.import_context(ctxt)
 
         source_uri = git_info['source_url']
+        commit_sha = git_info.get('commit_sha', '')
 
         image_tag = ''
         lp_access = ''
@@ -425,7 +426,8 @@ class Handler(object):
 
         build_cmd = self._get_build_command(ctxt, 'build', source_uri,
                                             name, base_image_id,
-                                            source_format, image_format, '',
+                                            source_format, image_format,
+                                            commit_sha,
                                             lp_image_tag=image_tag)
         solum.TLS.trace.support_info(build_cmd=' '.join(build_cmd),
                                      assembly_id=assembly_id)
