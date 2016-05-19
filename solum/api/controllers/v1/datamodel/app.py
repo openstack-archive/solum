@@ -57,6 +57,7 @@ class App(api_types.Base):
     status = wtypes.text
     repo_token = wtypes.text
     created_at = datetime.datetime
+    updated_at = datetime.datetime
     raw_content = wtypes.text
     scale_config = wtypes.DictType(
         wtypes.text,
