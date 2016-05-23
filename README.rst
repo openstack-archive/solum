@@ -13,12 +13,19 @@ Solum is natively designed for OpenStack clouds and leverages numerous
 OpenStack projects, including Keystone, Swift, Glance, Heat, Nova, Trove, and more.
 We value vendor neutrality, open design and collaboration, and leveraging existing
 solutions where possible. One example is our use of Docker for deployment of
-containers. Multiple language run-time environments will be supported with a 
+containers. Multiple language run-time environments will be supported with a
 modular "language pack" solution so you can easily run applications written
 in any language of your choice.
 
 * Free software: Apache 2.0 License. See LICENSE file.
 * Documentation: http://wiki.openstack.org/wiki/Solum
+
+Development-setup with Solum
+--------------------------
+
+See the solum-development-setup_ guide.
+
+.. _solum-development-setup: https://wiki.openstack.org/wiki/Solum/solum-development-setup
 
 Getting started with Solum
 --------------------------
@@ -30,12 +37,12 @@ See the getting_started_ guide.
 Project Info
 -------------
 
- * Source Code: http://github.com/openstack/solum
+ * Source Code: https://github.com/openstack/solum
  * Wiki: https://wiki.openstack.org/wiki/Solum
  * Launchpad: https://launchpad.net/solum
  * Blueprints: https://blueprints.launchpad.net/solum
  * Bugs: https://bugs.launchpad.net/solum
- * Code Reviews: https://review.openstack.org/#q,status:open+solum,n,z
-                 https://review.openstack.org/#/q/status:open+python-solumclient,n,z
+ * Code Reviews: https://review.openstack.org/#/q/project:openstack/solum
+                 https://review.openstack.org/#/q/project:openstack/python-solumclient
  * IRC: #solum at chat.freenode.net
 
