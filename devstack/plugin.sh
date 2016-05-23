@@ -315,7 +315,9 @@ function install_docker() {
 function install_solum_dashboard() {
     git_clone_by_name "solum-dashboard"
     setup_dev_lib "solum-dashboard"
-    ln -s $DEST/solum-dashboard/_50_solum.py.example $HORIZON_DIR/openstack_dashboard/local/enabled/_50_solum.py
+    if [ ! -f $HORIZON_DIR/openstack_dashboard/local/enabled/_50_solum.py ] ; then 
+      ln -s $DEST/solum-dashboard/_50_solum.py.example $HORIZON_DIR/openstack_dashboard/local/enabled/_50_solum.py
+    fi
     restart_apache_server
 }
 
