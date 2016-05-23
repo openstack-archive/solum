@@ -183,8 +183,20 @@ class WorkflowHandler(handler.Handler):
         run_cmd = wf_obj.config['run_cmd']
 
         ports = app_obj.ports
+        if ('repo_token' in wf_obj.source.keys()):
+            repo_token = wf_obj.source['repo_token']
+        else:
+            repo_token = ''
 
-        repo_token = wf_obj.source['repo_token']
+        if ('private' in wf_obj.source.keys()):
+            private = wf_obj.source['private']
+        else:
+            private = False
+
+        if ('private_ssh_key' in wf_obj.source.keys()):
+            private_ssh_key = wf_obj.source['private_ssh_key']
+        else:
+            private_ssh_key = ''
 
         # TODO(devkulkarni): Check whether we need image.source_format
         image.source_format = 'solum'
@@ -194,8 +206,8 @@ class WorkflowHandler(handler.Handler):
             'commit_sha': commit_sha,
             'repo_token': repo_token,
             'status_url': status_url,
-            'private': wf_obj.source['private'],
-            'private_ssh_key': wf_obj.source['private_ssh_key']
+            'private': private,
+            'private_ssh_key': private_ssh_key
         }
 
         if test_cmd:
