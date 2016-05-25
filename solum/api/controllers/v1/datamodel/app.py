@@ -46,7 +46,11 @@ class App(api_types.Base):
     ports = api_types.MultiType(api_types.PortType,
                                 [api_types.PortType],
                                 {wtypes.text: api_types.PortType})
-    source = {wtypes.text: wtypes.text}
+    source = wtypes.DictType(wtypes.text, api_types.MultiType(
+        wtypes.text,
+        six.integer_types,
+        bool,
+        float))
     workflow_config = {wtypes.text: wtypes.text}
     trigger_uuid = wtypes.text
     trigger_actions = [wtypes.text]

@@ -15,10 +15,12 @@
 
 import datetime
 
+import six
 import wsme
 from wsme import types as wtypes
 
 from solum.api.controllers import common_types
+from solum.api.controllers.v1.datamodel import types as api_types
 
 
 class Workflow(wtypes.Base):
@@ -48,7 +50,11 @@ class Workflow(wtypes.Base):
     created_at = datetime.datetime
     app_id = wtypes.text
     wf_id = int
-    source = {wtypes.text: wtypes.text}
+    source = wtypes.DictType(wtypes.text, api_types.MultiType(
+        wtypes.text,
+        six.integer_types,
+        bool,
+        float))
     config = {wtypes.text: wtypes.text}
     actions = [wtypes.text]
     du_id = wtypes.text
