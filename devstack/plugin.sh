@@ -153,7 +153,13 @@ function configure_solum() {
     sudo dpkg -i docker.deb
 
     # Install docker driver
-    sudo git clone https://github.com/openstack/nova-docker.git /opt/stack/nova-docker
+    if [ ! -d /opt/stack/nova-docker ] ; then
+        sudo git clone https://github.com/openstack/nova-docker.git /opt/stack/nova-docker
+    else
+        sudo rm -rf /opt/stack/nova-docker
+        sudo git clone https://github.com/openstack/nova-docker.git /opt/stack/nova-docker
+    fi
+
     cd /opt/stack/nova-docker
 
     # We pin to this version as Solum is known to work with it
@@ -353,7 +359,12 @@ solum_install_start_docker_registry() {
    sudo apt-get -y install build-essential python-dev libevent-dev python-pip liblzma-dev git libssl-dev python-m2crypto swig
 
  # clone docker registry
-   sudo git clone https://github.com/dotcloud/docker-registry.git /opt/docker-registry
+   if [ ! -d /opt/docker-registry ] ; then
+      sudo git clone https://github.com/dotcloud/docker-registry.git /opt/docker-registry
+   else
+      sudo rm -rf /opt/docker-registry
+      sudo git clone https://github.com/dotcloud/docker-registry.git /opt/docker-registry
+   fi
    pushd /opt/docker-registry
    pip install -r requirements/main.txt
    popd
