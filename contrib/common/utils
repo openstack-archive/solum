@@ -133,6 +133,7 @@ function add_ssh_creds () {
     chmod 600 $SSH_PRIVATE_KEY_FILE
     ssh-add $SSH_PRIVATE_KEY_FILE ; EXIT_STATUS=$?
     rm -f $SSH_PRIVATE_KEY_FILE
+    ssh -o StrictHostKeyChecking=no git@github.com
     return $EXIT_STATUS
   else
     return 0

@@ -181,10 +181,16 @@ class Handler(object):
         return du_loc, du_name
 
     @exception.wrap_keystone_exception
-    def _get_environment(self, ctxt, source_uri, assembly_id=None,
+    def _get_environment(self, ctxt, git_info, assembly_id=None,
                          test_cmd=None, run_cmd=None, lp_access=None):
+        source_uri = git_info['source_url']
         # create a minimal environment
         user_env = {}
+
+        private = git_info.get('private', False)
+        ssh_key = git_info.get('private_ssh_key', '')
+        if private and ssh_key:
+            user_env['REPO_DEPLOY_KEYS'] = ssh_key
 
         for var in ['PATH', 'LOGNAME', 'LANG', 'HOME', 'USER', 'TERM']:
             if var in os.environ:
@@ -403,6 +409,18 @@ class Handler(object):
 
         source_uri = git_info['source_url']
         commit_sha = git_info.get('commit_sha', '')
+        private = git_info.get('private', False)
+        ssh_key = git_info.get('private_ssh_key', '')
+        # If the repo is private, make sure private ssh key is provided
+        if private and not ssh_key:
+            LOG.warning("Error building due to missing private ssh key."
+                        " assembly ID: %s" % assembly_id)
+            job_update_notification(ctxt, build_id, IMAGE_STATES.ERROR,
+                                    description='private ssh key missing',
+                                    assembly_id=assembly_id)
+            update_assembly_status(ctxt, assembly_id,
+                                   ASSEMBLY_STATES.ERROR)
+            return
 
         image_tag = ''
         lp_access = ''
@@ -434,7 +452,8 @@ class Handler(object):
 
         user_env = {}
         try:
-            user_env = self._get_environment(ctxt, source_uri,
+            user_env = self._get_environment(ctxt,
+                                             git_info,
                                              assembly_id=assembly_id,
                                              run_cmd=run_cmd,
                                              lp_access=lp_access)
@@ -559,7 +578,8 @@ class Handler(object):
         solum.TLS.trace.clear()
         solum.TLS.trace.import_context(ctxt)
 
-        user_env = self._get_environment(ctxt, git_url,
+        user_env = self._get_environment(ctxt,
+                                         git_info,
                                          assembly_id=assembly_id,
                                          test_cmd=test_cmd,
                                          lp_access=lp_access)
@@ -660,7 +680,7 @@ class Handler(object):
         user_env = {}
         try:
             user_env = self._get_environment(ctxt,
-                                             source_uri,
+                                             git_info,
                                              lp_access=lp_access)
         except exception.SolumException as env_ex:
             LOG.exception(_("Failed to successfully get environment for "

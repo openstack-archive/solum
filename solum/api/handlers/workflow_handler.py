@@ -184,8 +184,7 @@ class WorkflowHandler(handler.Handler):
 
         ports = app_obj.ports
 
-        # TODO(devkulkarni): Parse repo token from app description
-        repo_token = ''
+        repo_token = wf_obj.source['repo_token']
 
         # TODO(devkulkarni): Check whether we need image.source_format
         image.source_format = 'solum'
@@ -194,7 +193,9 @@ class WorkflowHandler(handler.Handler):
             'source_url': image.source_uri,
             'commit_sha': commit_sha,
             'repo_token': repo_token,
-            'status_url': status_url
+            'status_url': status_url,
+            'private': wf_obj.source['private'],
+            'private_ssh_key': wf_obj.source['private_ssh_key']
         }
 
         if test_cmd:

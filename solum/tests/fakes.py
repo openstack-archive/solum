@@ -78,6 +78,9 @@ class FakeApp(mock.Mock):
         self.source = {
             'repository': 'http://github.com/example/a.git',
             'revision': 'master',
+            'repo_token': 'test-repo-token',
+            'private': False,
+            'private_ssh_key': 'test-private-ssh-key'
         }
         self.ports = [80]
         self.workflow_config = {
