@@ -19,10 +19,10 @@ from solum.common import exception as exc
 
 def check_url(data):
     # try to use a correct git uri
-    pt = re.compile(r'^(https://|git@)github.com/(.+)(.+)(\.git)')
+    pt = re.compile(r'^(http://|https://|git@)(.+)(/|:/)(.+)(.+)(\.git)')
     match = pt.search(data)
     if not match:
         msg = ("Bad git url. Provide git url in the following format: \n"
                "Public repo: https://github.com/<USER>/<REPO>.git\n"
-               "Private repo: git@github.com:<USER>/<REPO>.git\n")
+               "Private repo: <http://|git@><HOST>:<USER>/<REPO>.git\n")
         raise exc.BadRequest(reason=msg)
