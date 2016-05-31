@@ -229,7 +229,7 @@ class WorkflowHandler(handler.Handler):
             du_id=du_id)
 
 
-class PlanAssemblyAdapter():
+class PlanAssemblyAdapter(object):
     """Plan and assembly adapter."""
     # Adapter that we use to create assembly and plan
     # objects. This is intended to smooth the transition

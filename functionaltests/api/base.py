@@ -194,7 +194,7 @@ class SolumClient(rest_client.RestClient):
         return resp, body
 
 
-class SolumResponse():
+class SolumResponse(object):
     def __init__(self, resp, body, body_type):
         self.resp = resp
         self.body = body

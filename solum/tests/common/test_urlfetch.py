@@ -21,7 +21,7 @@ from solum.tests import base
 FETCH_SIZE_OK = 500
 
 
-class Response:
+class Response(object):
     def __init__(self, buf=''):
         self.buf = buf
 
