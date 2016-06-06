@@ -20,3 +20,6 @@ testscenarios>=0.4 # Apache-2.0/BSD
 testtools>=1.4.0 # MIT
 nose # LGPL
 reno>=1.6.2 # Apache2
+
+# Optional packages that should be installed when testing
+PyMySQL>=0.6.2 # MIT License
