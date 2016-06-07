@@ -13,6 +13,7 @@
 # under the License.
 
 import datetime
+import json
 import uuid
 
 from oslo_config import cfg
@@ -110,6 +111,7 @@ class WorkflowHandler(handler.Handler):
 
     def create(self, data, commit_sha, status_url, du_id):
         """Create a new workflow."""
+
         db_obj = objects.registry.Workflow()
         db_obj.id = str(uuid.uuid4())
         db_obj.user_id = self.context.user
@@ -149,6 +151,7 @@ class WorkflowHandler(handler.Handler):
 
         self._execute_workflow_actions(db_obj, app_obj, assem,
                                        commit_sha=commit_sha,
+                                       status_url=status_url,
                                        du_id=du_id)
 
         # TODO(devkulkarni): Update status of actions
@@ -183,8 +186,10 @@ class WorkflowHandler(handler.Handler):
         run_cmd = wf_obj.config['run_cmd']
 
         ports = app_obj.ports
-        if ('repo_token' in wf_obj.source.keys()):
-            repo_token = wf_obj.source['repo_token']
+
+        app_raw_content = json.loads(app_obj.raw_content)
+        if ('repo_token' in app_raw_content):
+            repo_token = app_raw_content['repo_token']
         else:
             repo_token = ''
 

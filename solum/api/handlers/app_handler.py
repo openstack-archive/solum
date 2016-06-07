@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import json
 import uuid
 
 from solum.api.handlers import common
@@ -49,6 +50,12 @@ class AppHandler(handler.Handler):
         new_wf = obj_dict['workflow_config']
         new_wf.update(data_dict.get('workflow_config', {}))
         data_dict['workflow_config'] = new_wf
+
+        if data_dict['repo_token']:
+            new_raw_content = json.loads(obj_dict['raw_content'])
+            new_raw_content['repo_token'] = data_dict['repo_token']
+            data_dict['raw_content'] = json.dumps(new_raw_content)
+            del data_dict['repo_token']
 
         updated = objects.registry.App.update_and_save(self.context,
                                                        id, data_dict)

@@ -90,6 +90,7 @@ class FakeApp(mock.Mock):
         self.stack_id = ''
         self.trigger_actions = ["unittest", "build", "deploy"]
         self.scale_config = dict()
+        self.raw_content = "{\"repo_token\": \"test-repo-token\"}"
 
     def as_dict(self):
         return {
@@ -104,6 +105,7 @@ class FakeApp(mock.Mock):
             'ports': self.ports,
             'workflow_config': self.workflow_config,
             'stack_id': self.stack_id,
+            'raw_content': self.raw_content
         }
 
 

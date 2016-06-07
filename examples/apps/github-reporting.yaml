@@ -1,0 +1,16 @@
+version: 1
+name: cherrypy-github
+description: python web app
+languagepack: python
+source:
+  repository: https://github.com/devkulkarni/solum-python-sample-app.git
+  revision: master
+workflow_config:
+  test_cmd: ./unit_tests.sh
+  run_cmd: python app.py
+trigger_actions:
+- unittest
+- build
+- deploy
+ports:
+- 80
