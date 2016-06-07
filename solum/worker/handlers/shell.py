@@ -94,6 +94,14 @@ def get_image_by_id(ctxt, image_id):
     return solum.objects.registry.Image.get_by_id(ctxt, image_id)
 
 
+def get_app_by_assem_id(ctxt, assembly_id):
+    assem = get_assembly_by_id(ctxt, assembly_id)
+    if assem:
+        plan = solum.objects.registry.Plan.get_by_id(ctxt, assem.plan_id)
+        app = solum.objects.registry.App.get_by_id(ctxt, plan.uuid)
+        return app
+
+
 def get_parameter_by_assem_id(ctxt, assembly_id):
     assem = get_assembly_by_id(ctxt, assembly_id)
     param_obj = solum.objects.registry.Parameter.get_by_plan_id(ctxt,
@@ -141,12 +149,12 @@ def update_wf_and_app_status(ctxt, assembly_id, status):
             LOG.exception(ex)
 
 
-def update_lp_status(ctxt, image_id, status, external_ref=None,
+def update_lp_status(ctxt, image_id, name, status, external_ref=None,
                      docker_image_name=None):
     if image_id is None:
         return
     LOG.debug('Updating languagepack %s status to %s and external_ref to %s'
-              % (image_id, status, external_ref))
+              % (name, status, external_ref))
     conductor_api.API(context=ctxt).update_image(image_id, status,
                                                  external_ref,
                                                  docker_image_name)
@@ -392,17 +400,24 @@ class Handler(object):
 
     def _do_deploy(self, ctxt, assembly_id, ports, du_image_loc,
                    du_image_name):
+        app = get_app_by_assem_id(ctxt, assembly_id)
+        LOG.debug("Deploying app %s %s" % (app.name, app.id))
         deployer_api.API(context=ctxt).deploy(assembly_id=assembly_id,
                                               image_loc=du_image_loc,
                                               image_name=du_image_name,
                                               ports=ports)
 
     def _do_scale(self, ctxt, assembly_id):
+        app = get_app_by_assem_id(ctxt, assembly_id)
+        LOG.debug("Scaling app %s %s" % (app.name, app.id))
         deployer_api.API(context=ctxt).scale(assembly_id=assembly_id)
 
     def _do_build(self, ctxt, build_id, git_info, name, base_image_id,
                   source_format, image_format, assembly_id, run_cmd):
         update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.BUILDING)
+
+        app = get_app_by_assem_id(ctxt, assembly_id)
+        LOG.debug("Building app %s %s" % (app.name, app.id))
 
         solum.TLS.trace.clear()
         solum.TLS.trace.import_context(ctxt)
@@ -479,7 +494,7 @@ class Handler(object):
         logpath = "%s/%s-%s.log" % (user_env['SOLUM_TASK_DIR'],
                                     'build',
                                     user_env['BUILD_ID'])
-        LOG.debug("Build logs stored at %s" % logpath)
+        LOG.debug("Build logs for app %s stored at %s" % (app.name, logpath))
         out = None
         assem = None
         if assembly_id is not None:
@@ -545,11 +560,13 @@ class Handler(object):
             LOG.debug("Unit test command is None; skipping unittests.")
             return 0
 
+        app = get_app_by_assem_id(ctxt, assembly_id)
+        LOG.debug("Unit testing for app %s %s" % (app.name, app.id))
+
         commit_sha = git_info.get('commit_sha', '')
         status_url = git_info.get('status_url')
         repo_token = git_info.get('repo_token')
 
-        LOG.debug("Running unittests.")
         update_assembly_status(ctxt, assembly_id, ASSEMBLY_STATES.UNIT_TESTING)
 
         image_tag = ''
@@ -664,7 +681,8 @@ class Handler(object):
     def build_lp(self, ctxt, image_id, git_info, name, source_format,
                  image_format, artifact_type, lp_params):
 
-        update_lp_status(ctxt, image_id, IMAGE_STATES.BUILDING)
+        LOG.debug("Building languagepack %s" % name)
+        update_lp_status(ctxt, image_id, name, IMAGE_STATES.BUILDING)
 
         solum.TLS.trace.clear()
         solum.TLS.trace.import_context(ctxt)
@@ -700,7 +718,8 @@ class Handler(object):
         logpath = "%s/%s-%s.log" % (user_env['SOLUM_TASK_DIR'],
                                     'languagepack',
                                     user_env['BUILD_ID'])
-        LOG.debug("Languagepack logs stored at %s" % logpath)
+        LOG.debug("Languagepack logs for LP %s stored at %s" %
+                  (image_id, logpath))
 
         out = None
         status = IMAGE_STATES.ERROR
@@ -735,7 +754,7 @@ class Handler(object):
 
         img = get_image_by_id(ctxt, image_id)
         img.type = 'languagepack'
-        update_lp_status(ctxt, image_id, status, image_external_ref,
+        update_lp_status(ctxt, image_id, name, status, image_external_ref,
                          docker_image_name)
         upload_task_log(ctxt, logpath, img,
                         img.uuid, 'languagepack')
