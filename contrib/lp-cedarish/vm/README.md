@@ -30,7 +30,7 @@ The build script takes two positional arguments.   The location of the git repo,
 make sure you have an `openrc` file with your OpenStack credentials in `~/` or `~/devstack/openrc` before running this script.
 
 ```
-/opt/stack/solum/contrib/buildpacker/vm/build-app https://github.com/paulczar/example-nodejs-express.git helloworld
+/opt/stack/solum/contrib/lp-cedarish/vm/build-app https://github.com/paulczar/example-nodejs-express.git helloworld
 ```
 
 The script should update glance with the resultant image as well as set up a sshkey and security-group.  it will provide you with the nova command required to boot the instance as well as a basic `user-data.txt` to set any environment variables ( to be passed to your app ) and run the app on boot. 
@@ -42,7 +42,7 @@ Your nova command to deploy your app should be something like this:
 
 ```
 $ source ~/devstack/openrc
-$ nova boot --flavor=2 --image=helloworld --security-groups=helloworld --key-name=helloworld_key --user-data=/solum/contrib/buildpacker/oldway-vm/user-data.txt helloworld01
+$ nova boot --flavor=2 --image=helloworld --security-groups=helloworld --key-name=helloworld_key --user-data=/opt/stack/solum/contrib/lp-cedarish/vm/user-data.txt helloworld01
 $ nova list
 +--------------------------------------+--------------+--------+------------+-------------+----------------------+
 | ID                                   | Name         | Status | Task State | Power State | Networks             |
