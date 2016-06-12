@@ -9,8 +9,11 @@ sudo apt-get -yqq install qemu-utils git curl wget
 
 echo "install disk image builder"
 
-[[ -d /opt/disk-image-builder ]] || \
+if [[ -d /opt/disk-image-builder ]]; then
   sudo git clone https://github.com/openstack/diskimage-builder.git /opt/disk-image-builder
+  cd /opt/disk-image-builder
+  sudo pip install .
+fi
 
 sudo mkdir -p /opt/solum/apps
 
