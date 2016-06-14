@@ -94,7 +94,8 @@ class TestAppHandler(base.BaseTestCase):
         db_obj = objects.registry.App()
         # Without this, I'd just get a mocked function call.
         # I want real data so I can track that it's being updated.
-        db_obj.as_dict.return_value = fakes.FakeApp().as_dict()
+        a = fakes.FakeApp().as_dict()
+        db_obj.as_dict.return_value = a
         mock_registry.App.get_by_uuid.return_value = db_obj
         # I'm not saving anything anyway, I just want to make sure
         # that I'm sending the right data to update_and_save.
@@ -110,6 +111,7 @@ class TestAppHandler(base.BaseTestCase):
             'source': {
                 'revision': 'experimental',
             },
+            'repo_token': 'abc'
         }
         handler = app_handler.AppHandler(self.ctx)
         new_app = objects.registry.App()

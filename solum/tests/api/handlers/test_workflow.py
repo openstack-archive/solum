@@ -100,7 +100,7 @@ class TestWorkflowHandler(base.BaseTestCase):
             'repo_token': app_obj.source['repo_token'],
             'private': app_obj.source['private'],
             'private_ssh_key': app_obj.source['private_ssh_key'],
-            'status_url': None,
+            'status_url': '',
         }
         mock_pa.assert_called_once_with(
             verb='launch_workflow', workflow=['unittest', 'build', 'deploy'],

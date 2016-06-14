@@ -57,7 +57,33 @@ Once the app is READY, you can curl to app_url that is displayed in the output
 of the 'app show' command.
 
 
+4) Github trigger and reporting
 
+Use the following app file: github-reporting.yaml
 
+Steps:
 
+1) Fork the repository used in above app file in your account. Modify the app file to use this forked repo
+2) Generate a Github access token and add it to the app file as repo_token. Then create the app.
 
+   solum app create --app-file github-reporting.yaml --setup-trigger
+
+3) CLI will generate Github webhook and add it to your repository.
+
+4) In order for github webhook to trigger Solum running on your local vm, you will need to expose
+   the Solum API to outside world. A tool called ngrok will allow you to do that.
+   Download ngrok and run it on the host
+
+   ./ngrok http 9777
+
+5) Go to your github repository and modify webhook to include the "Forwarding" address which is output
+   from running the ngrok command above.
+
+6) Create a Pull request for your repo.
+
+7) You will notice that Solum receives the webook and starts executing unittest workflow stage.
+   You can run the app show command to check this:
+
+   solum app show cherrypy-github
+
+8) You can also see that the pull request on Github is updated to show the status of executing tests.

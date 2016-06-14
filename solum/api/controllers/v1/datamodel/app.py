@@ -63,6 +63,7 @@ class App(api_types.Base):
     created_at = datetime.datetime
     updated_at = datetime.datetime
     raw_content = wtypes.text
+    repo_token = wtypes.text
     scale_config = wtypes.DictType(
         wtypes.text,
         wtypes.DictType(wtypes.text, wtypes.text))
@@ -110,7 +111,8 @@ class App(api_types.Base):
             'trigger_actions',
             'workflow_config',
             'stack_id',
-            'raw_content'
+            'raw_content',
+            'repo_token'
             ]
         base = super(App, self).as_dict(db_model)
 

@@ -113,7 +113,8 @@ class TriggerController(rest.RestController):
 
         try:
             # Trigger workflow only on PR create and on rebuild request
-            if action in ['created', 'opened', 'edited', 'reopened']:
+            if action in ['created', 'opened', 'edited', 'reopened',
+                          'synchronize', 'closed']:
                 handler = app_handler.AppHandler(None)
                 handler.trigger_workflow(trigger_id, commit_sha, status_url,
                                          collab_url, workflow=workflow)
