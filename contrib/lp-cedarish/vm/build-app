@@ -50,11 +50,9 @@ echo "create image"
 
 export PATH=$PATH:/opt/disk-image-builder/bin
 
-$(sudo \
-  PATH=$PATH:/opt/disk-image-builder/bin \
-  ELEMENTS_PATH=/$BUILD_DIR/elements \
-  disk-image-create --no-tmpfs -a amd64 \
-  vm ubuntu -o $IMAGE_DIR/$ID.qcow2 build cedarish)
+export ELEMENTS_PATH=$BUILD_DIR/elements
+
+disk-image-create --no-tmpfs -a amd64 vm ubuntu -o $IMAGE_DIR/$ID.qcow2 cedarish
 
 if [[ ! -f $IMAGE_DIR/$ID.qcow2 ]]; then
   echo something went wrong building image
