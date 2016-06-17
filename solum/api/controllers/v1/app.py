@@ -110,6 +110,10 @@ class AppsController(rest.RestController):
         except AttributeError:
             raise exception.BadRequest(reason=msg)
 
+        msg = "Application description must be less than 255 characters."
+        if app_data.description and len(app_data.description) > 255:
+            raise exception.BadRequest(reason=msg)
+
         # check if languagepack exists or not
         if str(app_data.languagepack).lower() != "false":
             try:
