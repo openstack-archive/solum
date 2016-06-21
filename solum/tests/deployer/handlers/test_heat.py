@@ -46,8 +46,12 @@ class HandlerTest(base.BaseTestCase):
     @mock.patch('solum.common.catalog.get')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.common.clients.OpenStackClients')
-    def test_deploy_docker_on_vm_with_dreg(self, mock_clients, mock_registry,
-                                           mock_get_templ, mock_ua, m_log):
+    @mock.patch('solum.deployer.handlers.heat.get_app_by_assem_id')
+    @mock.patch('solum.deployer.handlers.heat.get_heat_client')
+    def test_deploy_docker_on_vm_with_dreg(self, mock_ht_cl,
+                                           mock_get_app, mock_clients,
+                                           mock_registry, mock_get_templ,
+                                           mock_ua, m_log):
         handler = heat_handler.Handler()
 
         fake_assembly = fakes.FakeAssembly()
@@ -62,15 +66,17 @@ class HandlerTest(base.BaseTestCase):
         cfg.CONF.worker.image_storage = "docker_registry"
         mock_get_templ.return_value = template
         handler._find_id_if_stack_exists = mock.MagicMock(return_value=(None))
-        stacks = mock_clients.return_value.heat.return_value.stacks
-        stacks.create.return_value = {"stack": {
+
+        created_stack = {"stack": {
             "id": "fake_id",
             "links": [{"href": "http://fake.ref",
                        "rel": "self"}]}}
+
+        mock_ht_cl.return_value.stacks.create.return_value = created_stack
         handler._check_stack_status = mock.MagicMock()
+
         handler.deploy(self.ctx, 77, 'created_image_id', 'image_name', [80])
-        stacks = mock_clients.return_value.heat.return_value.stacks
-        self.assertTrue(stacks.create.called)
+        self.assertTrue(mock_ht_cl.return_value.stacks.create.called)
         assign_and_create_mock = mock_registry.Component.assign_and_create
         comp_name = 'Heat_Stack_for_%s' % fake_assembly.name
         assign_and_create_mock.assert_called_once_with(self.ctx,
@@ -87,7 +93,9 @@ class HandlerTest(base.BaseTestCase):
     @mock.patch('solum.common.catalog.get_from_contrib')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.common.clients.OpenStackClients')
-    def test_deploy_docker_on_vm_swift(self, mock_clients, mock_registry,
+    @mock.patch('solum.deployer.handlers.heat.get_heat_client')
+    def test_deploy_docker_on_vm_swift(self, heat_clnt, mock_clients,
+                                       mock_registry,
                                        mock_contrib, mock_get_templ,
                                        mock_ua, m_log):
         handler = heat_handler.Handler()
@@ -108,16 +116,16 @@ class HandlerTest(base.BaseTestCase):
         cfg.CONF.deployer.image = "coreos"
         mock_get_templ.return_value = fake_template
         handler._find_id_if_stack_exists = mock.MagicMock(return_value=(None))
-        stacks = mock_clients.return_value.heat.return_value.stacks
-        stacks.create.return_value = {"stack": {
+
+        created_stack = {"stack": {
             "id": "fake_id",
             "links": [{"href": "http://fake.ref",
                        "rel": "self"}]}}
+        heat_clnt.return_value.stacks.create.return_value = created_stack
+
         handler._check_stack_status = mock.MagicMock()
 
         handler.deploy(self.ctx, 77, img, 'tenant-name-ts-commit', [80])
-
-        stacks = mock_clients.return_value.heat.return_value.stacks
 
         parameters = {'name': fake_assembly.uuid,
                       'flavor': "flavor",
@@ -126,10 +134,11 @@ class HandlerTest(base.BaseTestCase):
                       'du': 'tenant-name-ts-commit',
                       'publish_ports': '-p 80:80'}
 
-        stacks.create.assert_called_once_with(stack_name='faker-test_uuid',
-                                              template=fake_template,
-                                              parameters=parameters,
-                                              files=get_file_dict)
+        heat_clnt.return_value.stacks.create.assert_called_once_with(
+            stack_name='faker-test_uuid',
+            template=fake_template,
+            parameters=parameters,
+            files=get_file_dict)
         assign_and_create_mock = mock_registry.Component.assign_and_create
         comp_name = 'Heat_Stack_for_%s' % fake_assembly.name
         assign_and_create_mock.assert_called_once_with(self.ctx,
@@ -146,7 +155,8 @@ class HandlerTest(base.BaseTestCase):
     @mock.patch('solum.common.catalog.get')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.common.clients.OpenStackClients')
-    def test_comp_name_error(self, mock_clients, mock_registry,
+    @mock.patch('solum.deployer.handlers.heat.get_heat_client')
+    def test_comp_name_error(self, heat_clnt, mock_clients, mock_registry,
                              mock_get_templ, mock_ua, m_log):
         handler = heat_handler.Handler()
 
@@ -157,7 +167,7 @@ class HandlerTest(base.BaseTestCase):
         fake_template = json.dumps({'description': 'test'})
         mock_get_templ.return_value = fake_template
         handler._find_id_if_stack_exists = mock.MagicMock(return_value=(None))
-        stacks = mock_clients.return_value.heat.return_value.stacks
+        stacks = heat_clnt.return_value.heat.return_value.stacks
         stacks.create.return_value = {"stack": {
             "id": "fake_id",
             "links": [{"href": "http://fake.ref",
@@ -177,7 +187,8 @@ class HandlerTest(base.BaseTestCase):
     @mock.patch('solum.common.catalog.get_from_contrib')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.common.clients.OpenStackClients')
-    def test_deploy_docker(self, mock_clients, mock_registry,
+    @mock.patch('solum.deployer.handlers.heat.get_heat_client')
+    def test_deploy_docker(self, heat_clnt, mock_clients, mock_registry,
                            mock_get_contrib, mock_get_templ, mock_ua, m_log):
         handler = heat_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
@@ -197,11 +208,11 @@ class HandlerTest(base.BaseTestCase):
         mock_get_templ.return_value = template
 
         handler._find_id_if_stack_exists = mock.MagicMock(return_value=(None))
-        stacks = mock_clients.return_value.heat.return_value.stacks
-        stacks.create.return_value = {"stack": {
+        created_stack = {"stack": {
             "id": "fake_id",
             "links": [{"href": "http://fake.ref",
                        "rel": "self"}]}}
+        heat_clnt.return_value.stacks.create.return_value = created_stack
         handler._check_stack_status = mock.MagicMock()
 
         handler.deploy(self.ctx, 77, 'created_image_id', 'image_name', [80])
@@ -210,10 +221,11 @@ class HandlerTest(base.BaseTestCase):
                       'app_name': 'faker',
                       'port': 80}
 
-        stacks.create.assert_called_once_with(stack_name='faker-test_uuid',
-                                              template=template,
-                                              parameters=parameters,
-                                              files=get_file_dict)
+        heat_clnt.return_value.stacks.create.assert_called_once_with(
+            stack_name='faker-test_uuid',
+            template=template,
+            parameters=parameters,
+            files=get_file_dict)
         assign_and_create_mock = mock_registry.Component.assign_and_create
         comp_name = 'Heat_Stack_for_%s' % fake_assembly.name
         assign_and_create_mock.assert_called_once_with(self.ctx,
@@ -229,13 +241,19 @@ class HandlerTest(base.BaseTestCase):
     @mock.patch('solum.common.clients.OpenStackClients')
     @mock.patch('httplib2.Http')
     @mock.patch('solum.common.repo_utils')
-    def test_update_assembly_status(self, mock_repo, mock_http,
+    @mock.patch('solum.deployer.handlers.heat.get_heat_client')
+    def test_update_assembly_status(self, heat_clnt, mock_repo, mock_http,
                                     mock_clients, mock_ua, mock_wf_app):
+
+        cfg.CONF.set_override('wait_interval', 1, group='deployer')
+        cfg.CONF.set_override('growth_factor', 1, group='deployer')
+        cfg.CONF.set_override('max_attempts', 1, group='deployer')
+
         handler = heat_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
         stack = mock.MagicMock()
         stack.status = 'COMPLETE'
-        mock_clients.heat().stacks.get.return_value = stack
+        heat_clnt.return_value.stacks.get.return_value = stack
 
         resp = {'status': '200'}
         conn = mock.MagicMock()
@@ -247,7 +265,7 @@ class HandlerTest(base.BaseTestCase):
         mock_logger = mock.MagicMock()
         handler._parse_server_ip = mock.MagicMock(return_value=('xyz'))
         mock_repo.is_reachable.return_value = True
-        handler._check_stack_status(self.ctx, fake_assembly.id, mock_clients,
+        handler._check_stack_status(self.ctx, fake_assembly.id, heat_clnt,
                                     'fake_id', [80], mock_logger)
 
         c1 = mock.call(self.ctx, fake_assembly.id,
@@ -265,14 +283,20 @@ class HandlerTest(base.BaseTestCase):
     @mock.patch('solum.deployer.handlers.heat.update_assembly')
     @mock.patch('solum.common.clients.OpenStackClients')
     @mock.patch('httplib2.Http')
-    def test_update_assembly_status_multiple_ports(self, mock_http,
+    @mock.patch('solum.deployer.handlers.heat.get_heat_client')
+    def test_update_assembly_status_multiple_ports(self, heat_clnt, mock_http,
                                                    mock_clients, mock_ua,
                                                    mock_wf_app):
+
+        cfg.CONF.set_override('wait_interval', 1, group='deployer')
+        cfg.CONF.set_override('growth_factor', 1, group='deployer')
+        cfg.CONF.set_override('max_attempts', 1, group='deployer')
+
         handler = heat_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
         stack = mock.MagicMock()
         stack.status = 'COMPLETE'
-        mock_clients.heat().stacks.get.return_value = stack
+        heat_clnt.stacks.get.return_value = stack
 
         resp = {'status': '200'}
         conn = mock.MagicMock()
@@ -283,7 +307,8 @@ class HandlerTest(base.BaseTestCase):
 
         mock_logger = mock.MagicMock()
         handler._parse_server_ip = mock.MagicMock(return_value=('xyz'))
-        handler._check_stack_status(self.ctx, fake_assembly.id, mock_clients,
+        handler._check_stack_status(self.ctx, fake_assembly.id,
+                                    heat_clnt.return_value,
                                     'fake_id', [80, 81], mock_logger)
 
         c1 = mock.call(self.ctx, fake_assembly.id,
@@ -299,14 +324,22 @@ class HandlerTest(base.BaseTestCase):
 
     @mock.patch('solum.deployer.handlers.heat.update_assembly')
     @mock.patch('solum.common.clients.OpenStackClients')
-    def test_update_assembly_status_failed(self, mock_clients, mock_ua):
+    @mock.patch('solum.deployer.handlers.heat.get_heat_client')
+    def test_update_assembly_status_failed(self, heat_clnt,
+                                           mock_clients, mock_ua):
+
+        cfg.CONF.set_override('wait_interval', 1, group='deployer')
+        cfg.CONF.set_override('growth_factor', 1, group='deployer')
+        cfg.CONF.set_override('max_attempts', 1, group='deployer')
+
         handler = heat_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
         stack = mock.MagicMock()
         stack.status = 'FAILED'
-        mock_clients.heat().stacks.get.return_value = stack
+        heat_clnt.return_value.stacks.get.return_value = stack
         mock_logger = mock.MagicMock()
-        handler._check_stack_status(self.ctx, fake_assembly.id, mock_clients,
+        handler._check_stack_status(self.ctx, fake_assembly.id,
+                                    heat_clnt.return_value,
                                     'fake_id', [80], mock_logger)
         mock_ua.assert_called_once_with(self.ctx, fake_assembly.id,
                                         {'status':
@@ -526,19 +559,19 @@ class HandlerTest(base.BaseTestCase):
                                          STATES.ERROR})
 
     @mock.patch('solum.deployer.handlers.heat.update_assembly')
-    @mock.patch('solum.common.clients.OpenStackClients')
-    def test_check_stack_status(self, mock_clients, mock_ua):
+    def test_check_stack_status(self, mock_ua):
         handler = heat_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
 
-        mock_clients.heat().stacks.get.side_effect = Exception()
+        mock_client = mock.MagicMock()
+        mock_client.stacks.get.side_effect = Exception()
 
         cfg.CONF.set_override('wait_interval', 1, group='deployer')
         cfg.CONF.set_override('growth_factor', 1, group='deployer')
         cfg.CONF.set_override('max_attempts', 1, group='deployer')
 
         mock_logger = mock.MagicMock()
-        handler._check_stack_status(self.ctx, fake_assembly.id, mock_clients,
+        handler._check_stack_status(self.ctx, fake_assembly.id, mock_client,
                                     'fake_id', [80], mock_logger)
         mock_ua.assert_called_once_with(self.ctx, fake_assembly.id,
                                         {'status':
@@ -604,9 +637,10 @@ class HandlerTest(base.BaseTestCase):
     @mock.patch('solum.deployer.handlers.heat.tlog')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.common.clients.OpenStackClients')
-    def test_destroy_success(self, mock_client, mock_registry, m_log,
-                             mock_log_handler, mock_swift_delete):
-        cfg.CONF.worker.image_storage = "swift"
+    @mock.patch('solum.deployer.handlers.heat.get_heat_client')
+    def test_destroy_success(self, heat_clnt, mock_client, mock_registry,
+                             m_log, mock_log_handler, mock_swift_delete):
+        cfg.CONF.set_override('image_storage', 'swift', group='worker')
         fake_assem = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assem
         fake_image = fakes.FakeImage()
@@ -616,8 +650,7 @@ class HandlerTest(base.BaseTestCase):
 
         mock_log = m_log.TenantLogger.return_value.log
 
-        mock_heat = mock_client.return_value.heat
-        mock_del = mock_heat.return_value.stacks.delete
+        mock_del = heat_clnt.return_value.stacks.delete
         mock_del.side_effect = exc.HTTPNotFound
 
         cfg.CONF.deployer.max_attempts = 1
@@ -644,9 +677,11 @@ class HandlerTest(base.BaseTestCase):
     @mock.patch('solum.deployer.handlers.heat.tlog')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.common.clients.OpenStackClients')
-    def test_destroy_stack_not_found(self, mock_client, mock_registry, m_log,
+    @mock.patch('solum.deployer.handlers.heat.get_heat_client')
+    def test_destroy_stack_not_found(self, heat_clnt, mock_client,
+                                     mock_registry, m_log,
                                      mock_log_handler, mock_swift_delete):
-        cfg.CONF.worker.image_storage = "swift"
+        cfg.CONF.set_override('image_storage', 'swift', group='worker')
         fake_assem = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assem
         fake_image = fakes.FakeImage()
@@ -656,8 +691,7 @@ class HandlerTest(base.BaseTestCase):
 
         mock_log = m_log.TenantLogger.return_value.log
 
-        mock_heat = mock_client.return_value.heat
-        mock_del = mock_heat.return_value.stacks.delete
+        mock_del = heat_clnt.return_value.stacks.delete
         mock_del.side_effect = exc.HTTPNotFound
 
         cfg.CONF.deployer.max_attempts = 1
@@ -684,12 +718,13 @@ class HandlerTest(base.BaseTestCase):
     @mock.patch('solum.deployer.handlers.heat.update_assembly')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.common.clients.OpenStackClients')
-    def test_destroy_error(self, mock_client, mock_registry, mua, m_log):
+    @mock.patch('solum.deployer.handlers.heat.get_heat_client')
+    def test_destroy_error(self, heat_clnt, mock_client,
+                           mock_registry, mua, m_log):
         fake_assem = fakes.FakeAssembly()
         mock_registry.Assembly.get_by_id.return_value = fake_assem
 
-        mock_heat = mock_client.return_value.heat
-        mock_del = mock_heat.return_value.stacks.delete
+        mock_del = heat_clnt.return_value.stacks.delete
 
         handler = heat_handler.Handler()
         handler._find_id_if_stack_exists = mock.MagicMock(return_value='42')
@@ -802,7 +837,9 @@ class HandlerTest(base.BaseTestCase):
 
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.common.clients.OpenStackClients')
-    def test_successful_deploy_destroys_twins(self, mock_client, mr):
+    @mock.patch('solum.deployer.handlers.heat.get_heat_client')
+    def test_successful_deploy_destroys_twins(self, heat_clnt,
+                                              mock_client, mr):
         handler = heat_handler.Handler()
         old_app = fakes.FakeAssembly()
         old_app.name = 'old app'
@@ -822,18 +859,20 @@ class HandlerTest(base.BaseTestCase):
         self.assertEqual(old_app.plan_uuid, new_app.plan_uuid)
         mr.AssemblyList.get_earlier.return_value = [old_app]
 
-        mock_heat = mock_client.return_value.heat
-        mock_st_del = mock_heat.return_value.stacks.delete
-        mock_st_get = mock_heat.return_value.stacks.get
+        mock_st_del = heat_clnt.return_value.stacks.delete
+        mock_st_get = heat_clnt.return_value.stacks.get
 
         handler.destroy_assembly = mock.MagicMock()
-        handler._destroy_other_assemblies(self.ctx, new_app.id)
+        handler._destroy_other_assemblies(self.ctx, new_app.id,
+                                          heat_clnt.return_value)
         self.assertTrue(mock_st_del.called)
         self.assertTrue(mock_st_get.called)
 
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.common.clients.OpenStackClients')
-    def test_successful_deploy_preserves_others(self, mock_client, mr):
+    @mock.patch('solum.deployer.handlers.heat.get_heat_client')
+    def test_successful_deploy_preserves_others(self, heat_clnt,
+                                                mock_client, mr):
         handler = heat_handler.Handler()
         old_app = fakes.FakeAssembly()
         old_app.name = 'old app'
@@ -863,12 +902,13 @@ class HandlerTest(base.BaseTestCase):
         mock_st_get = mock_heat.return_value.stacks.get
 
         handler.destroy_assembly = mock.MagicMock()
-        handler._destroy_other_assemblies(self.ctx, new_app.id)
+        handler._destroy_other_assemblies(self.ctx, new_app.id, heat_clnt)
         self.assertFalse(mock_st_del.called)
         self.assertFalse(mock_st_get.called)
 
     @mock.patch('solum.objects.registry')
-    def test_successful_deploy_preserves_notreadies(self, mr):
+    @mock.patch('solum.deployer.handlers.heat.get_heat_client')
+    def test_successful_deploy_preserves_notreadies(self, heat_clnt, mr):
         handler = heat_handler.Handler()
         old_app = fakes.FakeAssembly()
         old_app.name = 'old app'
@@ -885,11 +925,12 @@ class HandlerTest(base.BaseTestCase):
         mr.AssemblyList.get_earlier.return_value = []
 
         handler.destroy_assembly = mock.MagicMock()
-        handler._destroy_other_assemblies(self.ctx, new_app.id)
+        handler._destroy_other_assemblies(self.ctx, new_app.id, heat_clnt)
         self.assertEqual(0, handler.destroy_assembly.call_count)
 
     @mock.patch('solum.objects.registry')
-    def test_unsuccessful_deploy_preserves_everyone(self, mr):
+    @mock.patch('solum.deployer.handlers.heat.get_heat_client')
+    def test_unsuccessful_deploy_preserves_everyone(self, heat_clnt, mr):
         handler = heat_handler.Handler()
         old_app = fakes.FakeAssembly()
         old_app.name = 'old app'
@@ -906,7 +947,8 @@ class HandlerTest(base.BaseTestCase):
         mr.AssemblyList.get_earlier.return_value = []
 
         handler.destroy_assembly = mock.MagicMock()
-        handler._destroy_other_assemblies(self.ctx, new_app.id)
+        handler._destroy_other_assemblies(self.ctx, new_app.id,
+                                          heat_clnt.return_value)
         self.assertEqual(0, handler.destroy_assembly.call_count)
 
     def _get_key(self):

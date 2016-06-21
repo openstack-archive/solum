@@ -298,16 +298,21 @@ class OpenStackClients(object):
         return self._mistral
 
     @exception.wrap_keystone_exception
-    def heat(self):
+    def heat(self, username=None, password=None, token=None):
         if self._heat:
             return self._heat
+
+        if token:
+            token_to_use = token
+        else:
+            token_to_use = self.auth_token
 
         endpoint_type = get_client_option('heat', 'endpoint_type')
         args = {
             'auth_url': self.auth_url,
-            'token': self.auth_token,
-            'username': None,
-            'password': None,
+            'token': token_to_use,
+            'username': username,
+            'password': password,
             'ca_file': get_client_option('heat', 'ca_file'),
             'cert_file': get_client_option('heat', 'cert_file'),
             'key_file': get_client_option('heat', 'key_file'),

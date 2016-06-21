@@ -12,6 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import json
+
 import mock
 
 from solum.api.handlers import app_handler
@@ -57,6 +59,9 @@ class TestAppHandler(base.BaseTestCase):
                     'repository': 'https://github.com/example/a.git',
                     'revision': 'master'
                 }}
+        raw_content = {'a': 'b'}
+        data['raw_content'] = json.dumps(raw_content)
+        self.ctx.password = 'password'
         db_obj = fakes.FakeApp()
         mock_registry.App.return_value = db_obj
         handler = app_handler.AppHandler(self.ctx)
@@ -82,6 +87,10 @@ class TestAppHandler(base.BaseTestCase):
                         'repository': invalid_url,
                         'revision': 'master'
                     }}
+            raw_content = {'a': 'b'}
+            data['raw_content'] = json.dumps(raw_content)
+            self.ctx.password = 'password'
+
             db_obj = fakes.FakeApp()
             mock_registry.App.return_value = db_obj
             handler = app_handler.AppHandler(self.ctx)
