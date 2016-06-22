@@ -261,7 +261,7 @@ class Handler(object):
                                      workflow_id,
                                      deployer_log_dir,
                                      'delete')
-        msg = "Deleting Assembly %s" % assem.uuid
+        msg = "Deleting Assembly %s Workflow %s" % (assem.uuid, workflow_id)
         t_logger.log(logging.DEBUG, msg)
         LOG.debug(msg)
 
