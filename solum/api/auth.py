@@ -111,10 +111,12 @@ class AuthInformationHook(hooks.PecanHook):
 
         project_id = headers.get('X-Project-Id')
         user_name = headers.get('X-User-Name', '')
+        tenant_name = headers.get('X-Project')
 
         domain = headers.get('X-Domain-Name')
         project_domain_id = headers.get('X-Project-Domain-Id', '')
         user_domain_id = headers.get('X-User-Domain-Id', '')
+        password = headers.get('X-Password', '')
 
         # Get the auth token
         try:
@@ -141,7 +143,9 @@ class AuthInformationHook(hooks.PecanHook):
                                          project_domain=project_domain_id,
                                          user_name=user_name,
                                          roles=roles,
-                                         auth_url=auth_url)
+                                         auth_url=auth_url,
+                                         password=password,
+                                         tenant_name=tenant_name)
             state.request.security_context = ctx
         else:
             LOG.debug("The provided identity is not confirmed.")

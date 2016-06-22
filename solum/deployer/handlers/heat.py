@@ -14,18 +14,21 @@
 
 """Solum Deployer Heat handler."""
 
+import json
 import logging
 import socket
 import time
 
 from heatclient import exc
 import httplib2
+from keystoneclient.v2_0 import client as ksclient
 from oslo_config import cfg
 import six
 from sqlalchemy import exc as sqla_exc
 from swiftclient import exceptions as swiftexp
 import yaml
 
+import solum
 from solum.api.handlers import userlog_handler
 from solum.common import catalog
 from solum.common import clients
@@ -34,6 +37,7 @@ from solum.common import heat_utils
 from solum.common import repo_utils
 from solum.common import solum_glanceclient
 from solum.common import solum_swiftclient
+from solum.common import utils
 from solum import objects
 from solum.objects import assembly
 from solum.openstack.common import log as openstack_logger
@@ -84,9 +88,35 @@ cfg.CONF.register_opts(SERVICE_OPTS, group='deployer')
 cfg.CONF.import_opt('image_format', 'solum.api.handlers.assembly_handler',
                     group='api')
 cfg.CONF.import_opt('image_storage', 'solum.worker.config', group='worker')
+cfg.CONF.import_opt('auth_uri', 'keystonemiddleware.auth_token',
+                    group='keystone_authtoken')
 
 
 deployer_log_dir = cfg.CONF.deployer.deployer_log_dir
+
+
+def get_heat_client(ctxt, app):
+    raw_content = json.loads(app.raw_content)
+    username = raw_content['username']
+    encoded_password = raw_content['password'].encode('ISO-8859-1')
+    decrypted_password = utils.decrypt(encoded_password)
+    password = decrypted_password
+    tenant_name = raw_content['tenant_name']
+    auth_url = cfg.CONF.keystone_authtoken.auth_uri
+
+    ks_kwargs = {
+        'username': username,
+        'password': password,
+        'tenant_name': tenant_name,
+        'auth_url': auth_url
+    }
+
+    k_client = ksclient.Client(**ks_kwargs)
+    auth_token = k_client.auth_token
+
+    osc = clients.OpenStackClients(ctxt)
+    heat = osc.heat(username, password, auth_token)
+    return heat
 
 
 def save_du_ref_for_scaling(ctxt, assembly_id, du=None):
@@ -114,6 +144,18 @@ def save_du_ref_for_scaling(ctxt, assembly_id, du=None):
         except sqla_exc.SQLAlchemyError as ex:
             LOG.error("Failed to update app scale_config: %s" % app.id)
             LOG.exception(ex)
+
+
+def get_assembly_by_id(ctxt, assembly_id):
+    return solum.objects.registry.Assembly.get_by_id(ctxt, assembly_id)
+
+
+def get_app_by_assem_id(ctxt, assembly_id):
+    assem = get_assembly_by_id(ctxt, assembly_id)
+    if assem:
+        plan = solum.objects.registry.Plan.get_by_id(ctxt, assem.plan_id)
+        app = solum.objects.registry.App.get_by_id(ctxt, plan.uuid)
+        return app
 
 
 def update_wf_and_app(ctxt, assembly_id, data):
@@ -239,7 +281,12 @@ class Handler(object):
     def destroy_assembly(self, ctxt, assem_id):
         update_assembly(ctxt, assem_id,
                         {'status': STATES.DELETING})
+
         assem = objects.registry.Assembly.get_by_id(ctxt, assem_id)
+
+        app_obj = get_app_by_assem_id(ctxt, assem.id)
+        LOG.debug("Deleting app %s" % app_obj.name)
+
         logs_resource_id = assem.uuid
         stack_id = self._find_id_if_stack_exists(assem)
         try:
@@ -272,11 +319,12 @@ class Handler(object):
                 assem.destroy(ctxt)
             return
         else:
-            osc = clients.OpenStackClients(ctxt)
+            # Get the heat client
+            heat_clnt = get_heat_client(ctxt, app_obj)
             try:
                 t_logger.log(logging.DEBUG, "Deleting Heat stack.")
                 LOG.debug("Deleting Heat stack %s", stack_id)
-                osc.heat().stacks.delete(stack_id)
+                heat_clnt.stacks.delete(stack_id)
             except exc.HTTPNotFound:
                 # stack already deleted
                 t_logger.log(logging.ERROR, "Heat stack not found.")
@@ -301,7 +349,7 @@ class Handler(object):
             for count in range(cfg.CONF.deployer.max_attempts):
                 try:
                     # Must use stack_name for expecting a 404
-                    osc.heat().stacks.get(stack_name)
+                    heat_clnt.stacks.get(stack_name)
                 except exc.HTTPNotFound:
                     t_logger.log(logging.DEBUG, "Stack delete successful.")
                     t_logger.upload()
@@ -319,7 +367,7 @@ class Handler(object):
             t_logger.log(logging.ERROR, "Error deleting heat stack.")
             t_logger.upload()
 
-    def _destroy_other_assemblies(self, ctxt, assembly_id):
+    def _destroy_other_assemblies(self, ctxt, assembly_id, heat_clnt):
         # Except current app's stack, destroy all other app stacks
 
         # We query the newly deployed assembly's object here to
@@ -328,6 +376,7 @@ class Handler(object):
         # that the attribute does not have the most up-to-date value due to the
         # possibility that SQLAlchemy might not synchronize object's db state
         # with its in-memory representation.
+
         new_assembly = objects.registry.Assembly.get_by_id(ctxt, assembly_id)
 
         # Fetch all assemblies by plan id, and self.destroy() them.
@@ -345,10 +394,9 @@ class Handler(object):
 
             # Just delete the old heat stacks and don't delete assemblies
             stack_id = self._find_id_if_stack_exists(assem)
-            osc = clients.OpenStackClients(ctxt)
             try:
                 LOG.debug("Deleting Heat stack %s", stack_id)
-                osc.heat().stacks.delete(stack_id)
+                heat_clnt.stacks.delete(stack_id)
             except exc.HTTPNotFound:
                 # stack already deleted
                 LOG.debug("Heat stack not found %s", stack_id)
@@ -364,7 +412,7 @@ class Handler(object):
             for count in range(cfg.CONF.deployer.max_attempts):
                 try:
                     # Must use stack_name for expecting a 404
-                    osc.heat().stacks.get(stack_name)
+                    heat_clnt.stacks.get(stack_name)
                 except exc.HTTPNotFound:
                     LOG.debug("Heat stack deleted %s", stack_id)
                     continue
@@ -398,8 +446,18 @@ class Handler(object):
         raise exception.NotImplemented()
 
     def deploy(self, ctxt, assembly_id, image_loc, image_name, ports):
+
+        app_obj = get_app_by_assem_id(ctxt, assembly_id)
+
+        LOG.debug("Deploying app %s" % app_obj.name)
+
         save_du_ref_for_scaling(ctxt, assembly_id, du=image_loc)
 
+        # Get the heat client
+        heat_clnt = get_heat_client(ctxt, app_obj)
+
+        # Get reference to OpenStackClients as it is used to get a reference
+        # to neutron client for getting networking parameters
         osc = clients.OpenStackClients(ctxt)
 
         assem = objects.registry.Assembly.get_by_id(ctxt,
@@ -446,10 +504,10 @@ class Handler(object):
 
         if stack_id is not None:
             try:
-                osc.heat().stacks.update(stack_id,
-                                         stack_name=stack_name,
-                                         template=template,
-                                         parameters=parameters)
+                heat_clnt.stacks.update(stack_id,
+                                        stack_name=stack_name,
+                                        template=template,
+                                        parameters=parameters)
 
             except Exception as e:
                 LOG.error("Error updating Heat Stack for,"
@@ -477,10 +535,10 @@ class Handler(object):
                 get_file_dict = {}
                 get_file_dict[getfile_key] = file_cnt
 
-                created_stack = osc.heat().stacks.create(stack_name=stack_name,
-                                                         template=template,
-                                                         parameters=parameters,
-                                                         files=get_file_dict)
+                created_stack = heat_clnt.stacks.create(stack_name=stack_name,
+                                                        template=template,
+                                                        parameters=parameters,
+                                                        files=get_file_dict)
             except Exception as exp:
                 LOG.error("Error creating Heat Stack for,"
                           " assembly %s" % assembly_id)
@@ -510,12 +568,12 @@ class Handler(object):
                 return
         update_assembly(ctxt, assembly_id, {'status': STATES.DEPLOYING})
 
-        result = self._check_stack_status(ctxt, assembly_id, osc, stack_id,
-                                          ports, t_logger)
+        result = self._check_stack_status(ctxt, assembly_id, heat_clnt,
+                                          stack_id, ports, t_logger)
         assem.status = result
         t_logger.upload()
         if result == STATES.DEPLOYMENT_COMPLETE:
-            self._destroy_other_assemblies(ctxt, assembly_id)
+            self._destroy_other_assemblies(ctxt, assembly_id, heat_clnt)
 
     def _get_template(self, ctxt, image_format, image_storage,
                       image_loc, image_name, assem, ports, t_logger):
@@ -594,8 +652,8 @@ class Handler(object):
             t_logger.upload()
         return parameters
 
-    def _check_stack_status(self, ctxt, assembly_id, osc, stack_id, ports,
-                            t_logger):
+    def _check_stack_status(self, ctxt, assembly_id, heat_clnt, stack_id,
+                            ports, t_logger):
 
         wait_interval = cfg.CONF.deployer.wait_interval
         growth_factor = cfg.CONF.deployer.growth_factor
@@ -606,7 +664,7 @@ class Handler(object):
             time.sleep(wait_interval)
             wait_interval *= growth_factor
             try:
-                stack = osc.heat().stacks.get(stack_id)
+                stack = heat_clnt.stacks.get(stack_id)
             except Exception as e:
                 LOG.exception(e)
                 continue

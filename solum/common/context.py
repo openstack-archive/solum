@@ -36,7 +36,8 @@ class RequestContext(context.RequestContext):
     def __init__(self, auth_token=None, user=None, tenant=None, domain=None,
                  user_domain=None, project_domain=None, is_admin=False,
                  read_only=False, request_id=None, user_name=None, roles=None,
-                 auth_url=None, trust_id=None, auth_token_info=None):
+                 auth_url=None, trust_id=None, auth_token_info=None,
+                 password=None, tenant_name=None):
         super(RequestContext, self).__init__(auth_token=auth_token,
                                              user=user,
                                              tenant=tenant,
@@ -52,6 +53,8 @@ class RequestContext(context.RequestContext):
         self.auth_url = auth_url
         self.trust_id = trust_id
         self.auth_token_info = auth_token_info
+        self.password = password
+        self.tenant_name = tenant_name
         global_admin_id = CONF.get('solum_admin_tenant_id')
         if global_admin_id and global_admin_id == tenant:
             self.is_admin = True

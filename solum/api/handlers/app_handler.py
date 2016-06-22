@@ -20,6 +20,7 @@ from solum.api.handlers import handler
 from solum.api.handlers import workflow_handler
 from solum.common import exception
 from solum.common import keystone_utils
+from solum.common import utils
 from solum.deployer import api as deploy_api
 from solum import objects
 from solum.openstack.common import log as logging
@@ -80,6 +81,7 @@ class AppHandler(handler.Handler):
 
         # create a delegation trust_id\token, if required
         db_obj.trust_id = keystone_utils.create_delegation_token(self.context)
+
         db_obj.trust_user = self.context.user_name
 
         db_obj.name = data.get('name')
@@ -91,7 +93,24 @@ class AppHandler(handler.Handler):
         db_obj.workflow_config = data.get('workflow_config')
         db_obj.trigger_uuid = str(uuid.uuid4())
         db_obj.trigger_actions = data.get('trigger_actions')
-        db_obj.raw_content = data.get('raw_content')
+
+        raw_content = data.get('raw_content')
+        raw_content_json = json.loads(raw_content)
+
+        raw_content_json['username'] = self.context.user_name
+        raw_content_json['user_id'] = self.context.user
+        encrypted_password = utils.encrypt(self.context.password)
+        # encrypted_password contains encoded characters that cannot
+        # be json dumped which is required in order to save it to db.
+        # So we need to decode it first.
+        decoded_password = encrypted_password.decode('ISO-8859-1')
+        raw_content_json['password'] = decoded_password
+
+        raw_content_json['auth_url'] = self.context.auth_url
+        raw_content_json['tenant'] = self.context.tenant
+        raw_content_json['tenant_name'] = self.context.tenant_name
+
+        db_obj.raw_content = json.dumps(raw_content_json)
 
         common.check_url(db_obj.source['repository'])
 
@@ -111,7 +130,6 @@ class AppHandler(handler.Handler):
             self.context.tenant = app_obj.project_id
             self.context.user = app_obj.user_id
             self.context.user_name = app_obj.trust_user
-
         except exception.AuthorizationFailure as auth_ex:
             LOG.warning(auth_ex)
             return
@@ -125,8 +143,9 @@ class AppHandler(handler.Handler):
     def _build_artifact(self, app, commit_sha='',
                         status_url=None, wf=None):
 
-        if wf is None:
-            wf = ['unittest', 'build', 'deploy']
+        # TODO(devkulkarni): Check why wf is being passed
+        # if wf is None:
+        #    wf = ['unittest', 'build', 'deploy']
         wfhand = workflow_handler.WorkflowHandler(self.context)
 
         wfdata = {
@@ -135,8 +154,8 @@ class AppHandler(handler.Handler):
             'description': '',
             'source': app.source,
             'config': app.workflow_config,
-            'actions': wf
-            }
+            'actions': app.trigger_actions
+        }
         wfhand.create(wfdata, commit_sha=commit_sha, status_url=status_url,
                       du_id=None)
 
