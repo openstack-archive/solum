@@ -431,7 +431,10 @@ class Handler(object):
             self.destroy_assembly(ctxt, assemblie.id)
 
         # Delete workflow based on app_id
-        objects.registry.Workflow.destroy(app_id)
+        try:
+            objects.registry.Workflow.destroy(app_id)
+        except Exception:
+            LOG.error("Workflow for app %s not found ", app_id)
 
         # Delete app
         try:
