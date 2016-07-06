@@ -50,19 +50,19 @@ class TestComponentController(base.TestCase):
 
     def _delete_component(self, uuid):
         resp, body = self.client.delete('v1/components/%s' % uuid)
-        self.assertEqual(resp.status, 204)
+        self.assertEqual(204, resp.status)
 
     def _create_component(self):
         plan_resp = self.client.create_plan()
-        self.assertEqual(plan_resp.status, 201)
+        self.assertEqual(201, plan_resp.status,)
         assembly_resp = self.client.create_assembly(plan_uuid=plan_resp.uuid)
-        self.assertEqual(assembly_resp.status, 201)
+        self.assertEqual(201, assembly_resp.status)
         plan_uuid = plan_resp.uuid
         assembly_uuid = assembly_resp.uuid
         sample_data['assembly_uuid'] = assembly_uuid
         data = json.dumps(sample_data)
         resp, body = self.client.post('v1/components', data)
-        self.assertEqual(resp.status, 201)
+        self.assertEqual(201, resp.status)
         out_data = json.loads(body)
         uuid = out_data['uuid']
         self.assertIsNotNone(uuid)
@@ -72,17 +72,17 @@ class TestComponentController(base.TestCase):
         uuid, assembly_uuid, plan_uuid = self._create_component()
         resp, body = self.client.get('v1/components')
         data = json.loads(body)
-        self.assertEqual(resp.status, 200)
+        self.assertEqual(200, resp.status)
         filtered = [com for com in data if com['uuid'] == uuid]
-        self.assertEqual(len(filtered), 1)
-        self.assertEqual(filtered[0]['uuid'], uuid)
+        self.assertEqual(1, len(filtered))
+        self.assertEqual(uuid, filtered[0]['uuid'])
         self._delete_component(uuid)
 
     def test_components_create(self):
         plan_resp = self.client.create_plan()
-        self.assertEqual(plan_resp.status, 201)
+        self.assertEqual(201, plan_resp.status)
         assembly_resp = self.client.create_assembly(plan_uuid=plan_resp.uuid)
-        self.assertEqual(assembly_resp.status, 201)
+        self.assertEqual(201, assembly_resp.status)
         plan_uuid = plan_resp.uuid
         assembly_uuid = assembly_resp.uuid
 
@@ -91,7 +91,7 @@ class TestComponentController(base.TestCase):
                                                       plan_uuid)
         sample_json = json.dumps(sample_data)
         resp, body = self.client.post('v1/components', sample_json)
-        self.assertEqual(resp.status, 201)
+        self.assertEqual(201, resp.status)
         json_data = json.loads(body)
         self._assert_output_expected(json_data, sample_data)
         self._delete_component(json_data['uuid'])
@@ -105,7 +105,7 @@ class TestComponentController(base.TestCase):
         sample_data['plan_uri'] = "%s/v1/plans/%s" % (self.client.base_url,
                                                       plan_uuid)
         resp, body = self.client.get('v1/components/%s' % uuid)
-        self.assertEqual(resp.status, 200)
+        self.assertEqual(200, resp.status)
         json_data = json.loads(body)
         self._assert_output_expected(json_data, sample_data)
         self._delete_component(uuid)
@@ -123,7 +123,7 @@ class TestComponentController(base.TestCase):
                         'assembly_uuid': assembly_uuid}
         updated_json = json.dumps(updated_data)
         resp, body = self.client.put('v1/components/%s' % uuid, updated_json)
-        self.assertEqual(resp.status, 200)
+        self.assertEqual(200, resp.status)
         json_data = json.loads(body)
         self._assert_output_expected(json_data, updated_data)
         self._delete_component(uuid)
@@ -146,8 +146,8 @@ class TestComponentController(base.TestCase):
     def test_components_delete(self):
         uuid, assembly_uuid, plan_uuid = self._create_component()
         resp, body = self.client.delete('v1/components/%s' % uuid)
-        self.assertEqual(resp.status, 204)
-        self.assertEqual(body, '')
+        self.assertEqual(204, resp.status)
+        self.assertEqual('', body)
 
     def test_components_delete_not_found(self):
         self.assertRaises(tempest_exceptions.NotFound,

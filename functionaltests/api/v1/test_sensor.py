@@ -24,5 +24,5 @@ class TestSensorController(base.TestCase):
     def test_sensors_get_all(self):
         resp, body = self.client.get('v1/sensors')
         data = json.loads(body)
-        self.assertEqual(resp.status, 200)
-        self.assertEqual(data, [])
+        self.assertEqual(200, resp.status)
+        self.assertEqual([], data)

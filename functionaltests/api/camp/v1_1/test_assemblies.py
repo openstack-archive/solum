@@ -100,7 +100,7 @@ class TestAssembliesController(base.TestCase):
 
         # create a plan using the CAMP API
         resp = self._create_camp_plan(data=test_plans.sample_data)
-        self.assertEqual(resp.status, 201)
+        self.assertEqual(201, resp.status)
         uri = (resp.data['uri']
                [len(self.client.base_url):])
 
@@ -110,7 +110,7 @@ class TestAssembliesController(base.TestCase):
             'camp/v1_1/assemblies',
             ref_obj,
             headers={'content-type': 'application/json'})
-        self.assertEqual(resp.status, 201)
+        self.assertEqual(201, resp.status)
 
         assem_resp = base.SolumResponse(resp=resp,
                                         body=body,
@@ -130,7 +130,7 @@ class TestAssembliesController(base.TestCase):
 
         # create a plan using the CAMP API
         resp = self._create_camp_plan(data=test_plans.sample_data)
-        self.assertEqual(resp.status, 201)
+        self.assertEqual(201, resp.status)
         plan_uri = (resp.data['uri']
                     [len(self.client.base_url):])
 
@@ -140,7 +140,7 @@ class TestAssembliesController(base.TestCase):
             'camp/v1_1/assemblies',
             ref_obj,
             headers={'content-type': 'application/json'})
-        self.assertEqual(resp.status, 201)
+        self.assertEqual(201, resp.status)
 
         assem_resp = base.SolumResponse(resp=resp,
                                         body=body,

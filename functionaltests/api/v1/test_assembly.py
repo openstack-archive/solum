@@ -55,20 +55,20 @@ class TestAssemblyController(base.TestCase):
     def test_assemblies_get_all(self):
         # Create assemblies to find
         p_resp_1 = self.client.create_plan()
-        self.assertEqual(p_resp_1.status, 201)
+        self.assertEqual(201, p_resp_1.status)
         a_resp_1 = self.client.create_assembly(data=sample_data,
                                                plan_uuid=p_resp_1.uuid)
-        self.assertEqual(a_resp_1.status, 201)
+        self.assertEqual(201, a_resp_1.status)
 
         p_resp_2 = self.client.create_plan()
-        self.assertEqual(p_resp_2.status, 201)
+        self.assertEqual(201, p_resp_2.status)
         a_resp_2 = self.client.create_assembly(data=sample_data,
                                                plan_uuid=p_resp_2.uuid)
-        self.assertEqual(a_resp_2.status, 201)
+        self.assertEqual(201, a_resp_2.status)
 
         # Get list of all assemblies
         resp, body = self.client.get('v1/assemblies')
-        self.assertEqual(resp.status, 200)
+        self.assertEqual(200, resp.status)
 
         # Search for uuids of created assemblies
         assembly_list = json.loads(body)
@@ -90,11 +90,11 @@ class TestAssemblyController(base.TestCase):
 
     def test_assemblies_create(self):
         plan_resp = self.client.create_plan()
-        self.assertEqual(plan_resp.status, 201)
+        self.assertEqual(201, plan_resp.status)
         assembly_resp = self.client.create_assembly(
             plan_uuid=plan_resp.uuid,
             data=sample_data)
-        self.assertEqual(assembly_resp.status, 201)
+        self.assertEqual(201, assembly_resp.status)
         sample_data['plan_uri'] = "%s/v1/plans/%s" % (self.client.base_url,
                                                       plan_resp.uuid)
         self._assert_output_expected(assembly_resp.data, sample_data)
@@ -105,17 +105,17 @@ class TestAssemblyController(base.TestCase):
 
     def test_assemblies_get(self):
         plan_resp = self.client.create_plan(data=plan_sample_data)
-        self.assertEqual(plan_resp.status, 201)
+        self.assertEqual(201, plan_resp.status)
         plan_uuid = plan_resp.uuid
         assembly_resp = self.client.create_assembly(
             plan_uuid=plan_uuid,
             data=sample_data)
-        self.assertEqual(assembly_resp.status, 201)
+        self.assertEqual(201, assembly_resp.status)
         uuid = assembly_resp.uuid
         sample_data['plan_uri'] = "%s/v1/plans/%s" % (self.client.base_url,
                                                       plan_uuid)
         resp, body = self.client.get('v1/assemblies/%s' % uuid)
-        self.assertEqual(resp.status, 200)
+        self.assertEqual(200, resp.status)
         json_data = json.loads(body)
         self._assert_output_expected(json_data, sample_data)
 
@@ -126,7 +126,7 @@ class TestAssemblyController(base.TestCase):
         use_https = {'X-Forwarded-Proto': 'https'}
         resp, body = self.client.get('v1/assemblies/%s' % uuid,
                                      headers=use_https)
-        self.assertEqual(resp.status, 200)
+        self.assertEqual(200, resp.status)
         json_data = json.loads(body)
         self._assert_output_expected(json_data, sample_data)
 
@@ -136,12 +136,12 @@ class TestAssemblyController(base.TestCase):
 
     def test_assemblies_put(self):
         plan_resp = self.client.create_plan()
-        self.assertEqual(plan_resp.status, 201)
+        self.assertEqual(201, plan_resp.status)
         plan_uuid = plan_resp.uuid
         assembly_resp = self.client.create_assembly(
             plan_uuid=plan_uuid,
             data=sample_data)
-        self.assertEqual(assembly_resp.status, 201)
+        self.assertEqual(201, assembly_resp.status)
         uuid = assembly_resp.uuid
         uri = "%s/v1/plans/%s" % (self.client.base_url, plan_uuid)
         updated_data = {"name": "test_assembly_updated",
@@ -152,7 +152,7 @@ class TestAssemblyController(base.TestCase):
                         "application_uri": "new_uri"}
         updated_json = json.dumps(updated_data)
         resp, body = self.client.put('v1/assemblies/%s' % uuid, updated_json)
-        self.assertEqual(resp.status, 200)
+        self.assertEqual(200, resp.status)
         json_data = json.loads(body)
         self._assert_output_expected(json_data, updated_data)
 
@@ -175,12 +175,12 @@ class TestAssemblyController(base.TestCase):
 
     def test_assemblies_put_cannot_update(self):
         plan_resp = self.client.create_plan()
-        self.assertEqual(plan_resp.status, 201)
+        self.assertEqual(201, plan_resp.status)
         plan_uuid = plan_resp.uuid
         assembly_resp = self.client.create_assembly(
             plan_uuid=plan_uuid,
             data=sample_data)
-        self.assertEqual(assembly_resp.status, 201)
+        self.assertEqual(201, assembly_resp.status)
         uuid = assembly_resp.uuid
         immutables = [
             ('id', 'new_assembly_id'),
@@ -197,16 +197,16 @@ class TestAssemblyController(base.TestCase):
 
     def test_assemblies_delete(self):
         plan_resp = self.client.create_plan()
-        self.assertEqual(plan_resp.status, 201)
+        self.assertEqual(201, plan_resp.status)
         assembly_resp = self.client.create_assembly(
             plan_uuid=plan_resp.uuid,
             data=sample_data)
-        self.assertEqual(assembly_resp.status, 201)
+        self.assertEqual(201, assembly_resp.status)
         uuid = assembly_resp.uuid
 
         resp, body = self.client.delete_assembly(uuid)
-        self.assertEqual(resp.status, 204)
-        self.assertEqual(body, '')
+        self.assertEqual(204, resp.status)
+        self.assertEqual('', body)
         self.assertTrue(self.client.assembly_delete_done(uuid),
                         "Assembly couldn't be deleted.")
 

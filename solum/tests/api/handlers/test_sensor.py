@@ -57,7 +57,7 @@ class TestSensorHandler(base.BaseTestCase):
         res = handler.create(data)
         db_obj.update.assert_called_once_with(data)
         db_obj.create.assert_called_once_with(self.ctx)
-        self.assertEqual(res, db_obj)
+        self.assertEqual(db_obj, res)
 
     def test_sensor_delete(self, mock_registry):
         db_obj = fakes.FakeSensor()

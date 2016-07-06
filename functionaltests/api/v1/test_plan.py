@@ -72,7 +72,7 @@ class TestPlanController(base.TestCase):
         resp, body = self.client.get(
             'v1/plans', headers={'accept-type': 'application/x-yaml'})
         data = yaml.load(body)
-        self.assertEqual(resp.status, 200)
+        self.assertEqual(200, resp.status)
         [self._delete_plan(pl['uuid']) for pl in data]
 
     def _assert_output_expected(self, body_data, data):
@@ -85,18 +85,18 @@ class TestPlanController(base.TestCase):
 
     def test_plans_get_all(self):
         create_resp = self.client.create_plan()
-        self.assertEqual(create_resp.status, 201)
+        self.assertEqual(201, create_resp.status)
         resp, body = self.client.get(
             'v1/plans', headers={'content-type': 'application/x-yaml'})
         data = yaml.load(body)
-        self.assertEqual(resp.status, 200)
+        self.assertEqual(200, resp.status)
         uuid = create_resp.uuid
         filtered = [pl for pl in data if pl['uuid'] == uuid]
-        self.assertEqual(filtered[0]['uuid'], uuid)
+        self.assertEqual(uuid, filtered[0]['uuid'])
 
     def test_plans_create(self):
         resp = self.client.create_plan(data=sample_data)
-        self.assertEqual(resp.status, 201)
+        self.assertEqual(201, resp.status)
         self._assert_output_expected(resp.data, sample_data)
 
     def test_plans_create_bad_port_data(self):
@@ -107,7 +107,7 @@ class TestPlanController(base.TestCase):
 
     def test_plans_create_with_private_github_repo(self):
         resp = self.client.create_plan(data=sample_data_private)
-        self.assertEqual(resp.status, 201)
+        self.assertEqual(201, resp.status)
         self._assert_output_expected(resp.data, sample_data)
 
     def test_plans_create_empty_yaml(self):
@@ -127,25 +127,25 @@ class TestPlanController(base.TestCase):
 
     def test_plans_get(self):
         create_resp = self.client.create_plan(data=sample_data)
-        self.assertEqual(create_resp.status, 201)
+        self.assertEqual(201, create_resp.status)
         uuid = create_resp.uuid
 
         resp, body = self.client.get(
             'v1/plans/%s' % uuid,
             headers={'content-type': 'application/x-yaml'})
-        self.assertEqual(resp.status, 200)
+        self.assertEqual(200, resp.status, )
         yaml_data = yaml.load(body)
         self._assert_output_expected(yaml_data, sample_data)
 
     def test_plans_get_with_private_github_repo(self):
         create_resp = self.client.create_plan(data=sample_data_private)
-        self.assertEqual(create_resp.status, 201)
+        self.assertEqual(201, create_resp.status)
         uuid = create_resp.uuid
 
         resp, body = self.client.get(
             'v1/plans/%s' % uuid,
             headers={'content-type': 'application/x-yaml'})
-        self.assertEqual(resp.status, 200)
+        self.assertEqual(200, resp.status)
         yaml_data = yaml.load(body)
         public_key = yaml_data['artifacts'][0]['content']['public_key']
         self.assertNotEqual(None, public_key)
@@ -158,7 +158,7 @@ class TestPlanController(base.TestCase):
 
     def test_plans_put(self):
         create_resp = self.client.create_plan()
-        self.assertEqual(create_resp.status, 201)
+        self.assertEqual(201, create_resp.status)
         uuid = create_resp.uuid
         updated_data = {"version": "1",
                         "name": "test_plan_updated",
@@ -169,7 +169,7 @@ class TestPlanController(base.TestCase):
         resp, body = self.client.put(
             'v1/plans/%s' % uuid, updated_yaml,
             headers={'content-type': 'application/x-yaml'})
-        self.assertEqual(resp.status, 200)
+        self.assertEqual(200, resp.status)
         yaml_data = yaml.load(body)
         self._assert_output_expected(yaml_data, updated_data)
 
@@ -185,7 +185,7 @@ class TestPlanController(base.TestCase):
 
     def test_plans_put_empty_yaml(self):
         create_resp = self.client.create_plan()
-        self.assertEqual(create_resp.status, 201)
+        self.assertEqual(201, create_resp.status)
 
         # get the URI of the newly created plan
         uri = (create_resp.data['uri']
@@ -197,7 +197,7 @@ class TestPlanController(base.TestCase):
 
     def test_plans_put_invalid_yaml_type(self):
         create_resp = self.client.create_plan()
-        self.assertEqual(create_resp.status, 201)
+        self.assertEqual(201, create_resp.status)
 
         # get the URI of the newly created plan
         uri = (create_resp.data['uri']
@@ -209,7 +209,7 @@ class TestPlanController(base.TestCase):
 
     def test_plans_put_invalid_yaml_syntax(self):
         create_resp = self.client.create_plan()
-        self.assertEqual(create_resp.status, 201)
+        self.assertEqual(201, create_resp.status)
 
         # get the URI of the newly created plan
         uri = (create_resp.data['uri']
@@ -221,11 +221,11 @@ class TestPlanController(base.TestCase):
 
     def test_plans_delete(self):
         create_resp = self.client.create_plan()
-        self.assertEqual(create_resp.status, 201)
+        self.assertEqual(201, create_resp.status)
         uuid = create_resp.uuid
         resp, body = self.client.delete_plan(uuid)
-        self.assertEqual(resp.status, 202)
-        self.assertEqual(body, '')
+        self.assertEqual(202, resp.status)
+        self.assertEqual('', body)
 
     def test_plans_delete_not_found(self):
         self.assertRaises(tempest_exceptions.NotFound,

@@ -46,18 +46,18 @@ class TestLanguagePackController(base.TestCase):
     def _delete_all(self):
         resp, body = self.client.get('v1/language_packs')
         data = json.loads(body)
-        self.assertEqual(resp.status, 200)
+        self.assertEqual(200, resp.status)
         [self._delete_language_pack(pl['uuid']) for pl in data]
 
     def _delete_language_pack(self, uuid):
         resp, _ = self.client.delete('v1/language_packs/%s' % uuid)
-        self.assertEqual(resp.status, 204)
+        self.assertEqual(204, resp.status)
 
     def _create_language_pack(self):
         sample_lp = self._get_sample_languagepack()
         jsondata = json.dumps(sample_lp)
         resp, body = self.client.post('v1/language_packs', jsondata)
-        self.assertEqual(resp.status, 201)
+        self.assertEqual(201, resp.status)
         out_data = json.loads(body)
         uuid = out_data['uuid']
         self.assertIsNotNone(uuid)
@@ -67,19 +67,19 @@ class TestLanguagePackController(base.TestCase):
         uuid, sample_lp = self._create_language_pack()
         resp, body = self.client.get('v1/language_packs')
         data = json.loads(body)
-        self.assertEqual(resp.status, 200)
+        self.assertEqual(200, resp.status)
         filtered = [pl for pl in data if pl['uuid'] == uuid]
-        self.assertEqual(filtered[0]['uuid'], uuid)
+        self.assertEqual(uuid, filtered[0]['uuid'])
         self._delete_language_pack(uuid)
 
     def test_language_packs_create(self):
         sample_lp = self._get_sample_languagepack()
         sample_json = json.dumps(sample_lp)
         resp, body = self.client.post('v1/language_packs', sample_json)
-        self.assertEqual(resp.status, 201)
+        self.assertEqual(201, resp.status)
         json_data = json.loads(body)
-        self.assertEqual(json_data["status"], "QUEUED")
-        self.assertEqual(json_data["name"], sample_lp['name'])
+        self.assertEqual("QUEUED", json_data["status"])
+        self.assertEqual(sample_lp['name'], json_data["name"])
         self._delete_language_pack(json_data["uuid"])
 
     def test_language_packs_create_none(self):
@@ -89,10 +89,10 @@ class TestLanguagePackController(base.TestCase):
     def test_language_packs_get(self):
         uuid, sample_lp = self._create_language_pack()
         resp, body = self.client.get('v1/language_packs/%s' % uuid)
-        self.assertEqual(resp.status, 200)
+        self.assertEqual(200, resp.status)
         json_data = json.loads(body)
-        self.assertEqual(json_data['source_uri'], sample_lp['source_uri'])
-        self.assertEqual(json_data['name'], sample_lp['name'])
+        self.assertEqual(sample_lp['source_uri'], json_data['source_uri'])
+        self.assertEqual(sample_lp['name'], json_data['name'])
         self._delete_language_pack(uuid)
 
     def test_language_packs_get_not_found(self):
@@ -102,8 +102,8 @@ class TestLanguagePackController(base.TestCase):
     def test_language_packs_delete(self):
         uuid, sample_lp = self._create_language_pack()
         resp, body = self.client.delete('v1/language_packs/%s' % uuid)
-        self.assertEqual(resp.status, 204)
-        self.assertEqual(body, '')
+        self.assertEqual(204, resp.status)
+        self.assertEqual('', body)
 
     def test_language_packs_delete_not_found(self):
         self.assertRaises(tempest_exceptions.NotFound,

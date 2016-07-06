@@ -501,9 +501,9 @@ class HandlerTest(base.BaseTestCase):
                                          image_loc, image_name, fake_assembly,
                                          ports, mock_clients, mock_logger)
 
-        self.assertEqual(params['app_name'], fake_assembly.name)
-        self.assertEqual(params['image'], 'abc')
-        self.assertEqual(params['port'], 80)
+        self.assertEqual(fake_assembly.name, params['app_name'])
+        self.assertEqual('abc', params['image'])
+        self.assertEqual(80, params['port'])
 
     @mock.patch('solum.common.heat_utils.get_network_parameters')
     @mock.patch('solum.common.clients.OpenStackClients')
@@ -526,9 +526,9 @@ class HandlerTest(base.BaseTestCase):
                                          image_loc, image_name, fake_assembly,
                                          ports, mock_clients, mock_logger)
 
-        self.assertEqual(params['name'], str(fake_assembly.uuid))
-        self.assertEqual(params['flavor'], 'abc')
-        self.assertEqual(params['image'], 'def')
+        self.assertEqual(str(fake_assembly.uuid), params['name'])
+        self.assertEqual('abc', params['flavor'])
+        self.assertEqual('def', params['image'])
         self.assertIsNone(params.get('port'))
 
     @mock.patch('solum.deployer.handlers.heat.update_assembly')
@@ -589,7 +589,7 @@ class HandlerTest(base.BaseTestCase):
                                           "description": "URL", "output_key":
                                           "URL"}]}
         host_url = handler._parse_server_ip(heat_output)
-        self.assertEqual(host_url, "192.168.78.21")
+        self.assertEqual("192.168.78.21", host_url)
 
     def test_find_id_if_stack_exists(self):
         handler = heat_handler.Handler()
@@ -597,7 +597,7 @@ class HandlerTest(base.BaseTestCase):
         assem.heat_stack_component = mock.MagicMock
         assem.heat_stack_component.heat_stack_id = '123'
         id = handler._find_id_if_stack_exists(assem)
-        self.assertEqual(id, '123')
+        self.assertEqual('123', id)
 
     @mock.patch('solum.common.solum_swiftclient.SwiftClient.delete_object')
     @mock.patch('solum.objects.registry')

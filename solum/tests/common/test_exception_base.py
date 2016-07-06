@@ -32,14 +32,14 @@ class ExceptionTestCase(base.BaseTestCase):
         exc = exception.ResourceNotFound(name='application', id='green_paint')
         self.assertIn('green_paint could not be found.',
                       six.text_type(exc))
-        self.assertEqual(exc.code, 404)
+        self.assertEqual(404, exc.code)
 
     def test_with_kwargs_ru(self):
         exc = exception.ResourceNotFound(name='application',
                                          id=u'зеленой_краской')
         self.assertIn(u'зеленой_краской could not be found',
                       six.text_type(exc))
-        self.assertEqual(exc.code, 404)
+        self.assertEqual(404, exc.code)
 
     def test_bad_kwargs_exception(self):
         cfg.CONF.set_override('fatal_exception_format_errors', True)
@@ -50,25 +50,25 @@ class ExceptionTestCase(base.BaseTestCase):
         cfg.CONF.set_override('fatal_exception_format_errors', False)
         exc = exception.ResourceNotFound(a_field='green')
         self.assertIn('An unknown exception occurred', six.text_type(exc))
-        self.assertEqual(exc.code, 404)
+        self.assertEqual(404, exc.code)
 
     def test_resource_exists(self):
         exc = exception.ResourceExists(name='test')
         self.assertIn("The test resource already exists.",
                       six.text_type(exc))
-        self.assertEqual(exc.code, 409)
+        self.assertEqual(409, exc.code)
 
     def test_application_exists(self):
         exc = exception.ResourceExists(name='test')
         self.assertIn("The test resource already exists.",
                       six.text_type(exc))
-        self.assertEqual(exc.code, 409)
+        self.assertEqual(409, exc.code)
 
     def test_not_implemented(self):
         exc = exception.NotImplemented()
         self.assertIn("The requested operation is not implemented.",
                       six.text_type(exc))
-        self.assertEqual(exc.code, 501)
+        self.assertEqual(501, exc.code)
 
     def test_wrap_controller_exception_with_server_error(self):
         exception.LOG.error = mock.Mock()
@@ -103,7 +103,7 @@ class ExceptionTestCase(base.BaseTestCase):
             exception.wrap_wsme_controller_exception(error_func)()
             self.assertTrue(False)
         except wsme.exc.ClientSideError as e:
-            self.assertEqual(e.msg, expected_error_msg)
+            self.assertEqual(expected_error_msg, e.msg)
 
     def test_wrap_controller_exception_with_uncatched_error(self):
         exception.LOG.error = mock.Mock()

@@ -34,7 +34,7 @@ class TestTriggerController(base.TestCase):
                      'repository': {'statuses_url': status_url}}
         body = json.dumps(body_dict)
         resp = requests.post(trigger_uri, data=body)
-        self.assertEqual(resp.status_code, 202)
+        self.assertEqual(202, resp.status_code)
         self.client.delete_created_apps()
         # since app delete is an async operation, wait few seconds for app
         # delete and then delete language pack (otherwise language pack
@@ -50,7 +50,7 @@ class TestTriggerController(base.TestCase):
         trigger_uri = bdy['trigger_uri']
         # Using requests instead of self.client to test unauthenticated request
         resp = requests.post(trigger_uri)
-        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(400, resp.status_code)
         self.client.delete_created_apps()
         # since app delete is an async operation, wait few seconds for app
         # delete and then delete language pack (otherwise language pack

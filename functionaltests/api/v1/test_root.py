@@ -24,7 +24,7 @@ class TestRootController(base.TestCase):
 
     def test_index(self):
         resp, body = self.client.request_without_auth('', 'GET')
-        self.assertEqual(resp.status, 200)
+        self.assertEqual(200, resp.status)
         data = json.loads(body)
         self.assertEqual(data[0]['id'], 'v1.0')
         self.assertEqual(data[0]['status'], 'CURRENT')
@@ -34,7 +34,7 @@ class TestRootController(base.TestCase):
 
     def test_platform(self):
         resp, body = self.client.request_without_auth('v1', 'GET')
-        self.assertEqual(resp.status, 200)
+        self.assertEqual(200, resp.status)
         data = json.loads(body)
         self.assertEqual(data['uri'], '%s/v1' % self.client.base_url)
         self.assertEqual(data['type'], 'platform')
@@ -67,12 +67,12 @@ class TestRootController(base.TestCase):
 
     def test_request_without_auth(self):
         resp, body = self.client.request_without_auth('v1', 'GET')
-        self.assertEqual(resp.status, 200)
+        self.assertEqual(200, resp.status)
         resp, body = self.client.get('v1')
-        self.assertEqual(resp.status, 200)
+        self.assertEqual(200, resp.status)
         resp, body = self.client.request_without_auth(
             'v1/plans', 'GET', headers={'content-type': 'application/x-yaml'})
-        self.assertEqual(resp.status, 401)
+        self.assertEqual(401, resp.status)
         resp, body = self.client.get(
             'v1/plans', headers={'content-type': 'application/x-yaml'})
-        self.assertEqual(resp.status, 200)
+        self.assertEqual(200, resp.status)

@@ -26,24 +26,24 @@ from functionaltests.api.common import apputils
 class TestAppController(base.TestCase):
 
     def _assert_app_data(self, actual, expected):
-        self.assertEqual(actual["name"], expected["name"])
-        self.assertEqual(actual["description"], expected["description"])
-        self.assertEqual(actual["languagepack"], expected["languagepack"])
-        self.assertEqual(actual["trigger_actions"],
-                         expected["trigger_actions"])
+        self.assertEqual(expected["name"], actual["name"])
+        self.assertEqual(expected["description"], actual["description"])
+        self.assertEqual(expected["languagepack"], actual["languagepack"])
+        self.assertEqual(expected["trigger_actions"],
+                         actual["trigger_actions"])
 
-        self.assertEqual(actual["ports"], expected["ports"])
-        self.assertEqual(actual["source"]["repository"],
-                         expected["source"]["repository"])
+        self.assertEqual(expected["ports"], actual["ports"])
+        self.assertEqual(expected["source"]["repository"],
+                         actual["source"]["repository"])
 
-        self.assertEqual(actual["source"]["revision"],
-                         expected["source"]["revision"])
+        self.assertEqual(expected["source"]["revision"],
+                         actual["source"]["revision"])
 
-        self.assertEqual(actual["workflow_config"]["test_cmd"],
-                         expected["workflow_config"]["test_cmd"])
+        self.assertEqual(expected["workflow_config"]["test_cmd"],
+                         actual["workflow_config"]["test_cmd"])
 
-        self.assertEqual(actual["workflow_config"]["run_cmd"],
-                         expected["workflow_config"]["run_cmd"])
+        self.assertEqual(expected["workflow_config"]["run_cmd"],
+                         actual["workflow_config"]["run_cmd"])
 
     def setUp(self):
         super(TestAppController, self).setUp()
@@ -55,7 +55,7 @@ class TestAppController(base.TestCase):
         lp_name = self.client.create_lp()
         data = apputils.get_sample_data(languagepack=lp_name)
         resp = self.client.create_app(data=data)
-        self.assertEqual(resp.status, 201)
+        self.assertEqual(201, resp.status)
         self.client.delete_app(resp.id)
         time.sleep(2)
         self.client.delete_language_pack(lp_name)
@@ -77,7 +77,7 @@ class TestAppController(base.TestCase):
         lp_name = self.client.create_lp()
         data = apputils.get_sample_data(languagepack=lp_name)
         create_resp = self.client.create_app(data=data)
-        self.assertEqual(create_resp.status, 201)
+        self.assertEqual(201, create_resp.status)
 
         json_update = {
             'name': 'newfakeappname',
@@ -95,11 +95,11 @@ class TestAppController(base.TestCase):
             uri, json.dumps(json_update),
             headers={'content-type': 'application/json'})
 
-        self.assertEqual(resp.status, 200)
+        self.assertEqual(200, resp.status)
         app_body = json.loads(body)
-        self.assertEqual(app_body["name"], 'newfakeappname')
-        self.assertEqual(app_body["workflow_config"]["run_cmd"], "newruncmd")
-        self.assertEqual(app_body["source"]["repository"], "newrepo")
+        self.assertEqual('newfakeappname', app_body["name"])
+        self.assertEqual("newruncmd", app_body["workflow_config"]["run_cmd"])
+        self.assertEqual("newrepo", app_body["source"]["repository"])
         self.client.delete_app(create_resp.id)
         time.sleep(2)
         self.client.delete_language_pack(lp_name)
@@ -108,13 +108,13 @@ class TestAppController(base.TestCase):
         lp_name = self.client.create_lp()
         data = apputils.get_sample_data(languagepack=lp_name)
         create_resp = self.client.create_app(data=data)
-        self.assertEqual(create_resp.status, 201)
+        self.assertEqual(201, create_resp.status)
         id = create_resp.id
 
         resp, body = self.client.get(
             'v1/apps/%s' % id,
             headers={'content-type': 'application/json'})
-        self.assertEqual(resp.status, 200)
+        self.assertEqual(200, resp.status)
         yaml_data = yaml.load(body)
         self._assert_app_data(yaml_data, data)
         self.client.delete_app(create_resp.id)
@@ -125,11 +125,11 @@ class TestAppController(base.TestCase):
         lp_name = self.client.create_lp()
         data = apputils.get_sample_data(languagepack=lp_name)
         create_resp = self.client.create_app(data)
-        self.assertEqual(create_resp.status, 201)
+        self.assertEqual(201, create_resp.status)
         resp, body = self.client.get(
             'v1/apps', headers={'content-type': 'application/json'})
         resp_data = yaml.load(body)
-        self.assertEqual(resp.status, 200)
+        self.assertEqual(200, resp.status)
         id = create_resp.id
         filtered = [app for app in resp_data if app['id'] == id]
         self.assertEqual(filtered[0]['id'], id)
@@ -141,11 +141,11 @@ class TestAppController(base.TestCase):
         lp_name = self.client.create_lp()
         data = apputils.get_sample_data(languagepack=lp_name)
         create_resp = self.client.create_app(data)
-        self.assertEqual(create_resp.status, 201)
+        self.assertEqual(201, create_resp.status)
         id = create_resp.id
         resp, body = self.client.delete_app(id)
-        self.assertEqual(resp.status, 202)
-        self.assertEqual(body, '')
+        self.assertEqual(202, resp.status)
+        self.assertEqual('', body)
         time.sleep(2)
         self.client.delete_language_pack(lp_name)
 

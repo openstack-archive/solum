@@ -133,7 +133,7 @@ class TestPlansController(base.TestCase):
 
         # create a plan using the CAMP API
         resp = self._create_camp_plan(data=sample_data)
-        self.assertEqual(resp.status, 201)
+        self.assertEqual(201, resp.status)
         self._assert_output_expected(resp.data, sample_data)
 
         uuid = resp.data['uuid']
@@ -142,7 +142,7 @@ class TestPlansController(base.TestCase):
         resp, body = self.client.get(
             'v1/plans/%s' % uuid,
             headers={'content-type': 'application/x-yaml'})
-        self.assertEqual(resp.status, 200)
+        self.assertEqual(200, resp.status)
         yaml_data = yaml.load(body)
         self._assert_output_expected(yaml_data, sample_data)
 
@@ -159,7 +159,7 @@ class TestPlansController(base.TestCase):
         camp_data['camp_version'] = 'CAMP 1.1'
 
         resp = self._create_camp_plan(data=camp_data)
-        self.assertEqual(resp.status, 201)
+        self.assertEqual(201, resp.status)
         self._assert_output_expected(resp.data, camp_data)
 
     def test_get_no_plan(self):
@@ -297,7 +297,7 @@ class TestPlansController(base.TestCase):
 
         # create a plan using the CAMP API
         resp = self._create_camp_plan(data=sample_data)
-        self.assertEqual(resp.status, 201)
+        self.assertEqual(201, resp.status)
         self._assert_output_expected(resp.data, sample_data)
 
         uuid = resp.data['uuid']
@@ -333,7 +333,7 @@ class TestPlansController(base.TestCase):
 
         # create a plan using the CAMP API
         resp = self._create_camp_plan(data=sample_data)
-        self.assertEqual(resp.status, 201)
+        self.assertEqual(201, resp.status)
         uri = (resp.data['uri']
                [len(self.client.base_url) + 1:])
 
@@ -345,7 +345,7 @@ class TestPlansController(base.TestCase):
         resp, body = self.client.patch(
             uri, patch_json,
             headers={'content-type': 'application/json-patch+json'})
-        self.assertEqual(resp.status, 200)
+        self.assertEqual(200, resp.status)
         json_data = json.loads(body)
         self.assertIn('tags', json_data)
         tags = json_data['tags']
@@ -386,7 +386,7 @@ class TestPlansController(base.TestCase):
 
         # create a plan using the CAMP API
         resp = self._create_camp_plan(data=sample_data)
-        self.assertEqual(resp.status, 201)
+        self.assertEqual(201, resp.status)
         uri = (resp.data['uri']
                [len(self.client.base_url) + 1:])
 
@@ -410,7 +410,7 @@ class TestPlansController(base.TestCase):
 
         # create a plan using the CAMP API
         resp = self._create_camp_plan(data=sample_data)
-        self.assertEqual(resp.status, 201)
+        self.assertEqual(201, resp.status)
         uri = (resp.data['uri']
                [len(self.client.base_url) + 1:])
 
