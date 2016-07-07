@@ -130,6 +130,7 @@ class HandlerTest(base.BaseTestCase):
         parameters = {'name': fake_assembly.uuid,
                       'flavor': "flavor",
                       'image': "coreos",
+                      'key_name': "mykey",
                       'location': img,
                       'du': 'tenant-name-ts-commit',
                       'publish_ports': '-p 80:80'}
