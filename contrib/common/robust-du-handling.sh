@@ -30,6 +30,7 @@ docker_run_success=false
 RETRIES=0
 until [ $RETRIES -ge $trial_count ]; do
   docker run $publish_ports -d $dep_unit
+  docker ps |grep $dep_unit
   if [[ $? == 0 ]]; then
      docker_run_success=true
      break
