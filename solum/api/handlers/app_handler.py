@@ -66,8 +66,8 @@ class AppHandler(handler.Handler):
         """Delete an existing app."""
         try:
             objects.registry.App.get_by_uuid(self.context, id)
-        except exception.ResourceNotFound as ex:
-            raise ex
+        except exception.ResourceNotFound:
+            raise
 
         deploy_api.API(context=self.context).destroy_app(id)
 

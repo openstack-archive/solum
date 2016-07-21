@@ -118,8 +118,8 @@ class TriggerController(rest.RestController):
                 handler = app_handler.AppHandler(None)
                 handler.trigger_workflow(trigger_id, commit_sha, status_url,
                                          collab_url, workflow=workflow)
-        except exception.ResourceNotFound as e:
+        except exception.ResourceNotFound:
             LOG.error("Incorrect trigger url.")
-            raise e
+            raise
 
         pecan.response.status = 202
