@@ -16,6 +16,10 @@ parameters:
     type: string
   image:
     type: string
+  key_name:
+    type: string
+    description: Name of keypair to assign to servers
+    default: 'mykey'
   location:
     type: string
   du:
@@ -27,6 +31,7 @@ resources:
     properties:
       config_drive: "true"
       flavor: {get_param: flavor}
+      key_name: { get_param: key_name }
       image: {get_param: image}
       name: {get_param: name}
       user_data:

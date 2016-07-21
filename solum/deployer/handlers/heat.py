@@ -74,6 +74,9 @@ SERVICE_OPTS = [
     cfg.StrOpt('image',
                default="coreos",
                help='Image id'),
+    cfg.StrOpt('key_name',
+               default="mykey",
+               help='keypair name'),
     cfg.StrOpt('deployer_log_dir',
                default="/var/log/solum/deployer",
                help='Deployer logs location'),
@@ -640,6 +643,7 @@ class Handler(object):
         elif image_format == 'vm':
             parameters = {'name': str(assem.uuid),
                           'flavor': cfg.CONF.deployer.flavor,
+                          'key_name': cfg.CONF.deployer.key_name,
                           'image': cfg.CONF.deployer.image}
             ports_str = ''
             for port in ports:

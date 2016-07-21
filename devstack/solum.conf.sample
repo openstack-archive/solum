@@ -462,6 +462,9 @@
 # Image id (string value)
 #image = coreos
 
+#keypairs name (string value)
+#key_name = mykey
+
 # Deployer logs location (string value)
 #deployer_log_dir = /var/log/solum/deployer
 
