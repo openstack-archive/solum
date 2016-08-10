@@ -56,20 +56,20 @@ class TestTraceData(base.BaseTestCase):
             solum.TLS.trace._user_data,
             {'user': '_user_', 'tenant': '_tenant_'})
         self.assertEqual(({
+            'auth_token_info': '_auth_token_info_',
+            'auth_url': '_auth_url_',
             'domain': '_domain_',
             'is_admin': False,
+            'is_admin_project': True,
             'project_domain': '_project_domain_',
             'read_only': False,
             'resource_uuid': None,
             'roles': '_roles_',
             'show_deleted': False,
             'user_domain': '_user_domain_',
-            'user_identity': '_user_ _tenant_ _domain_ '
+            'user_identity': u'_user_ _tenant_ _domain_ '
             '_user_domain_ _project_domain_',
-            'user_name': '_user_name_',
-            'auth_url': '_auth_url_',
-            'auth_token_info': '_auth_token_info_'
-        }), solum.TLS.trace._support_data)
+            'user_name': '_user_name_'}), solum.TLS.trace._support_data)
 
     def test_info_commands(self):
         """Test trace setting functions."""
