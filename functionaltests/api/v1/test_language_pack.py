@@ -17,7 +17,7 @@ import random
 import string
 import time
 
-from tempest_lib import exceptions as tempest_exceptions
+from tempest.lib import exceptions as tempest_exceptions
 
 from functionaltests.api import base
 from functionaltests.api.common import apputils

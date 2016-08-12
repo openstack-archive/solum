@@ -16,7 +16,7 @@
 
 import json
 
-from tempest_lib import exceptions as tempest_exceptions
+from tempest.lib import exceptions as tempest_exceptions
 
 from functionaltests.api import base
 

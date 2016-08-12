@@ -23,9 +23,9 @@ import time
 
 from tempest import config
 from tempest.lib import auth
+from tempest.lib.common import http
+from tempest.lib.common import rest_client
 from tempest import manager
-from tempest_lib.common import http
-from tempest_lib.common import rest_client
 import testtools
 import yaml
 
