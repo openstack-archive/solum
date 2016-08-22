@@ -15,8 +15,7 @@
 import datetime
 
 import mock
-
-from solum.openstack.common import uuidutils
+from oslo_utils import uuidutils
 
 
 fakeAuthTokenHeaders = {'X-User-Id': u'773a902f022949619b5c2f32cd89d419',
