@@ -13,13 +13,13 @@
 # under the License.
 
 from oslo_config import cfg
+from oslo_utils import uuidutils
 import sqlalchemy as sa
 from sqlalchemy.orm import exc
 
 from solum.objects import image as abstract
 from solum.objects.sqlalchemy import models as sql
 from solum.openstack.common import log as logging
-from solum.openstack.common import uuidutils
 
 cfg.CONF.import_opt('operator_project_id',
                     'solum.api.handlers.language_pack_handler',

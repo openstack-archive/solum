@@ -24,6 +24,7 @@ import string
 import subprocess
 
 from oslo_config import cfg
+from oslo_utils import uuidutils
 import six
 from sqlalchemy import exc as sqla_exc
 
@@ -38,7 +39,6 @@ from solum.objects import assembly
 from solum.objects import image
 from solum.openstack.common.gettextutils import _
 from solum.openstack.common import log as logging
-from solum.openstack.common import uuidutils
 import solum.uploaders.local as local_uploader
 import solum.uploaders.swift as swift_uploader
 
