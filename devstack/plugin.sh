@@ -150,40 +150,44 @@ function configure_solum() {
     # configure AllHostsFilter in /etc/nova/nova.conf
     iniset $NOVA_CONF_DIR/$NOVA_CONF_FILE DEFAULT scheduler_default_filters AllHostsFilter
 
-    # Integrate nova-docker with Devstack
+    install_docker
 
-    # Install docker
+    if [[ $SOLUM_IMAGE_FORMAT == 'docker' ]]; then
+        install_docker_driver
+    elif [[ $SOLUM_IMAGE_FORMAT == 'vm' ]]; then
+        # configure Virtdriver in /etc/nova/nova.conf
+        iniset $NOVA_CONF_DIR/$NOVA_CONF_FILE DEFAULT compute_driver libvirt.LibvirtDriver
+        #solum_install_start_docker_registry
+        #solum_install_core_os
+    else
+        echo "SOLUM_IMAGE_FORMAT docker or vm"
+    fi
+}
+# Install docker driver
+function install_docker_driver() {
+      # Integrate nova-docker with Devstack
+      if [ ! -d /opt/stack/nova-docker ] ; then
+        sudo git clone https://github.com/openstack/nova-docker.git /opt/stack/nova-docker
+      fi
+      cd /opt/stack/nova-docker
+      sudo git checkout 7e55fd551ef4faf3499a8db056efc9535c20e434
+      sudo python setup.py install
+      if [ ! -d $NOVA_CONF_DIR/rootwrap.d ] ; then
+        mkdir -p $NOVA_CONF_DIR/rootwrap.d
+      fi
+      sudo cp /opt/stack/nova-docker/etc/nova/rootwrap.d/docker.filters /etc/nova/rootwrap.d/.
+      # configure Virtdriver in /etc/nova/nova.conf
+      iniset $NOVA_CONF_DIR/$NOVA_CONF_FILE DEFAULT compute_driver novadocker.virt.docker.driver.DockerDriver
+}
+
+# Install docker
+function install_docker() {
     sudo wget -O docker.deb https://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.7.1-0~trusty_amd64.deb
     sudo apt-get install -y libapparmor1
     sudo dpkg -i docker.deb
-
-    # Install docker driver
-    if [ ! -d /opt/stack/nova-docker ] ; then
-        sudo git clone https://github.com/openstack/nova-docker.git /opt/stack/nova-docker
-    else
-        sudo rm -rf /opt/stack/nova-docker
-        sudo git clone https://github.com/openstack/nova-docker.git /opt/stack/nova-docker
-    fi
-
-    cd /opt/stack/nova-docker
-
-    # We pin to this version as Solum is known to work with it
-    sudo git checkout 7e55fd551ef4faf3499a8db056efc9535c20e434
-
-    sudo python setup.py install
     sudo gpasswd -a ${USER} docker
     sudo usermod -aG docker ${USER}
     sudo chmod o=rwx /var/run/docker.sock
-
-    if [ ! -d $NOVA_CONF_DIR/rootwrap.d ] ; then
-        mkdir -p $NOVA_CONF_DIR/rootwrap.d
-    fi
-
-    sudo cp /opt/stack/nova-docker/etc/nova/rootwrap.d/docker.filters /etc/nova/rootwrap.d/.
-
-    # configure Virtdriver in /etc/nova/nova.conf
-    iniset $NOVA_CONF_DIR/$NOVA_CONF_FILE DEFAULT compute_driver novadocker.virt.docker.driver.DockerDriver
-
 }
 
 #register solum user in Keystone
@@ -310,17 +314,10 @@ function install_drone() {
     fi
 }
 
-# install_docker() - Install Docker
-function install_docker() {
-    chmod +x $SOLUM_DIR/contrib/lp-cedarish/docker/get_docker_io.sh
-    sudo $SOLUM_DIR/contrib/lp-cedarish/docker/get_docker_io.sh
-    solum_install_docker_registry
-}
-
 function install_solum_dashboard() {
     git_clone_by_name "solum-dashboard"
     setup_dev_lib "solum-dashboard"
-    if [ ! -f $HORIZON_DIR/openstack_dashboard/local/enabled/_50_solum.py ] ; then 
+    if [ ! -f $HORIZON_DIR/openstack_dashboard/local/enabled/_50_solum.py ] ; then
       ln -s $DEST/solum-dashboard/_50_solum.py.example $HORIZON_DIR/openstack_dashboard/local/enabled/_50_solum.py
     fi
     restart_apache_server
@@ -336,12 +333,6 @@ function start_solum() {
     screen_it solum-conductor "cd $SOLUM_DIR && $SOLUM_BIN_DIR/solum-conductor --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE"
     screen_it solum-deployer "cd $SOLUM_DIR && $SOLUM_BIN_DIR/solum-deployer --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE"
     screen_it solum-worker "cd $SOLUM_DIR && $SOLUM_BIN_DIR/solum-worker --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE"
-
-    if [[ $SOLUM_IMAGE_FORMAT == 'vm' ]]; then
-        install_docker
-        solum_install_start_docker_registry
-        solum_install_core_os
-    fi
 }
 
 # stop_solum() - Stop running processes
@@ -368,24 +359,18 @@ solum_install_start_docker_registry() {
  # clone docker registry
    if [ ! -d /opt/docker-registry ] ; then
       sudo git clone https://github.com/dotcloud/docker-registry.git /opt/docker-registry
-   else
-      sudo rm -rf /opt/docker-registry
-      sudo git clone https://github.com/dotcloud/docker-registry.git /opt/docker-registry
    fi
    pushd /opt/docker-registry
-   pip install -r requirements/main.txt
+   sudo  pip install -r requirements/main.txt
    popd
-
- # install docker
-   curl -sSL https://get.docker.com/ubuntu/ | sudo sh
 
  # install docker registry
    pip_command=`which pip`
    pip_build_tmp=$(mktemp --tmpdir -d pip-build.XXXXX)
-   $pip_command install /opt/docker-registry --build=${PIP_BUILD_TMP}
+   sudo $pip_command install /opt/docker-registry --build=${pip_build_tmp}
 
  # initialize config file
-   cp /opt/docker-registry/docker_registry/lib/../../config/config_sample.yml /opt/docker-registry/docker_registry/lib/../../config/config.yml
+   sudo cp /opt/docker-registry/docker_registry/lib/../../config/config_sample.yml /opt/docker-registry/docker_registry/lib/../../config/config.yml
 
  # start docker registry
    gunicorn --access-logfile - --debug -k gevent -b 0.0.0.0:5042 -w 1 docker_registry.wsgi:application &
