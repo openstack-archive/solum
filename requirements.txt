@@ -10,14 +10,14 @@ iso8601>=0.1.11 # MIT
 kombu>=3.0.25 # BSD
 netaddr!=0.7.16,>=0.7.12 # BSD
 oslo.config>=3.14.0 # Apache-2.0
-oslo.context>=2.6.0 # Apache-2.0
+oslo.context>=2.9.0 # Apache-2.0
 oslo.db>=4.10.0 # Apache-2.0
 oslo.messaging>=5.2.0 # Apache-2.0
 oslo.middleware>=3.0.0 # Apache-2.0
 oslo.serialization>=1.10.0 # Apache-2.0
 oslo.utils>=3.16.0 # Apache-2.0
 pbr>=1.6 # Apache-2.0
-pecan>=1.0.0 # BSD
+pecan!=1.0.2,!=1.0.3,!=1.0.4,>=1.0.0 # BSD
 pycrypto>=2.6 # Public Domain
 python-barbicanclient>=4.0.0 # Apache-2.0
 python-glanceclient!=2.4.0,>=2.0.0 # Apache-2.0
