@@ -32,10 +32,7 @@ from solum.api.handlers.camp import plan_handler as plan_handler
 from solum.common import exception
 from solum.common import yamlutils
 from solum.openstack.common.gettextutils import _
-from solum.openstack.common import log as logging
 
-
-LOG = logging.getLogger(__name__)
 
 MAL_PATCH_ERR = 'JSON Patch request missing one or more required components'
 UNSUP_VER_ERR = 'camp_version \'%s\' is not supported by this implementation'

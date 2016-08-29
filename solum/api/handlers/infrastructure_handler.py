@@ -18,10 +18,6 @@ from solum.api.handlers import handler
 from solum.common import catalog
 from solum.common import clients
 from solum import objects
-from solum.openstack.common import log as logging
-
-
-LOG = logging.getLogger(__name__)
 
 
 class InfrastructureStackHandler(handler.Handler):
