@@ -3,10 +3,7 @@ heat_template_version: 2013-05-23
 outputs:
   public_ip:
     description: "public IP address of the deployed compute instance"
-    value:
-      get_attr:
-        - compute_instance
-        - accessIPv4
+    value: { get_attr: [compute_instance, first_address] }
 parameters:
   name:
     default: CoreOS-Stack
