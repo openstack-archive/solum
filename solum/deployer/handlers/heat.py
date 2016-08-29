@@ -23,6 +23,7 @@ from heatclient import exc
 import httplib2
 from keystoneclient.v2_0 import client as ksclient
 from oslo_config import cfg
+from oslo_log import log as os_logging
 import six
 from sqlalchemy import exc as sqla_exc
 from swiftclient import exceptions as swiftexp
@@ -40,11 +41,10 @@ from solum.common import solum_swiftclient
 from solum.common import utils
 from solum import objects
 from solum.objects import assembly
-from solum.openstack.common import log as openstack_logger
 from solum.uploaders import tenant_logger as tlog
 
 
-LOG = openstack_logger.getLogger(__name__)
+LOG = os_logging.getLogger(__name__)
 
 STATES = assembly.States
 

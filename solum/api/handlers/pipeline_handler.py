@@ -17,6 +17,7 @@ import uuid
 
 from mistralclient.api import base
 from oslo_config import cfg
+from oslo_log import log as logging
 
 from solum.api.handlers import handler
 from solum.common import catalog
@@ -26,7 +27,6 @@ from solum.common import exception
 from solum.common import heat_utils
 from solum.common import yamlutils
 from solum import objects
-from solum.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF

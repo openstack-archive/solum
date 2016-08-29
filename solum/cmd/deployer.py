@@ -14,18 +14,17 @@
 
 """Starter script for the Solum Deployer service."""
 
-import logging as std_logging
 import os
 import sys
 
 from oslo_config import cfg
+from oslo_log import log as logging
 
 from solum.common.rpc import service as rpc_service
 from solum.common import service
 from solum.deployer.handlers import heat as heat_handler
 from solum.deployer.handlers import noop as noop_handler
 from solum.openstack.common.gettextutils import _
-from solum.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
 
@@ -35,7 +34,7 @@ def main():
 
     LOG.info(_('Starting server in PID %s') % os.getpid())
     LOG.debug("Configuration:")
-    cfg.CONF.log_opt_values(LOG, std_logging.DEBUG)
+    logging.setup(cfg.CONF, 'solum')
 
     cfg.CONF.import_opt('topic', 'solum.deployer.config', group='deployer')
     cfg.CONF.import_opt('host', 'solum.deployer.config', group='deployer')

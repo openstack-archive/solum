@@ -17,6 +17,7 @@ import json
 import uuid
 
 from oslo_config import cfg
+from oslo_log import log as logging
 
 from solum.api.handlers import handler
 from solum.common import exception
@@ -24,8 +25,11 @@ from solum.common import repo_utils
 from solum import objects
 from solum.objects import image
 from solum.objects.sqlalchemy import workflow
-from solum.openstack.common import log as logging
 from solum.worker import api as worker_api
+
+
+LOG = logging.getLogger(__name__)
+
 
 API_SERVICE_OPTS = [
     cfg.StrOpt('image_format',
@@ -47,13 +51,10 @@ def list_opts():
     yield 'api', API_SERVICE_OPTS
 
 
-LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
 CONF.register_opts(API_SERVICE_OPTS, group='api')
 
 IMAGE_STATES = image.States
-
-LOG = logging.getLogger(__name__)
 
 
 class WorkflowHandler(handler.Handler):

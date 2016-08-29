@@ -14,8 +14,8 @@
 
 from mistral.actions import std_actions
 from mistral import exceptions
-from mistral.openstack.common import log as logging
 from mistral.openstack.common import uuidutils
+from oslo_log import log as logging
 
 
 LOG = logging.getLogger('mistral.actions.solum')

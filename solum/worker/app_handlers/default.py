@@ -22,17 +22,17 @@ import string
 
 from docker import errors
 from oslo_config import cfg
+from oslo_log import log as os_logging
 
 from solum.common import clients
 from solum.common import solum_swiftclient
-from solum.openstack.common import log as solum_log
 from solum.worker.app_handlers import base
 from solum.worker.app_handlers import utils
 
 from swiftclient import exceptions as swiftexp
 
 
-LOG = solum_log.getLogger(__name__)
+LOG = os_logging.getLogger(__name__)
 
 cfg.CONF.import_opt('container_mem_limit', 'solum.worker.config',
                     group='worker')

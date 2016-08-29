@@ -12,6 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from oslo_log import log as logging
+
 import json
 import os
 
@@ -21,7 +23,6 @@ from solum.api.handlers import handler
 from solum.common import exception as exc
 from solum.common import solum_swiftclient
 from solum import objects
-from solum.openstack.common import log as logging
 
 
 LOG = logging.getLogger(__name__)

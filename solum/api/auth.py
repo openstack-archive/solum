@@ -17,12 +17,12 @@ import re
 
 from keystonemiddleware import auth_token
 from oslo_config import cfg
+from oslo_log import log as logging
 from pecan import hooks
 
 from solum.common import context
 from solum.openstack.common.gettextutils import _
 from solum.openstack.common import importutils
-from solum.openstack.common import log as logging
 
 
 LOG = logging.getLogger(__name__)

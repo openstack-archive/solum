@@ -15,13 +15,13 @@
 import errno
 import os
 
+from oslo_log import log as logging
 import six
 from six.moves import http_client
 from swiftclient import exceptions as swiftexp
 
 from solum.common import clients
 from solum.common import exception as exc
-from solum.openstack.common import log as logging
 
 
 CHUNKSIZE = 65536

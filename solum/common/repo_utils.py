@@ -17,9 +17,9 @@ import socket
 
 import httplib2
 from oslo_config import cfg
+from oslo_log import log as logging
 
 from solum.common import exception
-from solum.openstack.common import log as logging
 
 
 LOG = logging.getLogger(__name__)

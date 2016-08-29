@@ -26,18 +26,18 @@ import time
 import docker
 from docker import errors
 from oslo_config import cfg
+from oslo_log import log as os_logging
 from requests.packages.urllib3 import exceptions as req_exp
 
 from solum.common import exception as exc
 from solum.common import solum_swiftclient
-from solum.openstack.common import log as solum_log
 from solum.uploaders import tenant_logger
 from solum.worker.app_handlers import utils
 
 from swiftclient import exceptions as swiftexp
 
 
-LOG = solum_log.getLogger(__name__)
+LOG = os_logging.getLogger(__name__)
 
 cfg.CONF.import_opt('task_log_dir', 'solum.worker.config', group='worker')
 cfg.CONF.import_opt('docker_daemon_url', 'solum.worker.config', group='worker')

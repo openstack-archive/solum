@@ -10,13 +10,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-
+from oslo_log import log as logging
 import requests
 from requests import exceptions
 from six import moves
 
 from solum.openstack.common.gettextutils import _
-from solum.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
 

@@ -17,6 +17,7 @@ from heatclient import client as heatclient
 from mistralclient.api import client as mistralclient
 from neutronclient.neutron import client as neutronclient
 from oslo_config import cfg
+from oslo_log import log as logging
 from swiftclient import client as swiftclient
 from zaqarclient.queues.v1 import client as zaqarclient
 
@@ -24,7 +25,6 @@ from solum.common import exception
 from solum.common import solum_barbicanclient
 from solum.common import solum_keystoneclient
 from solum.openstack.common.gettextutils import _
-from solum.openstack.common import log as logging
 
 
 LOG = logging.getLogger(__name__)

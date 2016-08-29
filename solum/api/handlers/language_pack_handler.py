@@ -15,6 +15,7 @@
 import uuid
 
 from oslo_config import cfg
+from oslo_log import log as logging
 from swiftclient import exceptions as swiftexp
 
 from solum.api.handlers import common
@@ -26,7 +27,6 @@ from solum.common import solum_swiftclient
 from solum import objects
 from solum.objects import image
 from solum.objects.sqlalchemy import app
-from solum.openstack.common import log as logging
 from solum.worker import api
 
 

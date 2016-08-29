@@ -14,18 +14,17 @@
 
 """Starter script for the Solum Worker service."""
 
-import logging as std_logging
 import os
 import sys
 
 from oslo_config import cfg
+from oslo_log import log as logging
 
 import solum
 from solum.common.rpc import service as rpc_service
 from solum.common import service
 from solum.common import trace_data
 from solum.openstack.common.gettextutils import _
-from solum.openstack.common import log as logging
 from solum.worker.handlers import default as default_handler
 from solum.worker.handlers import noop as noop_handler
 from solum.worker.handlers import shell as shell_handler
@@ -48,7 +47,7 @@ def main():
 
     LOG.info(_('Starting server in PID %s') % os.getpid())
     LOG.debug("Configuration:")
-    cfg.CONF.log_opt_values(LOG, std_logging.DEBUG)
+    logging.setup(cfg.CONF, 'solum')
 
     cfg.CONF.import_opt('topic', 'solum.worker.config', group='worker')
     cfg.CONF.import_opt('host', 'solum.worker.config', group='worker')

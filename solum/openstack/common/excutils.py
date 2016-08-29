@@ -17,14 +17,16 @@
 Exception related utilities.
 """
 
-import logging
 import sys
 import time
 import traceback
 
+from oslo_log import log as logging
 import six
 
 from solum.openstack.common.gettextutils import _
+
+LOG = logging.getLogger(__name__)
 
 
 class save_and_reraise_exception(object):
@@ -59,10 +61,10 @@ class save_and_reraise_exception(object):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_type is not None:
-            logging.error(_('Original exception being dropped: %s'),
-                          traceback.format_exception(self.type_,
-                                                     self.value,
-                                                     self.tb))
+            LOG.error(_('Original exception being dropped: %s'),
+                        traceback.format_exception(self.type_,
+                                                   self.value,
+                                                   self.tb))
             return False
         if self.reraise:
             six.reraise(self.type_, self.value, self.tb)
@@ -87,7 +89,7 @@ def forever_retry_uncaught_exceptions(infunc):
                 cur_time = int(time.time())
                 if (cur_time - last_log_time > 60 or
                         this_exc_message != last_exc_message):
-                    logging.exception(
+                    LOG.exception(
                         _('Unexpected exception occurred %d time(s)... '
                           'retrying.') % exc_count)
                     last_log_time = cur_time

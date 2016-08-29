@@ -16,6 +16,7 @@ import json
 import re
 
 from oslo_config import cfg
+from oslo_log import log as logging
 import pecan
 from pecan import rest
 import wsmeext.pecan as wsme_pecan
@@ -27,7 +28,6 @@ from solum.common import exception
 from solum.common import request
 from solum.common import yamlutils
 from solum import objects
-from solum.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
 

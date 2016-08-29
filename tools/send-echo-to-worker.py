@@ -16,9 +16,9 @@
 import sys
 
 from oslo_config import cfg
+from oslo_log import log as logging
 
 from solum.common import context
-from solum.openstack.common import log as logging
 from solum.worker import api
 
 

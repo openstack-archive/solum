@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from oslo_log import log as logging
 import sqlalchemy
 
 from solum.common import exception
@@ -19,7 +20,6 @@ from solum import objects
 from solum.objects import pipeline as abstract
 from solum.objects.sqlalchemy import execution
 from solum.objects.sqlalchemy import models as sql
-from solum.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
 

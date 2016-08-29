@@ -14,11 +14,11 @@
 
 """Solum Conductor default handler."""
 
+from oslo_log import log as logging
 from sqlalchemy import exc as sqla_exc
 
 from solum import objects
 from solum.objects import assembly
-from solum.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
 

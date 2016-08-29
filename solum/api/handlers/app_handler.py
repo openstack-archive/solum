@@ -12,6 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from oslo_log import log as logging
+
 import json
 import uuid
 
@@ -23,7 +25,6 @@ from solum.common import keystone_utils
 from solum.common import utils
 from solum.deployer import api as deploy_api
 from solum import objects
-from solum.openstack.common import log as logging
 
 
 LOG = logging.getLogger(__name__)

@@ -13,10 +13,10 @@
 #    limitations under the License.
 
 from oslo_config import cfg
+from oslo_log import log as logging
 
 from solum.common import exception as exc
 from solum.common import solum_swiftclient as swiftclient
-from solum.openstack.common import log as logging
 import solum.uploaders.common
 
 from swiftclient import exceptions as swiftexp

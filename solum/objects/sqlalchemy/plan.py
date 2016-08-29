@@ -12,15 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from oslo_log import log as logging
 import sqlalchemy as sa
 
 from solum.common import exception
 from solum.objects import plan as abstract
 from solum.objects.sqlalchemy import models as sql
-from solum.openstack.common import log as openstack_logger
 
 
-LOG = openstack_logger.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 
 class Plan(sql.Base, abstract.Plan):

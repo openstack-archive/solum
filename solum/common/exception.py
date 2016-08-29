@@ -25,6 +25,7 @@ import uuid
 
 from keystoneclient import exceptions as keystone_exceptions
 from oslo_config import cfg
+from oslo_log import log as logging
 import pecan
 import six
 import wsme
@@ -32,7 +33,6 @@ import wsme
 from solum.common import safe_utils
 from solum.openstack.common import excutils
 from solum.openstack.common.gettextutils import _
-from solum.openstack.common import log as logging
 
 
 LOG = logging.getLogger(__name__)

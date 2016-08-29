@@ -15,10 +15,10 @@
 import datetime
 import re
 
+from oslo_log import log as logging
 from oslo_serialization import jsonutils as json
 
 import solum
-from solum.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
 

@@ -18,14 +18,14 @@ import logging
 import time
 
 from oslo_config import cfg
+from oslo_log import log as os_logging
 
-from solum.openstack.common import log as openstack_logger
 import solum.uploaders.local as local_uploader
 import solum.uploaders.swift as swift_uploader
 
 cfg.CONF.import_opt('log_upload_strategy', 'solum.worker.config',
                     group='worker')
-LOG = openstack_logger.getLogger(__name__)
+LOG = os_logging.getLogger(__name__)
 
 
 class TenantLogger(object):

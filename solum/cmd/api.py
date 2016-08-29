@@ -14,18 +14,17 @@
 
 """Starter script for the Solum API service."""
 
-import logging as std_logging
 import os
 import sys
 
 import eventlet
 from eventlet import wsgi
 from oslo_config import cfg
+from oslo_log import log as logging
 
 from solum.api import app as api_app
 from solum.common import service
 from solum.openstack.common.gettextutils import _
-from solum.openstack.common import log as logging
 
 
 LOG = logging.getLogger(__name__)
@@ -42,7 +41,7 @@ def main():
 
     LOG.info(_('Starting server in PID %s') % os.getpid())
     LOG.debug("Configuration:")
-    cfg.CONF.log_opt_values(LOG, std_logging.DEBUG)
+    logging.setup(cfg.CONF, 'solum')
 
     if host == '0.0.0.0':
         LOG.info(_('serving on 0.0.0.0:%(port)s, '

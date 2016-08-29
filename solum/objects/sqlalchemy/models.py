@@ -23,6 +23,7 @@ import time
 from oslo_config import cfg
 from oslo_db import exception as db_exc
 from oslo_db.sqlalchemy import models
+from oslo_log import log as logging
 from oslo_utils import uuidutils
 from six import moves
 from sqlalchemy import exc as sqla_exc
@@ -34,7 +35,6 @@ from solum.common import exception
 from solum.common import yamlutils
 from solum import objects
 from solum.objects import sqlalchemy as object_sqla
-from solum.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
 

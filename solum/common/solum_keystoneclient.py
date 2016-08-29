@@ -17,12 +17,12 @@ import copy
 import keystoneclient.exceptions as kc_exception
 from keystoneclient.v3 import client as kc_v3
 from oslo_config import cfg
+from oslo_log import log as logging
 
 from solum.common import context
 from solum.common import exception
 from solum.openstack.common.gettextutils import _
 from solum.openstack.common import importutils
-from solum.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
 

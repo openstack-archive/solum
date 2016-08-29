@@ -17,6 +17,7 @@ import re
 import sys
 
 from oslo_db import exception as db_exc
+from oslo_log import log as logging
 import pecan
 from pecan import rest
 import six
@@ -29,7 +30,6 @@ from solum.api.handlers import plan_handler
 from solum.common import exception
 from solum.common import yamlutils
 from solum import objects
-from solum.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
 

@@ -19,8 +19,8 @@ test_solum
 
 Tests for `solum` module.
 """
+from oslo_log import log as logging
 
-from solum.openstack.common import log as logging
 from solum.tests import base
 
 LOG = logging.getLogger(__name__)

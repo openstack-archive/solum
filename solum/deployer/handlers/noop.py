@@ -14,8 +14,9 @@
 
 """Solum Deployer noop handler."""
 
+from oslo_log import log as logging
+
 from solum import objects
-from solum.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
 

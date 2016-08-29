@@ -14,13 +14,13 @@
 import json
 
 from oslo_config import cfg
+from oslo_log import log as logging
 import pecan
 from pecan import rest
 from six.moves import urllib
 
 from solum.api.handlers import app_handler
 from solum.common import exception
-from solum.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF

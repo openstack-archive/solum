@@ -15,6 +15,7 @@
 import uuid
 
 from oslo_config import cfg
+from oslo_log import log as logging
 
 from solum.api.handlers import handler
 from solum.common import exception
@@ -25,7 +26,6 @@ from solum.deployer import api as deploy_api
 from solum import objects
 from solum.objects import assembly
 from solum.objects import image
-from solum.openstack.common import log as logging
 from solum.worker import api as worker_api
 
 

@@ -14,13 +14,14 @@
 
 """Solum Worker handler."""
 
+from oslo_log import log as logging
+
 from solum.common import exception
 from solum.conductor import api as conductor_api
 from solum.deployer import api as deployer_api
 from solum import objects
 from solum.objects import assembly
 from solum.objects import image
-from solum.openstack.common import log as logging
 from solum.worker.app_handlers import default as docker_handler
 
 

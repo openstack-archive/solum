@@ -14,17 +14,16 @@
 
 """Starter script for the Solum Conductor service."""
 
-import logging as std_logging
 import os
 import sys
 
 from oslo_config import cfg
+from oslo_log import log as logging
 
 from solum.common.rpc import service as rpc_service
 from solum.common import service
 from solum.conductor.handlers import default as default_handler
 from solum.openstack.common.gettextutils import _
-from solum.openstack.common import log as logging
 
 LOG = logging.getLogger(__name__)
 
@@ -34,7 +33,7 @@ def main():
 
     LOG.info(_('Starting server in PID %s') % os.getpid())
     LOG.debug("Configuration:")
-    cfg.CONF.log_opt_values(LOG, std_logging.DEBUG)
+    logging.setup(cfg.CONF, 'solum')
 
     cfg.CONF.import_opt('topic', 'solum.conductor.config', group='conductor')
     cfg.CONF.import_opt('host', 'solum.conductor.config', group='conductor')
