@@ -18,10 +18,7 @@ import os
 from solum.api.controllers.camp.v1_1.datamodel import (attribute_definitions
                                                        as model)
 from solum.api.handlers import handler
-from solum.openstack.common import log as logging
 
-
-LOG = logging.getLogger(__name__)
 
 ATTR_DEFS = {}
 
