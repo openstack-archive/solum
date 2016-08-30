@@ -16,8 +16,7 @@ from barbicanclient import client as barbicanclient
 from keystoneclient.auth import identity
 from keystoneclient import session
 from oslo_config import cfg
-
-from solum.openstack.common import importutils
+from oslo_utils import importutils
 
 
 class BarbicanClient(object):
