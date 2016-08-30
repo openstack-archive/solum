@@ -24,7 +24,7 @@ from oslo_log import log as logging
 
 from solum.api import app as api_app
 from solum.common import service
-from solum.openstack.common.gettextutils import _
+from solum.i18n import _
 
 
 LOG = logging.getLogger(__name__)

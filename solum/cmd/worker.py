@@ -24,7 +24,7 @@ import solum
 from solum.common.rpc import service as rpc_service
 from solum.common import service
 from solum.common import trace_data
-from solum.openstack.common.gettextutils import _
+from solum.i18n import _
 from solum.worker.handlers import default as default_handler
 from solum.worker.handlers import noop as noop_handler
 from solum.worker.handlers import shell as shell_handler

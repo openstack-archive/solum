@@ -23,7 +23,7 @@ from oslo_log import log as logging
 from solum.common.rpc import service as rpc_service
 from solum.common import service
 from solum.conductor.handlers import default as default_handler
-from solum.openstack.common.gettextutils import _
+from solum.i18n import _
 
 LOG = logging.getLogger(__name__)
 

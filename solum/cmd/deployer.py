@@ -24,7 +24,7 @@ from solum.common.rpc import service as rpc_service
 from solum.common import service
 from solum.deployer.handlers import heat as heat_handler
 from solum.deployer.handlers import noop as noop_handler
-from solum.openstack.common.gettextutils import _
+from solum.i18n import _
 
 LOG = logging.getLogger(__name__)
 

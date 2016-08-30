@@ -18,7 +18,7 @@ import wsme
 from wsme import types as wtypes
 
 from solum.api.controllers import common_types
-from solum.openstack.common.gettextutils import _
+from solum.i18n import _
 
 
 class Base(wtypes.Base):

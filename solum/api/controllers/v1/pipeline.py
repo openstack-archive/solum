@@ -21,8 +21,8 @@ from solum.api.controllers.v1.datamodel import pipeline
 from solum.api.controllers.v1 import execution
 from solum.api.handlers import pipeline_handler
 from solum.common import exception
+from solum.i18n import _
 from solum import objects
-from solum.openstack.common.gettextutils import _
 
 
 class PipelineController(rest.RestController):

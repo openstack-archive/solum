@@ -31,7 +31,7 @@ from solum.api.controllers import common_types
 from solum.api.handlers.camp import plan_handler as plan_handler
 from solum.common import exception
 from solum.common import yamlutils
-from solum.openstack.common.gettextutils import _
+from solum.i18n import _
 
 
 MAL_PATCH_ERR = 'JSON Patch request missing one or more required components'

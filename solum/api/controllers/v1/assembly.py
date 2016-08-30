@@ -22,8 +22,8 @@ import solum.api.controllers.v1.userlog as userlog_controller
 from solum.api.handlers import assembly_handler
 from solum.common import exception
 from solum.common import request
+from solum.i18n import _
 from solum import objects
-from solum.openstack.common.gettextutils import _
 
 
 class AssemblyController(rest.RestController):

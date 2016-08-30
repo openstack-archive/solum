@@ -19,8 +19,8 @@ import wsme
 from wsme import types as wtypes
 
 from solum.api.controllers.v1.datamodel import types as api_types
+from solum.i18n import _
 from solum import objects
-from solum.openstack.common.gettextutils import _
 
 TAGS = (TYPE, COMPILER_VERSION, RUNTIME_VERSION, IMPLEMENTATION,
         BUILD_TOOL, OS_PLATFORM, ATTRIBUTE, DESCRIPTION) = (

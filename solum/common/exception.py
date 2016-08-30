@@ -32,7 +32,7 @@ import six
 import wsme
 
 from solum.common import safe_utils
-from solum.openstack.common.gettextutils import _
+from solum.i18n import _
 
 
 LOG = logging.getLogger(__name__)

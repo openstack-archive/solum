@@ -14,7 +14,7 @@
 
 import mock
 
-from solum.openstack.common.gettextutils import _
+from solum.i18n import _
 from solum.tests import base
 from solum.tests import utils
 from solum.tests.worker.handlers import test_shell

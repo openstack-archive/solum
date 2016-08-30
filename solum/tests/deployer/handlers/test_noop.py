@@ -15,7 +15,7 @@
 import mock
 
 from solum.deployer.handlers import noop as noop_handler
-from solum.openstack.common.gettextutils import _
+from solum.i18n import _
 from solum.tests import base
 from solum.tests import fakes
 from solum.tests import utils

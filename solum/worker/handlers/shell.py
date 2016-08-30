@@ -35,10 +35,10 @@ from solum.common import exception
 from solum.common import repo_utils
 from solum.conductor import api as conductor_api
 from solum.deployer import api as deployer_api
+from solum.i18n import _
 from solum import objects
 from solum.objects import assembly
 from solum.objects import image
-from solum.openstack.common.gettextutils import _
 import solum.uploaders.local as local_uploader
 import solum.uploaders.swift as swift_uploader
 

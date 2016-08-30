@@ -24,7 +24,7 @@ from zaqarclient.queues.v1 import client as zaqarclient
 from solum.common import exception
 from solum.common import solum_barbicanclient
 from solum.common import solum_keystoneclient
-from solum.openstack.common.gettextutils import _
+from solum.i18n import _
 
 
 LOG = logging.getLogger(__name__)

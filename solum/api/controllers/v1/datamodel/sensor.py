@@ -17,7 +17,7 @@ from wsme import types as wtypes
 from solum.api.controllers import common_types
 from solum.api.controllers.v1.datamodel import operation
 from solum.api.controllers.v1.datamodel import types as api_types
-from solum.openstack.common.gettextutils import _
+from solum.i18n import _
 
 
 SENSOR_TYPE = wtypes.Enum(str, 'str', 'float', 'int')

@@ -15,7 +15,7 @@ import requests
 from requests import exceptions
 from six import moves
 
-from solum.openstack.common.gettextutils import _
+from solum.i18n import _
 
 LOG = logging.getLogger(__name__)
 

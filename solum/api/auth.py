@@ -22,7 +22,7 @@ from oslo_utils import importutils
 from pecan import hooks
 
 from solum.common import context
-from solum.openstack.common.gettextutils import _
+from solum.i18n import _
 
 
 LOG = logging.getLogger(__name__)
