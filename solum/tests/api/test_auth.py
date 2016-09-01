@@ -13,10 +13,10 @@
 # under the License.
 
 import mock
+from oslo_config import fixture as config
 
 from solum.api import auth
 from solum.common import context
-from solum.openstack.common.fixture import config
 from solum.tests import base
 from solum.tests import fakes
 

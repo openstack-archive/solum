@@ -12,8 +12,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from oslo_config import fixture as config
+
 from solum.common import context
-from solum.openstack.common.fixture import config
 from solum.tests import base
 
 

@@ -17,11 +17,11 @@ Tests to assert that various incorporated middleware works as expected.
 """
 
 from oslo_config import cfg
+from oslo_config import fixture as config
 import oslo_middleware.cors as cors_middleware
 import webob
 
 from solum.api import app as api_app
-from solum.openstack.common.fixture import config
 from solum.tests import base
 
 
