@@ -158,7 +158,7 @@ function configure_solum() {
         # configure Virtdriver in /etc/nova/nova.conf
         iniset $NOVA_CONF_DIR/$NOVA_CONF_FILE DEFAULT compute_driver libvirt.LibvirtDriver
         #solum_install_start_docker_registry
-        #solum_install_core_os
+        solum_install_core_os
     else
         echo "SOLUM_IMAGE_FORMAT docker or vm"
     fi
@@ -383,7 +383,7 @@ solum_stop_docker_registry() {
 }
 
 solum_install_core_os() {
-  wget http://alpha.release.core-os.net/amd64-usr/current/coreos_production_openstack_image.img.bz2
+  wget https://stable.release.core-os.net/amd64-usr/current/coreos_production_openstack_image.img.bz2
   bunzip2 coreos_production_openstack_image.img.bz2
   glance image-create --name coreos --container-format bare --disk-format qcow2 --file coreos_production_openstack_image.img
 }
