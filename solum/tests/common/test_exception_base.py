@@ -88,8 +88,8 @@ class ExceptionTestCase(base.BaseTestCase):
 
         (args, kargs) = exception.LOG.error.call_args
 
-        self.assertTrue(correlation_id in args)
-        self.assertTrue(correlation_id in str(args[0] % args[1:]))
+        self.assertIn(correlation_id, args)
+        self.assertIn(correlation_id, str(args[0] % args[1:]))
 
     def test_wrap_controller_exception_with_client_error(self):
         error_args = dict(reason="foo")
@@ -125,5 +125,5 @@ class ExceptionTestCase(base.BaseTestCase):
 
         (args, kargs) = exception.LOG.error.call_args
 
-        self.assertTrue(correlation_id in args)
-        self.assertTrue(correlation_id in str(args[0] % args[1:]))
+        self.assertIn(correlation_id, args)
+        self.assertIn(correlation_id, str(args[0] % args[1:]))
