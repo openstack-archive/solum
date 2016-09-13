@@ -21,4 +21,5 @@ from solum import objects
 def prepare_service(argv=[]):
     cfg.CONF(argv[1:], project='solum')
     config.set_config_defaults()
+    # TODO(zhurong) Add the logging setup back
     objects.load()
