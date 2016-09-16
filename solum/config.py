@@ -21,7 +21,6 @@ from solum import version
 
 
 def parse_args(argv, default_config_files=None):
-    # TODO(zhurong) Add the logging setup back
     cfg.CONF(argv[1:],
              project='solum',
              version=version.version_string(),
