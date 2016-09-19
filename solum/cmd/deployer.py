@@ -34,8 +34,7 @@ def main():
 
     LOG.info(_('Starting server in PID %s') % os.getpid())
     LOG.debug("Configuration:")
-    # TODO(zhurong) Need to fix logging
-    # logging.setup(cfg.CONF, 'solum')
+    logging.setup(cfg.CONF, 'solum')
 
     cfg.CONF.import_opt('topic', 'solum.deployer.config', group='deployer')
     cfg.CONF.import_opt('host', 'solum.deployer.config', group='deployer')

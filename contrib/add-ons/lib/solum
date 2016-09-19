@@ -129,7 +129,7 @@ function configure_solum() {
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE DEFAULT use_syslog $SYSLOG
 
     # make trace visible
-    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE DEFAULT logging_context_format_string "%(asctime)s.%(msecs)03d %(process)d %(levelname)s %(name)s [%(request_id)s] s%(message)s %(support_trace)s"
+    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE DEFAULT logging_context_format_string "%(asctime)s.%(msecs)03d %(process)d %(levelname)s %(name)s [%(request_id)s %(user_identity)s] %(instance)s%(message)s"
 
     # Setup keystone_authtoken section
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken auth_host $KEYSTONE_AUTH_HOST

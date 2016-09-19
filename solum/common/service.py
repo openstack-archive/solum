@@ -13,14 +13,15 @@
 # limitations under the License.
 
 from oslo_config import cfg
+from oslo_log import log
 
 from solum.common import config
 from solum import objects
 
 
 def prepare_service(argv=[]):
-    cfg.CONF(argv[1:], project='solum')
+    log.register_options(cfg.CONF)
     config.set_config_defaults()
-    # TODO(zhurong) Need to fix logging
-    # logging.setup(cfg.CONF, 'solum')
+    cfg.CONF(argv[1:], project='solum')
+    log.setup(cfg.CONF, 'solum')
     objects.load()
