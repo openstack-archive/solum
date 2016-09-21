@@ -55,8 +55,7 @@ class Database(fixtures.Fixture):
         options.cfg.set_defaults(options.database_opts,
                                  sqlite_synchronous=False)
         options.set_defaults(cfg.CONF,
-                             connection='sqlite:///%s' % self.db_file,
-                             sqlite_db=self.db_file)
+                             connection='sqlite:///%s' % self.db_file)
 
 
 def get_dummy_session():
