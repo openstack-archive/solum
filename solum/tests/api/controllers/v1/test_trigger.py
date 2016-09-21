@@ -32,7 +32,7 @@ class TestTriggerController(base.BaseTestCase):
                                                   resp_mock, request_mock):
         obj = trigger.TriggerController()
         workflow = obj._get_workflow({})
-        self.assertEqual(None, workflow)
+        self.assertIsNone(workflow)
 
     def test_trigger_get_workflow_with_deploy(self, assem_mock,
                                               resp_mock, request_mock):
@@ -77,7 +77,7 @@ class TestTriggerController(base.BaseTestCase):
                                     'private': True}}
         obj = trigger.TriggerController()
         commit_sha, collab_url = obj._process_request(body_dict)
-        self.assertEqual(None, collab_url)
+        self.assertIsNone(collab_url)
         self.assertEqual('asdf', commit_sha)
 
     def test_trigger_process_request_on_valid_pub_repo(self,
