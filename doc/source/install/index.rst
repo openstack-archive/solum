@@ -14,4 +14,4 @@ TODO add docs here on how to install on different distros like:
 
 For a development installation use devstack
 -------------------------------------------
-.. include:: ../../../contrib/devstack/README.rst
+.. include:: ../../../devstack/README.rst

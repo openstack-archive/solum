@@ -371,4 +371,4 @@ Devstack
 
 Using Vagrant is not a requirement for deploying Solum.
 You may instead opt to install Solum and Devstack yourself.
-The details of integrating Solum with Devstack can be found in :code:`contrib/devstack/README.rst`.
+The details of integrating Solum with Devstack can be found in :code:`devstack/README.rst`.
