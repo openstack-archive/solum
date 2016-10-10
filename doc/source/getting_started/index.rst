@@ -278,7 +278,7 @@ An appfile is used to define your application and passed in during application c
 
   $ solum app create --app-file appfile.yaml --param-file params.yaml
 
-In the above command, we use the --plan-file flag to provide
+In the above command, we use the --app-file flag to provide
 
 ::
 
