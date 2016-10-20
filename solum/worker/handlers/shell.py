@@ -111,7 +111,7 @@ def get_parameter_by_assem_id(ctxt, assembly_id):
         plan = solum.objects.registry.Plan.get_by_id(ctxt, assem.plan_id)
         app = solum.objects.registry.App.get_by_id(ctxt, plan.uuid)
         app = json.loads(app.raw_content)
-        param_obj = app['parameters']
+        param_obj = app.get('parameters', {})
 
     return param_obj
 
