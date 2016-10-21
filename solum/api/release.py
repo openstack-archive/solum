@@ -17,7 +17,7 @@ from pecan import hooks
 
 OPTS = [
     cfg.StrOpt('release',
-               default='stackforge',
+               default='openstack',
                help='The current build of Solum.'),
 ]
 
