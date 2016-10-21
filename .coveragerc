@@ -1,7 +1,7 @@
 [run]
 branch = True
 source = solum
-omit = solum/tests/*,solum/openstack/*
+omit = solum/tests/*
 
 [report]
 ignore_errors = True
