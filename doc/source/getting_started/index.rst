@@ -152,7 +152,7 @@ For demonstration purposes, we will use the provided example.
   +-------------+---------------------------------------------------------------------+
   | description | Sample Python web app.                                              |
   | uri         | http://10.0.2.15:9777/v1/plans/4a795b99-936d-4330-be4d-d2099b160075 |
-  | name        | cherrypy                                                   |
+  | name        | cherrypy                                                            |
   | trigger_uri |                                                                     |
   | uuid        | 4a795b99-936d-4330-be4d-d2099b160075                                |
   +-------------+---------------------------------------------------------------------+
@@ -200,7 +200,7 @@ The status field will show the progress of your app through the process.
   | application_uri | None                                                                   |
   | created_at      | 2015-03-10T22:47:04                                                    |
   | updated_at      | 2015-03-10T22:49:59                                                    |
-  | name            | cherrypy                                                      |
+  | name            | cherrypy                                                               |
   | trigger_uri     | http://10.0.2.15:9777/v1/triggers/b6eb26e5-3b7b-416b-b932-302c514071cc |
   | uuid            | 185f2741-61e0-497e-b2b7-c890c7e151dd                                   |
   +-----------------+------------------------------------------------------------------------+
@@ -229,11 +229,11 @@ The status field will show the progress of your app through the process.
   | name             | cherrypy                                                            |
   +------------------+---------------------------------------------------------------------+
   'cherrypy' workflows and their status:
-  +-------+--------------------------------------+--------+
-  | wf_id | id                                   | status |
-  +-------+--------------------------------------+--------+
+  +-------+--------------------------------------+----------------------+
+  | wf_id | id                                   | status               |
+  +-------+--------------------------------------+----------------------+
   | 1     | 97e7e2c1-8ba1-4320-9831-b5baef1d480d | DEPLOYMENT_COMPLETE  |
-  +-------+--------------------------------------+--------+
+  +-------+--------------------------------------+----------------------+
 
 
 Connect to Your App
