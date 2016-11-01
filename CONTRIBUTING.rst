@@ -23,4 +23,5 @@ Bugs should be filed on Launchpad, not GitHub:
 
 For tips to help with running unit tests and funcitonal tests on your code,
 see:
+
    https://wiki.openstack.org/wiki/Solum/Testing
