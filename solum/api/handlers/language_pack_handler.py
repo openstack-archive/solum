@@ -12,10 +12,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import uuid
-
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_utils import uuidutils
 from swiftclient import exceptions as swiftexp
 
 from solum.api.handlers import common
@@ -109,7 +108,7 @@ class LanguagePackHandler(handler.Handler):
         except exc.ResourceNotFound:
             db_obj = objects.registry.Image()
             db_obj.update(data)
-            db_obj.uuid = str(uuid.uuid4())
+            db_obj.uuid = uuidutils.generate_uuid()
             db_obj.user_id = self.context.user
             db_obj.project_id = self.context.tenant
             db_obj.status = image.States.QUEUED

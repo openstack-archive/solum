@@ -10,7 +10,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import uuid
+from oslo_utils import uuidutils
 
 from solum.api.handlers import handler
 from solum import objects
@@ -38,7 +38,7 @@ class OperationHandler(handler.Handler):
         """Create a new operation."""
         db_obj = objects.registry.Operation()
         db_obj.update(data)
-        db_obj.uuid = str(uuid.uuid4())
+        db_obj.uuid = uuidutils.generate_uuid()
         db_obj.create(self.context)
         return db_obj
 

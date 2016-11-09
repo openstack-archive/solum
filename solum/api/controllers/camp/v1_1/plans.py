@@ -12,11 +12,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-
-import uuid
-
 import jsonpatch
 from oslo_db import exception as db_exc
+from oslo_utils import uuidutils
 import pecan
 from pecan import rest
 import six
@@ -203,7 +201,7 @@ class PlansController(rest.RestController):
                         # if the inline service spec doesn't have an id
                         # generate one
                         if s_spec.id == wsme.Unset:
-                            s_spec.id = str(uuid.uuid4())
+                            s_spec.id = uuidutils.generate_uuid()
 
                         # move the inline service spec to the 'services'
                         # section

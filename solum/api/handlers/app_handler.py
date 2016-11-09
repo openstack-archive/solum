@@ -13,9 +13,9 @@
 # under the License.
 
 from oslo_log import log as logging
+from oslo_utils import uuidutils
 
 import json
-import uuid
 
 from solum.api.handlers import common
 from solum.api.handlers import handler
@@ -75,7 +75,7 @@ class AppHandler(handler.Handler):
     def create(self, data):
         """Create a new app."""
         db_obj = objects.registry.App()
-        db_obj.id = str(uuid.uuid4())
+        db_obj.id = uuidutils.generate_uuid()
         db_obj.user_id = self.context.user
         db_obj.project_id = self.context.tenant
         db_obj.deleted = False
@@ -92,7 +92,7 @@ class AppHandler(handler.Handler):
         db_obj.ports = data.get('ports')
         db_obj.source = data.get('source')
         db_obj.workflow_config = data.get('workflow_config')
-        db_obj.trigger_uuid = str(uuid.uuid4())
+        db_obj.trigger_uuid = uuidutils.generate_uuid()
         db_obj.trigger_actions = data.get('trigger_actions')
 
         raw_content = data.get('raw_content')

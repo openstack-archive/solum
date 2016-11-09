@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import uuid
-
 import mock
 from sqlalchemy.orm import exc as sqla_ex
 
@@ -22,6 +20,8 @@ from solum.objects import registry
 from solum.objects.sqlalchemy import assembly
 from solum.tests import base
 from solum.tests import utils
+
+from oslo_utils import uuidutils
 
 
 class TestAssembly(base.BaseTestCase):
@@ -57,7 +57,7 @@ class TestAssembly(base.BaseTestCase):
     def test_del_assem_with_comps(self):
         ta = registry.Assembly().get_by_id(self.ctx, self.data[0]['id'])
         comp = registry.Component()
-        comp.uuid = str(uuid.uuid4())
+        comp.uuid = uuidutils.generate_uuid()
         comp.name = 't'
         comp.assembly_id = ta.id
         comp.create(self.ctx)

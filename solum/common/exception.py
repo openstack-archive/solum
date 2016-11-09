@@ -21,12 +21,12 @@ Includes decorator for re-raising Solum-type exceptions.
 import collections
 import functools
 import sys
-import uuid
 
 from keystoneclient import exceptions as keystone_exceptions
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import excutils
+from oslo_utils import uuidutils
 import pecan
 import six
 import wsme
@@ -122,7 +122,7 @@ def wrap_controller_exception(func, func_server_error, func_client_error):
             if http_error_code >= 500:
                 # log the error message with its associated
                 # correlation id
-                log_correlation_id = str(uuid.uuid4())
+                log_correlation_id = uuidutils.generate_uuid()
                 LOG.error("%s:%s", log_correlation_id, str(excp))
                 # raise a client error with an obfuscated message
                 func_server_error(log_correlation_id, http_error_code)
@@ -196,7 +196,7 @@ def wrap_wsme_pecan_controller_exception(func):
         ismapping = isinstance(ret, collections.Mapping)
         if (pecan.response.status_code >= 500 and ismapping):
 
-            log_correlation_id = str(uuid.uuid4())
+            log_correlation_id = uuidutils.generate_uuid()
             LOG.error("%s:%s", log_correlation_id, ret.get("faultstring",
                                                            "Unknown Error"))
             ret['faultstring'] = six.text_type(OBFUSCATED_MSG %

@@ -12,7 +12,6 @@
 # under the License.
 
 import json
-import uuid
 
 import mock
 
@@ -23,6 +22,8 @@ from solum.common import yamlutils
 from solum.tests import base
 from solum.tests import fakes
 from solum.tests import utils
+
+from oslo_utils import uuidutils
 
 
 @mock.patch('solum.objects.registry')
@@ -92,8 +93,8 @@ class TestPipelineHandler(base.BaseTestCase):
     @mock.patch('solum.common.catalog.get')
     def test_empty_create_stack(self, mock_get, mock_clients, mock_registry):
         db_obj = fakes.FakePipeline()
-        test_name = str(uuid.uuid4())
-        test_id = str(uuid.uuid4())
+        test_name = uuidutils.generate_uuid()
+        test_id = uuidutils.generate_uuid()
         db_obj.name = test_name
         mock_registry.Pipeline.return_value = db_obj
 

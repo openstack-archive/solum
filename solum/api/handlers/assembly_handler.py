@@ -12,10 +12,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import uuid
-
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_utils import uuidutils
 
 from solum.api.handlers import handler
 from solum.common import exception
@@ -112,7 +111,7 @@ class AssemblyHandler(handler.Handler):
             data['workflow'] = ['unittest', 'build', 'deploy']
         db_obj = objects.registry.Assembly()
         db_obj.update(data)
-        db_obj.uuid = str(uuid.uuid4())
+        db_obj.uuid = uuidutils.generate_uuid()
         db_obj.user_id = self.context.user
         db_obj.project_id = self.context.tenant
         db_obj.username = self.context.user_name
@@ -142,7 +141,7 @@ class AssemblyHandler(handler.Handler):
         image.source_format = artifact.get('artifact_type',
                                            CONF.api.source_format)
         image.image_format = CONF.api.image_format
-        image.uuid = str(uuid.uuid4())
+        image.uuid = uuidutils.generate_uuid()
         image.user_id = self.context.user
         image.project_id = self.context.tenant
         image.status = IMAGE_STATES.QUEUED

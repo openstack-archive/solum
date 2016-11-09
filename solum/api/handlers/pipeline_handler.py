@@ -13,11 +13,11 @@
 # under the License.
 
 import json
-import uuid
 
 from mistralclient.api import base
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_utils import uuidutils
 
 from solum.api.handlers import handler
 from solum.common import catalog
@@ -196,10 +196,10 @@ class PipelineHandler(handler.Handler):
         """Create a new resource."""
         db_obj = objects.registry.Pipeline()
         db_obj.update(data)
-        db_obj.uuid = str(uuid.uuid4())
+        db_obj.uuid = uuidutils.generate_uuid()
         db_obj.user_id = self.context.user
         db_obj.project_id = self.context.tenant
-        db_obj.trigger_id = str(uuid.uuid4())
+        db_obj.trigger_id = uuidutils.generate_uuid()
 
         # create the trust_id and store it.
         trust_context = self._clients.keystone().create_trust_context()

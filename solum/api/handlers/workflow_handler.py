@@ -14,10 +14,10 @@
 
 import datetime
 import json
-import uuid
 
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_utils import uuidutils
 
 from solum.api.handlers import handler
 from solum.common import exception
@@ -114,7 +114,7 @@ class WorkflowHandler(handler.Handler):
         """Create a new workflow."""
 
         db_obj = objects.registry.Workflow()
-        db_obj.id = str(uuid.uuid4())
+        db_obj.id = uuidutils.generate_uuid()
         db_obj.user_id = self.context.user
         db_obj.project_id = self.context.tenant
         db_obj.deleted = False
@@ -178,7 +178,7 @@ class WorkflowHandler(handler.Handler):
         image.source_uri = wf_obj.source['repository']
         image.base_image_id = app_obj.languagepack
         image.image_format = CONF.api.image_format
-        image.uuid = str(uuid.uuid4())
+        image.uuid = uuidutils.generate_uuid()
         image.user_id = self.context.user
         image.project_id = self.context.tenant
         image.status = IMAGE_STATES.QUEUED
@@ -273,7 +273,7 @@ class PlanAssemblyAdapter(object):
         assembly.user_id = self.context.user
         assembly.project_id = self.context.tenant
         assembly.name = self.app_obj.name
-        assembly.uuid = str(uuid.uuid4())
+        assembly.uuid = uuidutils.generate_uuid()
 
         assembly.workflow = self.wf_obj.actions
 

@@ -16,11 +16,11 @@ import base64
 import errno
 import os
 import shelve
-import uuid
 
 from Crypto.PublicKey import RSA
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_utils import uuidutils
 
 from solum.api.handlers import assembly_handler
 from solum.api.handlers import handler
@@ -96,10 +96,10 @@ class PlanHandler(handler.Handler):
         db_obj = objects.registry.Plan()
         if 'name' in data:
             db_obj.name = data['name']
-        db_obj.uuid = str(uuid.uuid4())
+        db_obj.uuid = uuidutils.generate_uuid()
         db_obj.user_id = self.context.user
         db_obj.project_id = self.context.tenant
-        db_obj.trigger_id = str(uuid.uuid4())
+        db_obj.trigger_id = uuidutils.generate_uuid()
 
         # create a delegation trust_id\token, if required
         db_obj.trust_id = keystone_utils.create_delegation_token(self.context)

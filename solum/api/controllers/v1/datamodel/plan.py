@@ -12,8 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import uuid
-
+from oslo_utils import uuidutils
 import six
 import wsme
 from wsme.rest import json as wjson
@@ -128,7 +127,7 @@ class Plan(api_types.Base):
                        'artifact_type': 'git_pull',
                        'content': {'href': 'git://example.com/project.git',
                                    'private': False},
-                       'language_pack': str(uuid.uuid4()),
+                       'language_pack': uuidutils.generate_uuid(),
                        'requirements': [{
                            'requirement_type': 'git_pull',
                            'fulfillment': 'id:build'}]}],

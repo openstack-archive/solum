@@ -20,7 +20,6 @@ Tests for the sqlalchemy solum 'objects' implementation
 """
 
 import datetime
-import uuid
 
 import testtools
 from testtools import matchers
@@ -29,6 +28,8 @@ from solum.common import exception
 from solum import objects
 from solum.tests import base as tests
 from solum.tests import utils
+
+from oslo_utils import uuidutils
 
 
 class TestObjectsSqlalchemy(tests.BaseTestCase):
@@ -71,7 +72,7 @@ class TestObjectsSqlalchemy(tests.BaseTestCase):
     def test_object_persist_and_retrieve(self):
         component = objects.registry.Component()
         self.assertIsNotNone(component)
-        component.uuid = str(uuid.uuid4())
+        component.uuid = uuidutils.generate_uuid()
         component.name = 'abc'
         component.description = '1-2-3-4'
         component.plan_id = 1
@@ -102,7 +103,7 @@ class TestObjectsSqlalchemy(tests.BaseTestCase):
 
         component = objects.registry.Component()
         self.assertIsNotNone(component)
-        component.uuid = str(uuid.uuid4())
+        component.uuid = uuidutils.generate_uuid()
         component.plan_id = 1
         component.create(self.ctx)
 
