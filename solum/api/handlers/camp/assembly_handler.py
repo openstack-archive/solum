@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import uuid
+from oslo_utils import uuidutils
 
 from solum.api.handlers import assembly_handler as solum_assem_handler
 from solum import objects
@@ -22,10 +22,10 @@ class AssemblyHandler(solum_assem_handler.AssemblyHandler):
     def create_from_plan(self, plan_obj):
         """Create an application using a plan resource as a template."""
         db_obj = objects.registry.Assembly()
-        db_obj.uuid = str(uuid.uuid4())
+        db_obj.uuid = uuidutils.generate_uuid()
         db_obj.user_id = self.context.user
         db_obj.project_id = self.context.tenant
-        db_obj.trigger_id = str(uuid.uuid4())
+        db_obj.trigger_id = uuidutils.generate_uuid()
         db_obj.username = self.context.user_name
 
         # use the plan name as the name of this application

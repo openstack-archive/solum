@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import uuid
-
 from solum.objects import registry
 from solum.objects.sqlalchemy import userlog
 from solum.tests import base
 from solum.tests import utils
+
+from oslo_utils import uuidutils
 
 
 class TestUserlog(base.BaseTestCase):
@@ -25,7 +25,7 @@ class TestUserlog(base.BaseTestCase):
         super(TestUserlog, self).setUp()
         self.db = self.useFixture(utils.Database())
         self.ctx = utils.dummy_context()
-        a_id = uuid.uuid4()
+        a_id = uuidutils.generate_uuid()
 
         self.data = [{'id': 12,
                       'resource_uuid': '%s' % a_id,

@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import uuid
+from oslo_utils import uuidutils
 
 from solum.api.handlers import handler
 from solum.common import catalog
@@ -48,7 +48,7 @@ class InfrastructureStackHandler(handler.Handler):
         """
         db_obj = objects.registry.InfrastructureStack()
         db_obj.update(data)
-        db_obj.uuid = str(uuid.uuid4())
+        db_obj.uuid = uuidutils.generate_uuid()
         db_obj.user_id = self.context.user
         db_obj.project_id = self.context.tenant
 

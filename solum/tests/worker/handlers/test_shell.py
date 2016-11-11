@@ -15,10 +15,10 @@
 import base64
 import json
 import os.path
-import uuid
 
 import mock
 from oslo_config import cfg
+from oslo_utils import uuidutils
 
 from solum.common import exception
 from solum.i18n import _
@@ -153,7 +153,7 @@ class HandlerTest(base.BaseTestCase):
                    mock_registry, mock_get_env):
         handler = shell_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
-        fake_glance_id = str(uuid.uuid4())
+        fake_glance_id = uuidutils.generate_uuid()
         fake_image_name = 'tenant-name-ts-commit'
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
         fake_image = fakes.FakeImage()
@@ -202,7 +202,7 @@ class HandlerTest(base.BaseTestCase):
                         mock_registry, mock_get_env):
         handler = shell_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
-        fake_glance_id = str(uuid.uuid4())
+        fake_glance_id = uuidutils.generate_uuid()
         fake_image_name = 'tenant-name-ts-commit'
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
         fake_image = fakes.FakeImage()
@@ -260,7 +260,7 @@ class HandlerTest(base.BaseTestCase):
             mock_registry, mock_get_env):
         handler = shell_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
-        fake_glance_id = str(uuid.uuid4())
+        fake_glance_id = uuidutils.generate_uuid()
         fake_image_name = 'tenant-name-ts-commit'
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
         fake_image = fakes.FakeImage()
@@ -320,7 +320,7 @@ class HandlerTest(base.BaseTestCase):
             mock_get_env):
         handler = shell_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
-        fake_glance_id = str(uuid.uuid4())
+        fake_glance_id = uuidutils.generate_uuid()
         fake_image_name = 'tenant-name-ts-commit'
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
         fake_image = fakes.FakeImage()
@@ -542,7 +542,7 @@ class HandlerTest(base.BaseTestCase):
                                    mock_get_env):
         handler = shell_handler.Handler()
         fake_assembly = fakes.FakeAssembly()
-        fake_glance_id = str(uuid.uuid4())
+        fake_glance_id = uuidutils.generate_uuid()
         fake_image_name = 'tenant-name-ts-commit'
         mock_registry.Assembly.get_by_id.return_value = fake_assembly
         fake_image = fakes.FakeImage()
@@ -783,7 +783,7 @@ class TestLanguagePackBuildCommand(base.BaseTestCase):
     def test_build_lp(self, mock_popen, mock_ui, mock_registry, mock_get_env):
         handler = shell_handler.Handler()
         fake_image = fakes.FakeImage()
-        fake_glance_id = str(uuid.uuid4())
+        fake_glance_id = uuidutils.generate_uuid()
         fake_image_name = 'tenant-name-ts-commit'
         mock_registry.Image.get_lp_by_name_or_uuid.return_value = fake_image
         mock_popen.return_value.communicate.return_value = [

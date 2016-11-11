@@ -12,13 +12,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import uuid
-
 import sqlalchemy as sa
 
 from solum import objects
 from solum.objects import component as abstract
 from solum.objects.sqlalchemy import models as sql
+
+from oslo_utils import uuidutils
 
 
 class Component(sql.Base, abstract.Component):
@@ -61,7 +61,7 @@ class Component(sql.Base, abstract.Component):
                           stack_id):
         """Helper function to make creating components easier."""
         comp = objects.registry.Component()
-        comp.uuid = str(uuid.uuid4())
+        comp.uuid = uuidutils.generate_uuid()
         comp.name = name
         comp.component_type = type
         comp.description = description
