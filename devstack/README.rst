@@ -19,16 +19,13 @@ Enabling Solum in DevStack
     cat > local.conf <<END
     [[local|localrc]]
     enable_plugin solum git://git.openstack.org/openstack/solum
-    ADMIN_PASSWORD=password
-    MYSQL_PASSWORD=password
-    RABBIT_PASSWORD=password
-    SERVICE_PASSWORD=password
-    SERVICE_TOKEN=password
     END
 
 4. Run ``stack.sh``.
 
-Note: This setup will produce virtual machines, not Docker containers.
-      For an example of the Docker setup, see::
+.. note::
 
-      http://wiki.openstack.org/Solum/Docker
+  This setup will produce virtual machines, not Docker containers.
+  For an example of the Docker setup, see::
+
+    http://wiki.openstack.org/Solum/Docker
