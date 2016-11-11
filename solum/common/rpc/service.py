@@ -30,15 +30,6 @@ from solum import objects
 # to use libamqp instead.
 eventlet.monkey_patch()
 
-# NOTE(asalkeld):
-# The solum.openstack.common.rpc entries are for compatibility
-# with devstack rpc_backend configuration values.
-TRANSPORT_ALIASES = {
-    'solum.openstack.common.rpc.impl_kombu': 'rabbit',
-    'solum.openstack.common.rpc.impl_qpid': 'qpid',
-    'solum.openstack.common.rpc.impl_zmq': 'zmq',
-}
-
 
 class JsonPayloadSerializer(messaging.NoOpSerializer):
     @staticmethod
@@ -73,8 +64,7 @@ class Service(object):
 
     def __init__(self, topic, server, handlers):
         serializer = RequestContextSerializer(JsonPayloadSerializer())
-        transport = messaging.get_transport(cfg.CONF,
-                                            aliases=TRANSPORT_ALIASES)
+        transport = messaging.get_transport(cfg.CONF)
         # TODO(asalkeld) add support for version='x.y'
         target = messaging.Target(topic=topic, server=server)
         self._server = messaging.get_rpc_server(transport, target, handlers,
@@ -90,8 +80,7 @@ class API(object):
     def __init__(self, transport=None, context=None, topic=None):
         serializer = RequestContextSerializer(JsonPayloadSerializer())
         if transport is None:
-            transport = messaging.get_transport(cfg.CONF,
-                                                aliases=TRANSPORT_ALIASES)
+            transport = messaging.get_transport(cfg.CONF)
         self._context = context
         if topic is None:
             topic = ''
