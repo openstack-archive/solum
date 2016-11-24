@@ -48,25 +48,22 @@ function create_solum_service_and_endpoint() {
     openstack role add $SOLUM_UPDATE_ROLE --project demo --user admin
     openstack role add $SOLUM_UPDATE_ROLE --project admin --user admin
 
-    if [[ "$KEYSTONE_CATALOG_BACKEND" = 'sql' ]]; then
-        SOLUM_SERVICE=$(openstack service create application_deployment \
-            --name=solum \
-            --description="Solum" \
-            | grep " id " | get_field 2)
-        openstack endpoint create --region RegionOne $SOLUM_SERVICE public "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_SERVICE_PORT"
-        openstack endpoint create --region RegionOne $SOLUM_SERVICE admin "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_SERVICE_PORT"
-        openstack endpoint create --region RegionOne $SOLUM_SERVICE internal "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_SERVICE_PORT"
+    SOLUM_SERVICE=$(openstack service create application_deployment \
+        --name=solum \
+        --description="Solum" \
+        | grep " id " | get_field 2)
+    openstack endpoint create --region RegionOne $SOLUM_SERVICE public "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_SERVICE_PORT"
+    openstack endpoint create --region RegionOne $SOLUM_SERVICE admin "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_SERVICE_PORT"
+    openstack endpoint create --region RegionOne $SOLUM_SERVICE internal "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_SERVICE_PORT"
 
-        SOLUM_BUILDER_SERVICE=$(openstack service create image_builder \
-            --name=solum \
-            --description="Solum Image Builder" \
-            | grep " id " | get_field 2)
+    SOLUM_BUILDER_SERVICE=$(openstack service create image_builder \
+        --name=solum \
+        --description="Solum Image Builder" \
+        | grep " id " | get_field 2)
 
-        openstack endpoint create --region RegionOne $SOLUM_BUILDER_SERVICE public "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_BUILDER_SERVICE_PORT"
-        openstack endpoint create --region RegionOne $SOLUM_BUILDER_SERVICE admin "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_BUILDER_SERVICE_PORT"
-        openstack endpoint create --region RegionOne $SOLUM_BUILDER_SERVICE internal "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_BUILDER_SERVICE_PORT"
-
-    fi
+    openstack endpoint create --region RegionOne $SOLUM_BUILDER_SERVICE public "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_BUILDER_SERVICE_PORT"
+    openstack endpoint create --region RegionOne $SOLUM_BUILDER_SERVICE admin "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_BUILDER_SERVICE_PORT"
+    openstack endpoint create --region RegionOne $SOLUM_BUILDER_SERVICE internal "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_BUILDER_SERVICE_PORT"
 }
 
 # configure_solum() - Set config files, create data dirs, etc
