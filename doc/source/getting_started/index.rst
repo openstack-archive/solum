@@ -107,7 +107,7 @@ Create your app
 
 Solum clones code from the user's public Git repository or user's public/private GitHub repository. Before you begin, push your code to a Git repo. From within your devstack host, you can now run solum commands to build and deploy your application.
 
-2. To register an app with Solum, you will need to write a appfile to describe it.
+2. To register an app with Solum, you will need to write an appfile to describe it.
 The following appfile deploys a sample python application.
 You can find other examples in the :code:`examples/apps/` folder of the solum repo on github.
 To learn more, see the appfile section of this document.
