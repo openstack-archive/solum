@@ -96,7 +96,7 @@ class TestObjectsSqlalchemy(tests.BaseTestCase):
         # visible via get_all
         components = objects.registry.ComponentList.get_all(None)
         exists = [item for item in components if item.id == component.id]
-        self.assertTrue(len(exists) > 0)
+        self.assertGreater(len(exists), 0)
 
     def test_object_mutate(self):
         begin = datetime.datetime.utcnow()
