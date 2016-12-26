@@ -73,11 +73,3 @@ enable_service s-proxy
 enable_service s-object
 enable_service s-container
 enable_service s-account
-
-
-# Enable heat services
-enable_service heat
-enable_service h-api
-enable_service h-api-cfn
-enable_service h-api-cw
-enable_service h-eng
