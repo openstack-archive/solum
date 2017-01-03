@@ -86,13 +86,10 @@ function configure_solum() {
     # Generate sample config and configure common parameters.
     mkdir -p /tmp/solum
 
-    # TODO(devkulkarni): Commenting out config generation for now to get around following bug
-    # https://bugs.launchpad.net/solum/+bug/1555788. Instead, including a sample config in the repo
-    #pushd $SOLUM_DIR
-    #    oslo-config-generator --config-file=${SOLUM_DIR}/etc/solum/config-generator.conf --output-file=/tmp/solum/solum.conf.sample
-    #popd
-    #cp /tmp/solum/solum.conf.sample $SOLUM_CONF_DIR/$SOLUM_CONF_FILE
-    cp ${SOLUM_DIR}/devstack/solum.conf.sample $SOLUM_CONF_DIR/$SOLUM_CONF_FILE
+    pushd $SOLUM_DIR
+        oslo-config-generator --config-file=${SOLUM_DIR}/etc/solum/config-generator.conf --output-file=/tmp/solum/solum.conf.sample
+    popd
+    cp /tmp/solum/solum.conf.sample $SOLUM_CONF_DIR/$SOLUM_CONF_FILE
 
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE DEFAULT debug $SOLUM_DEBUG
 
