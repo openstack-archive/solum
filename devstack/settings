@@ -50,6 +50,7 @@ GIT_BASE=https://git.openstack.org
 
 VIRT_DRIVER=docker
 SOLUM_IMAGE_FORMAT=docker
+ZUN_DRIVER=nova-docker
 
 #enable_service mistral
 # Enable neutron services

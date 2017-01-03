@@ -139,11 +139,7 @@ function configure_solum() {
     # configure AllHostsFilter in /etc/nova/nova.conf
     iniset $NOVA_CONF_DIR/$NOVA_CONF_FILE DEFAULT scheduler_default_filters AllHostsFilter
 
-    install_docker
-
-    if [[ $SOLUM_IMAGE_FORMAT == 'docker' ]]; then
-        install_docker_driver
-    elif [[ $SOLUM_IMAGE_FORMAT == 'vm' ]]; then
+    if [[ $SOLUM_IMAGE_FORMAT == 'vm' ]]; then
         # configure Virtdriver in /etc/nova/nova.conf
         iniset $NOVA_CONF_DIR/$NOVA_CONF_FILE DEFAULT compute_driver libvirt.LibvirtDriver
         #solum_install_start_docker_registry
@@ -151,33 +147,12 @@ function configure_solum() {
     else
         echo "SOLUM_IMAGE_FORMAT docker or vm"
     fi
-}
-# Install docker driver
-function install_docker_driver() {
-      # Integrate nova-docker with Devstack
-      if [ ! -d /opt/stack/nova-docker ] ; then
-        sudo git clone https://github.com/openstack/nova-docker.git /opt/stack/nova-docker
-      fi
-      cd /opt/stack/nova-docker
-      sudo git checkout 7e55fd551ef4faf3499a8db056efc9535c20e434
-      sudo python setup.py install
-      if [ ! -d $NOVA_CONF_DIR/rootwrap.d ] ; then
-        mkdir -p $NOVA_CONF_DIR/rootwrap.d
-      fi
-      sudo cp /opt/stack/nova-docker/etc/nova/rootwrap.d/docker.filters /etc/nova/rootwrap.d/.
-      # configure Virtdriver in /etc/nova/nova.conf
-      iniset $NOVA_CONF_DIR/$NOVA_CONF_FILE DEFAULT compute_driver novadocker.virt.docker.driver.DockerDriver
-}
 
-# Install docker
-function install_docker() {
-    sudo wget -O docker.deb https://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.7.1-0~trusty_amd64.deb
-    sudo apt-get install -y libapparmor1
-    sudo dpkg -i docker.deb
-    sudo gpasswd -a ${USER} docker
-    sudo usermod -aG docker ${USER}
-    restart_service docker
-    sudo chmod o=rwx /var/run/docker.sock
+    if [[ "$USE_PYTHON3" = "True" ]]; then
+        # Switch off glance->swift communication as swift fails under py3.x
+        iniset /etc/glance/glance-api.conf glance_store default_store file
+    fi
+
 }
 
 #register solum user in Keystone
