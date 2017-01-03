@@ -83,7 +83,9 @@ class SolumClient(rest_client.RestClient):
         self.created_apps = []
         self.created_lps = []
 
-    def request_without_auth(self, resource, method, headers={}, body=None):
+    def request_without_auth(self, resource, method, headers=None, body=None):
+        if headers is None:
+            headers = {}
         dscv = CONF.identity.disable_ssl_certificate_validation
         http_obj = http.ClosingHttp(disable_ssl_certificate_validation=dscv)
         url = '%s/%s' % (self.base_url, resource)
