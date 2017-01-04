@@ -19,7 +19,9 @@ from solum.common import config
 from solum import objects
 
 
-def prepare_service(argv=[]):
+def prepare_service(argv=None):
+    if argv is None:
+        argv = []
     log.register_options(cfg.CONF)
     config.set_config_defaults()
     cfg.CONF(argv[1:], project='solum')
