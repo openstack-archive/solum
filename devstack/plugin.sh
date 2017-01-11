@@ -187,6 +187,7 @@ function install_docker() {
     sudo dpkg -i docker.deb
     sudo gpasswd -a ${USER} docker
     sudo usermod -aG docker ${USER}
+    restart_service docker
     sudo chmod o=rwx /var/run/docker.sock
 }
 

@@ -45,7 +45,6 @@ DEVSTACK_DIR=${HOME}/devstack
 #-----------------------------
 
 LOGFILE=/opt/stack/logs/stack.sh.log
-NOVNC_FROM_PACKAGE=false
 SCREEN_LOGDIR=/opt/stack/logs
 GIT_BASE=https://git.openstack.org
 

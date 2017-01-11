@@ -16,3 +16,8 @@
 
 DEVSTACK_BASE=/opt/stack/new/devstack
 DEVSTACK_GATE=/opt/stack/new/devstack-gate
+
+# NOTE(zhurong): Specify the devstack commit-id to unblock the
+# dsvm-ubuntu-xenial gate.
+cd /opt/stack/new/devstack
+sudo git checkout 319abcaf85791961baaed0019fa67c79c26047e0
