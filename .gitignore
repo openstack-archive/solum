@@ -50,6 +50,7 @@ releasenotes/build
 
 #swap file
 *.swp
+*.swo
 
 #IntelJ Idea
 .idea/
