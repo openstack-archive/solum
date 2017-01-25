@@ -53,6 +53,7 @@ class ClientsTest(base.BaseTestCase):
         mock_call.assert_called_once_with(session='keystone_session')
 
     def test_clients_barbican_noauth(self):
+        self.skipTest('Skipping barbican noauth test.')
         dummy_url = 'http://server.test:5000/v2.0'
         cfg.CONF.set_override('auth_uri', dummy_url,
                               group='keystone_authtoken')

@@ -14,14 +14,14 @@
 
 """Solum Deployer Heat handler."""
 
-import json
+# import json
 import logging
 import socket
 import time
 
 from heatclient import exc
 import httplib2
-from keystoneclient.v2_0 import client as ksclient
+# from keystoneclient.v2_0 import client as ksclient
 from oslo_config import cfg
 from oslo_log import log as os_logging
 import six
@@ -38,7 +38,7 @@ from solum.common import heat_utils
 from solum.common import repo_utils
 from solum.common import solum_glanceclient
 from solum.common import solum_swiftclient
-from solum.common import utils
+# from solum.common import utils
 from solum import objects
 from solum.objects import assembly
 from solum.uploaders import tenant_logger as tlog
@@ -99,26 +99,33 @@ deployer_log_dir = cfg.CONF.deployer.deployer_log_dir
 
 
 def get_heat_client(ctxt, app):
-    raw_content = json.loads(app.raw_content)
-    username = raw_content['username']
-    encoded_password = raw_content['password'].encode('ISO-8859-1')
-    decrypted_password = utils.decrypt(encoded_password)
-    password = decrypted_password
-    tenant_name = raw_content['tenant_name']
-    auth_url = cfg.CONF.keystone_authtoken.auth_uri
+    # raw_content = json.loads(app.raw_content)
+    # username = raw_content['username']
+    # encoded_password = raw_content['password'].encode('ISO-8859-1')
+    # decrypted_password = utils.decrypt(encoded_password)
+    # password = decrypted_password
+    # tenant_name = raw_content['tenant_name']
+    # auth_url = cfg.CONF.keystone_authtoken.auth_uri
 
-    ks_kwargs = {
-        'username': username,
-        'password': password,
-        'tenant_name': tenant_name,
-        'auth_url': auth_url
-    }
+    # ks_kwargs = {
+    #     'username': username,
+    #     'password': password,
+    #     'tenant_name': tenant_name,
+    #     'auth_url': auth_url
+    # }
 
-    k_client = ksclient.Client(**ks_kwargs)
-    auth_token = k_client.auth_token
+    # k_client = ksclient.Client(**ks_kwargs)
+    # auth_token = k_client.auth_token
 
     osc = clients.OpenStackClients(ctxt)
-    heat = osc.heat(username, password, auth_token)
+
+    # TODO(zhurong): Following works for github triggers.
+    # We should accommodate it with the current workflow.
+    # See for details: https://bugs.launchpad.net/solum/+bug/1671871
+    # heat = osc.heat(username, password, auth_token)
+
+    heat = osc.heat(token=ctxt.auth_token)
+
     return heat
 
 
