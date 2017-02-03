@@ -64,9 +64,10 @@ class LanguagePackHandler(handler.Handler):
             # 'dummy' plans that we are creating corresponding
             # to 'app deploy' requests.
             if hasattr(plan, 'raw_content') and plan.raw_content:
-                lp = plan.raw_content['artifacts'][0]['language_pack']
-                if lp == db_obj.name or lp == db_obj.uuid:
-                    return True
+                if plan.raw_content and 'artifacts' in plan.raw_content:
+                    lp = plan.raw_content['artifacts'][0]['language_pack']
+                    if lp == db_obj.name or lp == db_obj.uuid:
+                        return True
 
     def _check_lp_referenced_in_any_app(self, ctxt, db_obj):
         apps = app.App.get_all_by_lp(ctxt, db_obj.name)

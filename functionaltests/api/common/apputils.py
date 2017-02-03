@@ -33,4 +33,6 @@ def get_sample_data(languagepack=''):
     workflow["run_cmd"] = "python app.py"
     data["workflow_config"] = workflow
 
+    data["repo_token"] = 'abc'
+
     return data

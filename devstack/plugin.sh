@@ -38,35 +38,28 @@ fi
 
 # create_solum_service_and_endpoint() - Set up required solum service and endpoint
 function create_solum_service_and_endpoint() {
-    SOLUM_UPDATE_ROLE=$(openstack role create \
-        solum_assembly_update \
-        | grep " id " | get_field 2)
+    SOLUM_UPDATE_ROLE=$(get_or_create_role "solum_assembly_update")
 
     # Give the role to the demo and admin users so they can use git push
     # in either of the projects created by devstack
-    openstack role add $SOLUM_UPDATE_ROLE --project demo --user demo
-    openstack role add $SOLUM_UPDATE_ROLE --project demo --user admin
-    openstack role add $SOLUM_UPDATE_ROLE --project admin --user admin
+    get_or_add_user_project_role $SOLUM_UPDATE_ROLE demo demo
+    get_or_add_user_project_role $SOLUM_UPDATE_ROLE admin demo
+    get_or_add_user_project_role $SOLUM_UPDATE_ROLE admin admin
 
-    if [[ "$KEYSTONE_CATALOG_BACKEND" = 'sql' ]]; then
-        SOLUM_SERVICE=$(openstack service create application_deployment \
-            --name=solum \
-            --description="Solum" \
-            | grep " id " | get_field 2)
-        openstack endpoint create --region RegionOne $SOLUM_SERVICE public "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_SERVICE_PORT"
-        openstack endpoint create --region RegionOne $SOLUM_SERVICE admin "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_SERVICE_PORT"
-        openstack endpoint create --region RegionOne $SOLUM_SERVICE internal "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_SERVICE_PORT"
+    SOLUM_SERVICE=$(get_or_create_service "solum" "application_deployment" "Solum Service")
+    get_or_create_endpoint "application_deployment" \
+        "$REGION_NAME" \
+        "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_SERVICE_PORT" \
+        "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_SERVICE_PORT" \
+        "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_SERVICE_PORT"
 
-        SOLUM_BUILDER_SERVICE=$(openstack service create image_builder \
-            --name=solum \
-            --description="Solum Image Builder" \
-            | grep " id " | get_field 2)
+    SOLUM_BUILDER_SERVICE=$(get_or_create_service "solum" "image_builder" "Solum Image Builder")
+    get_or_create_endpoint "image_builder" \
+        "$REGION_NAME" \
+        "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_BUILDER_SERVICE_PORT" \
+        "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_BUILDER_SERVICE_PORT" \
+        "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_BUILDER_SERVICE_PORT"
 
-        openstack endpoint create --region RegionOne $SOLUM_BUILDER_SERVICE public "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_BUILDER_SERVICE_PORT"
-        openstack endpoint create --region RegionOne $SOLUM_BUILDER_SERVICE admin "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_BUILDER_SERVICE_PORT"
-        openstack endpoint create --region RegionOne $SOLUM_BUILDER_SERVICE internal "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_BUILDER_SERVICE_PORT"
-
-    fi
 }
 
 # configure_solum() - Set config files, create data dirs, etc
@@ -194,48 +187,32 @@ function install_docker() {
 #register solum user in Keystone
 function add_solum_user() {
 
-    local SERVICE_TENANT=$(openstack project list | awk "/ $SERVICE_TENANT_NAME / { print \$2 }")
-    echo "SERVICE_TENANT=$SERVICE_TENANT"
+    local SERVICE_TENANT=$(get_or_create_project "$SERVICE_TENANT_NAME" "default")
+    SOLUM_UPDATE_ROLE=$(get_or_create_role "solum_assembly_update")
 
-    # Register new service user as other services do
-    SOLUM_USER_ID=$(openstack user create $SOLUM_USER \
-       --password=$ADMIN_PASSWORD \
-       --project $SERVICE_TENANT \
-       --email=$SOLUM_USER@example.com \
-       | grep " id " | get_field 2)
+    SOLUM_USER_ID=$(get_or_create_user "$SOLUM_USER" \
+        "$ADMIN_PASSWORD" "default" "$SOLUM_USER@example.com")
 
-    local ADMIN_ROLE=$(openstack role list | awk "/ admin / { print \$2 }")
-    echo "ADMIN_ROLE=$ADMIN_ROLE"
-
-     openstack role add \
-       --project $SERVICE_TENANT \
-       --user $SOLUM_USER_ID \
-       $ADMIN_ROLE
+    get_or_add_user_project_role "admin" "$SOLUM_USER_ID" "$SERVICE_TENANT"
+    get_or_add_user_project_role "$SOLUM_UPDATE_ROLE" "$SOLUM_USER_ID" "$SERVICE_TENANT"
 }
 
 function add_additional_solum_users() {
 
-    SOLUM_UPDATE_ROLE=$(openstack role show \
-        solum_assembly_update \
-        | grep " id " | get_field 2)
+    SOLUM_UPDATE_ROLE=$(get_or_create_role "solum_assembly_update")
 
-    ROLE_ID=$(openstack role create solum_user \
-              | grep " id " | get_field 2)
     for _LETTER in a b c; do
         local TENANTNAME=solum_tenant_$_LETTER
-        openstack project create \
-            --description "Solum user tenant ${_LETTER^^}" \
-            $TENANTNAME
+        get_or_create_project "$TENANTNAME" "default"
 
         local USERNAME=solum_user_$_LETTER
-        openstack user create \
-            --password solum \
-            --project $TENANTNAME \
-            $USERNAME
+        get_or_create_user "$USERNAME" "solum" "default"
 
-        openstack role add $SOLUM_UPDATE_ROLE --project $TENANTNAME --user $USERNAME
-        openstack role add $SOLUM_UPDATE_ROLE --project $TENANTNAME --user admin
+        get_or_add_user_project_role "$SOLUM_UPDATE_ROLE" "$USERNAME" "$TENANTNAME"
+        get_or_add_user_project_role "$SOLUM_UPDATE_ROLE" "admin" "$TENANTNAME"
+
     done
+
 }
 
 #create_solum_cache_dir() - Setup keystone signing folder
