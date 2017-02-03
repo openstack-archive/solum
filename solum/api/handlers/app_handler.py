@@ -53,7 +53,7 @@ class AppHandler(handler.Handler):
         new_wf.update(data_dict.get('workflow_config', {}))
         data_dict['workflow_config'] = new_wf
 
-        if data_dict['repo_token']:
+        if data_dict.get('repo_token'):
             new_raw_content = json.loads(obj_dict['raw_content'])
             new_raw_content['repo_token'] = data_dict['repo_token']
             data_dict['raw_content'] = json.dumps(new_raw_content)

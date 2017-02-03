@@ -184,11 +184,13 @@ function install_docker() {
 function add_solum_user() {
 
     local SERVICE_TENANT=$(get_or_create_project "$SERVICE_TENANT_NAME" "default")
+    SOLUM_UPDATE_ROLE=$(get_or_create_role "solum_assembly_update")
 
     SOLUM_USER_ID=$(get_or_create_user "$SOLUM_USER" \
         "$ADMIN_PASSWORD" "default" "$SOLUM_USER@example.com")
 
     get_or_add_user_project_role "admin" "$SOLUM_USER_ID" "$SERVICE_TENANT"
+    get_or_add_user_project_role "$SOLUM_UPDATE_ROLE" "$SOLUM_USER_ID" "$SERVICE_TENANT"
 }
 
 function add_additional_solum_users() {

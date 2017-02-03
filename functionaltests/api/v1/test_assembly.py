@@ -207,8 +207,6 @@ class TestAssemblyController(base.TestCase):
         resp, body = self.client.delete_assembly(uuid)
         self.assertEqual(204, resp.status)
         self.assertEqual('', body)
-        self.assertTrue(self.client.assembly_delete_done(uuid),
-                        "Assembly couldn't be deleted.")
 
     def test_assemblies_delete_not_found(self):
         self.assertRaises(tempest_exceptions.NotFound,
