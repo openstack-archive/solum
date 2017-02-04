@@ -71,7 +71,7 @@ class TestPlanController(base.TestCase):
     def _delete_all(self):
         resp, body = self.client.get(
             'v1/plans', headers={'accept-type': 'application/x-yaml'})
-        data = yaml.load(body)
+        data = yaml.safe_load(body)
         self.assertEqual(200, resp.status)
         [self._delete_plan(pl['uuid']) for pl in data]
 
@@ -88,7 +88,7 @@ class TestPlanController(base.TestCase):
         self.assertEqual(201, create_resp.status)
         resp, body = self.client.get(
             'v1/plans', headers={'content-type': 'application/x-yaml'})
-        data = yaml.load(body)
+        data = yaml.safe_load(body)
         self.assertEqual(200, resp.status)
         uuid = create_resp.uuid
         filtered = [pl for pl in data if pl['uuid'] == uuid]
@@ -134,7 +134,7 @@ class TestPlanController(base.TestCase):
             'v1/plans/%s' % uuid,
             headers={'content-type': 'application/x-yaml'})
         self.assertEqual(200, resp.status, )
-        yaml_data = yaml.load(body)
+        yaml_data = yaml.safe_load(body)
         self._assert_output_expected(yaml_data, sample_data)
 
     def test_plans_get_with_private_github_repo(self):
@@ -146,7 +146,7 @@ class TestPlanController(base.TestCase):
             'v1/plans/%s' % uuid,
             headers={'content-type': 'application/x-yaml'})
         self.assertEqual(200, resp.status)
-        yaml_data = yaml.load(body)
+        yaml_data = yaml.safe_load(body)
         public_key = yaml_data['artifacts'][0]['content']['public_key']
         self.assertNotEqual(None, public_key)
         self._assert_output_expected(yaml_data, sample_data)
@@ -170,7 +170,7 @@ class TestPlanController(base.TestCase):
             'v1/plans/%s' % uuid, updated_yaml,
             headers={'content-type': 'application/x-yaml'})
         self.assertEqual(200, resp.status)
-        yaml_data = yaml.load(body)
+        yaml_data = yaml.safe_load(body)
         self._assert_output_expected(yaml_data, updated_data)
 
     def test_plans_put_not_found(self):

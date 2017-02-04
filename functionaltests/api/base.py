@@ -203,7 +203,7 @@ class SolumResponse(object):
         if body_type == 'json':
             self.data = json.loads(self.body)
         elif body_type == 'yaml':
-            self.data = yaml.load(self.body)
+            self.data = yaml.safe_load(self.body)
         if self.data.get('uuid'):
             self.uuid = self.data.get('uuid')
         if self.data.get('id'):
@@ -215,7 +215,7 @@ class SolumResponse(object):
 
     @property
     def yaml_data(self):
-        return yaml.load(self.body)
+        return yaml.safe_load(self.body)
 
     @property
     def json_data(self):

@@ -143,7 +143,7 @@ class TestPlansController(base.TestCase):
             'v1/plans/%s' % uuid,
             headers={'content-type': 'application/x-yaml'})
         self.assertEqual(200, resp.status)
-        yaml_data = yaml.load(body)
+        yaml_data = yaml.safe_load(body)
         self._assert_output_expected(yaml_data, sample_data)
 
     def test_create_camp_plan_with_private_github_repo(self):

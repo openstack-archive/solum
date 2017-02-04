@@ -88,7 +88,7 @@ class TestPlanController(base.BaseTestCase):
         cont = plan.PlanController('test_id')
         resp = cont.get()
         self.assertIsNotNone(resp)
-        resp_yml = yaml.load(resp)
+        resp_yml = yaml.safe_load(resp)
         self.assertEqual(fake_plan.raw_content['name'], resp_yml['name'])
         hand_get.assert_called_with('test_id')
         self.assertEqual(200, resp_mock.status)
@@ -290,7 +290,7 @@ class TestPlansController(base.BaseTestCase):
         hand_get.return_value = [fake_plan]
         resp = plan.PlansController().get_all()
         self.assertIsNotNone(resp)
-        resp_yml = yaml.load(resp)
+        resp_yml = yaml.safe_load(resp)
         self.assertEqual(fake_plan.raw_content['name'], resp_yml[0]['name'])
         self.assertEqual(200, resp_mock.status)
         hand_get.assert_called_with()
