@@ -115,7 +115,7 @@ class TestAppController(base.TestCase):
             'v1/apps/%s' % id,
             headers={'content-type': 'application/json'})
         self.assertEqual(200, resp.status)
-        yaml_data = yaml.load(body)
+        yaml_data = yaml.safe_load(body)
         self._assert_app_data(yaml_data, data)
         self.client.delete_app(create_resp.id)
         time.sleep(2)
@@ -128,7 +128,7 @@ class TestAppController(base.TestCase):
         self.assertEqual(201, create_resp.status)
         resp, body = self.client.get(
             'v1/apps', headers={'content-type': 'application/json'})
-        resp_data = yaml.load(body)
+        resp_data = yaml.safe_load(body)
         self.assertEqual(200, resp.status)
         id = create_resp.id
         filtered = [app for app in resp_data if app['id'] == id]
