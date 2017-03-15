@@ -567,7 +567,7 @@ class Handler(object):
 
             comp_name = 'Heat_Stack_for_%s' % assem.name
             comp_description = 'Heat Stack %s' % (
-                yaml.load(template).get('description'))
+                yaml.safe_load(template).get('description'))
             try:
                 objects.registry.Component.assign_and_create(
                     ctxt, assem, comp_name, 'heat_stack', comp_description,
