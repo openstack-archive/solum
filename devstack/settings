@@ -12,6 +12,7 @@ ZUN_BRANCH=${ZUN_BRANCH:-master}
 SOLUM_DIR=$DEST/solum
 SOLUMCLIENT_DIR=$DEST/python-solumclient
 SOLUM_CONF_DIR=${SOLUM_CONF_DIR:-/etc/solum}
+SOLUM_FILES_DIR=$SOLUM_DIR/devstack/files
 NOVA_CONF_DIR=${NOVA_CONF_DIR:-/etc/nova}
 SOLUM_CONF_FILE=solum.conf
 NOVA_CONF_FILE=nova.conf
