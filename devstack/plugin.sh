@@ -33,6 +33,9 @@ else
     SOLUM_BIN_DIR=$(get_python_exec_prefix)
 fi
 
+# Toggle for deploying Solum-API under HTTPD + mod_wsgi
+SOLUM_USE_MOD_WSGI=${SOLUM_USE_MOD_WSGI:-True}
+
 # Functions
 # ---------
 
@@ -153,6 +156,10 @@ function configure_solum() {
         iniset /etc/glance/glance-api.conf glance_store default_store file
     fi
 
+    if [ "$SOLUM_USE_MOD_WSGI" == "True" ]; then
+        _config_solum_apache_wsgi
+    fi
+
 }
 
 #register solum user in Keystone
@@ -243,6 +250,11 @@ function install_solum() {
     # When solum is re-listed in openstack/requirements/projects.txt we
     # should change setup_package back to setup_develop.
     setup_package $SOLUM_DIR -e
+
+    if [ "$SOLUM_USE_MOD_WSGI" == "True" ]; then
+        install_apache_wsgi
+    fi
+
 }
 
 # install_drone() - Install drone, but disable service
@@ -275,9 +287,39 @@ function cleanup_solum_dashboard() {
     rm $HORIZON_DIR/openstack_dashboard/local/enabled/_50_solum.py
 }
 
+# cleanup_solum_apache_wsgi() - Remove wsgi files, disable and remove apache vhost file
+function cleanup_solum_apache_wsgi {
+    sudo rm -f $(apache_site_config_for solum-api)
+}
+
+# _config_solum_apache_wsgi() - Set WSGI config files of Solum
+function _config_solum_apache_wsgi {
+
+    local solum_apache_conf=$(apache_site_config_for solum-api)
+    local solum_api_port=$SOLUM_SERVICE_PORT
+    local venv_path=""
+
+    sudo cp $SOLUM_FILES_DIR/apache-solum-api.template $solum_apache_conf
+    sudo sed -e "
+        s|%PUBLICPORT%|$solum_api_port|g;
+        s|%APACHE_NAME%|$APACHE_NAME|g;
+        s|%SOLUM_BIN_DIR%|$SOLUM_BIN_DIR|g;
+        s|%API_WORKERS%|$API_WORKERS|g;
+        s|%USER%|$STACK_USER|g;
+        s|%VIRTUALENV%|$venv_path|g
+    " -i $solum_apache_conf
+}
+
 # start_solum() - Start running processes, including screen
 function start_solum() {
-    screen_it solum-api "cd $SOLUM_DIR && $SOLUM_BIN_DIR/solum-api --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE"
+    local enabled_site_file=$(apache_site_config_for solum-api)
+    if [ -f ${enabled_site_file} ] && [ "$SOLUM_USE_MOD_WSGI" == "True" ]; then
+        enable_apache_site solum-api
+        restart_apache_server
+        tail_log solum-api /var/log/$APACHE_NAME/solum-api.log
+    else
+        screen_it solum-api "cd $SOLUM_DIR && $SOLUM_BIN_DIR/solum-api --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE"
+    fi
     screen_it solum-conductor "cd $SOLUM_DIR && $SOLUM_BIN_DIR/solum-conductor --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE"
     screen_it solum-deployer "cd $SOLUM_DIR && $SOLUM_BIN_DIR/solum-deployer --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE"
     screen_it solum-worker "cd $SOLUM_DIR && $SOLUM_BIN_DIR/solum-worker --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE"
@@ -374,6 +416,9 @@ if is_service_enabled solum-api solum-conductor solum-deployer solum-worker; the
 
     if [[ "$1" == "unstack" ]]; then
         stop_solum
+        if [ "$SOLUM_USE_MOD_WSGI" == "True" ]; then
+            cleanup_solum_apache_wsgi
+        fi
         if is_service_enabled horizon; then
             echo_summary "Cleaning Solum Dashboard up"
             cleanup_solum_dashboard

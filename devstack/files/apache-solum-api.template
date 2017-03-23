@@ -1,0 +1,25 @@
+Listen %PUBLICPORT%
+
+<VirtualHost *:%PUBLICPORT%>
+    WSGIDaemonProcess solum-api processes=%API_WORKERS% threads=10 user=%USER% display-name=%{GROUP} %VIRTUALENV%
+    WSGIProcessGroup solum-api
+    WSGIScriptAlias / %SOLUM_BIN_DIR%/solum-wsgi-api
+    WSGIApplicationGroup %{GLOBAL}
+    WSGIPassAuthorization On
+    AllowEncodedSlashes On
+    <IfVersion >= 2.4>
+      ErrorLogFormat "%{cu}t %M"
+    </IfVersion>
+    ErrorLog /var/log/%APACHE_NAME%/solum_api.log
+    CustomLog /var/log/%APACHE_NAME%/solum_api_access.log combined
+
+    <Directory %SOLUM_BIN_DIR%>
+        <IfVersion >= 2.4>
+            Require all granted
+        </IfVersion>
+        <IfVersion < 2.4>
+            Order allow,deny
+            Allow from all
+        </IfVersion>
+    </Directory>
+</VirtualHost>
