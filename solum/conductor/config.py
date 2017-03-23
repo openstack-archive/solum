@@ -21,9 +21,9 @@ SERVICE_OPTS = [
     cfg.StrOpt('topic',
                default='solum-conductor',
                help='The queue to add conductor tasks to'),
-    cfg.StrOpt('host',
-               default='localhost',
-               help='The location of the conductor rpc queue'),
+    cfg.HostAddressOpt('host',
+                       default='localhost',
+                       help='The location of the conductor rpc queue'),
 ]
 
 opt_group = cfg.OptGroup(
