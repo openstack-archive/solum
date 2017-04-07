@@ -3,7 +3,7 @@
 # process, which may cause wedges in the gate later.
 eventlet!=0.18.3,>=0.18.2 # MIT
 alembic>=0.8.10 # MIT
-Babel>=2.3.4 # BSD
+Babel!=2.4.0,>=2.3.4 # BSD
 docker-py>=1.8.1 # Apache-2.0
 httplib2>=0.7.5 # MIT
 iso8601>=0.1.11 # MIT
