@@ -21,6 +21,11 @@ Enabling Solum in DevStack
     enable_plugin solum git://git.openstack.org/openstack/solum
     END
 
+   To use stable branches, make sure devstack is on that branch, and specify
+   the branch name to enable_plugin, for example::
+
+    enable_plugin solum https://git.openstack.org/openstack/solum stable/mitaka
+
 4. Run ``stack.sh``.
 
 .. note::
