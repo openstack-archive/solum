@@ -17,6 +17,7 @@
 import eventlet
 from oslo_config import cfg
 import oslo_messaging as messaging
+from oslo_messaging.rpc import dispatcher
 from oslo_serialization import jsonutils
 
 import solum.common.context
@@ -67,8 +68,10 @@ class Service(object):
         transport = messaging.get_transport(cfg.CONF)
         # TODO(asalkeld) add support for version='x.y'
         target = messaging.Target(topic=topic, server=server)
+        access_policy = dispatcher.DefaultRPCAccessPolicy
         self._server = messaging.get_rpc_server(transport, target, handlers,
-                                                serializer=serializer)
+                                                serializer=serializer,
+                                                access_policy=access_policy)
 
     def serve(self):
         objects.load()
