@@ -13,17 +13,15 @@
 # limitations under the License.
 
 from barbicanclient import client as barbicanclient
-from keystoneclient.auth import identity
-from keystoneclient import session
+from keystoneauth1 import loading
+
 from oslo_config import cfg
-from oslo_utils import importutils
 
 
 class BarbicanClient(object):
     """Barbican client wrapper so we can encapsulate logic in one place."""
 
     def __init__(self, verify=True):
-        self.verify = verify
         self._admin_client = None
 
     @property
@@ -35,11 +33,8 @@ class BarbicanClient(object):
 
     def _barbican_admin_init(self):
         # Import auth_token to have keystone_authtoken settings setup.
-        importutils.import_module('keystonemiddleware.auth_token')
-        auth = identity.v2.Password(
-            auth_url=cfg.CONF.keystone_authtoken.auth_uri,
-            username=cfg.CONF.keystone_authtoken.admin_user,
-            password=cfg.CONF.keystone_authtoken.admin_password,
-            tenant_name=cfg.CONF.keystone_authtoken.admin_tenant_name)
-        sess = session.Session(auth=auth, verify=self.verify)
+        auth = loading.load_auth_from_conf_options(
+            cfg.CONF, 'keystone_authtoken')
+        sess = loading.load_session_from_conf_options(
+            cfg.CONF, 'keystone_authtoken', auth=auth)
         return barbicanclient.Client(session=sess)

@@ -17,6 +17,7 @@ API_RESPONDING_TIMEOUT=20
 SERVICES=("solum-api" "solum-worker" "solum-conductor" "solum-deployer")
 SOLUM_CONFIG="/etc/solum/solum.conf"
 declare -A CONFIG_SECTIONS=(["api"]=9777)
+SOLUM_ROOT=/opt/stack/new/solum
 
 function check_api {
     local host=$1
@@ -58,7 +59,10 @@ TEMPEST_DIR=${TEMPEST_DIR:-/opt/stack/new/tempest}
 # Add tempest source tree to PYTHONPATH
 export PYTHONPATH=$PYTHONPATH:$TEMPEST_DIR
 
-#installing requirements for tempest
-pip install -r $TEMPEST_DIR/requirements.txt
-
-nosetests -v $1
+pushd $TEMPEST_DIR
+tox -evenv
+source .tox/venv/bin/activate
+pip install nose
+nosetests -sv "$SOLUM_ROOT/functionaltests/api"
+deactivate
+popd

@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import copy
-
+from keystoneauth1 import identity
+from keystoneauth1 import loading as ka_loading
+from keystoneauth1 import session as ks_session
 import keystoneclient.exceptions as kc_exception
 from keystoneclient.v3 import client as kc_v3
 from oslo_config import cfg
@@ -118,12 +119,10 @@ class KeystoneClientV3(object):
         if not self._admin_client:
             # Create admin client connection to v3 API
             admin_creds = self._service_admin_creds()
-            c = kc_v3.Client(**admin_creds)
-            if c.authenticate():
-                self._admin_client = c
-            else:
-                LOG.error("Admin client authentication failed")
-                raise exception.AuthorizationFailure()
+            auth = identity.Password(**admin_creds)
+            session = ks_session.Session(auth=auth)
+            c = kc_v3.Client(session=session)
+            self._admin_client = c
         return self._admin_client
 
     @property
@@ -131,12 +130,10 @@ class KeystoneClientV3(object):
         if not self._lp_admin_client:
             # Create lp operator client connection to v3 API
             lp_operator_creds = self._lp_operator_creds()
-            c = kc_v3.Client(**lp_operator_creds)
-            if c.authenticate():
-                self._lp_admin_client = c
-            else:
-                LOG.error("LP Operator client authentication failed")
-                raise exception.AuthorizationFailure()
+            auth = identity.Password(**lp_operator_creds)
+            session = ks_session.Session(auth=auth)
+            c = kc_v3.Client(session=session)
+            self._lp_admin_client = c
         return self._lp_admin_client
 
     def _v3_client_init(self):
@@ -152,31 +149,22 @@ class KeystoneClientV3(object):
             kwargs.update(self._service_admin_creds())
             kwargs['trust_id'] = self.context.trust_id
             kwargs.pop('project_name')
-        elif self.context.auth_token_info is not None:
-            # The auth_ref version must be set according to the token version
-            if 'access' in self.context.auth_token_info:
-                kwargs['auth_ref'] = copy.deepcopy(
-                    self.context.auth_token_info['access'])
-                kwargs['auth_ref']['version'] = 'v2.0'
-                kwargs['auth_ref']['token']['id'] = self.context.auth_token
-            elif 'token' in self.context.auth_token_info:
-                kwargs['auth_ref'] = copy.deepcopy(
-                    self.context.auth_token_info['token'])
-                kwargs['auth_ref']['version'] = 'v3'
-                kwargs['auth_ref']['auth_token'] = self.context.auth_token
-            else:
-                LOG.error("Unknown version in auth_token_info")
-                raise exception.AuthorizationFailure()
+            auth = ka_loading.load_auth_from_conf_options(
+                cfg.CONF, 'keystone_authtoken', **kwargs)
         elif self.context.auth_token is not None:
             kwargs['token'] = self.context.auth_token
             kwargs['project_id'] = self.context.tenant
+            auth = identity.Token(
+                auth_url=kwargs['auth_url'],
+                token=kwargs['token'],
+                project_id=kwargs['project_id'])
         else:
             LOG.error(_("Keystone v3 API connection failed, no password "
                         "trust or auth_token!"))
             raise exception.AuthorizationFailure()
-        client = kc_v3.Client(**kwargs)
-        if 'auth_ref' not in kwargs:
-            client.authenticate()
+        session = ks_session.Session(auth=auth)
+        client = kc_v3.Client(session=session)
+        client.auth_ref = client.session.auth.get_access(client.session)
         # If we are authenticating with a trust set the context auth_token
         # with the trust scoped token
         if 'trust_id' in kwargs:
@@ -197,11 +185,12 @@ class KeystoneClientV3(object):
         # Import auth_token to have keystone_authtoken settings setup.
         importutils.import_module('keystonemiddleware.auth_token')
         creds = {
-            'username': cfg.CONF.keystone_authtoken.admin_user,
-            'password': cfg.CONF.keystone_authtoken.admin_password,
+            'username': cfg.CONF.keystone_authtoken.username,
+            'password': cfg.CONF.keystone_authtoken.password,
             'auth_url': self.endpoint,
-            'endpoint': self.endpoint,
-            'project_name': cfg.CONF.keystone_authtoken.admin_tenant_name}
+            'project_name': cfg.CONF.keystone_authtoken.project_name,
+            'user_domain_name': "Default",
+            'project_domain_name': "Default"}
         return creds
 
     def _lp_operator_creds(self):
@@ -210,8 +199,9 @@ class KeystoneClientV3(object):
             'username': cfg.CONF.worker.lp_operator_user,
             'password': cfg.CONF.worker.lp_operator_password,
             'auth_url': self.endpoint,
-            'endpoint': self.endpoint,
-            'project_name': cfg.CONF.worker.lp_operator_tenant_name}
+            'project_name': cfg.CONF.worker.lp_operator_tenant_name,
+            'user_domain_name': "Default",
+            'project_domain_name': "Default"}
         return creds
 
     def create_trust_context(self):
@@ -226,12 +216,11 @@ class KeystoneClientV3(object):
         if self.context.trust_id:
             return self.context
 
-        # We need the service admin user ID (not name), as the trustor user
-        # can't lookup the ID in keystoneclient unless they're admin
-        # workaround this by getting the user_id from admin_client
-        trustee_user_id = self.admin_client.auth_ref.user_id
-        trustor_user_id = self.client.auth_ref.user_id
-        trustor_project_id = self.client.auth_ref.project_id
+        trustee_user_id = self.admin_client.session.auth.get_user_id(
+            self.admin_client.session)
+        auth_ref = self.client.session.auth.get_access(self.client.session)
+        trustor_user_id = auth_ref.user_id
+        trustor_project_id = auth_ref.project_id
         roles = cfg.CONF.trusts_delegated_roles
         trust = self.client.trusts.create(trustor_user=trustor_user_id,
                                           trustee_user=trustee_user_id,
@@ -253,4 +242,5 @@ class KeystoneClientV3(object):
 
     @property
     def auth_token(self):
-        return self.client.auth_token
+        auth_ref = self.client.session.auth.get_access(self.client.session)
+        return auth_ref.auth_token

@@ -21,11 +21,11 @@ import random
 import string
 import time
 
+from tempest.common import credentials_factory as common_creds
 from tempest import config
 from tempest.lib import auth
 from tempest.lib.common import http
 from tempest.lib.common import rest_client
-from tempest import manager
 import testtools
 import yaml
 
@@ -226,9 +226,10 @@ class TestCase(testtools.TestCase):
     def setUp(self):
         super(TestCase, self).setUp()
 
-        credentials = SolumCredentials()
+        credentials = common_creds.get_configured_admin_credentials(
+            'identity_admin')
 
-        auth_provider = manager.get_auth_provider(credentials)
+        auth_provider = get_auth_provider(credentials)
         self.client = SolumClient(auth_provider)
         self.builderclient = SolumClient(auth_provider, 'image_builder')
 
@@ -237,16 +238,26 @@ class TestCase(testtools.TestCase):
         self.client.delete_created_apps()
 
 
-class SolumCredentials(auth.KeystoneV2Credentials):
+def get_auth_provider(credentials, scope='project'):
+    default_params = {
+        'disable_ssl_certificate_validation':
+            CONF.identity.disable_ssl_certificate_validation,
+        'ca_certs': CONF.identity.ca_certificates_file,
+        'trace_requests': CONF.debug.trace_requests
+    }
 
-    def __init__(self):
-        creds = dict(
-            username=CONF.auth.admin_username,
-            password=CONF.auth.admin_password,
-            tenant_name=CONF.auth.admin_project_name
-        )
+    if isinstance(credentials, auth.KeystoneV3Credentials):
+        auth_provider_class, auth_url = \
+            auth.KeystoneV3AuthProvider, CONF.identity.uri_v3
+    else:
+        auth_provider_class, auth_url = \
+            auth.KeystoneV2AuthProvider, CONF.identity.uri
 
-        super(SolumCredentials, self).__init__(**creds)
+    _auth_provider = auth_provider_class(credentials, auth_url,
+                                         scope=scope,
+                                         **default_params)
+    _auth_provider.set_auth()
+    return _auth_provider
 
 
 def is_fedora():

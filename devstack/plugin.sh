@@ -97,15 +97,7 @@ function configure_solum() {
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE DEFAULT logging_context_format_string "%(asctime)s.%(msecs)03d %(process)d %(levelname)s %(name)s [%(request_id)s %(user_identity)s] %(instance)s%(message)s"
 
     # Setup keystone_authtoken section
-    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken auth_host $KEYSTONE_AUTH_HOST
-    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken auth_port $KEYSTONE_AUTH_PORT
-    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken auth_protocol $KEYSTONE_AUTH_PROTOCOL
-    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken cafile $KEYSTONE_SSL_CA
-    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken auth_uri $KEYSTONE_SERVICE_URI/v2.0
-    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken admin_tenant_name service
-    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken admin_user $SOLUM_USER
-    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken admin_password $ADMIN_PASSWORD
-    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken signing_dir $SOLUM_AUTH_CACHE_DIR
+    configure_auth_token_middleware $SOLUM_CONF_DIR/$SOLUM_CONF_FILE $SOLUM_USER $SOLUM_AUTH_CACHE_DIR
 
     # configure the database.
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE database connection `database_connection_url solum`
@@ -165,14 +157,8 @@ function configure_solum() {
 #register solum user in Keystone
 function add_solum_user() {
 
-    local SERVICE_TENANT=$(get_or_create_project "$SERVICE_TENANT_NAME" "default")
-    SOLUM_UPDATE_ROLE=$(get_or_create_role "solum_assembly_update")
+    create_service_user "solum"
 
-    SOLUM_USER_ID=$(get_or_create_user "$SOLUM_USER" \
-        "$ADMIN_PASSWORD" "default" "$SOLUM_USER@example.com")
-
-    get_or_add_user_project_role "admin" "$SOLUM_USER_ID" "$SERVICE_TENANT"
-    get_or_add_user_project_role "$SOLUM_UPDATE_ROLE" "$SOLUM_USER_ID" "$SERVICE_TENANT"
 }
 
 function add_additional_solum_users() {
