@@ -304,20 +304,20 @@ function start_solum() {
         restart_apache_server
         tail_log solum-api /var/log/$APACHE_NAME/solum-api.log
     else
-        screen_it solum-api "cd $SOLUM_DIR && $SOLUM_BIN_DIR/solum-api --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE"
+        run_process solum-api "$SOLUM_BIN_DIR/solum-api --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE"
     fi
-    screen_it solum-conductor "cd $SOLUM_DIR && $SOLUM_BIN_DIR/solum-conductor --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE"
-    screen_it solum-deployer "cd $SOLUM_DIR && $SOLUM_BIN_DIR/solum-deployer --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE"
-    screen_it solum-worker "cd $SOLUM_DIR && $SOLUM_BIN_DIR/solum-worker --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE"
+    run_process solum-conductor "$SOLUM_BIN_DIR/solum-conductor --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE"
+    run_process solum-deployer "$SOLUM_BIN_DIR/solum-deployer --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE"
+    run_process solum-worker "$SOLUM_BIN_DIR/solum-worker --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE"
 }
 
 # stop_solum() - Stop running processes
 function stop_solum() {
     # Kill the solum screen windows
-    screen -S $SCREEN_NAME -p solum-api -X kill
-    screen -S $SCREEN_NAME -p solum-conductor -X kill
-    screen -S $SCREEN_NAME -p solum-deployer -X kill
-    screen -S $SCREEN_NAME -p solum-worker -X kill
+    stop_process solum-api
+    stop_process solum-conductor
+    stop_process solum-deployer
+    stop_process solum-worker
 
     if [[ $SOLUM_IMAGE_FORMAT == 'vm' ]]; then
         solum_stop_docker_registry
@@ -354,7 +354,7 @@ solum_install_start_docker_registry() {
 }
 
 solum_stop_docker_registry() {
-    screen -S $SCREEN_NAME -p docker-registry -X kill
+    stop_process docker-registry
     rm -rf ${PIP_BUILD_TMP}
 }
 
