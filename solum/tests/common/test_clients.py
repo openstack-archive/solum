@@ -51,7 +51,7 @@ class ClientsTest(base.BaseTestCase):
         obj = clients.OpenStackClients(None)
         self.assertIsNone(obj._barbican)
         obj.barbican().admin_client
-        self.assertNotEqual(None, obj._barbican)
+        self.assertIsNotNone(obj._barbican)
         mock_call.assert_called_once_with(session='keystone_session')
 
     def test_clients_barbican_noauth(self):

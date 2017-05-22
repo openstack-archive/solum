@@ -148,7 +148,7 @@ class TestPlanController(base.TestCase):
         self.assertEqual(200, resp.status)
         yaml_data = yaml.safe_load(body)
         public_key = yaml_data['artifacts'][0]['content']['public_key']
-        self.assertNotEqual(None, public_key)
+        self.assertIsNotNone(public_key)
         self._assert_output_expected(yaml_data, sample_data)
 
     def test_plans_get_not_found(self):
