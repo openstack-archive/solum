@@ -59,6 +59,7 @@ class TestTraceData(base.BaseTestCase):
             'auth_token_info': '_auth_token_info_',
             'auth_url': '_auth_url_',
             'domain': '_domain_',
+            'global_request_id': None,
             'is_admin': False,
             'is_admin_project': True,
             'project_domain': '_project_domain_',

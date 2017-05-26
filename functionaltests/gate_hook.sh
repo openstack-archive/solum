@@ -18,3 +18,4 @@
 export REQUIREMENTS_MODE=soft
 
 $BASE/new/devstack-gate/devstack-vm-gate.sh
+export DEVSTACK_LOCAL_CONFIG+=$'\n'"enable_plugin devstack-plugin-container https://git.openstack.org/openstack/devstack-plugin-container"
