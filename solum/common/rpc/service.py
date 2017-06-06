@@ -65,7 +65,7 @@ class Service(object):
 
     def __init__(self, topic, server, handlers):
         serializer = RequestContextSerializer(JsonPayloadSerializer())
-        transport = messaging.get_transport(cfg.CONF)
+        transport = messaging.get_notification_transport(cfg.CONF)
         # TODO(asalkeld) add support for version='x.y'
         target = messaging.Target(topic=topic, server=server)
         access_policy = dispatcher.DefaultRPCAccessPolicy
@@ -83,7 +83,7 @@ class API(object):
     def __init__(self, transport=None, context=None, topic=None):
         serializer = RequestContextSerializer(JsonPayloadSerializer())
         if transport is None:
-            transport = messaging.get_transport(cfg.CONF)
+            transport = messaging.get_notification_transport(cfg.CONF)
         self._context = context
         if topic is None:
             topic = ''
