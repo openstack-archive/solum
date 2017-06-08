@@ -14,30 +14,5 @@
 
 # This script is executed inside post_test_hook function in devstack gate.
 
-# Install packages from test-requirements.txt
-
-sudo pip install -r /opt/stack/new/solum/test-requirements.txt
-
-sudo pip install -U tempest-lib
-
-sudo pip freeze
-
-# Generate tempest.conf file
-TEMPEST_BASE=/opt/stack/new/tempest/
-cd $TEMPEST_BASE
-sudo tox -egenconfig
-sudo mkdir -p /etc/tempest
-sudo cp $TEMPEST_BASE/etc/tempest.conf.sample /etc/tempest/tempest.conf
-
-# Set test parameters
-sudo sed -i s'/#auth_version = <None>/auth_version = v2/'g /etc/tempest/tempest.conf
-sudo sed -i s'/#admin_project_name = <None>/admin_project_name = service/'g /etc/tempest/tempest.conf
-sudo sed -i s'/#admin_password = <None>/admin_password = secretadmin/'g /etc/tempest/tempest.conf
-sudo sed -i s'/#admin_username = <None>/admin_username = solum/'g /etc/tempest/tempest.conf
-sudo sed -i s'/#uri_v3 = <None>/uri_v3 = http\:\/\/127.0.0.1\:5000\/v3/'g /etc/tempest/tempest.conf
-sudo sed -i s'/#uri = <None>/uri = http\:\/\/127.0.0.1\:5000\/v2.0\//'g /etc/tempest/tempest.conf
-
-sudo more /etc/tempest/tempest.conf
-
 cd /opt/stack/new/solum/functionaltests
 sudo ./run_tests.sh

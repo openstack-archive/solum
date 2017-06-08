@@ -370,7 +370,6 @@ if is_service_enabled solum-api solum-conductor solum-deployer solum-worker; the
         echo_summary "Initializing Solum"
         init_solum
         start_solum
-        restart_apache_server
     fi
 
     if [[ "$1" == "unstack" ]]; then
