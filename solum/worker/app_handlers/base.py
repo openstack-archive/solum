@@ -77,7 +77,7 @@ class BaseHandler(object):
     @property
     def docker(self):
         if self._docker is None:
-            self._docker = docker.Client(base_url=docker_daemon_url)
+            self._docker = docker.APIClient(base_url=docker_daemon_url)
         return self._docker
 
     def _get_tenant_logger(self, stage):
