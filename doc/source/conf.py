@@ -22,8 +22,8 @@ sys.path.insert(0, os.path.abspath('../..'))
 extensions = [
     'sphinx.ext.autodoc',
     'sphinxcontrib.pecanwsme.rest',
-    'oslosphinx',
     'wsmeext.sphinxext',
+    'openstackdocstheme',
 ]
 
 wsme_protocols = ['restjson', 'restxml']
@@ -58,7 +58,16 @@ pygments_style = 'sphinx'
 # Sphinx are currently 'default' and 'sphinxdoc'.
 # html_theme_path = ["."]
 # html_theme = '_theme'
+html_theme = 'openstackdocs'
 html_static_path = ['_static']
+
+# openstackdocstheme options
+repository_name = 'openstack/solum'
+bug_project = 'solum'
+bug_tag = ''
+
+# Must set this variable to include year, month, day, hours, and minutes.
+html_last_updated_fmt = '%Y-%m-%d %H:%M'
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = '%sdoc' % project
