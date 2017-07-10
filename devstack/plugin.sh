@@ -223,8 +223,12 @@ function init_solum() {
 
 # install_solumclient() - Collect source and prepare
 function install_solumclient {
-    git_clone $SOLUMCLIENT_REPO $SOLUMCLIENT_DIR $SOLUMCLIENT_BRANCH
-    setup_develop $SOLUMCLIENT_DIR
+    if use_library_from_git "python-solumclient"; then
+        git_clone_by_name "python-solumclient"
+        setup_dev_lib "python-solumclient"
+    else
+        pip_install_gr python-solumclient
+    fi
 }
 
 # install_solum() - Collect source and prepare
