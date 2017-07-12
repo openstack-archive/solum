@@ -157,7 +157,7 @@ function configure_solum() {
 #register solum user in Keystone
 function add_solum_user() {
 
-    create_service_user "solum"
+    create_service_user "solum" "admin"
 
 }
 
