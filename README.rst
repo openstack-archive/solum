@@ -27,10 +27,10 @@ modular "language pack" solution so you can easily run applications written
 in any language of your choice.
 
 * Free software: Apache 2.0 License. See LICENSE file.
-* Documentation: http://wiki.openstack.org/wiki/Solum
+* Documentation: https://docs.openstack.org/solum/latest/
 
 Development-setup with Solum
---------------------------
+-----------------------------
 
 See the solum-development-setup_ guide.
 
@@ -46,7 +46,7 @@ See the getting_started_ guide.
 Project Info
 -------------
 
- * Source Code: https://github.com/openstack/solum
+ * Source Code: https://git.openstack.org/cgit/openstack/solum/
  * Wiki: https://wiki.openstack.org/wiki/Solum
  * Launchpad: https://launchpad.net/solum
  * Blueprints: https://blueprints.launchpad.net/solum
