@@ -214,7 +214,7 @@ echo "$GIT_PRIVATE_KEY" > $APP_DIR/code/id_rsa
 # Test the application code
 TLOG "===>" Testing App
 
-if [[ $USE_DRONE != null && $(which drone) ]]; then
+if [[ $USE_DRONE != null && $(type drone) ]]; then
   TLOG "===>" Using Drone
   if [[ ! -e $APP_DIR/code/.drone.yml ]]; then
     TLOG "===>" Creating .drone.yml
