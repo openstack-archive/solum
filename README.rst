@@ -41,7 +41,7 @@ Getting started with Solum
 
 See the getting_started_ guide.
 
-.. _getting_started: http://docs.openstack.org/developer/solum/getting_started/
+.. _getting_started: https://docs.openstack.org/solum/latest/user/index.html
 
 Project Info
 -------------
