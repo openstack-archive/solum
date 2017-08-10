@@ -8,4 +8,4 @@ To install devstack, run the setup script provided in the Solum code tree::
     sh ${SOLUM_DIR}/contrib/devstack/setup_devstack.sh
 
 Note that this setup will produce virtual machines, not Docker containers.
-For an example of the Docker setup, see: http://wiki.openstack.org/Solum/Docker
+For an example of the Docker setup, see: https://wiki.openstack.org/wiki/Solum/Docker
