@@ -33,4 +33,4 @@ Enabling Solum in DevStack
   This setup will produce virtual machines, not Docker containers.
   For an example of the Docker setup, see::
 
-    http://wiki.openstack.org/Solum/Docker
+    https://wiki.openstack.org/wiki/Solum/Docker

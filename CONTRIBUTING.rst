@@ -8,12 +8,12 @@ If you would like to contribute to Solum, please see our contributing wiki:
 We have the same CLA requirements as OpenStack, so you must follow the steps 
 in the "If you're a developer, start here" section of this page:
 
-   http://docs.openstack.org/infra/manual/developers.html
+   https://docs.openstack.org/infra/manual/developers.html
 
 Once those steps have been completed, submit your changes to for review via 
 the Gerrit tool, following the workflow documented at:
 
-   http://docs.openstack.org/infra/manual/developers.html#development-workflow
+   https://docs.openstack.org/infra/manual/developers.html#development-workflow
 
 Pull requests submitted through GitHub will be ignored.
 
