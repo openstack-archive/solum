@@ -246,23 +246,6 @@ function install_solum() {
 
 }
 
-# install_drone() - Install drone, but disable service
-function install_drone() {
-    if [[ $SOLUM_INSTALL_DRONE == 'True' ]]; then
-        if [[ $os_VENDOR != 'Ubuntu' ]]; then
-            echo 'Drone is currently only supported on Ubuntu'
-            exit 1
-        fi
-        if [[ ! -e /usr/local/bin/drone ]]; then
-            wget -O /tmp/drone.deb ${SOLUM_DRONE_URL}
-            sudo dpkg -i /tmp/drone.deb
-            rm /tmp/drone.deb
-            sudo initctl stop drone || true
-            sudo rm -f /etc/init/drone.conf || true
-        fi
-    fi
-}
-
 function install_solum_dashboard() {
     git_clone_by_name "solum-dashboard"
     setup_dev_lib "solum-dashboard"
