@@ -237,9 +237,8 @@ function install_solum() {
     install_package expect
 
     git_clone $SOLUM_REPO $SOLUM_DIR $SOLUM_BRANCH
-    # When solum is re-listed in openstack/requirements/projects.txt we
-    # should change setup_package back to setup_develop.
-    setup_package $SOLUM_DIR -e
+
+    setup_develop $SOLUM_DIR
 
     if [ "$SOLUM_USE_MOD_WSGI" == "True" ]; then
         install_apache_wsgi
