@@ -22,11 +22,14 @@ sys.path.insert(0, os.path.abspath('../..'))
 extensions = [
     'sphinx.ext.autodoc',
     'sphinxcontrib.pecanwsme.rest',
+    'sphinxcontrib.httpdomain',
     'wsmeext.sphinxext',
     'openstackdocstheme',
 ]
 
 wsme_protocols = ['restjson', 'restxml']
+
+suppress_warnings = ['app.add_directive']
 
 # autodoc generation is a bit aggressive and a nuisance when doing heavy
 # text edit cycles.
