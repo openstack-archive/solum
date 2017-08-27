@@ -43,7 +43,7 @@ The easiest way is to use the credentials supplied by Devstack.
 
 ::
 
-  $ source ~/devstack/openrc
+  $ . ~/devstack/openrc
 
 2. Create languagepack
 
