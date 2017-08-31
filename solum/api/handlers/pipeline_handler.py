@@ -103,10 +103,10 @@ class PipelineHandler(handler.Handler):
         kc = self._clients.keystone()
         ctx['heat_service_url'] = kc.client.service_catalog.url_for(
             service_type='orchestration',
-            endpoint_type='publicURL')
+            interface='publicURL')
         ctx['build_service_url'] = kc.client.service_catalog.url_for(
             service_type='image_builder',
-            endpoint_type='publicURL')
+            interface='publicURL')
 
         # extract context from the plan
         # TODO(asalkeld) this should be versioned.

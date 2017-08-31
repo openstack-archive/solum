@@ -228,7 +228,7 @@ class OpenStackClients(object):
         endpoint_type = get_client_option('zaqar', 'endpoint_type')
         region_name = get_client_option('zaqar', 'region_name')
         endpoint_url = self.url_for(service_type='queuing',
-                                    endpoint_type=endpoint_type,
+                                    interface=endpoint_type,
                                     region_name=region_name)
         conf = {'auth_opts':
                 {'backend': 'keystone',
@@ -249,7 +249,7 @@ class OpenStackClients(object):
         endpoint_type = get_client_option('neutron', 'endpoint_type')
         region_name = get_client_option('neutron', 'region_name')
         endpoint_url = self.url_for(service_type='network',
-                                    endpoint_type=endpoint_type,
+                                    interface=endpoint_type,
                                     region_name=region_name)
         args = {
             'auth_url': self.auth_url,
@@ -274,7 +274,7 @@ class OpenStackClients(object):
         endpoint_type = get_client_option('glance', 'endpoint_type')
         region_name = get_client_option('glance', 'region_name')
         endpoint = self.url_for(service_type='image',
-                                endpoint_type=endpoint_type,
+                                interface=endpoint_type,
                                 region_name=region_name)
         self._glance = glanceclient.Client('2', endpoint, **args)
 
@@ -291,7 +291,7 @@ class OpenStackClients(object):
         endpoint_type = get_client_option('mistral', 'endpoint_type')
         region_name = get_client_option('mistral', 'region_name')
         endpoint = self.url_for(service_type='workflow',
-                                endpoint_type=endpoint_type,
+                                interface=endpoint_type,
                                 region_name=region_name)
         self._mistral = mistralclient.client(mistral_url=endpoint, **args)
 
@@ -321,7 +321,7 @@ class OpenStackClients(object):
 
         region_name = get_client_option('heat', 'region_name')
         endpoint = self.url_for(service_type='orchestration',
-                                endpoint_type=endpoint_type,
+                                interface=endpoint_type,
                                 region_name=region_name)
         self._heat = heatclient.Client('1', endpoint, **args)
 
@@ -337,7 +337,7 @@ class OpenStackClients(object):
             'auth_version': '2.0',
             'preauthtoken': self.auth_token,
             'preauthurl': self.url_for(service_type='object-store',
-                                       endpoint_type=endpoint_type,
+                                       interface=endpoint_type,
                                        region_name=region_name),
             'os_options': {'endpoint_type': endpoint_type,
                            'region_name': region_name},
