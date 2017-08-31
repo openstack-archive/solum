@@ -244,8 +244,12 @@ class Handler(object):
 
             # Get LP Operator context for downloading operator LPs
             lp_kc = clients.OpenStackClients(None).keystone().lp_admin_client
-            user_env['OPER_AUTH_TOKEN'] = lp_kc.auth_token
-            user_env['OPER_OS_STORAGE_URL'] = lp_kc.service_catalog.url_for(
+            # Get the auth ref from session
+            auth_ref = lp_kc.session.auth.get_auth_ref(lp_kc.session)
+            # Get service_catalog
+            service_catalog = auth_ref.service_catalog
+            user_env['OPER_AUTH_TOKEN'] = lp_kc.session.get_token()
+            user_env['OPER_OS_STORAGE_URL'] = service_catalog.url_for(
                 service_type='object-store',
                 endpoint_type='publicURL',
                 region_name=client_region_name)
