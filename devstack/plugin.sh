@@ -104,7 +104,7 @@ function configure_solum() {
 
     # configure worker lp operator user/password
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE worker lp_operator_user $SOLUM_USER
-    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE worker lp_operator_password $ADMIN_PASSWORD
+    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE worker lp_operator_password $SERVICE_PASSWORD
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE worker lp_operator_tenant_name service
 
     # configure the api servers to listen on
