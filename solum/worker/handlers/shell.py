@@ -231,10 +231,10 @@ class Handler(object):
             kc = clients.OpenStackClients(ctxt).keystone()
             user_env['OS_IMAGE_URL'] = kc.client.service_catalog.url_for(
                 service_type='image',
-                endpoint_type='publicURL')
+                interface='publicURL')
             user_env['OS_STORAGE_URL'] = kc.client.service_catalog.url_for(
                 service_type='object-store',
-                endpoint_type='publicURL',
+                interface='publicURL',
                 region_name=client_region_name)
             user_env['TEMP_URL_SECRET'] = cfg.CONF.worker.temp_url_secret
             user_env['TEMP_URL_PROTOCOL'] = cfg.CONF.worker.temp_url_protocol
@@ -251,7 +251,7 @@ class Handler(object):
             user_env['OPER_AUTH_TOKEN'] = lp_kc.session.get_token()
             user_env['OPER_OS_STORAGE_URL'] = service_catalog.url_for(
                 service_type='object-store',
-                endpoint_type='publicURL',
+                interface='publicURL',
                 region_name=client_region_name)
 
         if test_cmd is not None:
