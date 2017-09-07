@@ -1,0 +1,4 @@
+# solum-rootwrap command filters for scripts
+# This file should be owned by (and only-writable by) the root user
+
+[Filters]

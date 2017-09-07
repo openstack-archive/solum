@@ -96,6 +96,10 @@ SERVICE_OPTS = [
                help='max memory a container can consume. No limit by default'),
     cfg.IntOpt('docker_build_timeout', default=1800,
                help='max time a docker build can take. Default: 30 minutes'),
+    cfg.StrOpt('rootwrap_config',
+               default='/etc/solum/rootwrap.conf',
+               help='Path to the rootwrap configuration file to use for '
+                    'running commands as root.'),
 ]
 
 opt_group = cfg.OptGroup(
