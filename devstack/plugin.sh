@@ -64,8 +64,47 @@ function create_solum_service_and_endpoint() {
         "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_BUILDER_SERVICE_PORT"
 }
 
+# configure_nova_docker - Set config files, create data dirs, etc
+function configure_nova_docker {
+    iniset $NOVA_CONF DEFAULT compute_driver zun.DockerDriver
+
+    # CentOS/RedHat distros don't start the services just after the package
+    # is installed if it is not explicitily set. So the script fails on
+    # them in this killall because there is nothing to kill.
+    sudo killall docker || true
+
+    # Enable debug level logging
+    if [ -f "/etc/default/docker" ]; then
+        sudo cat /etc/default/docker
+        sudo sed -i 's/^.*DOCKER_OPTS=.*$/DOCKER_OPTS=\"--debug --storage-opt dm.override_udev_sync_check=true\"/' /etc/default/docker
+        sudo cat /etc/default/docker
+    fi
+    if [ -f "/etc/sysconfig/docker" ]; then
+        sudo cat /etc/sysconfig/docker
+        sudo sed -i 's/^.*OPTIONS=.*$/OPTIONS=--debug --selinux-enabled/' /etc/sysconfig/docker
+        sudo cat /etc/sysconfig/docker
+    fi
+    if [ -f "/usr/lib/systemd/system/docker.service" ]; then
+        sudo cat /usr/lib/systemd/system/docker.service
+        sudo sed -i 's/docker daemon/docker daemon --debug/' /usr/lib/systemd/system/docker.service
+        sudo cat /usr/lib/systemd/system/docker.service
+        sudo systemctl daemon-reload
+    fi
+
+    sudo service docker start || true
+
+    # setup rootwrap filters
+    local rootwrap_conf_src_dir="$ZUN_PROJ_DIR/contrib/nova-docker/etc/nova"
+    sudo install -o root -g root -m 644 $rootwrap_conf_src_dir/rootwrap.d/*.filters /etc/nova/rootwrap.d
+
+    cp -r $ZUN_PROJ_DIR/contrib/nova-docker/nova $SOLUM_DIR
+    setup_develop $SOLUM_DIR
+}
+
 # configure_solum() - Set config files, create data dirs, etc
 function configure_solum() {
+
+    configure_nova_docker
 
     if [[ ! -d $SOLUM_CONF_DIR ]]; then
         sudo mkdir -p $SOLUM_CONF_DIR
