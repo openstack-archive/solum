@@ -12,6 +12,7 @@
 
 
 from Crypto.Cipher import AES
+from oslo_concurrency import processutils
 from oslo_config import cfg
 
 
@@ -54,3 +55,15 @@ def decrypt(ciphertext):
     obj = AES.new(encryption_key, AES.MODE_CFB, init_vector)
     value = obj.decrypt(ciphertext)
     return value
+
+
+def get_root_helper():
+    solum_rootwrap_config = cfg.CONF.worker.rootwrap_config
+    return 'sudo solum-rootwrap %s' % solum_rootwrap_config
+
+
+def execute(*cmd, **kwargs):
+    """Convenience wrapper around oslo's execute() method."""
+    if 'run_as_root' in kwargs and 'root_helper' not in kwargs:
+        kwargs['root_helper'] = get_root_helper()
+    return processutils.execute(*cmd, **kwargs)
