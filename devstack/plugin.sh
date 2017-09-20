@@ -120,6 +120,9 @@ function configure_solum() {
     sudo chown $STACK_USER $STACK_USER_SSH_DIR
     echo -e "Host github.com\n\tStrictHostKeyChecking no\n" > $STACK_USER_SSH_DIR/config
 
+    # config solum rootwrap
+    configure_rootwrap solum
+
     # Generate sample config and configure common parameters.
     mkdir -p /tmp/solum
 
