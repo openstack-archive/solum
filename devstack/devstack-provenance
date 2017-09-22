@@ -393,7 +393,6 @@ localrc|SERVICE_TOKEN=password
 localrc|SERVICE_PASSWORD=<password>
 localrc|ADMIN_PASSWORD=<password>
 localrc|NOVNC_FROM_PACKAGE=false
-localrc|SCREEN_LOGDIR=/opt/stack/logs/screen
 localrc|SOLUM_INSTALL_CEDARISH=False
 localrc|SOLUM_INSTALL_DOCKERFILE=False
 localrc|ENABLE_IDENTITY_V2=True

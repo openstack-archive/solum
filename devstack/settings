@@ -46,7 +46,6 @@ DEVSTACK_DIR=${HOME}/devstack
 #-----------------------------
 
 LOGFILE=/opt/stack/logs/stack.sh.log
-SCREEN_LOGDIR=/opt/stack/logs
 GIT_BASE=https://git.openstack.org
 
 VIRT_DRIVER=docker
