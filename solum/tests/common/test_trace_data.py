@@ -62,6 +62,7 @@ class TestTraceData(base.BaseTestCase):
             'global_request_id': None,
             'is_admin': False,
             'is_admin_project': True,
+            'project': '_tenant_',
             'project_domain': '_project_domain_',
             'read_only': False,
             'resource_uuid': None,

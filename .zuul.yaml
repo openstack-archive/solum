@@ -1,0 +1,92 @@
+- project:
+    name: openstack/solum
+    check:
+      jobs:
+        - solum-devstack-dsvm
+        - solum-devstack-dsvm-centos-7:
+            voting: false
+        - solum-devstack-dsvm-py35:
+            voting: false
+        - solum-devstack-dsvm-seperate-test:
+            voting: false
+    gate:
+      jobs:
+        - solum-devstack-dsvm
+
+- job:
+    name: solum-devstack-dsvm
+    parent: legacy-dsvm-base
+    run: playbooks/legacy/solum-devstack-dsvm/run.yaml
+    post-run: playbooks/legacy/solum-devstack-dsvm/post.yaml
+    timeout: 4200
+    required-projects:
+      - openstack-dev/devstack
+      - openstack-infra/devstack-gate
+      - openstack/barbican
+      - openstack/devstack-plugin-container
+      - openstack/mistral
+      - openstack/python-solumclient
+      - openstack/python-zunclient
+      - openstack/solum
+      - openstack/solum-dashboard
+      - openstack/zun
+      - openstack/zun-tempest-plugin
+
+- job:
+    name: solum-devstack-dsvm-centos-7
+    parent: legacy-dsvm-base
+    run: playbooks/legacy/solum-devstack-dsvm-centos-7/run.yaml
+    post-run: playbooks/legacy/solum-devstack-dsvm-centos-7/post.yaml
+    timeout: 4200
+    nodeset: legacy-centos-7
+    required-projects:
+      - openstack-dev/devstack
+      - openstack-infra/devstack-gate
+      - openstack/barbican
+      - openstack/devstack-plugin-container
+      - openstack/mistral
+      - openstack/python-solumclient
+      - openstack/python-zunclient
+      - openstack/solum
+      - openstack/solum-dashboard
+      - openstack/zun
+      - openstack/zun-tempest-plugin
+
+- job:
+    name: solum-devstack-dsvm-py35
+    parent: legacy-dsvm-base
+    run: playbooks/legacy/solum-devstack-dsvm-py35/run.yaml
+    post-run: playbooks/legacy/solum-devstack-dsvm-py35/post.yaml
+    timeout: 4200
+    required-projects:
+      - openstack-dev/devstack
+      - openstack-infra/devstack-gate
+      - openstack/barbican
+      - openstack/devstack-plugin-container
+      - openstack/mistral
+      - openstack/python-solumclient
+      - openstack/python-zunclient
+      - openstack/solum
+      - openstack/solum-dashboard
+      - openstack/zun
+      - openstack/zun-tempest-plugin
+
+- job:
+    name: solum-devstack-dsvm-seperate-test
+    parent: legacy-dsvm-base
+    run: playbooks/legacy/solum-devstack-dsvm-seperate-test/run.yaml
+    post-run: playbooks/legacy/solum-devstack-dsvm-seperate-test/post.yaml
+    timeout: 4200
+    required-projects:
+      - openstack-dev/devstack
+      - openstack-infra/devstack-gate
+      - openstack/barbican
+      - openstack/devstack-plugin-container
+      - openstack/mistral
+      - openstack/python-solumclient
+      - openstack/python-zunclient
+      - openstack/solum
+      - openstack/solum-dashboard
+      - openstack/solum-tempest-plugin
+      - openstack/zun
+      - openstack/zun-tempest-plugin
