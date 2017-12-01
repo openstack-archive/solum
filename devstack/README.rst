@@ -26,7 +26,7 @@ Enabling Solum in DevStack
 
     enable_plugin solum https://git.openstack.org/openstack/solum stable/mitaka
 
-4. Run ``stack.sh``.
+4. Run ``./stack.sh``.
 
 .. note::
 
