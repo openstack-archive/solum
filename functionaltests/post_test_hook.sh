@@ -16,4 +16,4 @@
 
 
 cd /opt/stack/new/solum/functionaltests
-sudo ./run_tests.sh
+sudo ./run_tests_split.sh
