@@ -2,18 +2,18 @@
     name: openstack/solum
     check:
       jobs:
-        - solum-devstack-dsvm
-        - solum-devstack-dsvm-centos-7
-        - solum-devstack-dsvm-py35
+        - solum-devstack
+        - solum-devstack-centos-7
+        - solum-devstack-py35
     gate:
       jobs:
-        - solum-devstack-dsvm
+        - solum-devstack
 
 - job:
-    name: solum-devstack-dsvm-centos-7
+    name: solum-devstack-centos-7
     parent: legacy-dsvm-base
-    run: playbooks/legacy/solum-devstack-dsvm-centos-7/run.yaml
-    post-run: playbooks/legacy/solum-devstack-dsvm-centos-7/post.yaml
+    run: playbooks/legacy/solum-devstack-centos-7/run.yaml
+    post-run: playbooks/legacy/solum-devstack-centos-7/post.yaml
     voting: false
     timeout: 4200
     nodeset: legacy-centos-7
@@ -31,10 +31,10 @@
       - openstack/zun-tempest-plugin
 
 - job:
-    name: solum-devstack-dsvm-py35
+    name: solum-devstack-py35
     parent: legacy-dsvm-base
-    run: playbooks/legacy/solum-devstack-dsvm-py35/run.yaml
-    post-run: playbooks/legacy/solum-devstack-dsvm-py35/post.yaml
+    run: playbooks/legacy/solum-devstack-py35/run.yaml
+    post-run: playbooks/legacy/solum-devstack-py35/post.yaml
     voting: false
     timeout: 4200
     required-projects:
@@ -51,10 +51,10 @@
       - openstack/zun-tempest-plugin
 
 - job:
-    name: solum-devstack-dsvm
+    name: solum-devstack
     parent: legacy-dsvm-base
-    run: playbooks/legacy/solum-devstack-dsvm/run.yaml
-    post-run: playbooks/legacy/solum-devstack-dsvm/post.yaml
+    run: playbooks/legacy/solum-devstack/run.yaml
+    post-run: playbooks/legacy/solum-devstack/post.yaml
     timeout: 4200
     required-projects:
       - openstack-dev/devstack

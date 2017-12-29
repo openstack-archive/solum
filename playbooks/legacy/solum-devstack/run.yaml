@@ -1,5 +1,5 @@
 - hosts: all
-  name: Autoconverted job legacy-solum-devstack-dsvm-py35 from old job gate-solum-devstack-dsvm-py35-ubuntu-xenial-nv
+  name: Autoconverted job legacy-solum-devstack from old job gate-solum-devstack-dsvm-ubuntu-xenial-nv
   tasks:
 
     - name: Ensure legacy workspace directory
@@ -29,6 +29,7 @@
           set -x
           cat << 'EOF' >>"/tmp/dg-local.conf"
           [[local|localrc]]
+          TEMPEST_PLUGINS='/opt/stack/new/solum-tempest-plugin'
           enable_plugin solum git://git.openstack.org/openstack/solum
           SOLUM_PROJ_DIR=/opt/stack/new/solum
           enable_plugin zun git://git.openstack.org/openstack/zun
@@ -43,7 +44,6 @@
         cmd: |
           set -e
           set -x
-          export DEVSTACK_GATE_USE_PYTHON3=True
           export PYTHONUNBUFFERED=true
           export DEVSTACK_GATE_NEUTRON=1
           export ENABLED_SERVICES=solum,solum-api,solum-conductor,solum-deployer,solum-worker,tempest,zaqar,barbican,mistral
@@ -55,6 +55,7 @@
           export PROJECTS="openstack/zun $PROJECTS"
           export PROJECTS="openstack/devstack-plugin-container $PROJECTS"
           export PROJECTS="openstack/python-zunclient $PROJECTS"
+          export PROJECTS="openstack/solum-tempest-plugin $PROJECTS"
           export PROJECTS="openstack/zun-tempest-plugin $PROJECTS"
 
           export KEEP_LOCALRC=1

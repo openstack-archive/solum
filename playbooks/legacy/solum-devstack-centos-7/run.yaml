@@ -1,5 +1,5 @@
 - hosts: all
-  name: Autoconverted job legacy-solum-devstack-dsvm-centos-7 from old job gate-solum-devstack-dsvm-centos-7-nv
+  name: Autoconverted job legacy-solum-devstack-centos-7 from old job gate-solum-devstack-dsvm-centos-7-nv
   tasks:
 
     - name: Ensure legacy workspace directory
