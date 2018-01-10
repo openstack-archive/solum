@@ -21,6 +21,7 @@ from solum.common.policies import languagepack
 from solum.common.policies import operation
 from solum.common.policies import pipeline
 from solum.common.policies import plan
+from solum.common.policies import sensor
 from solum.common.policies import service
 
 
@@ -32,5 +33,6 @@ def list_rules():
         operation.list_rules(),
         pipeline.list_rules(),
         plan.list_rules(),
+        sensor.list_rules(),
         service.list_rules(),
     )
