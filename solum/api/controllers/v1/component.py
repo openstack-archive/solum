@@ -17,6 +17,7 @@ import wsmeext.pecan as wsme_pecan
 from solum.api.controllers.v1.datamodel import component
 from solum.api.handlers import component_handler
 from solum.common import exception
+from solum.common import policy
 from solum import objects
 
 
@@ -31,6 +32,8 @@ class ComponentController(rest.RestController):
     @wsme_pecan.wsexpose(component.Component)
     def get(self):
         """Return this component."""
+        policy.check('show_component',
+                     pecan.request.security_context)
         handler = component_handler.ComponentHandler(
             pecan.request.security_context)
         return component.Component.from_db_model(handler.get(self._id),
@@ -40,6 +43,8 @@ class ComponentController(rest.RestController):
     @wsme_pecan.wsexpose(component.Component, body=component.Component)
     def put(self, data):
         """Modify this component."""
+        policy.check('update_component',
+                     pecan.request.security_context)
         handler = component_handler.ComponentHandler(
             pecan.request.security_context)
         res = handler.update(self._id,
@@ -50,6 +55,8 @@ class ComponentController(rest.RestController):
     @wsme_pecan.wsexpose(None, status_code=204)
     def delete(self):
         """Delete this component."""
+        policy.check('delete_component',
+                     pecan.request.security_context)
         handler = component_handler.ComponentHandler(
             pecan.request.security_context)
         return handler.delete(self._id)
@@ -69,6 +76,8 @@ class ComponentsController(rest.RestController):
                          status_code=201)
     def post(self, data):
         """Create a new component."""
+        policy.check('create_component',
+                     pecan.request.security_context)
         handler = component_handler.ComponentHandler(
             pecan.request.security_context)
         return component.Component.from_db_model(
@@ -79,6 +88,8 @@ class ComponentsController(rest.RestController):
     @wsme_pecan.wsexpose([component.Component])
     def get_all(self):
         """Return all components, based on the query provided."""
+        policy.check('get_components',
+                     pecan.request.security_context)
         handler = component_handler.ComponentHandler(
             pecan.request.security_context)
         return [component.Component.from_db_model(ser, pecan.request.host_url)

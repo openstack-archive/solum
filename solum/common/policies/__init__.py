@@ -17,6 +17,7 @@ import itertools
 
 from solum.common.policies import assembly
 from solum.common.policies import base
+from solum.common.policies import component
 from solum.common.policies import languagepack
 from solum.common.policies import operation
 from solum.common.policies import pipeline
@@ -29,6 +30,7 @@ def list_rules():
     return itertools.chain(
         assembly.list_rules(),
         base.list_rules(),
+        component.list_rules(),
         languagepack.list_rules(),
         operation.list_rules(),
         pipeline.list_rules(),

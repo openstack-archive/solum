@@ -33,6 +33,7 @@ class TestComponentController(base.BaseTestCase):
         objects.load()
 
     def test_component_get(self, ComponentHandler, resp_mock, request_mock):
+        self.policy({'show_component': '@'})
         hand_get = ComponentHandler.return_value.get
         fake_component = fakes.FakeComponent()
         hand_get.return_value = fake_component
@@ -47,6 +48,7 @@ class TestComponentController(base.BaseTestCase):
 
     def test_component_get_not_found(self, ComponentHandler,
                                      resp_mock, request_mock):
+        self.policy({'show_component': '@'})
         hand_get = ComponentHandler.return_value.get
         hand_get.side_effect = exception.ResourceNotFound(
             name='component', component_id='test_id')
@@ -57,6 +59,7 @@ class TestComponentController(base.BaseTestCase):
 
     def test_component_put_none(self, ComponentHandler,
                                 resp_mock, request_mock):
+        self.policy({'update_component': '@'})
         request_mock.body = None
         request_mock.content_type = 'application/json'
         hand_put = ComponentHandler.return_value.put
@@ -66,6 +69,7 @@ class TestComponentController(base.BaseTestCase):
 
     def test_component_put_not_found(self, ComponentHandler,
                                      resp_mock, request_mock):
+        self.policy({'update_component': '@'})
         json_update = {'user_id': 'foo', 'name': 'appy'}
         request_mock.body = json.dumps(json_update)
         request_mock.content_type = 'application/json'
@@ -77,6 +81,7 @@ class TestComponentController(base.BaseTestCase):
         self.assertEqual(404, resp_mock.status)
 
     def test_component_put_ok(self, ComponentHandler, resp_mock, request_mock):
+        self.policy({'update_component': '@'})
         json_update = {'name': 'update_foo',
                        'description': 'update_desc_component',
                        'user_id': 'user_id_test',
@@ -91,6 +96,7 @@ class TestComponentController(base.BaseTestCase):
 
     def test_component_delete_not_found(self, ComponentHandler,
                                         resp_mock, request_mock):
+        self.policy({'delete_component': '@'})
         hand_delete = ComponentHandler.return_value.delete
         hand_delete.side_effect = exception.ResourceNotFound(
             name='component', component_id='test_id')
@@ -101,6 +107,7 @@ class TestComponentController(base.BaseTestCase):
 
     def test_component_delete_ok(self, ComponentHandler,
                                  resp_mock, request_mock):
+        self.policy({'delete_component': '@'})
         hand_delete = ComponentHandler.return_value.delete
         hand_delete.return_value = None
         obj = component.ComponentController('test_id')
@@ -118,6 +125,7 @@ class TestComponentsController(base.BaseTestCase):
         objects.load()
 
     def test_components_get_all(self, handler_mock, resp_mock, request_mock):
+        self.policy({'get_components': '@'})
         hand_get_all = handler_mock.return_value.get_all
         fake_component = fakes.FakeComponent()
         hand_get_all.return_value = [fake_component]
@@ -131,6 +139,7 @@ class TestComponentsController(base.BaseTestCase):
         self.assertEqual(200, resp_mock.status)
 
     def test_components_post(self, handler_mock, resp_mock, request_mock):
+        self.policy({'create_component': '@'})
         json_create = {'name': 'foo',
                        'description': 'test_desc_component',
                        'user_id': 'user_id_test',
@@ -146,6 +155,7 @@ class TestComponentsController(base.BaseTestCase):
 
     def test_components_post_nodata(self, handler_mock,
                                     resp_mock, request_mock):
+        self.policy({'create_component': '@'})
         request_mock.body = ''
         request_mock.content_type = 'application/json'
         handler_create = handler_mock.return_value.create
