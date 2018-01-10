@@ -17,6 +17,7 @@ import wsmeext.pecan as wsme_pecan
 from solum.api.controllers.v1.datamodel import service
 from solum.api.handlers import service_handler
 from solum.common import exception
+from solum.common import policy
 from solum import objects
 
 
@@ -31,6 +32,8 @@ class ServiceController(rest.RestController):
     @wsme_pecan.wsexpose(service.Service)
     def get(self):
         """Return this service."""
+        policy.check('show_service',
+                     pecan.request.security_context)
         handler = service_handler.ServiceHandler(
             pecan.request.security_context)
         return service.Service.from_db_model(handler.get(self._id),
@@ -40,6 +43,8 @@ class ServiceController(rest.RestController):
     @wsme_pecan.wsexpose(service.Service, body=service.Service)
     def put(self, data):
         """Modify this service."""
+        policy.check('update_service',
+                     pecan.request.security_context)
         handler = service_handler.ServiceHandler(
             pecan.request.security_context)
         res = handler.update(self._id,
@@ -50,6 +55,8 @@ class ServiceController(rest.RestController):
     @wsme_pecan.wsexpose(status_code=204)
     def delete(self):
         """Delete this service."""
+        policy.check('delete_service',
+                     pecan.request.security_context)
         handler = service_handler.ServiceHandler(
             pecan.request.security_context)
         return handler.delete(self._id)
@@ -69,6 +76,8 @@ class ServicesController(rest.RestController):
                          status_code=201)
     def post(self, data):
         """Create a new service."""
+        policy.check('create_service',
+                     pecan.request.security_context)
         handler = service_handler.ServiceHandler(
             pecan.request.security_context)
         return service.Service.from_db_model(
@@ -79,6 +88,8 @@ class ServicesController(rest.RestController):
     @wsme_pecan.wsexpose([service.Service])
     def get_all(self):
         """Return all services, based on the query provided."""
+        policy.check('get_services',
+                     pecan.request.security_context)
         handler = service_handler.ServiceHandler(
             pecan.request.security_context)
         return [service.Service.from_db_model(ser, pecan.request.host_url)

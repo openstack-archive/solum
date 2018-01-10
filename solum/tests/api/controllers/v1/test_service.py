@@ -33,6 +33,7 @@ class TestServiceController(base.BaseTestCase):
         objects.load()
 
     def test_service_get(self, ServiceHandler, resp_mock, request_mock):
+        self.policy({'show_service': '@'})
         hand_get = ServiceHandler.return_value.get
         fake_service = fakes.FakeService()
         hand_get.return_value = fake_service
@@ -49,6 +50,7 @@ class TestServiceController(base.BaseTestCase):
 
     def test_service_get_not_found(self, ServiceHandler,
                                    resp_mock, request_mock):
+        self.policy({'show_service': '@'})
         hand_get = ServiceHandler.return_value.get
         hand_get.side_effect = exception.ResourceNotFound(
             name='service', service_id='test_id')
@@ -58,6 +60,7 @@ class TestServiceController(base.BaseTestCase):
         self.assertEqual(404, resp_mock.status)
 
     def test_service_put_none(self, ServiceHandler, resp_mock, request_mock):
+        self.policy({'update_service': '@'})
         request_mock.body = None
         request_mock.content_type = 'application/json'
         hand_put = ServiceHandler.return_value.put
@@ -67,6 +70,7 @@ class TestServiceController(base.BaseTestCase):
 
     def test_service_put_not_found(self, ServiceHandler,
                                    resp_mock, request_mock):
+        self.policy({'update_service': '@'})
         json_update = {'user_id': 'foo', 'name': 'appy'}
         request_mock.body = json.dumps(json_update)
         request_mock.content_type = 'application/json'
@@ -79,6 +83,7 @@ class TestServiceController(base.BaseTestCase):
         self.assertEqual(404, resp_mock.status)
 
     def test_service_put_ok(self, ServiceHandler, resp_mock, request_mock):
+        self.policy({'update_service': '@'})
         json_update = {'name': 'fee', 'user_id': 'me'}
         request_mock.body = json.dumps(json_update)
         request_mock.content_type = 'application/json'
@@ -90,6 +95,7 @@ class TestServiceController(base.BaseTestCase):
 
     def test_service_delete_not_found(self, ServiceHandler,
                                       resp_mock, request_mock):
+        self.policy({'delete_service': '@'})
         hand_delete = ServiceHandler.return_value.delete
         hand_delete.side_effect = exception.ResourceNotFound(
             name='service',
@@ -100,6 +106,7 @@ class TestServiceController(base.BaseTestCase):
         self.assertEqual(404, resp_mock.status)
 
     def test_service_delete_ok(self, ServiceHandler, resp_mock, request_mock):
+        self.policy({'delete_service': '@'})
         hand_delete = ServiceHandler.return_value.delete
         hand_delete.return_value = None
         obj = service.ServiceController('test_id')
@@ -117,6 +124,7 @@ class TestServicesController(base.BaseTestCase):
         objects.load()
 
     def test_services_get_all(self, handler_mock, resp_mock, request_mock):
+        self.policy({'get_services': '@'})
         hand_get_all = handler_mock.return_value.get_all
         fake_service = fakes.FakeService()
         hand_get_all.return_value = [fake_service]
@@ -132,6 +140,7 @@ class TestServicesController(base.BaseTestCase):
         self.assertEqual(200, resp_mock.status)
 
     def test_services_post(self, handler_mock, resp_mock, request_mock):
+        self.policy({'create_service': '@'})
         json_create = {'name': 'foo',
                        'description': 'test_desc_service',
                        'user_id': 'user_id_test',
@@ -146,6 +155,7 @@ class TestServicesController(base.BaseTestCase):
         handler_create.assert_called_once_with(json_create)
 
     def test_services_post_nodata(self, handler_mock, resp_mock, request_mock):
+        self.policy({'create_service': '@'})
         request_mock.body = ''
         request_mock.content_type = 'application/json'
         handler_create = handler_mock.return_value.create
