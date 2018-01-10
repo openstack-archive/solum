@@ -28,6 +28,7 @@ import wsmeext.pecan as wsme_pecan
 from solum.api.controllers.v1.datamodel import plan
 from solum.api.handlers import plan_handler
 from solum.common import exception
+from solum.common import policy
 from solum.common import yamlutils
 from solum import objects
 
@@ -100,6 +101,8 @@ class PlanController(rest.RestController):
     @pecan.expose()
     def get(self):
         """Return this plan."""
+        policy.check('show_plan',
+                     pecan.request.security_context)
         handler = plan_handler.PlanHandler(pecan.request.security_context)
 
         if pecan.request.accept is not None and 'yaml' in pecan.request.accept:
@@ -116,6 +119,8 @@ class PlanController(rest.RestController):
     @pecan.expose()
     def put(self):
         """Modify this plan."""
+        policy.check('update_plan',
+                     pecan.request.security_context)
         # make sure the plan exists before parsing the request
         handler = plan_handler.PlanHandler(pecan.request.security_context)
         handler.get(self._id)
@@ -142,6 +147,8 @@ class PlanController(rest.RestController):
     @wsme_pecan.wsexpose(status_code=202)
     def delete(self):
         """Delete this plan."""
+        policy.check('delete_plan',
+                     pecan.request.security_context)
         p_handler = plan_handler.PlanHandler(pecan.request.security_context)
         try:
             p_handler.delete(self._id)
@@ -162,6 +169,8 @@ class PlansController(rest.RestController):
     @pecan.expose()
     def post(self):
         """Create a new plan."""
+        policy.check('create_plan',
+                     pecan.request.security_context)
         if not pecan.request.body or len(pecan.request.body) < 1:
             raise exception.BadRequest(reason="No data.")
 
@@ -185,6 +194,8 @@ class PlansController(rest.RestController):
     @pecan.expose()
     def get_all(self):
         """Return all plans, based on the query provided."""
+        policy.check('get_plans',
+                     pecan.request.security_context)
         handler = plan_handler.PlanHandler(pecan.request.security_context)
 
         if pecan.request.accept is not None and 'yaml' in pecan.request.accept:

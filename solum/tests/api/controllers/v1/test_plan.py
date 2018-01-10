@@ -79,6 +79,7 @@ class TestPlanController(base.BaseTestCase):
         objects.load()
 
     def test_plan_get_yaml(self, PlanHandler, resp_mock, request_mock):
+        self.policy({'show_plan': '@'})
         request_mock.accept = 'application/x-yaml'
         hand_get = PlanHandler.return_value.get
         fake_plan = fakes.FakePlan()
@@ -92,6 +93,7 @@ class TestPlanController(base.BaseTestCase):
         self.assertEqual(200, resp_mock.status)
 
     def test_plan_get_json(self, PlanHandler, resp_mock, request_mock):
+        self.policy({'show_plan': '@'})
         hand_get = PlanHandler.return_value.get
         fake_plan = fakes.FakePlan()
         hand_get.return_value = fake_plan
@@ -108,6 +110,7 @@ class TestPlanController(base.BaseTestCase):
 
     def test_plan_get_not_found_yaml(self, PlanHandler,
                                      resp_mock, request_mock):
+        self.policy({'show_plan': '@'})
         request_mock.accept = 'application/x-yaml'
         hand_get = PlanHandler.return_value.get
         hand_get.side_effect = exception.ResourceNotFound(name='plan',
@@ -118,6 +121,7 @@ class TestPlanController(base.BaseTestCase):
 
     def test_plan_get_not_found_json(self, PlanHandler,
                                      resp_mock, request_mock):
+        self.policy({'show_plan': '@'})
         hand_get = PlanHandler.return_value.get
         hand_get.side_effect = exception.ResourceNotFound(name='plan',
                                                           id='test_id')
@@ -126,6 +130,7 @@ class TestPlanController(base.BaseTestCase):
         self.assertEqual(404, resp_mock.status)
 
     def test_plan_put_none(self, PlanHandler, resp_mock, request_mock):
+        self.policy({'update_plan': '@'})
         request_mock.content_type = 'application/x-yaml'
         request_mock.body = ''
         hand_update = PlanHandler.return_value.update
@@ -134,6 +139,7 @@ class TestPlanController(base.BaseTestCase):
         self.assertEqual(400, resp_mock.status)
 
     def test_plan_put_needs_name(self, PlanHandler, resp_mock, request_mock):
+        self.policy({'update_plan': '@'})
         request_mock.content_type = 'application/x-yaml'
         request_mock.body = 'version: 1\n'
         hand_update = PlanHandler.return_value.update
@@ -142,6 +148,7 @@ class TestPlanController(base.BaseTestCase):
         self.assertEqual(400, resp_mock.status)
 
     def test_plan_put_bad_names(self, PlanHandler, resp_mock, request_mock):
+        self.policy({'update_plan': '@'})
         request_mock.content_type = 'application/x-yaml'
         hand_update = PlanHandler.return_value.update
         hand_update.return_value = fakes.FakePlan()
@@ -155,6 +162,7 @@ class TestPlanController(base.BaseTestCase):
         self.assertEqual(400, resp_mock.status)
 
     def test_plan_put_invalid_yaml(self, PlanHandler, resp_mock, request_mock):
+        self.policy({'update_plan': '@'})
         request_mock.content_type = 'application/x-yaml'
         request_mock.body = 'invalid yaml file'
         hand_update = PlanHandler.return_value.update
@@ -163,6 +171,7 @@ class TestPlanController(base.BaseTestCase):
         self.assertEqual(400, resp_mock.status)
 
     def test_plan_put_empty_yaml(self, PlanHandler, resp_mock, request_mock):
+        self.policy({'update_plan': '@'})
         request_mock.content_type = 'application/x-yaml'
         request_mock.body = '{}'
         hand_update = PlanHandler.return_value.update
@@ -171,6 +180,7 @@ class TestPlanController(base.BaseTestCase):
         self.assertEqual(400, resp_mock.status)
 
     def test_plan_put_not_found(self, PlanHandler, resp_mock, request_mock):
+        self.policy({'update_plan': '@'})
         data = 'version: 1\nname: ex_plan1\ndescription: dsc1.'
         request_mock.body = data
         request_mock.content_type = 'application/x-yaml'
@@ -183,6 +193,7 @@ class TestPlanController(base.BaseTestCase):
         self.assertEqual(404, resp_mock.status)
 
     def test_plan_put_ok_yaml(self, PlanHandler, resp_mock, request_mock):
+        self.policy({'update_plan': '@'})
         data = 'version: 1\nname: ex_plan1\ndescription: dsc1.'
         request_mock.body = data
         request_mock.content_type = 'application/x-yaml'
@@ -194,6 +205,7 @@ class TestPlanController(base.BaseTestCase):
         self.assertEqual(200, resp_mock.status)
 
     def test_plan_put_ok_json(self, PlanHandler, resp_mock, request_mock):
+        self.policy({'update_plan': '@'})
         data = {'name': 'foo', 'version': '1'}
         request_mock.body = json.dumps(data)
         request_mock.content_type = 'application/json'
@@ -205,6 +217,7 @@ class TestPlanController(base.BaseTestCase):
 
     def test_plan_put_wrong_version_yaml(self, PlanHandler,
                                          resp_mock, request_mock):
+        self.policy({'update_plan': '@'})
         data = 'name: ex_plan1\ndescription: yaml plan1.\nversion: 42'
         request_mock.body = data
         request_mock.content_type = 'application/x-yaml'
@@ -215,6 +228,7 @@ class TestPlanController(base.BaseTestCase):
 
     def test_plan_put_version_not_found_yaml(self, PlanHandler,
                                              resp_mock, request_mock):
+        self.policy({'update_plan': '@'})
         data = 'name: ex_plan1\ndescription: yaml plan1.'
         request_mock.body = data
         request_mock.content_type = 'application/x-yaml'
@@ -225,6 +239,7 @@ class TestPlanController(base.BaseTestCase):
 
     def test_plan_put_wrong_version_json(self, PlanHandler,
                                          resp_mock, request_mock):
+        self.policy({'update_plan': '@'})
         data = {'name': 'foo', 'version': '42'}
         request_mock.body = json.dumps(data)
         request_mock.content_type = 'application/json'
@@ -235,6 +250,7 @@ class TestPlanController(base.BaseTestCase):
 
     def test_plan_put_version_not_found_json(self, PlanHandler,
                                              resp_mock, request_mock):
+        self.policy({'update_plan': '@'})
         data = {'name': 'foo'}
         request_mock.body = json.dumps(data)
         request_mock.content_type = 'application/json'
@@ -244,6 +260,7 @@ class TestPlanController(base.BaseTestCase):
         self.assertEqual(400, resp_mock.status)
 
     def test_plan_delete_not_found(self, PlanHandler, resp_mock, request_mock):
+        self.policy({'delete_plan': '@'})
         hand_delete = PlanHandler.return_value.delete
         hand_delete.side_effect = exception.ResourceNotFound(
             name='plan', plan_id='test_id')
@@ -253,6 +270,7 @@ class TestPlanController(base.BaseTestCase):
         self.assertEqual(404, resp_mock.status)
 
     def test_plan_delete_ok(self, PlanHandler, resp_mock, request_mock):
+        self.policy({'delete_plan': '@'})
         hand_delete = PlanHandler.return_value.delete
         hand_delete.return_value = None
         obj = plan.PlanController('test_id')
@@ -261,6 +279,7 @@ class TestPlanController(base.BaseTestCase):
         self.assertEqual(202, resp_mock.status)
 
     def test_plan_delete_dberror(self, PlanHandler, resp_mock, request_mock):
+        self.policy({'delete_plan': '@'})
         hand_get = PlanHandler.return_value.get
         fake_plan = fakes.FakePlan()
         hand_get.return_value = fake_plan
@@ -282,6 +301,7 @@ class TestPlansController(base.BaseTestCase):
         objects.load()
 
     def test_plans_get_all_yaml(self, PlanHandler, resp_mock, request_mock):
+        self.policy({'get_plans': '@'})
         hand_get = PlanHandler.return_value.get_all
         request_mock.accept = 'application/x-yaml'
         fake_plan = fakes.FakePlan()
@@ -294,6 +314,7 @@ class TestPlansController(base.BaseTestCase):
         hand_get.assert_called_with()
 
     def test_plans_get_all_json(self, PlanHandler, resp_mock, request_mock):
+        self.policy({'get_plans': '@'})
         hand_get = PlanHandler.return_value.get_all
         fake_plan = fakes.FakePlan()
         hand_get.return_value = [fake_plan]
@@ -305,6 +326,7 @@ class TestPlansController(base.BaseTestCase):
         hand_get.assert_called_with()
 
     def test_plans_post_yaml(self, PlanHandler, resp_mock, request_mock):
+        self.policy({'create_plan': '@'})
         request_mock.body = 'version: 1\nname: ex_plan1\ndescription: dsc1.'
         request_mock.content_type = 'application/x-yaml'
         hand_create = PlanHandler.return_value.create
@@ -315,6 +337,7 @@ class TestPlansController(base.BaseTestCase):
         self.assertEqual(201, resp_mock.status)
 
     def test_plans_post_json(self, PlanHandler, resp_mock, request_mock):
+        self.policy({'create_plan': '@'})
         json_update = {'name': 'foo', 'version': '1'}
         request_mock.body = json.dumps(json_update)
         request_mock.content_type = 'application/json'
@@ -326,6 +349,7 @@ class TestPlansController(base.BaseTestCase):
 
     def test_plans_post_wrong_version_yaml(self, PlanHandler,
                                            resp_mock, request_mock):
+        self.policy({'create_plan': '@'})
         request_mock.body = 'version: 42\nname: ex_plan1\ndescription: dsc1.'
         request_mock.content_type = 'application/x-yaml'
         hand_create = PlanHandler.return_value.create
@@ -335,6 +359,7 @@ class TestPlansController(base.BaseTestCase):
 
     def test_plans_post_version_not_found_yaml(self, PlanHandler,
                                                resp_mock, request_mock):
+        self.policy({'create_plan': '@'})
         request_mock.body = 'name: ex_plan1\ndescription: dsc1.'
         request_mock.content_type = 'application/x-yaml'
         hand_create = PlanHandler.return_value.create
@@ -344,6 +369,7 @@ class TestPlansController(base.BaseTestCase):
 
     def test_plans_post_wrong_version_json(self, PlanHandler,
                                            resp_mock, request_mock):
+        self.policy({'create_plan': '@'})
         json_update = {'name': 'foo', 'version': '42'}
         request_mock.body = json.dumps(json_update)
         request_mock.content_type = 'application/json'
@@ -354,6 +380,7 @@ class TestPlansController(base.BaseTestCase):
 
     def test_plans_post_version_not_found_json(self, PlanHandler,
                                                resp_mock, request_mock):
+        self.policy({'create_plan': '@'})
         json_update = {'name': 'foo'}
         request_mock.body = json.dumps(json_update)
         request_mock.content_type = 'application/json'
@@ -363,6 +390,7 @@ class TestPlansController(base.BaseTestCase):
         self.assertEqual(400, resp_mock.status)
 
     def test_plans_post_nodata(self, handler_mock, resp_mock, request_mock):
+        self.policy({'create_plan': '@'})
         request_mock.body = ''
         request_mock.content_type = 'application/json'
         handler_create = handler_mock.return_value.create
@@ -372,6 +400,7 @@ class TestPlansController(base.BaseTestCase):
 
     def test_plans_post_invalid_yaml(self, handler_mock,
                                      resp_mock, request_mock):
+        self.policy({'create_plan': '@'})
         request_mock.body = 'invalid yaml file'
         request_mock.content_type = 'application/x-yaml'
         handler_create = handler_mock.return_value.create
@@ -381,6 +410,7 @@ class TestPlansController(base.BaseTestCase):
 
     def test_plans_post_empty_yaml(self, handler_mock,
                                    resp_mock, request_mock):
+        self.policy({'create_plan': '@'})
         request_mock.body = '{}'
         request_mock.content_type = 'application/x-yaml'
         handler_create = handler_mock.return_value.create
