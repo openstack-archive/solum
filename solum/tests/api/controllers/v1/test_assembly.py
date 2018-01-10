@@ -31,6 +31,7 @@ class TestAssemblyController(base.BaseTestCase):
         objects.load()
 
     def test_assembly_get(self, AssemblyHandler, resp_mock, request_mock):
+        self.policy({'show_assembly': '@'})
         hand_get = AssemblyHandler.return_value.get
         fake_assembly = fakes.FakeAssembly()
         hand_get.return_value = fake_assembly
@@ -51,6 +52,7 @@ class TestAssemblyController(base.BaseTestCase):
 
     def test_assembly_get_not_found(self, AssemblyHandler,
                                     resp_mock, request_mock):
+        self.policy({'show_assembly': '@'})
         hand_get = AssemblyHandler.return_value.get
         hand_get.side_effect = exception.ResourceNotFound(
             name='assembly', assembly_id='test_id')
@@ -60,6 +62,7 @@ class TestAssemblyController(base.BaseTestCase):
         self.assertEqual(404, resp_mock.status)
 
     def test_assembly_put_none(self, AssemblyHandler, resp_mock, request_mock):
+        self.policy({'update_assembly': '@'})
         request_mock.body = None
         request_mock.content_type = 'application/json'
         hand_put = AssemblyHandler.return_value.put
@@ -69,6 +72,7 @@ class TestAssemblyController(base.BaseTestCase):
 
     def test_assembly_put_not_found(self, AssemblyHandler,
                                     resp_mock, request_mock):
+        self.policy({'update_assembly': '@'})
         json_update = {'name': 'foo'}
         request_mock.body = json.dumps(json_update)
         request_mock.content_type = 'application/json'
@@ -80,6 +84,7 @@ class TestAssemblyController(base.BaseTestCase):
         self.assertEqual(404, resp_mock.status)
 
     def test_assembly_put_ok(self, AssemblyHandler, resp_mock, request_mock):
+        self.policy({'update_assembly': '@'})
         json_update = {'name': 'foo'}
         request_mock.body = json.dumps(json_update)
         request_mock.content_type = 'application/json'
@@ -91,6 +96,7 @@ class TestAssemblyController(base.BaseTestCase):
 
     def test_assembly_delete_not_found(self, AssemblyHandler,
                                        resp_mock, request_mock):
+        self.policy({'delete_assembly': '@'})
         hand_delete = AssemblyHandler.return_value.delete
         hand_delete.side_effect = exception.ResourceNotFound(
             name='assembly', assembly_id='test_id')
@@ -101,6 +107,7 @@ class TestAssemblyController(base.BaseTestCase):
 
     def test_assembly_delete_ok(self, AssemblyHandler,
                                 resp_mock, request_mock):
+        self.policy({'delete_assembly': '@'})
         hand_delete = AssemblyHandler.return_value.delete
         hand_delete.return_value = None
         obj = assembly.AssemblyController('test_id')
@@ -146,6 +153,7 @@ class TestAssembliesController(base.BaseTestCase):
 
     def test_assemblies_get_all(self, AssemblyHandler,
                                 resp_mock, request_mock):
+        self.policy({'get_assemblies': '@'})
         hand_get = AssemblyHandler.return_value.get_all
         fake_assembly = fakes.FakeAssembly()
         hand_get.return_value = [fake_assembly]
@@ -165,6 +173,7 @@ class TestAssembliesController(base.BaseTestCase):
     @mock.patch('solum.objects.registry.Plan')
     def test_assemblies_post(self, mock_Plan, AssemblyHandler,
                              resp_mock, request_mock):
+        self.policy({'create_assembly': '@'})
         json_create = {'name': 'foo',
                        'plan_uri': 'http://test_url:8080/test/911'}
         request_mock.body = json.dumps(json_create)
@@ -182,6 +191,7 @@ class TestAssembliesController(base.BaseTestCase):
 
     def test_assemblies_post_no_plan(self, AssemblyHandler, resp_mock,
                                      request_mock):
+        self.policy({'create_assembly': '@'})
         json_create = {'name': 'foo'}
         request_mock.body = json.dumps(json_create)
         request_mock.content_type = 'application/json'
@@ -196,6 +206,7 @@ class TestAssembliesController(base.BaseTestCase):
 
     def test_assemblies_post_not_hosted(self, AssemblyHandler, resp_mock,
                                         request_mock):
+        self.policy({'create_assembly': '@'})
         json_create = {'name': 'foo',
                        'plan_uri': 'http://example.com/a.git'}
         request_mock.body = json.dumps(json_create)
@@ -208,6 +219,7 @@ class TestAssembliesController(base.BaseTestCase):
         self.assertEqual(400, resp_mock.status)
 
     def test_assem_post_nodata(self, AssemblyHandler, resp_mock, request_mock):
+        self.policy({'create_assembly': '@'})
         request_mock.body = ''
         request_mock.content_type = 'application/json'
         hand_create = AssemblyHandler.return_value.create

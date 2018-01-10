@@ -21,6 +21,7 @@ from solum.api.controllers.v1.datamodel import assembly
 import solum.api.controllers.v1.userlog as userlog_controller
 from solum.api.handlers import assembly_handler
 from solum.common import exception
+from solum.common import policy
 from solum.common import request
 from solum.i18n import _
 from solum import objects
@@ -45,6 +46,8 @@ class AssemblyController(rest.RestController):
     @wsme_pecan.wsexpose(assembly.Assembly)
     def get(self):
         """Return this assembly."""
+        policy.check('show_assembly',
+                     pecan.request.security_context)
         request.check_request_for_https()
         handler = assembly_handler.AssemblyHandler(
             pecan.request.security_context)
@@ -55,6 +58,8 @@ class AssemblyController(rest.RestController):
     @wsme_pecan.wsexpose(assembly.Assembly, body=assembly.Assembly)
     def put(self, data):
         """Modify this assembly."""
+        policy.check('update_assembly',
+                     pecan.request.security_context)
         handler = assembly_handler.AssemblyHandler(
             pecan.request.security_context)
         res = handler.update(self._id,
@@ -65,6 +70,8 @@ class AssemblyController(rest.RestController):
     @wsme_pecan.wsexpose(status_code=204)
     def delete(self):
         """Delete this assembly."""
+        policy.check('delete_assembly',
+                     pecan.request.security_context)
         handler = assembly_handler.AssemblyHandler(
             pecan.request.security_context)
         return handler.delete(self._id)
@@ -84,6 +91,8 @@ class AssembliesController(rest.RestController):
                          status_code=201)
     def post(self, data):
         """Create a new assembly."""
+        policy.check('create_assembly',
+                     pecan.request)
         js_data = data.as_dict(objects.registry.Assembly)
         if data.plan_uri is not wsme.Unset:
             plan_uri = data.plan_uri
@@ -111,6 +120,8 @@ class AssembliesController(rest.RestController):
     @wsme_pecan.wsexpose([assembly.Assembly])
     def get_all(self):
         """Return all assemblies, based on the query provided."""
+        policy.check('get_assemblies',
+                     pecan.request.security_context)
         request.check_request_for_https()
         handler = assembly_handler.AssemblyHandler(
             pecan.request.security_context)
