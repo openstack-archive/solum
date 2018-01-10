@@ -22,6 +22,7 @@ from solum.api.controllers.v1.datamodel import language_pack
 import solum.api.controllers.v1.userlog as userlog_controller
 from solum.api.handlers import language_pack_handler
 from solum.common import exception
+from solum.common import policy
 from solum import objects
 
 
@@ -44,6 +45,8 @@ class LanguagePackController(rest.RestController):
     @wsme_pecan.wsexpose(language_pack.LanguagePack)
     def get(self):
         """Return a languagepack."""
+        policy.check('show_languagepack',
+                     pecan.request.security_context)
         handler = language_pack_handler.LanguagePackHandler(
             pecan.request.security_context)
 
@@ -55,6 +58,8 @@ class LanguagePackController(rest.RestController):
     @wsme_pecan.wsexpose(status_code=204)
     def delete(self):
         """Delete a languagepack."""
+        policy.check('delete_languagepack',
+                     pecan.request.security_context)
         handler = language_pack_handler.LanguagePackHandler(
             pecan.request.security_context)
         return handler.delete(self._id)
@@ -75,6 +80,8 @@ class LanguagePacksController(rest.RestController):
                          status_code=201)
     def post(self, data):
         """Create a new languagepack."""
+        policy.check('create_languagepack',
+                     pecan.request.security_context)
         handler = language_pack_handler.LanguagePackHandler(
             pecan.request.security_context)
         host_url = pecan.request.host_url
@@ -97,6 +104,8 @@ class LanguagePacksController(rest.RestController):
     @wsme_pecan.wsexpose([language_pack.LanguagePack])
     def get_all(self):
         """Return all languagepacks, based on the query provided."""
+        policy.check('get_languagepacks',
+                     pecan.request.security_context)
         handler = language_pack_handler.LanguagePackHandler(
             pecan.request.security_context)
         host_url = pecan.request.host_url

@@ -16,9 +16,11 @@
 import itertools
 
 from solum.common.policies import base
+from solum.common.policies import languagepack
 
 
 def list_rules():
     return itertools.chain(
         base.list_rules(),
+        languagepack.list_rules(),
     )
