@@ -18,6 +18,7 @@ import wsmeext.pecan as wsme_pecan
 from solum.api.controllers.v1.datamodel import operation
 from solum.api.handlers import operation_handler
 from solum.common import exception
+from solum.common import policy
 from solum import objects
 
 
@@ -32,6 +33,8 @@ class OperationController(rest.RestController):
     @wsme_pecan.wsexpose(operation.Operation, wtypes.text)
     def get(self):
         """Return this operation."""
+        policy.check('show_operation',
+                     pecan.request.security_context)
         handler = operation_handler.OperationHandler(
             pecan.request.security_context)
         return operation.Operation.from_db_model(handler.get(self._id),
@@ -42,6 +45,8 @@ class OperationController(rest.RestController):
                          body=operation.Operation)
     def put(self, data):
         """Modify this operation."""
+        policy.check('update_operation',
+                     pecan.request.security_context)
         handler = operation_handler.OperationHandler(
             pecan.request.security_context)
         res = handler.update(self._id,
@@ -52,6 +57,8 @@ class OperationController(rest.RestController):
     @wsme_pecan.wsexpose(status_code=204)
     def delete(self):
         """Delete this operation."""
+        policy.check('delete_operation',
+                     pecan.request.security_context)
         handler = operation_handler.OperationHandler(
             pecan.request.security_context)
         handler.delete(self._id)
@@ -71,6 +78,8 @@ class OperationsController(rest.RestController):
                          status_code=201)
     def post(self, data):
         """Create a new operation."""
+        policy.check('create_operation',
+                     pecan.request.security_context)
         handler = operation_handler.OperationHandler(
             pecan.request.security_context)
         return operation.Operation.from_db_model(handler.create(
@@ -80,6 +89,8 @@ class OperationsController(rest.RestController):
     @wsme_pecan.wsexpose([operation.Operation])
     def get_all(self):
         """Return all operations, based on the query provided."""
+        policy.check('get_operations',
+                     pecan.request.security_context)
         handler = operation_handler.OperationHandler(
             pecan.request.security_context)
         return [operation.Operation.from_db_model(obj, pecan.request.host_url)

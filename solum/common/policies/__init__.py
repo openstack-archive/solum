@@ -18,6 +18,7 @@ import itertools
 from solum.common.policies import assembly
 from solum.common.policies import base
 from solum.common.policies import languagepack
+from solum.common.policies import operation
 from solum.common.policies import pipeline
 from solum.common.policies import plan
 from solum.common.policies import service
@@ -28,6 +29,7 @@ def list_rules():
         assembly.list_rules(),
         base.list_rules(),
         languagepack.list_rules(),
+        operation.list_rules(),
         pipeline.list_rules(),
         plan.list_rules(),
         service.list_rules(),
