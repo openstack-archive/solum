@@ -20,6 +20,7 @@ import wsmeext.pecan as wsme_pecan
 from solum.api.controllers.v1.datamodel import execution
 from solum.api.handlers import pipeline_handler
 from solum.common import exception
+from solum.common import policy
 
 
 class ExecutionsController(rest.RestController):
@@ -29,6 +30,8 @@ class ExecutionsController(rest.RestController):
     @wsme_pecan.wsexpose([execution.Execution], wtypes.text)
     def get_all(self, pipeline_id):
         """Return all executions, based on the provided pipeline_id."""
+        policy.check('get_pipeline_executions',
+                     pecan.request.security_context)
         handler = pipeline_handler.PipelineHandler(
             pecan.request.security_context)
         return [execution.Execution.from_db_model(obj,

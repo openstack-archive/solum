@@ -21,6 +21,7 @@ from solum.api.controllers.v1.datamodel import pipeline
 from solum.api.controllers.v1 import execution
 from solum.api.handlers import pipeline_handler
 from solum.common import exception
+from solum.common import policy
 from solum.i18n import _
 from solum import objects
 
@@ -38,6 +39,8 @@ class PipelineController(rest.RestController):
     @wsme_pecan.wsexpose(pipeline.Pipeline)
     def get(self):
         """Return this pipeline."""
+        policy.check('show_pipeline',
+                     pecan.request.security_context)
         handler = pipeline_handler.PipelineHandler(
             pecan.request.security_context)
         return pipeline.Pipeline.from_db_model(handler.get(self._id),
@@ -47,6 +50,8 @@ class PipelineController(rest.RestController):
     @wsme_pecan.wsexpose(pipeline.Pipeline, body=pipeline.Pipeline)
     def put(self, data):
         """Modify this pipeline."""
+        policy.check('update_pipeline',
+                     pecan.request.security_context)
         handler = pipeline_handler.PipelineHandler(
             pecan.request.security_context)
         res = handler.update(self._id,
@@ -57,6 +62,8 @@ class PipelineController(rest.RestController):
     @wsme_pecan.wsexpose(status_code=204)
     def delete(self):
         """Delete this pipeline."""
+        policy.check('delete_pipeline',
+                     pecan.request.security_context)
         handler = pipeline_handler.PipelineHandler(
             pecan.request.security_context)
         return handler.delete(self._id)
@@ -77,6 +84,7 @@ class PipelinesController(rest.RestController):
                          status_code=201)
     def post(self, data):
         """Create a new pipeline."""
+        policy.check('create_pipeline', pecan.request)
         js_data = data.as_dict(objects.registry.Pipeline)
         if data.plan_uri is not wsme.Unset:
             plan_uri = data.plan_uri
@@ -104,6 +112,8 @@ class PipelinesController(rest.RestController):
     @wsme_pecan.wsexpose([pipeline.Pipeline])
     def get_all(self):
         """Return all pipelines."""
+        policy.check('get_pipelines',
+                     pecan.request.security_context)
         handler = pipeline_handler.PipelineHandler(
             pecan.request.security_context)
         return [pipeline.Pipeline.from_db_model(obj, pecan.request.host_url)

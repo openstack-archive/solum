@@ -17,6 +17,7 @@ import itertools
 
 from solum.common.policies import base
 from solum.common.policies import languagepack
+from solum.common.policies import pipeline
 from solum.common.policies import plan
 
 
@@ -24,5 +25,6 @@ def list_rules():
     return itertools.chain(
         base.list_rules(),
         languagepack.list_rules(),
+        pipeline.list_rules(),
         plan.list_rules(),
     )
