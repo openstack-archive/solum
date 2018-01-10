@@ -18,6 +18,7 @@ import wsmeext.pecan as wsme_pecan
 from solum.api.controllers.v1.datamodel import extension
 from solum.api.handlers import extension_handler
 from solum.common import exception
+from solum.common import policy
 from solum import objects
 
 
@@ -31,6 +32,8 @@ class ExtensionController(rest.RestController):
     @wsme_pecan.wsexpose(extension.Extension, wtypes.text)
     def get(self):
         """Return this extension."""
+        policy.check('show_extension',
+                     pecan.request.security_context)
         handler = extension_handler.ExtensionHandler(
             pecan.request.security_context)
         return extension.Extension.from_db_model(handler.get(self._id),
@@ -41,6 +44,8 @@ class ExtensionController(rest.RestController):
                          body=extension.Extension)
     def put(self, data):
         """Modify this extension."""
+        policy.check('update_extension',
+                     pecan.request.security_context)
         handler = extension_handler.ExtensionHandler(
             pecan.request.security_context)
         obj = handler.update(self._id,
@@ -51,6 +56,8 @@ class ExtensionController(rest.RestController):
     @wsme_pecan.wsexpose(None, wtypes.text, status_code=204)
     def delete(self):
         """Delete this extension."""
+        policy.check('delete_extension',
+                     pecan.request.security_context)
         handler = extension_handler.ExtensionHandler(
             pecan.request.security_context)
         handler.delete(self._id)
@@ -71,6 +78,8 @@ class ExtensionsController(rest.RestController):
                          status_code=201)
     def post(self, data):
         """Create a new extension."""
+        policy.check('create_extension',
+                     pecan.request.security_context)
         handler = extension_handler.ExtensionHandler(
             pecan.request.security_context)
         obj = handler.create(data.as_dict(objects.registry.Extension))
@@ -80,6 +89,8 @@ class ExtensionsController(rest.RestController):
     @wsme_pecan.wsexpose([extension.Extension])
     def get_all(self):
         """Return all extensions, based on the query provided."""
+        policy.check('get_extensions',
+                     pecan.request.security_context)
         handler = extension_handler.ExtensionHandler(
             pecan.request.security_context)
         return [extension.Extension.from_db_model(obj, pecan.request.host_url)
