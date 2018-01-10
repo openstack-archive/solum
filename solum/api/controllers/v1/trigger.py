@@ -21,6 +21,7 @@ from six.moves import urllib
 
 from solum.api.handlers import app_handler
 from solum.common import exception
+from solum.common import policy
 
 LOG = logging.getLogger(__name__)
 CONF = cfg.CONF
@@ -75,6 +76,8 @@ class TriggerController(rest.RestController):
     @pecan.expose()
     def post(self, trigger_id):
         """Trigger a new event on Solum."""
+        policy.check('create_trigger',
+                     pecan.request.security_context)
         commit_sha = ''
         status_url = None
         collab_url = None

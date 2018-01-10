@@ -25,6 +25,7 @@ from solum.common.policies import pipeline
 from solum.common.policies import plan
 from solum.common.policies import sensor
 from solum.common.policies import service
+from solum.common.policies import trigger
 
 
 def list_rules():
@@ -39,4 +40,5 @@ def list_rules():
         plan.list_rules(),
         sensor.list_rules(),
         service.list_rules(),
+        trigger.list_rules(),
     )

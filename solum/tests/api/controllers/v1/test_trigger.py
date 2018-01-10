@@ -102,6 +102,7 @@ class TestTriggerController(base.BaseTestCase):
 
     def test_trigger_post_with_empty_body(self, assem_mock,
                                           resp_mock, request_mock):
+        self.policy({'create_trigger': '@'})
         obj = trigger.TriggerController()
         obj.post('test_id')
         self.assertEqual(400, resp_mock.status)
@@ -110,6 +111,7 @@ class TestTriggerController(base.BaseTestCase):
 
     def test_trigger_post_on_github_webhook(self, assem_mock,
                                             resp_mock, request_mock):
+        self.policy({'create_trigger': '@'})
         status_url = 'https://api.github.com/repos/u/r/statuses/{sha}'
         body_dict = {'sender': {'url': 'https://api.github.com'},
                      'action': 'opened',
@@ -127,6 +129,7 @@ class TestTriggerController(base.BaseTestCase):
     def test_trigger_post_on_github_comment_webhook(self,
                                                     assem_mock, resp_mock,
                                                     request_mock):
+        self.policy({'create_trigger': '@'})
         cfg.CONF.api.rebuild_phrase = "solum retry tests"
         status_url = 'https://api.github.com/repos/u/r/statuses/{sha}'
         collab_url = ('https://api.github.com/repos/u/r/' +
@@ -152,6 +155,7 @@ class TestTriggerController(base.BaseTestCase):
     def test_trigger_post_on_mismatch_comment_pub_repo(self, http_mock,
                                                        assem_mock, resp_mock,
                                                        request_mock):
+        self.policy({'create_trigger': '@'})
         cfg.CONF.api.rebuild_phrase = "solum retry tests"
         status_url = 'https://api.github.com/repos/u/r/statuses/{sha}'
         collab_url = ('https://api.github.com/repos/u/r/' +
@@ -176,6 +180,7 @@ class TestTriggerController(base.BaseTestCase):
     def test_trigger_post_on_valid_comment_pub_repo(self, http_mock,
                                                     assem_mock, resp_mock,
                                                     request_mock):
+        self.policy({'create_trigger': '@'})
         cfg.CONF.api.rebuild_phrase = "solum retry tests"
         status_url = 'https://api.github.com/repos/u/r/statuses/{sha}'
         collab_url = ('https://api.github.com/repos/u/r/' +
@@ -202,6 +207,7 @@ class TestTriggerController(base.BaseTestCase):
     def test_trigger_post_on_comment_missing_login(self,
                                                    assem_mock, resp_mock,
                                                    request_mock):
+        self.policy({'create_trigger': '@'})
         cfg.CONF.api.rebuild_phrase = "solum retry tests"
         status_url = 'https://api.github.com/repos/u/r/statuses/{sha}'
         collab_url = ('https://api.github.com/repos/u/r/' +
@@ -222,6 +228,7 @@ class TestTriggerController(base.BaseTestCase):
 
     def test_trigger_post_on_wrong_github_webhook(self, assem_mock,
                                                   resp_mock, request_mock):
+        self.policy({'create_trigger': '@'})
         status_url = 'https://api.github.com/repos/u/r/statuses/{sha}'
         body_dict = {'sender': {'url': 'https://api.github.com'},
                      'pull_request': {'head': {'sha': 'asdf'}},
@@ -235,6 +242,7 @@ class TestTriggerController(base.BaseTestCase):
 
     def test_trigger_post_on_unknown_git_webhook(self, assem_mock,
                                                  resp_mock, request_mock):
+        self.policy({'create_trigger': '@'})
         body_dict = {"pull_request": {"head": {"sha": "asdf"}}}
         request_mock.body = json.dumps(body_dict)
         obj = trigger.TriggerController()
@@ -245,6 +253,7 @@ class TestTriggerController(base.BaseTestCase):
 
     def test_trigger_post_on_non_github_webhook(self, assem_mock,
                                                 resp_mock, request_mock):
+        self.policy({'create_trigger': '@'})
         body_dict = {"sender": {"url": "https://non-github.com"},
                      "pull_request": {"head": {"sha": "asdf"}}}
         request_mock.body = json.dumps(body_dict)
@@ -256,6 +265,7 @@ class TestTriggerController(base.BaseTestCase):
 
     def test_trigger_post_on_github_ping_webhook(self, assem_mock,
                                                  resp_mock, request_mock):
+        self.policy({'create_trigger': '@'})
         body_dict = {"sender": {"url": "https://api.github.com"},
                      "zen": "Keep it logically awesome."}
         request_mock.body = json.dumps(body_dict)
