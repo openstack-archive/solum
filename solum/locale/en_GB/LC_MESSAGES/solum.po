@@ -1,0 +1,277 @@
+# Andi Chandler <andi@gowling.com>, 2018. #zanata
+msgid ""
+msgstr ""
+"Project-Id-Version: solum VERSION\n"
+"Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
+"POT-Creation-Date: 2018-01-18 06:27+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2018-01-19 08:13+0000\n"
+"Last-Translator: Andi Chandler <andi@gowling.com>\n"
+"Language-Team: English (United Kingdom)\n"
+"Language: en-GB\n"
+"X-Generator: Zanata 3.9.6\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+
+#, python-format
+msgid "%(client)s connection failed. %(message)s"
+msgstr "%(client)s connection failed. %(message)s"
+
+#, python-format
+msgid "%s"
+msgstr "%s"
+
+#, python-format
+msgid ""
+"'%(name)s' is not a supported media type for the %(method)s method of this "
+"resource"
+msgstr ""
+"'%(name)s' is not a supported media type for the %(method)s method of this "
+"resource"
+
+msgid "An unknown exception occurred."
+msgstr "An unknown exception occurred."
+
+#, python-format
+msgid "Error while processing the JSON Patch document: %(reason)s"
+msgstr "Error while processing the JSON Patch document: %(reason)s"
+
+msgid "Exception in string format operation"
+msgstr "Exception in string format operation"
+
+#, python-format
+msgid "Failed to read file: %s"
+msgstr "Failed to read file: %s"
+
+#, python-format
+msgid "Failed to retrieve file: %s"
+msgstr "Failed to retrieve file: %s"
+
+#, python-format
+msgid "Failed to successfully build languagepack: `%s`"
+msgstr "Failed to successfully build languagepack: `%s`"
+
+#, python-format
+msgid "Failed to successfully get environment for building languagepack: `%s`"
+msgstr "Failed to successfully get environment for building languagepack: `%s`"
+
+#, python-format
+msgid "Fetching data from %s"
+msgstr "Fetching data from %s"
+
+msgid "If set the server certificate will not be verified while using Mistral."
+msgstr ""
+"If set the server certificate will not be verified while using Mistral."
+
+msgid "If set the server certificate will not be verified."
+msgstr "If set the server certificate will not be verified."
+
+msgid ""
+"If set, then the server's certificate for barbican will not be verified."
+msgstr ""
+"If set, then the server's certificate for Barbican will not be verified."
+
+msgid "If set, then the server's certificate for neutron will not be verified."
+msgstr ""
+"If set, then the server's certificate for Neutron will not be verified."
+
+msgid "If set, then the server's certificate for zaqar will not be verified."
+msgstr "If set, then the server's certificate for Zaqar will not be verified."
+
+msgid "If set, then the server's certificate will not be verified."
+msgstr "If set, then the server's certificate will not be verified."
+
+#, python-format
+msgid "Invalid URL scheme %s"
+msgstr "Invalid URL scheme %s"
+
+msgid "Invalid object size."
+msgstr "Invalid object size."
+
+msgid ""
+"Keystone authentication is disabled by Solum configuration parameter "
+"enable_authentication. Solum will not authenticate incoming request. In "
+"order to enable authentication set enable_authentication option to True."
+msgstr ""
+"Keystone authentication is disabled by Solum configuration parameter "
+"enable_authentication. Solum will not authenticate incoming request. In "
+"order to enable authentication set enable_authentication option to True."
+
+msgid "Keystone v3 API connection failed, no password trust or auth_token!"
+msgstr "Keystone v3 API connection failed, no password trust or auth_token!"
+
+#, python-format
+msgid ""
+"Languagepack %(name)s cannot be deleted because one or more applications "
+"reference it."
+msgstr ""
+"Languagepack %(name)s cannot be deleted because one or more applications "
+"reference it."
+
+msgid "Maximum retries has been reached."
+msgstr "Maximum retries has been reached."
+
+msgid "Names must not be longer than 100 characters"
+msgstr "Names must not be longer than 100 characters"
+
+msgid "Names must only contain a-z,0-9,-,_"
+msgstr "Names must only contain a-z,0-9,-,_"
+
+msgid "Names must only contain a-z,A-Z,0-9,-,_"
+msgstr "Names must only contain a-z,A-Z,0-9,-,_"
+
+msgid "Optional CA bundle file to use in SSL connections."
+msgstr "Optional CA bundle file to use in SSL connections."
+
+msgid "Optional CA cert file to use in SSL connections with Mistral."
+msgstr "Optional CA cert file to use in SSL connections with Mistral."
+
+msgid "Optional CA cert file to use in SSL connections."
+msgstr "Optional CA cert file to use in SSL connections."
+
+msgid "Optional PEM-formatted certificate chain file."
+msgstr "Optional PEM-formatted certificate chain file."
+
+msgid "Optional PEM-formatted file that contains the private key."
+msgstr "Optional PEM-formatted file that contains the private key."
+
+#, python-format
+msgid ""
+"Plan %(name)s cannot be deleted because one or more Assemblies reference it."
+msgstr ""
+"Plan %(name)s cannot be deleted because one or more Assemblies reference it."
+
+msgid "Region of endpoint in Identity service catalog to use for all clients."
+msgstr ""
+"Region of endpoint in Identity service catalogue to use for all clients."
+
+msgid "Region of endpoint in Identity service catalog to use."
+msgstr "Region of endpoint in Identity service catalogue to use."
+
+#, python-format
+msgid "Resource limit exceeded. Reason: %(reason)s"
+msgstr "Resource limit exceeded. Reason: %(reason)s"
+
+msgid "Server is incapable of processing the specified request."
+msgstr "Server is incapable of processing the specified request."
+
+#, python-format
+msgid "Starting server in PID %s"
+msgstr "Starting server in PID %s"
+
+msgid "Subset of trustor roles to be delegated to solum."
+msgstr "Subset of trustor roles to be delegated to Solum."
+
+#, python-format
+msgid "The %(name)s %(id)s could not be found."
+msgstr "The %(name)s %(id)s could not be found."
+
+#, python-format
+msgid "The %(name)s already exists."
+msgstr "The %(name)s already exists."
+
+#, python-format
+msgid "The %(name)s resource %(id)s could not be found."
+msgstr "The %(name)s resource %(id)s could not be found."
+
+#, python-format
+msgid "The %(name)s resource already exists."
+msgstr "The %(name)s resource already exists."
+
+#, python-format
+msgid ""
+"The %(name)s resource cannot be deleted because one or more resources "
+"reference it."
+msgstr ""
+"The %(name)s resource cannot be deleted because one or more resources "
+"reference it."
+
+msgid "The plan was not given or could not be found"
+msgstr "The plan was not given or could not be found"
+
+msgid "The plan was not hosted in solum"
+msgstr "The plan was not hosted in Solum"
+
+#, python-format
+msgid "The request is forbidden. Reason: %(reason)s"
+msgstr "The request is forbidden. Reason: %(reason)s"
+
+#, python-format
+msgid "The request is malformed. Reason: %(reason)s"
+msgstr "The request is malformed. Reason: %(reason)s"
+
+msgid "The requested operation is not implemented."
+msgstr "The requested operation is not implemented."
+
+msgid ""
+"Type of endpoint in Identity service catalog to use for communication with "
+"the Glance service."
+msgstr ""
+"Type of endpoint in Identity service catalogue to use for communication with "
+"the Glance service."
+
+msgid ""
+"Type of endpoint in Identity service catalog to use for communication with "
+"the Neutron service."
+msgstr ""
+"Type of endpoint in Identity service catalogue to use for communication with "
+"the Neutron service."
+
+msgid ""
+"Type of endpoint in Identity service catalog to use for communication with "
+"the OpenStack service."
+msgstr ""
+"Type of endpoint in Identity service catalogue to use for communication with "
+"the OpenStack service."
+
+msgid ""
+"Type of endpoint in Identity service catalog to use for communication with "
+"the Swift service."
+msgstr ""
+"Type of endpoint in Identity service catalogue to use for communication with "
+"the Swift service."
+
+msgid ""
+"Type of endpoint in Identity service catalog to use for communication with "
+"the mistral service."
+msgstr ""
+"Type of endpoint in Identity service catalogue to use for communication with "
+"the Mistral service."
+
+msgid ""
+"Type of endpoint in Queue service catalog to use for communication with the "
+"Zaqar service."
+msgstr ""
+"Type of endpoint in Queue service catalogue to use for communication with "
+"the Zaqar service."
+
+#, python-format
+msgid "Value \"%s\" is not an integer."
+msgstr "Value \"%s\" is not an integer."
+
+#, python-format
+msgid "Wrong type. Expected '%(type)s', got '%(value)s'"
+msgstr "Wrong type. Expected '%(type)s', got '%(value)s'"
+
+msgid "X-Roles is missing. Using deprecated X-Role header"
+msgstr "X-Roles is missing. Using deprecated X-Role header"
+
+#, python-format
+msgid ""
+"Your request could not be handled because of a problem in the server. Error "
+"Correlation id is: %s"
+msgstr ""
+"Your request could not be handled because of a problem in the server. Error "
+"Correlation id is: %s"
+
+#, python-format
+msgid "serving on 0.0.0.0:%(port)s, view at http://127.0.0.1:%(port)s"
+msgstr "serving on 0.0.0.0:%(port)s, view at http://127.0.0.1:%(port)s"
+
+#, python-format
+msgid "serving on http://%(host)s:%(port)s"
+msgstr "serving on http://%(host)s:%(port)s"
+
+msgid "trust token re-scoping failed!"
+msgstr "trust token re-scoping failed!"

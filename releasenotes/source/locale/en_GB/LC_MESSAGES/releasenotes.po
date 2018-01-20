@@ -1,0 +1,69 @@
+# Andi Chandler <andi@gowling.com>, 2018. #zanata
+msgid ""
+msgstr ""
+"Project-Id-Version: Solum Release Notes\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2018-01-18 06:27+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2018-01-19 08:04+0000\n"
+"Last-Translator: Andi Chandler <andi@gowling.com>\n"
+"Language-Team: English (United Kingdom)\n"
+"Language: en-GB\n"
+"X-Generator: Zanata 3.9.6\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+
+msgid "App and workflow commands available in python-solumclient"
+msgstr "App and workflow commands available in python-solumclient"
+
+msgid "App resource and app data format to represent an app"
+msgstr "App resource and app data format to represent an app"
+
+msgid "Current Series Release Notes"
+msgstr "Current Series Release Notes"
+
+msgid ""
+"Improved output of languagepack list command by adding created_at attribute"
+msgstr ""
+"Improved output of languagepack list command by adding created_at attribute"
+
+msgid ""
+"Logs resource and abstraction associated with workflow resource to represent "
+"app deployment logs"
+msgstr ""
+"Logs resource and abstraction associated with workflow resource to represent "
+"app deployment logs"
+
+msgid "Mitaka Series Release Notes"
+msgstr "Mitaka Series Release Notes"
+
+msgid "Newton Series Release Notes"
+msgstr "Newton Series Release Notes"
+
+msgid "Ocata Series Release Notes"
+msgstr "Ocata Series Release Notes"
+
+msgid "Pike Series Release Notes"
+msgstr "Pike Series Release Notes"
+
+msgid ""
+"Solum 4.0.0 version release. This release includes implementation of the app "
+"and workflow API resources with their connection to end-to-end app "
+"deployment experience."
+msgstr ""
+"Solum 4.0.0 version release. This release includes implementation of the app "
+"and workflow API resources with their connection to end-to-end app "
+"deployment experience."
+
+msgid "Solum Release Notes"
+msgstr "Solum Release Notes"
+
+msgid "Specific feature include:"
+msgstr "Specific feature include:"
+
+msgid "Version 4.0.0 Release Notes"
+msgstr "Version 4.0.0 Release Notes"
+
+msgid "Workflow resource to represent invocation of app deployment"
+msgstr "Workflow resource to represent invocation of app deployment"
