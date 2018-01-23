@@ -329,7 +329,6 @@ pip|suds-jurko|0.6
 pip|git://git.openstack.org/openstack/swift.git|d819ae00a5f589fc7cd11ddf95cfce7323d926e8
 pip|taskflow|2.3.0
 pip|git://git.openstack.org/openstack/tempest.git|05640decce8055e6844bdcc5a2c9bb18c1e3b2cb
-pip|tempest-lib|1.0.0
 pip|Tempita|0.5.2
 pip|termcolor|1.1.0
 pip|testrepository|0.0.20
