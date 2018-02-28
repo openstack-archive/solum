@@ -110,7 +110,7 @@ if [[ -d "$TMP_LP_DIR/build" ]]; then
 
     image_id="$(app_glance_id $STORAGE_OBJ_NAME)"
     # Tag the glance image as a solum language pack
-    TLOG ===== tagging glace image $image_id
+    TLOG ===== tagging glance image $image_id
     glance --os-auth-token $OS_AUTH_TOKEN --os-image-api-version 2 image-tag-update $image_id 'solum::lp'
   elif [[ $IMAGE_STORAGE == "swift" ]]; then
     docker_build_with_retry $LP_IMG_TAG .
