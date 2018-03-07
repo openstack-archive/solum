@@ -1,0 +1,289 @@
+# Frank Kloeker <eumel@arcor.de>, 2018. #zanata
+msgid ""
+msgstr ""
+"Project-Id-Version: solum VERSION\n"
+"Report-Msgid-Bugs-To: https://bugs.launchpad.net/openstack-i18n/\n"
+"POT-Creation-Date: 2018-03-06 02:02+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2018-02-10 08:20+0000\n"
+"Last-Translator: Frank Kloeker <eumel@arcor.de>\n"
+"Language-Team: German\n"
+"Language: de\n"
+"X-Generator: Zanata 4.3.3\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+
+#, python-format
+msgid "%(client)s connection failed. %(message)s"
+msgstr "Die Verbindung von %(client)s ist fehlgeschlagen. %(message)s"
+
+#, python-format
+msgid "%s"
+msgstr "%s"
+
+#, python-format
+msgid ""
+"'%(name)s' is not a supported media type for the %(method)s method of this "
+"resource"
+msgstr ""
+"'%(name)s' ist kein unterstützter Medientyp für die Methode %(method)s "
+"dieser Ressource"
+
+msgid "An unknown exception occurred."
+msgstr "Eine unbekannte Ausnahme ist aufgetreten."
+
+#, python-format
+msgid "Error while processing the JSON Patch document: %(reason)s"
+msgstr "Fehler beim Verarbeiten des JSON-Patch-Dokuments: %(reason)s"
+
+msgid "Exception in string format operation"
+msgstr "Ausnahme im String-Format-Vorgang"
+
+#, python-format
+msgid "Failed to read file: %s"
+msgstr "Datei konnte nicht gelesen werden: %s"
+
+#, python-format
+msgid "Failed to retrieve file: %s"
+msgstr "Fehler beim Abrufen der Datei: %s"
+
+#, python-format
+msgid "Failed to successfully build languagepack: `%s`"
+msgstr "Fehler beim Erstellen des Sprachpakets: `%s`"
+
+#, python-format
+msgid "Failed to successfully get environment for building languagepack: `%s`"
+msgstr ""
+"Die Umgebung zum Erstellen des Sprachpakets konnte nicht abgerufen werden: `"
+"%s`"
+
+#, python-format
+msgid "Fetching data from %s"
+msgstr "Daten von %s holen"
+
+msgid "If set the server certificate will not be verified while using Mistral."
+msgstr ""
+"Wenn diese Option aktiviert ist, wird das Serverzertifikat bei der "
+"Verwendung von Mistral nicht überprüft."
+
+msgid "If set the server certificate will not be verified."
+msgstr "Wenn gesetzt, wird das Serverzertifikat nicht verifiziert."
+
+msgid ""
+"If set, then the server's certificate for barbican will not be verified."
+msgstr ""
+"Wenn gesetzt, wird das Zertifikat des Servers für Barbican nicht verifiziert."
+
+msgid "If set, then the server's certificate for neutron will not be verified."
+msgstr ""
+"Wenn gesetzt, wird das Zertifikat des Servers für Neutron nicht verifiziert."
+
+msgid "If set, then the server's certificate for zaqar will not be verified."
+msgstr ""
+"Wenn gesetzt, wird das Zertifikat des Servers für zaqar nicht verifiziert."
+
+msgid "If set, then the server's certificate will not be verified."
+msgstr ""
+"Wenn dies eingestellt ist, wird das Zertifikat des Servers nicht verifiziert."
+
+#, python-format
+msgid "Invalid URL scheme %s"
+msgstr "Ungültiges URL-Schema %s"
+
+msgid "Invalid object size."
+msgstr "Ungültige Objektgröße"
+
+msgid ""
+"Keystone authentication is disabled by Solum configuration parameter "
+"enable_authentication. Solum will not authenticate incoming request. In "
+"order to enable authentication set enable_authentication option to True."
+msgstr ""
+"Die Keystone-Authentifizierung wird vom Solum-Konfigurationsparameter "
+"enable_authentication deaktiviert. Solum wird eingehende Anfragen nicht "
+"authentifizieren. Um die Authentifizierung zu aktivieren, setzen Sie die "
+"Option enable_authentication auf True."
+
+msgid "Keystone v3 API connection failed, no password trust or auth_token!"
+msgstr ""
+"Keystone v3-API-Verbindung fehlgeschlagen, kein Kennwortvertrauen oder "
+"auth_token!"
+
+#, python-format
+msgid ""
+"Languagepack %(name)s cannot be deleted because one or more applications "
+"reference it."
+msgstr ""
+"Sprachpaket %(name)s kann nicht gelöscht werden, weil eine oder mehrere "
+"Anwendungen darauf verweisen."
+
+msgid "Maximum retries has been reached."
+msgstr "Maximale Wiederholungsversuche wurden erreicht."
+
+msgid "Names must not be longer than 100 characters"
+msgstr "Die Namen dürfen nicht länger als 100 Zeichen sein"
+
+msgid "Names must only contain a-z,0-9,-,_"
+msgstr "Namen dürfen nur az,0-9,-,_ enthalten"
+
+msgid "Names must only contain a-z,A-Z,0-9,-,_"
+msgstr "Namen dürfen nur az, AZ, 0-9, -, _ enthalten"
+
+msgid "Optional CA bundle file to use in SSL connections."
+msgstr "Optionale CA-Bundle-Datei zur Verwendung in SSL-Verbindungen."
+
+msgid "Optional CA cert file to use in SSL connections with Mistral."
+msgstr ""
+"Optionale CA-Cert-Datei zur Verwendung in SSL-Verbindungen mit Mistral."
+
+msgid "Optional CA cert file to use in SSL connections."
+msgstr "Optionale CA-Cert-Datei zur Verwendung in SSL-Verbindungen."
+
+msgid "Optional PEM-formatted certificate chain file."
+msgstr "Optionale PEM-formatierte Zertifikatskettendatei"
+
+msgid "Optional PEM-formatted file that contains the private key."
+msgstr "Optionale PEM-formatierte Datei, die den privaten Schlüssel enthält."
+
+#, python-format
+msgid ""
+"Plan %(name)s cannot be deleted because one or more Assemblies reference it."
+msgstr ""
+"Plan %(name)s kann nicht gelöscht werden, da mindestens eine Assembly auf "
+"sie verweist."
+
+msgid "Region of endpoint in Identity service catalog to use for all clients."
+msgstr ""
+"Region des Endpunkts im Identity-Dienstkatalog, der für alle Clients "
+"verwendet werden soll."
+
+msgid "Region of endpoint in Identity service catalog to use."
+msgstr "Endpunktregion im zu verwendenden Identitätsdienstekatalog"
+
+#, python-format
+msgid "Resource limit exceeded. Reason: %(reason)s"
+msgstr "Ressourcenlimit überschritten Grund: %(reason)s"
+
+msgid "Server is incapable of processing the specified request."
+msgstr "Der Server kann die angegebene Anfrage nicht verarbeiten."
+
+#, python-format
+msgid "Starting server in PID %s"
+msgstr "Starten des Servers in PID %s"
+
+msgid "Subset of trustor roles to be delegated to solum."
+msgstr "Teilmenge der Trustor-Rollen, die an solum delegiert werden sollen."
+
+#, python-format
+msgid "The %(name)s %(id)s could not be found."
+msgstr "Der %(name)s %(id)s konnte nicht gefunden werden."
+
+#, python-format
+msgid "The %(name)s already exists."
+msgstr "Der %(name)s existiert bereits."
+
+#, python-format
+msgid "The %(name)s resource %(id)s could not be found."
+msgstr "Die %(name)s Ressource %(id)s konnte nicht gefunden werden."
+
+#, python-format
+msgid "The %(name)s resource already exists."
+msgstr "Die Ressource %(name)s ist bereits vorhanden."
+
+#, python-format
+msgid ""
+"The %(name)s resource cannot be deleted because one or more resources "
+"reference it."
+msgstr ""
+"Die %(name)s-Ressource kann nicht gelöscht werden, weil eine oder mehrere "
+"Ressourcen auf sie verweisen."
+
+msgid "The plan was not given or could not be found"
+msgstr "Der Plan wurde nicht gegeben oder konnte nicht gefunden werden"
+
+msgid "The plan was not hosted in solum"
+msgstr "Der Plan wurde nicht in solum gehostet"
+
+#, python-format
+msgid "The request is forbidden. Reason: %(reason)s"
+msgstr "Die Anfrage ist verboten. Grund: %(reason)s"
+
+#, python-format
+msgid "The request is malformed. Reason: %(reason)s"
+msgstr "Die Anfrage ist fehlerhaft. Grund: %(reason)s"
+
+msgid "The requested operation is not implemented."
+msgstr "Die angeforderte Operation ist nicht implementiert."
+
+msgid ""
+"Type of endpoint in Identity service catalog to use for communication with "
+"the Glance service."
+msgstr ""
+"Endpunkttyp im Identitätsdienstekatalog, der für die Kommunikation mit dem "
+"Glance-Dienst verwendet wird."
+
+msgid ""
+"Type of endpoint in Identity service catalog to use for communication with "
+"the Neutron service."
+msgstr ""
+"Endpunkttyp im Identitätsdienstkatalog, der für die Kommunikation mit dem "
+"Dienst Neutron verwendet wird."
+
+msgid ""
+"Type of endpoint in Identity service catalog to use for communication with "
+"the OpenStack service."
+msgstr ""
+"Endpunkttyp im Identitätsdienstekatalog, der für die Kommunikation mit dem "
+"OpenStack-Dienst verwendet wird."
+
+msgid ""
+"Type of endpoint in Identity service catalog to use for communication with "
+"the Swift service."
+msgstr ""
+"Endpunkttyp im Identity-Servicekatalog für die Kommunikation mit dem Swift-"
+"Service."
+
+msgid ""
+"Type of endpoint in Identity service catalog to use for communication with "
+"the mistral service."
+msgstr ""
+"Endpunkttyp im Identitätsdienstkatalog, der für die Kommunikation mit dem "
+"Mistral-Service verwendet wird."
+
+msgid ""
+"Type of endpoint in Queue service catalog to use for communication with the "
+"Zaqar service."
+msgstr ""
+"Endpunkttyp im Warteschlangendienstkatalog, der für die Kommunikation mit "
+"dem Zaqar-Service verwendet wird."
+
+#, python-format
+msgid "Value \"%s\" is not an integer."
+msgstr "Wert \"%s\" ist keine ganze Zahl."
+
+#, python-format
+msgid "Wrong type. Expected '%(type)s', got '%(value)s'"
+msgstr "Falscher Typ. Erwartete '%(type)s', bekam '%(value)s'"
+
+msgid "X-Roles is missing. Using deprecated X-Role header"
+msgstr "X-Roles fehlen. Verwendung des veralteten X-Role-Headers"
+
+#, python-format
+msgid ""
+"Your request could not be handled because of a problem in the server. Error "
+"Correlation id is: %s"
+msgstr ""
+"Ihre Anfrage konnte aufgrund eines Problems auf dem Server nicht bearbeitet "
+"werden. Fehlerkorrelations-ID lautet: %s"
+
+#, python-format
+msgid "serving on 0.0.0.0:%(port)s, view at http://127.0.0.1:%(port)s"
+msgstr ""
+"Serving auf 0.0.0.0:%(port)s, sehen Sie unter http://127.0.0.1:%(port)s"
+
+#, python-format
+msgid "serving on http://%(host)s:%(port)s"
+msgstr "Serving auf http: //%(host)s: %(port)s"
+
+msgid "trust token re-scoping failed!"
+msgstr "Trust-Token-Re-Scoping fehlgeschlagen!"
