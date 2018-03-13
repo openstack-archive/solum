@@ -13,6 +13,13 @@
     parent: legacy-dsvm-base
     run: playbooks/legacy/solum-devstack-centos-7/run.yaml
     post-run: playbooks/legacy/solum-devstack-centos-7/post.yaml
+    irrelevant-files:
+      - ^(test-|)requirements.txt$
+      - ^setup.cfg$
+      - ^doc/.*$
+      - ^.*\.rst$
+      - ^releasenotes/.*$
+      - ^solum/tests/.*$
     voting: false
     timeout: 4200
     nodeset: legacy-centos-7
@@ -34,6 +41,13 @@
     parent: legacy-dsvm-base
     run: playbooks/legacy/solum-devstack-py35/run.yaml
     post-run: playbooks/legacy/solum-devstack-py35/post.yaml
+    irrelevant-files:
+      - ^(test-|)requirements.txt$
+      - ^setup.cfg$
+      - ^doc/.*$
+      - ^.*\.rst$
+      - ^releasenotes/.*$
+      - ^solum/tests/.*$
     voting: false
     timeout: 4200
     required-projects:
@@ -54,6 +68,13 @@
     parent: legacy-dsvm-base
     run: playbooks/legacy/solum-devstack/run.yaml
     post-run: playbooks/legacy/solum-devstack/post.yaml
+    irrelevant-files:
+      - ^(test-|)requirements.txt$
+      - ^setup.cfg$
+      - ^doc/.*$
+      - ^.*\.rst$
+      - ^releasenotes/.*$
+      - ^solum/tests/.*$
     timeout: 4200
     required-projects:
       - openstack-dev/devstack
