@@ -4,10 +4,12 @@
         - solum-devstack
         - solum-devstack-centos-7
         - solum-devstack-py35
+        - openstack-tox-lower-constraints
     gate:
       jobs:
         - solum-devstack
 
+        - openstack-tox-lower-constraints
 - job:
     name: solum-devstack-centos-7
     parent: legacy-dsvm-base
