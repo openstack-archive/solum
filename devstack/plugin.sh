@@ -140,7 +140,7 @@ function configure_solum() {
 
     # Setup keystone_authtoken section
     configure_auth_token_middleware $SOLUM_CONF_DIR/$SOLUM_CONF_FILE $SOLUM_USER $SOLUM_AUTH_CACHE_DIR
-    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken auth_uri $KEYSTONE_AUTH_URI
+    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE keystone_authtoken www_authenticate_uri $KEYSTONE_AUTH_URI
 
     # configure the database.
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE database connection `database_connection_url solum`

@@ -57,7 +57,7 @@ class ClientsTest(base.BaseTestCase):
     def test_clients_barbican_noauth(self):
         self.skipTest('Skipping barbican noauth test.')
         dummy_url = 'http://server.test:5000/v2.0'
-        cfg.CONF.set_override('auth_uri', dummy_url,
+        cfg.CONF.set_override('www_authenticate_uri', dummy_url,
                               group='keystone_authtoken')
         cfg.CONF.set_override('username', 'solum',
                               group='keystone_authtoken')

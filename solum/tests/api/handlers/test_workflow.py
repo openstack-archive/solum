@@ -26,7 +26,7 @@ class TestWorkflowHandler(base.BaseTestCase):
         super(TestWorkflowHandler, self).setUp()
         self.ctx = utils.dummy_context()
         self.CONF = self.useFixture(config.Config())
-        self.CONF.config(auth_uri='http://fakeidentity.com',
+        self.CONF.config(www_authenticate_uri='http://fakeidentity.com',
                          group=auth.OPT_GROUP_NAME)
         self.CONF.config(keystone_version='3')
 
