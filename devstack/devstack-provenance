@@ -250,7 +250,6 @@ pip|pyasn1|0.1.9
 pip|pyasn1-modules|0.0.8
 pip|pycadf|2.3.0
 pip|pycparser|2.14
-pip|pycrypto|2.6.1
 pip|pycurl|7.19.3
 pip|PyECLib|1.2.0
 pip|pyflakes|0.8.1
