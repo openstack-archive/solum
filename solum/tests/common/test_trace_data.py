@@ -68,6 +68,7 @@ class TestTraceData(base.BaseTestCase):
             'resource_uuid': None,
             'roles': '_roles_',
             'show_deleted': False,
+            'system_scope': None,
             'user_domain': '_user_domain_',
             'user_identity': u'_user_ _tenant_ _domain_ '
             '_user_domain_ _project_domain_',
