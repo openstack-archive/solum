@@ -17,7 +17,10 @@ import errno
 import os
 import shelve
 
-from Crypto.PublicKey import RSA
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives import serialization
+
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import uuidutils
@@ -129,9 +132,16 @@ class PlanHandler(handler.Handler):
                     ('private' not in artifact['content']) or
                     (not artifact['content']['private'])):
                 continue
-            new_key = RSA.generate(2048)
-            public_key = new_key.publickey().exportKey("OpenSSH")
-            private_key = new_key.exportKey("PEM")
+            new_key = rsa.generate_private_key(
+                public_exponent=65537,
+                key_size=2048,
+                backend=default_backend()
+            )
+            public_key = new_key.public_key()
+            private_key = public_key.public_bytes(
+                encoding=serialization.Encoding.PEM,
+                format=serialization.PublicFormat.SubjectPublicKeyInfo
+            )
             artifact['content']['public_key'] = public_key
             deploy_keys.append({'source_url': artifact['content']['href'],
                                 'private_key': private_key})
