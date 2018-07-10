@@ -54,4 +54,4 @@ Project Info
  * Code Reviews: https://review.openstack.org/#/q/project:openstack/solum
                  https://review.openstack.org/#/q/project:openstack/python-solumclient
  * IRC: #solum at chat.freenode.net
-
+ * Release notes: https://docs.openstack.org/releasenotes/solum/
