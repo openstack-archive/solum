@@ -697,7 +697,7 @@
 # *not* be the same endpoint the service user utilizes for validating tokens,
 # because normal end users may not be able to reach that endpoint. (string
 # value)
-#auth_uri = <None>
+#www_authenticate_uri = <None>
 
 # API version of the admin Identity API endpoint. (string value)
 #auth_version = <None>
