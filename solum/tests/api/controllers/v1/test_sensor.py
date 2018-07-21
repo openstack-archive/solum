@@ -66,6 +66,7 @@ class TestSensorValueTypeBad(base.BaseTestCase):
         self.assertRaises(ValueError, getattr, s, 'value')
 
 
+@mock.patch('solum.common.policy.check')
 @mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
 @mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
 @mock.patch('solum.api.controllers.v1.sensor.sensor_handler.SensorHandler')
@@ -74,8 +75,9 @@ class TestSensorController(base.BaseTestCase):
         super(TestSensorController, self).setUp()
         objects.load()
 
-    def test_sensor_get(self, handler_mock, resp_mock, request_mock):
-        self.policy({'show_sensor': '@'})
+    def test_sensor_get(self, handler_mock, resp_mock,
+                        request_mock, mock_policy):
+        mock_policy.return_value = True
         handler_get = handler_mock.return_value.get
         fake_sensor = fakes.FakeSensor()
         handler_get.return_value = fake_sensor
@@ -92,8 +94,9 @@ class TestSensorController(base.BaseTestCase):
         self.assertIsNotNone(result)
         handler_get.assert_called_once_with('test_id')
 
-    def test_sensor_get_not_found(self, handler_mock, resp_mock, request_mock):
-        self.policy({'show_sensor': '@'})
+    def test_sensor_get_not_found(self, handler_mock, resp_mock,
+                                  request_mock, mock_policy):
+        mock_policy.return_value = True
         handler_get = handler_mock.return_value.get
         handler_get.side_effect = exception.ResourceNotFound(
             name='sensor', sensor_id='test_id')
@@ -102,8 +105,9 @@ class TestSensorController(base.BaseTestCase):
         self.assertEqual(404, resp_mock.status)
         handler_get.assert_called_once_with('test_id')
 
-    def test_sensor_put(self, handler_mock, resp_mock, request_mock):
-        self.policy({'update_sensor': '@'})
+    def test_sensor_put(self, handler_mock, resp_mock,
+                        request_mock, mock_policy):
+        mock_policy.return_value = True
         json_update = {'description': 'foo',
                        'value': '1234',
                        'name': 'test_name_changed'}
@@ -116,8 +120,9 @@ class TestSensorController(base.BaseTestCase):
         self.assertEqual(200, resp_mock.status)
         handler_update.assert_called_once_with('test_id', json_update)
 
-    def test_sensor_put_none(self, handler_mock, resp_mock, request_mock):
-        self.policy({'update_sensor': '@'})
+    def test_sensor_put_none(self, handler_mock, resp_mock,
+                             request_mock, mock_policy):
+        mock_policy.return_value = True
         request_mock.body = None
         request_mock.content_type = 'application/json'
         handler_put = handler_mock.return_value.put
@@ -125,8 +130,9 @@ class TestSensorController(base.BaseTestCase):
         controller.SensorController('test_id').put()
         self.assertEqual(400, resp_mock.status)
 
-    def test_sensor_put_not_found(self, handler_mock, resp_mock, request_mock):
-        self.policy({'update_sensor': '@'})
+    def test_sensor_put_not_found(self, handler_mock, resp_mock,
+                                  request_mock, mock_policy):
+        mock_policy.return_value = True
         json_update = {'name': 'hb42', 'value': '0'}
         request_mock.body = json.dumps(json_update)
         request_mock.content_type = 'application/json'
@@ -137,8 +143,9 @@ class TestSensorController(base.BaseTestCase):
         handler_update.assert_called_with('test_id', json_update)
         self.assertEqual(404, resp_mock.status)
 
-    def test_sensor_delete(self, mock_handler, resp_mock, request_mock):
-        self.policy({'delete_sensor': '@'})
+    def test_sensor_delete(self, mock_handler, resp_mock,
+                           request_mock, mock_policy):
+        mock_policy.return_value = True
         handler_delete = mock_handler.return_value.delete
         handler_delete.return_value = None
         obj = controller.SensorController('test_id')
@@ -147,8 +154,8 @@ class TestSensorController(base.BaseTestCase):
         self.assertEqual(204, resp_mock.status)
 
     def test_sensor_delete_not_found(self, mock_handler,
-                                     resp_mock, request_mock):
-        self.policy({'delete_sensor': '@'})
+                                     resp_mock, request_mock, mock_policy):
+        mock_policy.return_value = True
         handler_delete = mock_handler.return_value.delete
         handler_delete.side_effect = exception.ResourceNotFound(
             name='sensor', sensor_id='test_id')
@@ -158,6 +165,7 @@ class TestSensorController(base.BaseTestCase):
         self.assertEqual(404, resp_mock.status)
 
 
+@mock.patch('solum.common.policy.check')
 @mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
 @mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
 @mock.patch('solum.api.controllers.v1.sensor.sensor_handler.SensorHandler')
@@ -166,8 +174,9 @@ class TestSensorsController(base.BaseTestCase):
         super(TestSensorsController, self).setUp()
         objects.load()
 
-    def test_sensors_get_all(self, handler_mock, resp_mock, request_mock):
-        self.policy({'get_sensors': '@'})
+    def test_sensors_get_all(self, handler_mock, resp_mock,
+                             request_mock, mock_policy):
+        mock_policy.return_value = True
         hand_get_all = handler_mock.return_value.get_all
         fake_sensor = fakes.FakeSensor()
         hand_get_all.return_value = [fake_sensor]
@@ -184,8 +193,9 @@ class TestSensorsController(base.BaseTestCase):
         hand_get_all.assert_called_with()
         self.assertEqual(200, resp_mock.status)
 
-    def test_sensors_post(self, handler_mock, resp_mock, request_mock):
-        self.policy({'create_sensor': '@'})
+    def test_sensors_post(self, handler_mock, resp_mock,
+                          request_mock, mock_policy):
+        mock_policy.return_value = True
         json_update = {'value': '1234',
                        'name': 'test_name_changed',
                        'user_id': 'user_id',
@@ -203,8 +213,9 @@ class TestSensorsController(base.BaseTestCase):
         self.assertEqual(201, resp_mock.status)
         handler_create.assert_called_once_with(json_update)
 
-    def test_sensors_post_nodata(self, handler_mock, resp_mock, request_mock):
-        self.policy({'create_sensor': '@'})
+    def test_sensors_post_nodata(self, handler_mock, resp_mock,
+                                 request_mock, mock_policy):
+        mock_policy.return_value = True
         request_mock.body = ''
         request_mock.content_type = 'application/json'
         handler_create = handler_mock.return_value.create

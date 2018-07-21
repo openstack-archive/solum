@@ -100,18 +100,20 @@ class TestTriggerController(base.BaseTestCase):
                          collab_url)
         self.assertEqual('asdf', commit_sha)
 
-    def test_trigger_post_with_empty_body(self, assem_mock,
+    @mock.patch('solum.common.policy.check')
+    def test_trigger_post_with_empty_body(self, mock_policy, assem_mock,
                                           resp_mock, request_mock):
-        self.policy({'create_trigger': '@'})
+        mock_policy.return_value = True
         obj = trigger.TriggerController()
         obj.post('test_id')
         self.assertEqual(400, resp_mock.status)
         tw = assem_mock.return_value.trigger_workflow
         assert not tw.called
 
-    def test_trigger_post_on_github_webhook(self, assem_mock,
+    @mock.patch('solum.common.policy.check')
+    def test_trigger_post_on_github_webhook(self, mock_policy, assem_mock,
                                             resp_mock, request_mock):
-        self.policy({'create_trigger': '@'})
+        mock_policy.return_value = True
         status_url = 'https://api.github.com/repos/u/r/statuses/{sha}'
         body_dict = {'sender': {'url': 'https://api.github.com'},
                      'action': 'opened',
@@ -126,10 +128,11 @@ class TestTriggerController(base.BaseTestCase):
         tw.assert_called_once_with('test_id', 'asdf', expected_st_url, None,
                                    workflow=None)
 
-    def test_trigger_post_on_github_comment_webhook(self,
+    @mock.patch('solum.common.policy.check')
+    def test_trigger_post_on_github_comment_webhook(self, mock_policy,
                                                     assem_mock, resp_mock,
                                                     request_mock):
-        self.policy({'create_trigger': '@'})
+        mock_policy.return_value = True
         cfg.CONF.api.rebuild_phrase = "solum retry tests"
         status_url = 'https://api.github.com/repos/u/r/statuses/{sha}'
         collab_url = ('https://api.github.com/repos/u/r/' +
@@ -152,10 +155,12 @@ class TestTriggerController(base.BaseTestCase):
                                    workflow=None)
 
     @mock.patch('httplib2.Http.request')
+    @mock.patch('solum.common.policy.check')
     def test_trigger_post_on_mismatch_comment_pub_repo(self, http_mock,
+                                                       mock_policy,
                                                        assem_mock, resp_mock,
                                                        request_mock):
-        self.policy({'create_trigger': '@'})
+        mock_policy.return_value = True
         cfg.CONF.api.rebuild_phrase = "solum retry tests"
         status_url = 'https://api.github.com/repos/u/r/statuses/{sha}'
         collab_url = ('https://api.github.com/repos/u/r/' +
@@ -177,10 +182,12 @@ class TestTriggerController(base.BaseTestCase):
         assert not tw.called
 
     @mock.patch('httplib2.Http.request')
+    @mock.patch('solum.common.policy.check')
     def test_trigger_post_on_valid_comment_pub_repo(self, http_mock,
+                                                    mock_policy,
                                                     assem_mock, resp_mock,
                                                     request_mock):
-        self.policy({'create_trigger': '@'})
+        mock_policy.return_value = True
         cfg.CONF.api.rebuild_phrase = "solum retry tests"
         status_url = 'https://api.github.com/repos/u/r/statuses/{sha}'
         collab_url = ('https://api.github.com/repos/u/r/' +
@@ -204,10 +211,11 @@ class TestTriggerController(base.BaseTestCase):
         tw.assert_called_once_with('test_id', 'asdf', expected_st_url,
                                    expected_clb_url, workflow=None)
 
-    def test_trigger_post_on_comment_missing_login(self,
+    @mock.patch('solum.common.policy.check')
+    def test_trigger_post_on_comment_missing_login(self, mock_policy,
                                                    assem_mock, resp_mock,
                                                    request_mock):
-        self.policy({'create_trigger': '@'})
+        mock_policy.return_value = True
         cfg.CONF.api.rebuild_phrase = "solum retry tests"
         status_url = 'https://api.github.com/repos/u/r/statuses/{sha}'
         collab_url = ('https://api.github.com/repos/u/r/' +
@@ -226,9 +234,11 @@ class TestTriggerController(base.BaseTestCase):
         tw = assem_mock.return_value.trigger_workflow
         assert not tw.called
 
-    def test_trigger_post_on_wrong_github_webhook(self, assem_mock,
+    @mock.patch('solum.common.policy.check')
+    def test_trigger_post_on_wrong_github_webhook(self, mock_policy,
+                                                  assem_mock,
                                                   resp_mock, request_mock):
-        self.policy({'create_trigger': '@'})
+        mock_policy.return_value = True
         status_url = 'https://api.github.com/repos/u/r/statuses/{sha}'
         body_dict = {'sender': {'url': 'https://api.github.com'},
                      'pull_request': {'head': {'sha': 'asdf'}},
@@ -240,9 +250,10 @@ class TestTriggerController(base.BaseTestCase):
         tw = assem_mock.return_value.trigger_workflow
         assert not tw.called
 
-    def test_trigger_post_on_unknown_git_webhook(self, assem_mock,
+    @mock.patch('solum.common.policy.check')
+    def test_trigger_post_on_unknown_git_webhook(self, mock_policy, assem_mock,
                                                  resp_mock, request_mock):
-        self.policy({'create_trigger': '@'})
+        mock_policy.return_value = True
         body_dict = {"pull_request": {"head": {"sha": "asdf"}}}
         request_mock.body = json.dumps(body_dict)
         obj = trigger.TriggerController()
@@ -251,9 +262,10 @@ class TestTriggerController(base.BaseTestCase):
         tw = assem_mock.return_value.trigger_workflow
         assert not tw.called
 
-    def test_trigger_post_on_non_github_webhook(self, assem_mock,
+    @mock.patch('solum.common.policy.check')
+    def test_trigger_post_on_non_github_webhook(self, mock_policy, assem_mock,
                                                 resp_mock, request_mock):
-        self.policy({'create_trigger': '@'})
+        mock_policy.return_value = True
         body_dict = {"sender": {"url": "https://non-github.com"},
                      "pull_request": {"head": {"sha": "asdf"}}}
         request_mock.body = json.dumps(body_dict)
@@ -263,9 +275,10 @@ class TestTriggerController(base.BaseTestCase):
         tw = assem_mock.return_value.trigger_workflow
         assert not tw.called
 
-    def test_trigger_post_on_github_ping_webhook(self, assem_mock,
+    @mock.patch('solum.common.policy.check')
+    def test_trigger_post_on_github_ping_webhook(self, mock_policy, assem_mock,
                                                  resp_mock, request_mock):
-        self.policy({'create_trigger': '@'})
+        mock_policy.return_value = True
         body_dict = {"sender": {"url": "https://api.github.com"},
                      "zen": "Keep it logically awesome."}
         request_mock.body = json.dumps(body_dict)

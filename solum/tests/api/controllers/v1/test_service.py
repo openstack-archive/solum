@@ -24,6 +24,7 @@ from solum.tests import base
 from solum.tests import fakes
 
 
+@mock.patch('solum.common.policy.check')
 @mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
 @mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
 @mock.patch('solum.api.handlers.service_handler.ServiceHandler')
@@ -32,8 +33,9 @@ class TestServiceController(base.BaseTestCase):
         super(TestServiceController, self).setUp()
         objects.load()
 
-    def test_service_get(self, ServiceHandler, resp_mock, request_mock):
-        self.policy({'show_service': '@'})
+    def test_service_get(self, ServiceHandler, resp_mock,
+                         request_mock, mock_policy):
+        mock_policy.return_value = True
         hand_get = ServiceHandler.return_value.get
         fake_service = fakes.FakeService()
         hand_get.return_value = fake_service
@@ -49,8 +51,8 @@ class TestServiceController(base.BaseTestCase):
         self.assertEqual(200, resp_mock.status)
 
     def test_service_get_not_found(self, ServiceHandler,
-                                   resp_mock, request_mock):
-        self.policy({'show_service': '@'})
+                                   resp_mock, request_mock, mock_policy):
+        mock_policy.return_value = True
         hand_get = ServiceHandler.return_value.get
         hand_get.side_effect = exception.ResourceNotFound(
             name='service', service_id='test_id')
@@ -59,8 +61,9 @@ class TestServiceController(base.BaseTestCase):
         hand_get.assert_called_with('test_id')
         self.assertEqual(404, resp_mock.status)
 
-    def test_service_put_none(self, ServiceHandler, resp_mock, request_mock):
-        self.policy({'update_service': '@'})
+    def test_service_put_none(self, ServiceHandler, resp_mock,
+                              request_mock, mock_policy):
+        mock_policy.return_value = True
         request_mock.body = None
         request_mock.content_type = 'application/json'
         hand_put = ServiceHandler.return_value.put
@@ -69,8 +72,8 @@ class TestServiceController(base.BaseTestCase):
         self.assertEqual(400, resp_mock.status)
 
     def test_service_put_not_found(self, ServiceHandler,
-                                   resp_mock, request_mock):
-        self.policy({'update_service': '@'})
+                                   resp_mock, request_mock, mock_policy):
+        mock_policy.return_value = True
         json_update = {'user_id': 'foo', 'name': 'appy'}
         request_mock.body = json.dumps(json_update)
         request_mock.content_type = 'application/json'
@@ -82,8 +85,9 @@ class TestServiceController(base.BaseTestCase):
         hand_update.assert_called_with('test_id', json_update)
         self.assertEqual(404, resp_mock.status)
 
-    def test_service_put_ok(self, ServiceHandler, resp_mock, request_mock):
-        self.policy({'update_service': '@'})
+    def test_service_put_ok(self, ServiceHandler, resp_mock,
+                            request_mock, mock_policy):
+        mock_policy.return_value = True
         json_update = {'name': 'fee', 'user_id': 'me'}
         request_mock.body = json.dumps(json_update)
         request_mock.content_type = 'application/json'
@@ -94,8 +98,8 @@ class TestServiceController(base.BaseTestCase):
         self.assertEqual(200, resp_mock.status)
 
     def test_service_delete_not_found(self, ServiceHandler,
-                                      resp_mock, request_mock):
-        self.policy({'delete_service': '@'})
+                                      resp_mock, request_mock, mock_policy):
+        mock_policy.return_value = True
         hand_delete = ServiceHandler.return_value.delete
         hand_delete.side_effect = exception.ResourceNotFound(
             name='service',
@@ -105,8 +109,9 @@ class TestServiceController(base.BaseTestCase):
         hand_delete.assert_called_with('test_id')
         self.assertEqual(404, resp_mock.status)
 
-    def test_service_delete_ok(self, ServiceHandler, resp_mock, request_mock):
-        self.policy({'delete_service': '@'})
+    def test_service_delete_ok(self, ServiceHandler, resp_mock,
+                               request_mock, mock_policy):
+        mock_policy.return_value = True
         hand_delete = ServiceHandler.return_value.delete
         hand_delete.return_value = None
         obj = service.ServiceController('test_id')
@@ -115,6 +120,7 @@ class TestServiceController(base.BaseTestCase):
         self.assertEqual(204, resp_mock.status)
 
 
+@mock.patch('solum.common.policy.check')
 @mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
 @mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
 @mock.patch('solum.api.handlers.service_handler.ServiceHandler')
@@ -123,8 +129,9 @@ class TestServicesController(base.BaseTestCase):
         super(TestServicesController, self).setUp()
         objects.load()
 
-    def test_services_get_all(self, handler_mock, resp_mock, request_mock):
-        self.policy({'get_services': '@'})
+    def test_services_get_all(self, handler_mock, resp_mock,
+                              request_mock, mock_policy):
+        mock_policy.return_value = True
         hand_get_all = handler_mock.return_value.get_all
         fake_service = fakes.FakeService()
         hand_get_all.return_value = [fake_service]
@@ -139,8 +146,9 @@ class TestServicesController(base.BaseTestCase):
         hand_get_all.assert_called_with()
         self.assertEqual(200, resp_mock.status)
 
-    def test_services_post(self, handler_mock, resp_mock, request_mock):
-        self.policy({'create_service': '@'})
+    def test_services_post(self, handler_mock, resp_mock,
+                           request_mock, mock_policy):
+        mock_policy.return_value = True
         json_create = {'name': 'foo',
                        'description': 'test_desc_service',
                        'user_id': 'user_id_test',
@@ -154,8 +162,9 @@ class TestServicesController(base.BaseTestCase):
         self.assertEqual(201, resp_mock.status)
         handler_create.assert_called_once_with(json_create)
 
-    def test_services_post_nodata(self, handler_mock, resp_mock, request_mock):
-        self.policy({'create_service': '@'})
+    def test_services_post_nodata(self, handler_mock, resp_mock,
+                                  request_mock, mock_policy):
+        mock_policy.return_value = True
         request_mock.body = ''
         request_mock.content_type = 'application/json'
         handler_create = handler_mock.return_value.create

@@ -24,6 +24,7 @@ from solum.tests import base
 from solum.tests import fakes
 
 
+@mock.patch('solum.common.policy.check')
 @mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
 @mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
 @mock.patch('solum.api.controllers.v1.extension.extension_handler.'
@@ -33,8 +34,9 @@ class TestExtensionController(base.BaseTestCase):
         super(TestExtensionController, self).setUp()
         objects.load()
 
-    def test_extension_get(self, handler_mock, resp_mock, request_mock):
-        self.policy({'show_extension': '@'})
+    def test_extension_get(self, handler_mock, resp_mock,
+                           request_mock, mock_policy):
+        mock_policy.return_value = True
         handler_get = handler_mock.return_value.get
         fake_extension = fakes.FakeExtension()
         handler_get.return_value = fake_extension
@@ -55,8 +57,8 @@ class TestExtensionController(base.BaseTestCase):
         handler_get.assert_called_once_with('test_id')
 
     def test_extension_get_not_found(self, handler_mock, resp_mock,
-                                     request_mock):
-        self.policy({'show_extension': '@'})
+                                     request_mock, mock_policy):
+        mock_policy.return_value = True
         handler_get = handler_mock.return_value.get
         handler_get.side_effect = exception.ResourceNotFound(
             name='extension', extension_id='test_id')
@@ -65,13 +67,14 @@ class TestExtensionController(base.BaseTestCase):
         self.assertEqual(404, resp_mock.status)
         handler_get.assert_called_once_with('test_id')
 
-    def test_extension_put(self, handler_mock, resp_mock, request_mock):
-        self.policy({'update_extension': '@'})
+    def test_extension_put(self, handler_mock, resp_mock,
+                           request_mock, mock_policy):
         json_update = {'description': 'foo_updated',
                        'user_id': 'user_id_changed',
                        'project_id': 'project_id_changed',
                        'version': '12.1',
                        'name': 'changed'}
+        mock_policy.return_value = True
         request_mock.body = json.dumps(json_update)
         request_mock.content_type = 'application/json'
         handler_update = handler_mock.return_value.update
@@ -81,8 +84,9 @@ class TestExtensionController(base.BaseTestCase):
         self.assertEqual(200, resp_mock.status)
         handler_update.assert_called_once_with('test_id', json_update)
 
-    def test_extension_put_none(self, handler_mock, resp_mock, request_mock):
-        self.policy({'update_extension': '@'})
+    def test_extension_put_none(self, handler_mock, resp_mock,
+                                request_mock, mock_policy):
+        mock_policy.return_value = True
         request_mock.body = None
         request_mock.content_type = 'application/json'
         handler_put = handler_mock.return_value.put
@@ -91,8 +95,8 @@ class TestExtensionController(base.BaseTestCase):
         self.assertEqual(400, resp_mock.status)
 
     def test_extension_put_not_found(self, handler_mock, resp_mock,
-                                     request_mock):
-        self.policy({'update_extension': '@'})
+                                     request_mock, mock_policy):
+        mock_policy.return_value = True
         json_update = {'name': 'test_not_found'}
         request_mock.body = json.dumps(json_update)
         request_mock.content_type = 'application/json'
@@ -103,8 +107,9 @@ class TestExtensionController(base.BaseTestCase):
         handler_update.assert_called_with('test_id', json_update)
         self.assertEqual(404, resp_mock.status)
 
-    def test_extension_delete(self, mock_handler, resp_mock, request_mock):
-        self.policy({'delete_extension': '@'})
+    def test_extension_delete(self, mock_handler, resp_mock,
+                              request_mock, mock_policy):
+        mock_policy.return_value = True
         handler_delete = mock_handler.return_value.delete
         handler_delete.return_value = None
         obj = controller.ExtensionController('test_id')
@@ -113,8 +118,8 @@ class TestExtensionController(base.BaseTestCase):
         self.assertEqual(204, resp_mock.status)
 
     def test_extension_delete_not_found(self, mock_handler, resp_mock,
-                                        request_mock):
-        self.policy({'delete_extension': '@'})
+                                        request_mock, mock_policy):
+        mock_policy.return_value = True
         handler_delete = mock_handler.return_value.delete
         handler_delete.side_effect = exception.ResourceNotFound(
             name='extension', extension_id='test_id')
@@ -124,6 +129,7 @@ class TestExtensionController(base.BaseTestCase):
         self.assertEqual(404, resp_mock.status)
 
 
+@mock.patch('solum.common.policy.check')
 @mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
 @mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
 @mock.patch('solum.api.controllers.v1.extension.extension_handler.'
@@ -133,8 +139,9 @@ class TestExtensionsController(base.BaseTestCase):
         super(TestExtensionsController, self).setUp()
         objects.load()
 
-    def test_extensions_get_all(self, handler_mock, resp_mock, request_mock):
-        self.policy({'get_extensions': '@'})
+    def test_extensions_get_all(self, handler_mock, resp_mock,
+                                request_mock, mock_policy):
+        mock_policy.return_value = True
         hand_get_all = handler_mock.return_value.get_all
         fake_extension = fakes.FakeExtension()
         hand_get_all.return_value = [fake_extension]
@@ -153,8 +160,9 @@ class TestExtensionsController(base.BaseTestCase):
         hand_get_all.assert_called_with()
         self.assertEqual(200, resp_mock.status)
 
-    def test_extensions_post(self, handler_mock, resp_mock, request_mock):
-        self.policy({'create_extension': '@'})
+    def test_extensions_post(self, handler_mock, resp_mock,
+                             request_mock, mock_policy):
+        mock_policy.return_value = True
         json_update = {'name': 'foo',
                        'description': 'foofoo',
                        'user_id': 'user_id_test',
@@ -170,8 +178,8 @@ class TestExtensionsController(base.BaseTestCase):
         handler_create.assert_called_once_with(json_update)
 
     def test_extensions_post_nodata(self, handler_mock,
-                                    resp_mock, request_mock):
-        self.policy({'create_extension': '@'})
+                                    resp_mock, request_mock, mock_policy):
+        mock_policy.return_value = True
         request_mock.body = ''
         request_mock.content_type = 'application/json'
         handler_create = handler_mock.return_value.create

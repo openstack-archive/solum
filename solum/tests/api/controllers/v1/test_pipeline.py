@@ -22,6 +22,7 @@ from solum.tests import base
 from solum.tests import fakes
 
 
+@mock.patch('solum.common.policy.check')
 @mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
 @mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
 @mock.patch('solum.api.handlers.pipeline_handler.PipelineHandler')
@@ -30,8 +31,9 @@ class TestPipelineController(base.BaseTestCase):
         super(TestPipelineController, self).setUp()
         objects.load()
 
-    def test_pipeline_get(self, PipelineHandler, resp_mock, request_mock):
-        self.policy({'show_pipeline': '@'})
+    def test_pipeline_get(self, PipelineHandler, resp_mock,
+                          request_mock, mock_policy):
+        mock_policy.return_value = True
         hand_get = PipelineHandler.return_value.get
         fake_pipeline = fakes.FakePipeline()
         hand_get.return_value = fake_pipeline
@@ -45,8 +47,8 @@ class TestPipelineController(base.BaseTestCase):
         self.assertEqual(200, resp_mock.status)
 
     def test_pipeline_get_not_found(self, PipelineHandler,
-                                    resp_mock, request_mock):
-        self.policy({'show_pipeline': '@'})
+                                    resp_mock, request_mock, mock_policy):
+        mock_policy.return_value = True
         hand_get = PipelineHandler.return_value.get
         hand_get.side_effect = exception.ResourceNotFound(
             name='pipeline', pipeline_id='test_id')
@@ -54,8 +56,9 @@ class TestPipelineController(base.BaseTestCase):
         hand_get.assert_called_with('test_id')
         self.assertEqual(404, resp_mock.status)
 
-    def test_pipeline_put_none(self, PipelineHandler, resp_mock, request_mock):
-        self.policy({'update_pipeline': '@'})
+    def test_pipeline_put_none(self, PipelineHandler, resp_mock,
+                               request_mock, mock_policy):
+        mock_policy.return_value = True
         request_mock.body = None
         request_mock.content_type = 'application/json'
         hand_put = PipelineHandler.return_value.put
@@ -64,8 +67,8 @@ class TestPipelineController(base.BaseTestCase):
         self.assertEqual(400, resp_mock.status)
 
     def test_pipeline_put_not_found(self, PipelineHandler,
-                                    resp_mock, request_mock):
-        self.policy({'update_pipeline': '@'})
+                                    resp_mock, request_mock, mock_policy):
+        mock_policy.return_value = True
         json_update = {'name': 'foo'}
         request_mock.body = json.dumps(json_update)
         request_mock.content_type = 'application/json'
@@ -76,8 +79,9 @@ class TestPipelineController(base.BaseTestCase):
         hand_update.assert_called_with('test_id', json_update)
         self.assertEqual(404, resp_mock.status)
 
-    def test_pipeline_put_ok(self, PipelineHandler, resp_mock, request_mock):
-        self.policy({'update_pipeline': '@'})
+    def test_pipeline_put_ok(self, PipelineHandler, resp_mock,
+                             request_mock, mock_policy):
+        mock_policy.return_value = True
         json_update = {'name': 'foo'}
         request_mock.body = json.dumps(json_update)
         request_mock.content_type = 'application/json'
@@ -88,8 +92,8 @@ class TestPipelineController(base.BaseTestCase):
         self.assertEqual(200, resp_mock.status)
 
     def test_pipeline_delete_not_found(self, PipelineHandler,
-                                       resp_mock, request_mock):
-        self.policy({'delete_pipeline': '@'})
+                                       resp_mock, request_mock, mock_policy):
+        mock_policy.return_value = True
         hand_delete = PipelineHandler.return_value.delete
         hand_delete.side_effect = exception.ResourceNotFound(
             name='pipeline', pipeline_id='test_id')
@@ -98,8 +102,8 @@ class TestPipelineController(base.BaseTestCase):
         self.assertEqual(404, resp_mock.status)
 
     def test_pipeline_delete_ok(self, PipelineHandler,
-                                resp_mock, request_mock):
-        self.policy({'delete_pipeline': '@'})
+                                resp_mock, request_mock, mock_policy):
+        mock_policy.return_value = True
         hand_delete = PipelineHandler.return_value.delete
         hand_delete.return_value = None
         pipeline.PipelineController('test_id').delete()
@@ -134,6 +138,7 @@ class TestPipelineAsDict(base.BaseTestCase):
         self.assertEqual(self.data, s.as_dict(objects.registry.Pipeline))
 
 
+@mock.patch('solum.common.policy.check')
 @mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
 @mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
 @mock.patch('solum.api.handlers.pipeline_handler.PipelineHandler')
@@ -143,8 +148,8 @@ class TestPipelinesController(base.BaseTestCase):
         objects.load()
 
     def test_pipelines_get_all(self, PipelineHandler,
-                               resp_mock, request_mock):
-        self.policy({'get_pipelines': '@'})
+                               resp_mock, request_mock, mock_policy):
+        mock_policy.return_value = True
         hand_get = PipelineHandler.return_value.get_all
         fake_pipeline = fakes.FakePipeline()
         hand_get.return_value = [fake_pipeline]
@@ -160,8 +165,8 @@ class TestPipelinesController(base.BaseTestCase):
 
     @mock.patch('solum.objects.registry.Plan')
     def test_pipelines_post(self, mock_Plan, PipelineHandler,
-                            resp_mock, request_mock):
-        self.policy({'create_pipeline': '@'})
+                            resp_mock, request_mock, mock_policy):
+        mock_policy.return_value = True
         json_create = {'name': 'foo',
                        'plan_uri': 'http://test_url:8080/test/911'}
         request_mock.body = json.dumps(json_create)
@@ -178,8 +183,8 @@ class TestPipelinesController(base.BaseTestCase):
         self.assertEqual(201, resp_mock.status)
 
     def test_pipelines_post_no_plan(self, PipelineHandler, resp_mock,
-                                    request_mock):
-        self.policy({'create_pipeline': '@'})
+                                    request_mock, mock_policy):
+        mock_policy.return_value = True
         json_create = {'name': 'foo'}
         request_mock.body = json.dumps(json_create)
         request_mock.content_type = 'application/json'
@@ -193,8 +198,8 @@ class TestPipelinesController(base.BaseTestCase):
         self.assertEqual(400, resp_mock.status)
 
     def test_pipelines_post_not_hosted(self, PipelineHandler, resp_mock,
-                                       request_mock):
-        self.policy({'create_pipeline': '@'})
+                                       request_mock, mock_policy):
+        mock_policy.return_value = True
         json_create = {'name': 'foo',
                        'plan_uri': 'http://example.com/a.git'}
         request_mock.body = json.dumps(json_create)
@@ -207,8 +212,8 @@ class TestPipelinesController(base.BaseTestCase):
         self.assertEqual(400, resp_mock.status)
 
     def test_pipelines_post_nodata(self, PipelineHandler,
-                                   resp_mock, request_mock):
-        self.policy({'create_pipeline': '@'})
+                                   resp_mock, request_mock, mock_policy):
+        mock_policy.return_value = True
         request_mock.body = ''
         request_mock.content_type = 'application/json'
         hand_create = PipelineHandler.return_value.create

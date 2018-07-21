@@ -23,12 +23,14 @@ from solum.tests import base
 from solum.tests import fakes
 
 
+@mock.patch('solum.common.policy.check')
 @mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
 @mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
 @mock.patch('solum.api.handlers.language_pack_handler.LanguagePackHandler')
 class TestLanguagePackController(base.BaseTestCase):
-    def test_language_pack_get(self, handler_mock, resp_mock, request_mock):
-        self.policy({'show_languagepack': '@'})
+    def test_language_pack_get(self, handler_mock, resp_mock,
+                               request_mock, mock_policy):
+        mock_policy.return_value = True
         handler_get = handler_mock.return_value.get
         handler_get.return_value = fakes.FakeImage()
         language_pack_obj = language_pack.LanguagePackController(
@@ -38,8 +40,9 @@ class TestLanguagePackController(base.BaseTestCase):
         self.assertIsNotNone(result)
         handler_get.assert_called_once_with('test_id')
 
-    def test_lp_get_not_found(self, handler_mock, resp_mock, request_mock):
-        self.policy({'show_languagepack': '@'})
+    def test_lp_get_not_found(self, handler_mock, resp_mock,
+                              request_mock, mock_policy):
+        mock_policy.return_value = True
         handler_get = handler_mock.return_value.get
         handler_get.side_effect = exception.ResourceNotFound(
             name='language_pack', image_id='test_id')
@@ -50,8 +53,9 @@ class TestLanguagePackController(base.BaseTestCase):
         handler_get.assert_called_once_with('test_id')
 
     def test_language_pack_delete_not_found(self, LanguagePackHandler,
-                                            resp_mock, request_mock):
-        self.policy({'delete_languagepack': '@'})
+                                            resp_mock, request_mock,
+                                            mock_policy):
+        mock_policy.return_value = True
         hand_delete = LanguagePackHandler.return_value.delete
         hand_delete.side_effect = exception.ResourceNotFound(
             name='language_pack', language_pack_id='test_id')
@@ -61,8 +65,8 @@ class TestLanguagePackController(base.BaseTestCase):
         self.assertEqual(404, resp_mock.status)
 
     def test_language_pack_delete_ok(self, LanguagePackHandler,
-                                     resp_mock, request_mock):
-        self.policy({'delete_languagepack': '@'})
+                                     resp_mock, request_mock, mock_policy):
+        mock_policy.return_value = True
         hand_delete = LanguagePackHandler.return_value.delete
         hand_delete.return_value = None
         obj = language_pack.LanguagePackController('test_id')
@@ -71,6 +75,7 @@ class TestLanguagePackController(base.BaseTestCase):
         self.assertEqual(204, resp_mock.status)
 
 
+@mock.patch('solum.common.policy.check')
 @mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
 @mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
 @mock.patch('solum.api.handlers.language_pack_handler.LanguagePackHandler')
@@ -80,8 +85,8 @@ class TestLanguagePacksController(base.BaseTestCase):
         objects.load()
 
     def test_language_packs_get_all(self, LanguagePackHandler,
-                                    resp_mock, request_mock):
-        self.policy({'get_languagepacks': '@'})
+                                    resp_mock, request_mock, mock_policy):
+        mock_policy.return_value = True
         hand_get = LanguagePackHandler.return_value.get_all
         hand_get.return_value = []
         resp = language_pack.LanguagePacksController().get_all()
@@ -90,8 +95,8 @@ class TestLanguagePacksController(base.BaseTestCase):
         self.assertIsNotNone(resp)
 
     def test_language_packs_post(self, LanguagePackHandler, resp_mock,
-                                 request_mock):
-        self.policy({'create_languagepack': '@'})
+                                 request_mock, mock_policy):
+        mock_policy.return_value = True
         json_create = {'name': 'foo',
                        'source_uri': 'git@github.com/sample/a.git',
                        'lp_metadata': 'some metadata', 'lp_params': {}}
@@ -106,8 +111,8 @@ class TestLanguagePacksController(base.BaseTestCase):
         self.assertEqual(201, resp_mock.status)
 
     def test_language_packs_post_nodata(self, LanguagePackHandler, resp_mock,
-                                        request_mock):
-        self.policy({'create_languagepack': '@'})
+                                        request_mock, mock_policy):
+        mock_policy.return_value = True
         request_mock.body = ''
         request_mock.content_type = 'application/json'
         hand_create = LanguagePackHandler.return_value.create
@@ -118,8 +123,8 @@ class TestLanguagePacksController(base.BaseTestCase):
         self.assertEqual(400, resp_mock.status)
 
     def test_language_packs_post_badname(self, LanguagePackHandler, resp_mock,
-                                         request_mock):
-        self.policy({'create_languagepack': '@'})
+                                         request_mock, mock_policy):
+        mock_policy.return_value = True
         json_create = {'name': 'foo==',
                        'source_uri': 'git@github.com/sample/a.git',
                        'lp_metadata': 'some metadata'}
@@ -134,8 +139,8 @@ class TestLanguagePacksController(base.BaseTestCase):
         self.assertEqual(400, resp_mock.status)
 
     def test_language_packs_post_capsname(self, LanguagePackHandler, resp_mock,
-                                          request_mock):
-        self.policy({'create_languagepack': '@'})
+                                          request_mock, mock_policy):
+        mock_policy.return_value = True
         json_create = {'name': 'Foo',
                        'source_uri': 'git@github.com/sample/a.git',
                        'lp_metadata': 'some metadata'}
@@ -150,8 +155,8 @@ class TestLanguagePacksController(base.BaseTestCase):
         self.assertEqual(400, resp_mock.status)
 
     def test_language_packs_post_longname(self, LanguagePackHandler, resp_mock,
-                                          request_mock):
-        self.policy({'create_languagepack': '@'})
+                                          request_mock, mock_policy):
+        mock_policy.return_value = True
         json_create = {'name': 'a' * 101,
                        'source_uri': 'git@github.com/sample/a.git',
                        'lp_metadata': 'some metadata'}

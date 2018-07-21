@@ -24,6 +24,7 @@ from solum.tests import base
 from solum.tests import fakes
 
 
+@mock.patch('solum.common.policy.check')
 @mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
 @mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
 @mock.patch('solum.api.handlers.operation_handler.OperationHandler')
@@ -33,8 +34,9 @@ class TestOperationController(base.BaseTestCase):
         super(TestOperationController, self).setUp()
         objects.load()
 
-    def test_operation_get(self, OperationHandler, resp_mock, request_mock):
-        self.policy({'show_operation': '@'})
+    def test_operation_get(self, OperationHandler, resp_mock,
+                           request_mock, mock_policy):
+        mock_policy.return_value = True
         hand_get = OperationHandler.return_value.get
         fake_operation = fakes.FakeOperation()
         hand_get.return_value = fake_operation
@@ -52,8 +54,8 @@ class TestOperationController(base.BaseTestCase):
         self.assertEqual(200, resp_mock.status)
 
     def test_operation_get_not_found(self, OperationHandler, resp_mock,
-                                     request_mock):
-        self.policy({'show_operation': '@'})
+                                     request_mock, mock_policy):
+        mock_policy.return_value = True
         hand_get = OperationHandler.return_value.get
         hand_get.side_effect = exception.ResourceNotFound(
             id='test_id', name='operation')
@@ -63,8 +65,8 @@ class TestOperationController(base.BaseTestCase):
         self.assertEqual(404, resp_mock.status)
 
     def test_operation_put_none(self, OperationHandler, resp_mock,
-                                request_mock):
-        self.policy({'update_operation': '@'})
+                                request_mock, mock_policy):
+        mock_policy.return_value = True
         request_mock.body = None
         request_mock.content_type = 'application/json'
         hand_put = OperationHandler.return_value.put
@@ -73,8 +75,8 @@ class TestOperationController(base.BaseTestCase):
         self.assertEqual(400, resp_mock.status)
 
     def test_operation_put_not_found(self, OperationHandler, resp_mock,
-                                     request_mock):
-        self.policy({'update_operation': '@'})
+                                     request_mock, mock_policy):
+        mock_policy.return_value = True
         json_update = {'name': 'foo'}
         request_mock.body = json.dumps(json_update)
         request_mock.content_type = 'application/json'
@@ -85,8 +87,9 @@ class TestOperationController(base.BaseTestCase):
         hand_update.assert_called_with('test_id', json_update)
         self.assertEqual(404, resp_mock.status)
 
-    def test_operation_put_ok(self, OperationHandler, resp_mock, request_mock):
-        self.policy({'update_operation': '@'})
+    def test_operation_put_ok(self, OperationHandler, resp_mock,
+                              request_mock, mock_policy):
+        mock_policy.return_value = True
         json_update = {'name': 'foo'}
         request_mock.body = json.dumps(json_update)
         request_mock.content_type = 'application/json'
@@ -97,8 +100,8 @@ class TestOperationController(base.BaseTestCase):
         self.assertEqual(200, resp_mock.status)
 
     def test_operation_delete_not_found(self, OperationHandler,
-                                        resp_mock, request_mock):
-        self.policy({'delete_operation': '@'})
+                                        resp_mock, request_mock, mock_policy):
+        mock_policy.return_value = True
         hand_delete = OperationHandler.return_value.delete
         hand_delete.side_effect = exception.ResourceNotFound(
             id='test_id', name='operation')
@@ -108,8 +111,8 @@ class TestOperationController(base.BaseTestCase):
         self.assertEqual(404, resp_mock.status)
 
     def test_operation_delete_ok(self, OperationHandler, resp_mock,
-                                 request_mock):
-        self.policy({'delete_operation': '@'})
+                                 request_mock, mock_policy):
+        mock_policy.return_value = True
         hand_delete = OperationHandler.return_value.delete
         hand_delete.return_value = None
         obj = operation.OperationController('test_id')
@@ -118,6 +121,7 @@ class TestOperationController(base.BaseTestCase):
         self.assertEqual(204, resp_mock.status)
 
 
+@mock.patch('solum.common.policy.check')
 @mock.patch('pecan.request', new_callable=fakes.FakePecanRequest)
 @mock.patch('pecan.response', new_callable=fakes.FakePecanResponse)
 @mock.patch('solum.api.handlers.operation_handler.OperationHandler')
@@ -126,8 +130,9 @@ class TestOperationsController(base.BaseTestCase):
         super(TestOperationsController, self).setUp()
         objects.load()
 
-    def test_operations_get_all(self, handler_mock, resp_mock, request_mock):
-        self.policy({'get_operations': '@'})
+    def test_operations_get_all(self, handler_mock, resp_mock,
+                                request_mock, mock_policy):
+        mock_policy.return_value = True
         hand_get_all = handler_mock.return_value.get_all
         fake_operation = fakes.FakeOperation()
         hand_get_all.return_value = [fake_operation]
@@ -144,8 +149,9 @@ class TestOperationsController(base.BaseTestCase):
         self.assertEqual(fake_operation.uuid, resp['result'][0].uuid)
         self.assertEqual(200, resp_mock.status)
 
-    def test_operations_post(self, handler_mock, resp_mock, request_mock):
-        self.policy({'create_operation': '@'})
+    def test_operations_post(self, handler_mock, resp_mock,
+                             request_mock, mock_policy):
+        mock_policy.return_value = True
         json_create = {'name': 'foo',
                        'description': 'test_desc_operation',
                        'user_id': 'user_id_test',
@@ -160,8 +166,8 @@ class TestOperationsController(base.BaseTestCase):
         handler_create.assert_called_once_with(json_create)
 
     def test_operations_post_nodata(self, handler_mock,
-                                    resp_mock, request_mock):
-        self.policy({'create_operation': '@'})
+                                    resp_mock, request_mock, mock_policy):
+        mock_policy.return_value = True
         request_mock.body = ''
         request_mock.content_type = 'application/json'
         handler_create = handler_mock.return_value.create
