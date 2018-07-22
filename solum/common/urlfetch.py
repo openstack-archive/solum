@@ -29,7 +29,9 @@ def get(url, max_size, chunk_size=None, allowed_schemes=('http', 'https')):
     The max_size represents the total max byte of your file.
     The chunk_size is by default set at max_size, it represents the size
     of your chunk.
-    Raise an IOError if getting the data fails and if max_size is exceeded.
+    Raise an IOError if getting the data fails.
+    Raise an IOError if max_size is less than 1.
+    Raise an IOError if chunk_size is less than 1.
     """
 
     LOG.info(_('Fetching data from %s') % url)
