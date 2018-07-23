@@ -16,8 +16,6 @@ from oslo_config import cfg
 from oslotest import base
 import testscenarios
 
-from solum.common import policy
-
 
 class BaseTestCase(testscenarios.WithScenarios, base.BaseTestCase):
     """Test base class."""
@@ -25,11 +23,3 @@ class BaseTestCase(testscenarios.WithScenarios, base.BaseTestCase):
     def setUp(self):
         super(BaseTestCase, self).setUp()
         self.addCleanup(cfg.CONF.reset)
-
-    def policy(self, rules, default_rule='allow', overwrite=True):
-        # Inject an allow and deny rule
-        rules['allow'] = '@'
-        rules['deny'] = '!'
-
-        # Set the rules
-        policy.set_rules(rules, default_rule, overwrite)
