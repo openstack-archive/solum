@@ -14,11 +14,7 @@
 
 from mistral.actions import std_actions
 from mistral import exceptions
-from oslo_log import log as logging
 from oslo_utils import uuidutils
-
-
-LOG = logging.getLogger('mistral.actions.solum')
 
 
 class CreateImageAction(std_actions.HTTPAction):

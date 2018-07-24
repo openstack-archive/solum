@@ -16,7 +16,6 @@ import datetime
 import json
 
 from oslo_config import cfg
-from oslo_log import log as logging
 from oslo_utils import uuidutils
 
 from solum.api.handlers import handler
@@ -26,9 +25,6 @@ from solum import objects
 from solum.objects import image
 from solum.objects.sqlalchemy import workflow
 from solum.worker import api as worker_api
-
-
-LOG = logging.getLogger(__name__)
 
 
 API_SERVICE_OPTS = [
