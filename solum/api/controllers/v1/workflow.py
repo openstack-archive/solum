@@ -13,7 +13,6 @@
 # under the License.
 
 from oslo_config import cfg
-from oslo_log import log as logging
 import pecan
 from pecan import rest
 import wsmeext.pecan as wsme_pecan
@@ -25,8 +24,6 @@ from solum.api.handlers import workflow_handler as wf_handler
 from solum.common import clients
 from solum.common import exception
 from solum.common import request
-
-LOG = logging.getLogger(__name__)
 
 cfg.CONF.import_opt('image_storage', 'solum.worker.config', group='worker')
 
