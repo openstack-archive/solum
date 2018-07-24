@@ -137,10 +137,14 @@ class PlanHandler(handler.Handler):
                 key_size=2048,
                 backend=default_backend()
             )
-            public_key = new_key.public_key()
-            private_key = public_key.public_bytes(
+            public_key = new_key.public_key().public_bytes(
+                serialization.Encoding.OpenSSH,
+                serialization.PublicFormat.OpenSSH
+            )
+            private_key = new_key.private_bytes(
                 encoding=serialization.Encoding.PEM,
-                format=serialization.PublicFormat.SubjectPublicKeyInfo
+                format=serialization.PrivateFormat.TraditionalOpenSSL,
+                encryption_algorithm=serialization.NoEncryption()
             )
             artifact['content']['public_key'] = public_key
             deploy_keys.append({'source_url': artifact['content']['href'],
