@@ -91,8 +91,7 @@ class AssembliesController(rest.RestController):
                          status_code=201)
     def post(self, data):
         """Create a new assembly."""
-        policy.check('create_assembly',
-                     pecan.request)
+        policy.check('create_assembly', pecan.request.security_context)
         js_data = data.as_dict(objects.registry.Assembly)
         if data.plan_uri is not wsme.Unset:
             plan_uri = data.plan_uri
