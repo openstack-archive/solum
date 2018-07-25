@@ -29,6 +29,7 @@
           set -x
           cat << 'EOF' >>"/tmp/dg-local.conf"
           [[local|localrc]]
+          TEMPEST_PLUGINS='/opt/stack/new/solum-tempest-plugin'
           enable_plugin solum git://git.openstack.org/openstack/solum
           SOLUM_PROJ_DIR=/opt/stack/new/solum
           enable_plugin zun git://git.openstack.org/openstack/zun
@@ -56,6 +57,7 @@
           export PROJECTS="openstack/devstack-plugin-container $PROJECTS"
           export PROJECTS="openstack/python-zunclient $PROJECTS"
           export PROJECTS="openstack/zun-tempest-plugin $PROJECTS"
+          export PROJECTS="openstack/solum-tempest-plugin $PROJECTS"
 
           export KEEP_LOCALRC=1
 
