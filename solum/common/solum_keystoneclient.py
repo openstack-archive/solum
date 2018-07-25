@@ -33,7 +33,7 @@ trust_opts = [
                 help=_('Subset of trustor roles to be delegated to solum.')),
 ]
 cfg.CONF.register_opts(trust_opts)
-cfg.CONF.import_opt('auth_uri', 'keystonemiddleware.auth_token',
+cfg.CONF.import_opt('www_authenticate_uri', 'keystonemiddleware.auth_token',
                     group='keystone_authtoken')
 
 AUTH_OPTS = [
@@ -99,8 +99,9 @@ class KeystoneClientV3(object):
         else:
             # Import auth_token to have keystone_authtoken settings setup.
             importutils.import_module('keystonemiddleware.auth_token')
-            self.endpoint = cfg.CONF.keystone_authtoken.auth_uri.replace(
-                'v2.0', 'v3')
+            self.endpoint = \
+                cfg.CONF.keystone_authtoken.www_authenticate_uri.replace(
+                    'v2.0', 'v3')
 
         if self.context and self.context.trust_id:
             # Create a client with the specified trust_id, this

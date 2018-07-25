@@ -128,7 +128,7 @@ class AuthInformationHook(hooks.PecanHook):
         auth_url = headers.get('X-Auth-Url')
         if auth_url is None:
             importutils.import_module('keystonemiddleware.auth_token')
-            auth_url = cfg.CONF.keystone_authtoken.auth_uri
+            auth_url = cfg.CONF.keystone_authtoken.www_authenticate_uri
 
         auth_token_info = state.request.environ.get('keystone.token_info')
         identity_status = headers.get('X-Identity-Status')

@@ -91,7 +91,7 @@ cfg.CONF.register_opts(SERVICE_OPTS, group='deployer')
 cfg.CONF.import_opt('image_format', 'solum.api.handlers.assembly_handler',
                     group='api')
 cfg.CONF.import_opt('image_storage', 'solum.worker.config', group='worker')
-cfg.CONF.import_opt('auth_uri', 'keystonemiddleware.auth_token',
+cfg.CONF.import_opt('www_authenticate_uri', 'keystonemiddleware.auth_token',
                     group='keystone_authtoken')
 
 
@@ -105,7 +105,7 @@ def get_heat_client(ctxt, app):
     # decrypted_password = utils.decrypt(encoded_password)
     # password = decrypted_password
     # tenant_name = raw_content['tenant_name']
-    # auth_url = cfg.CONF.keystone_authtoken.auth_uri
+    # auth_url = cfg.CONF.keystone_authtoken.www_authenticate_uri
 
     # ks_kwargs = {
     #     'username': username,

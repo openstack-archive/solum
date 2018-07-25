@@ -39,7 +39,7 @@ class KeystoneClientTest(base.BaseTestCase):
         self.ctx.auth_token = 'abcd1234'
         self.ctx.auth_token_info = None
 
-        cfg.CONF.set_override('auth_uri', dummy_url,
+        cfg.CONF.set_override('www_authenticate_uri', dummy_url,
                               group='keystone_authtoken')
 
     def test_init_v3_token(self, mock_ks):
