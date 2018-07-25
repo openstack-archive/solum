@@ -5,6 +5,8 @@
         - solum-devstack-centos-7
         - solum-devstack-py35
         - openstack-tox-lower-constraints
+        - solum-tox-bandit-baseline:
+            voting: false
     gate:
       jobs:
         - solum-devstack
@@ -93,3 +95,23 @@
       - openstack/solum-tempest-plugin
       - openstack/zun
       - openstack/zun-tempest-plugin
+
+- job:
+    # Security testing for known issues
+    name: solum-tox-bandit-baseline
+    parent: openstack-tox
+    timeout: 2400
+    vars:
+      tox_envlist: bandit-baseline
+    required-projects:
+      - openstack/requirements
+    irrelevant-files:
+      - ^.*\.rst$
+      - ^doc/.*$
+      - ^releasenotes/.*$
+      - ^setup.cfg$
+      - ^tools/.*$
+      - ^contrib/.*$
+      - ^solum/hacking/.*$
+      - ^solum/locale/.*$
+      - ^solum/tests/.*$
