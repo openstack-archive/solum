@@ -37,6 +37,7 @@
       - openstack/solum-dashboard
       - openstack/zun
       - openstack/zun-tempest-plugin
+      - openstack/solum-tempest-plugin
 
 - job:
     name: solum-devstack-py35
@@ -64,6 +65,7 @@
       - openstack/solum-dashboard
       - openstack/zun
       - openstack/zun-tempest-plugin
+      - openstack/solum-tempest-plugin
 
 - job:
     name: solum-devstack
