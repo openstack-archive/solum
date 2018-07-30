@@ -106,7 +106,7 @@ def wrap_controller_exception(func, func_server_error, func_client_error):
     message
 
     - if a SolumException is catched and its error code is <500, raise a http
-    4xx and logs the excp in debug mode
+    4xx and logs the exception in debug mode
 
     """
     @functools.wraps(func)
