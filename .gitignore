@@ -63,3 +63,6 @@ etc/solum/solum.policy.yaml.sample
 
 #User Config file for Solum
 etc/solum/solum.conf
+
+!/.stestr.conf
+.stestr/
