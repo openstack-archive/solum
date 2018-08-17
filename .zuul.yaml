@@ -1,4 +1,10 @@
 - project:
+    templates:
+      - openstack-python-jobs
+      - openstack-python35-jobs
+      - publish-openstack-sphinx-docs
+      - release-notes-jobs
+      - check-requirements
     check:
       jobs:
         - solum-devstack
@@ -8,10 +14,14 @@
         - solum-tox-bandit-baseline:
             voting: false
     gate:
+      queue: solum
       jobs:
         - solum-devstack
 
         - openstack-tox-lower-constraints
+    post:
+      jobs:
+        - openstack-tox-cover
 - job:
     name: solum-devstack-centos-7
     parent: legacy-dsvm-base
