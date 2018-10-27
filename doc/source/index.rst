@@ -13,6 +13,7 @@ Contents:
    admin/index
    contributor/index
    man/index
+   cli/index
 
 Indices and tables
 ==================
