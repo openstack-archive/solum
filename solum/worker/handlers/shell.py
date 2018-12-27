@@ -735,6 +735,8 @@ class Handler(object):
                                    env=user_env,
                                    stdout=subprocess.PIPE).communicate()[0]
 
+            if isinstance(out, six.binary_type):
+                out = out.decode('utf-8')
             # we expect two lines in the output that looks like:
             # image_external_ref=<external storage ref>
             # docker_image_name=<DU name>
