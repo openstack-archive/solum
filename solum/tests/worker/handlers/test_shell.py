@@ -22,6 +22,7 @@ from oslo_utils import uuidutils
 
 from solum.common import exception
 from solum.i18n import _
+from solum.privileged import rootwrap as priv_rootwrap
 from solum.tests import base
 from solum.tests import fakes
 from solum.tests import utils
@@ -837,18 +838,18 @@ class TestLanguagePackBuildCommand(base.BaseTestCase):
     @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
     @mock.patch('solum.objects.registry')
     @mock.patch('solum.worker.handlers.shell.update_lp_status')
-    @mock.patch('subprocess.Popen')
+    @mock.patch.object(priv_rootwrap, 'execute')
     @mock.patch('solum.TLS')
-    def test_build_lp(self, mock_trace, mock_popen, mock_ui,
+    def test_build_lp(self, mock_trace, mock_execute, mock_ui,
                       mock_registry, mock_get_env):
         handler = shell_handler.Handler()
         fake_image = fakes.FakeImage()
         fake_glance_id = uuidutils.generate_uuid()
         fake_image_name = 'tenant-name-ts-commit'
         mock_registry.Image.get_lp_by_name_or_uuid.return_value = fake_image
-        mock_popen.return_value.communicate.return_value = [
+        mock_execute.return_value = (
             'foo\nimage_external_ref=%s\ndocker_image_name=%s\n' %
-            (fake_glance_id, fake_image_name), None]
+            (fake_glance_id, fake_image_name), None)
         test_env = mock_environment()
         mock_get_env.return_value = test_env
         git_info = mock_git_info()
@@ -861,10 +862,12 @@ class TestLanguagePackBuildCommand(base.BaseTestCase):
         proj_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                 '..', '..', '..', '..'))
         script = os.path.join(proj_dir, 'contrib/lp-cedarish/docker/build-lp')
-        mock_popen.assert_called_once_with([script, 'git://example.com/foo',
-                                            'lp_name', self.ctx.tenant],
-                                           env=test_env,
-                                           stdout=-1)
+        mock_execute.assert_called_once_with(
+            script, 'git://example.com/foo',
+            'lp_name', self.ctx.tenant,
+            env_variables=test_env,
+            run_as_root=True,
+        )
 
         expected = [mock.call(self.ctx, 5, 'lp_name', 'BUILDING'),
                     mock.call(self.ctx, 5, 'lp_name', 'READY',

@@ -15,15 +15,18 @@
 """Starter script for the Solum Worker service."""
 
 import os
+import shlex
 import sys
 
 from oslo_config import cfg
 from oslo_log import log as logging
+from oslo_privsep import priv_context
 
 import solum
 from solum.common.rpc import service as rpc_service
 from solum.common import service
 from solum.common import trace_data
+from solum.common import utils
 from solum.i18n import _
 from solum.worker.handlers import default as default_handler
 from solum.worker.handlers import noop as noop_handler
@@ -41,6 +44,7 @@ cli_opts = [
 
 
 def main():
+    priv_context.init(root_helper=shlex.split(utils.get_root_helper()))
     cfg.CONF.register_cli_opts(cli_opts)
     service.prepare_service(sys.argv)
     solum.TLS.trace = trace_data.TraceData()

@@ -12,9 +12,10 @@
 
 from cryptography.fernet import Fernet
 
-from oslo_concurrency import processutils
 from oslo_config import cfg
 from oslo_utils import encodeutils
+
+from solum.privileged import rootwrap as priv_rootwrap
 
 
 key = Fernet.generate_key()
@@ -40,4 +41,4 @@ def execute(*cmd, **kwargs):
     """Convenience wrapper around oslo's execute() method."""
     if 'run_as_root' in kwargs and 'root_helper' not in kwargs:
         kwargs['root_helper'] = get_root_helper()
-    return processutils.execute(*cmd, **kwargs)
+    return priv_rootwrap.execute(*cmd, **kwargs)

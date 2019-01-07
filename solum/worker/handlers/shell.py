@@ -39,6 +39,7 @@ from solum.i18n import _
 from solum import objects
 from solum.objects import assembly
 from solum.objects import image
+from solum.privileged import rootwrap as priv_rootwrap
 import solum.uploaders.local as local_uploader
 import solum.uploaders.swift as swift_uploader
 
@@ -731,12 +732,17 @@ class Handler(object):
         docker_image_name = None
 
         try:
-            out = subprocess.Popen(build_cmd,
-                                   env=user_env,
-                                   stdout=subprocess.PIPE).communicate()[0]
+            try:
+                out = priv_rootwrap.execute(
+                    *build_cmd, run_as_root=True, env_variables=user_env)[0]
+            except Exception as e:
+                LOG.exception("Failed to build languagepack: %s" % image_id)
+                LOG.exception(e)
+                out = ''
 
             if isinstance(out, six.binary_type):
                 out = out.decode('utf-8')
+            LOG.debug("#######out is %s" % out)
             # we expect two lines in the output that looks like:
             # image_external_ref=<external storage ref>
             # docker_image_name=<DU name>
