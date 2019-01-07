@@ -2,15 +2,15 @@
 #----------------------
 SOLUM_REPO=${SOLUM_REPO:-${GIT_BASE}/openstack/solum.git}
 SOLUM_BRANCH=${SOLUM_BRANCH:-master}
-SOLUMCLIENT_REPO=${SOLUMCLIENT_REPO:-${GIT_BASE}/openstack/python-solumclient.git}
-SOLUMCLIENT_BRANCH=${SOLUMCLIENT_BRANCH:-master}
+GITREPO["python-solumclient"]=${SOLUMCLIENT_REPO:-${GIT_BASE}/openstack/python-solumclient.git}
+GITBRANCH["python-solumclient"]=${SOLUMCLIENT_BRANCH:-master}
 ZUN_REPO=${NOVADOCKER_REPO:-${GIT_BASE}/openstack/zun.git}
 ZUN_BRANCH=${ZUN_BRANCH:-master}
 
 # Set up default directories
 #----------------------------
 SOLUM_DIR=$DEST/solum
-SOLUMCLIENT_DIR=$DEST/python-solumclient
+GITDIR["python-solumclient"]=$DEST/python-solumclient
 SOLUM_CONF_DIR=${SOLUM_CONF_DIR:-/etc/solum}
 SOLUM_FILES_DIR=$SOLUM_DIR/devstack/files
 NOVA_CONF_DIR=${NOVA_CONF_DIR:-/etc/nova}
