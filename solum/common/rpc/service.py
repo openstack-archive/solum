@@ -70,6 +70,7 @@ class Service(object):
         target = messaging.Target(topic=topic, server=server)
         access_policy = dispatcher.DefaultRPCAccessPolicy
         self._server = messaging.get_rpc_server(transport, target, handlers,
+                                                executor='threading',
                                                 serializer=serializer,
                                                 access_policy=access_policy)
 
