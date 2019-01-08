@@ -13,12 +13,23 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import os
+
 from oslo_config import cfg
 import oslo_middleware.cors as cors_middleware
 import pecan
 
 from solum.api import auth
 from solum.api import config as api_config
+
+import eventlet
+
+if os.name == 'nt':
+    # eventlet monkey patching causes subprocess.Popen to fail on Windows
+    # when using pipes due to missing non blocking I/O support
+    eventlet.monkey_patch(os=False)
+else:
+    eventlet.monkey_patch()
 
 
 # Register options for the service
