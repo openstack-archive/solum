@@ -83,7 +83,7 @@ class API(object):
     def __init__(self, transport=None, context=None, topic=None):
         serializer = RequestContextSerializer(JsonPayloadSerializer())
         if transport is None:
-            transport = messaging.get_notification_transport(cfg.CONF)
+            transport = messaging.get_rpc_transport(cfg.CONF)
         self._context = context
         if topic is None:
             topic = ''
