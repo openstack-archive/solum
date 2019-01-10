@@ -28,8 +28,13 @@ def get_facade():
         _FACADE = session.EngineFacade.from_config(cfg.CONF)
     return _FACADE
 
-get_engine = lambda: get_facade().get_engine()
-get_session = lambda: get_facade().get_session()
+
+def get_engine():
+    return get_facade().get_engine()
+
+
+def get_session():
+    return get_facade().get_session()
 
 
 def get_backend():

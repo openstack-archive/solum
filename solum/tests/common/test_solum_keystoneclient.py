@@ -15,15 +15,15 @@
 import mock
 from oslo_config import cfg
 
-cfg.CONF.import_group('keystone_authtoken',
-                      'keystonemiddleware.auth_token')
-
 import keystoneclient.exceptions as kc_exception  # noqa
 
 from solum.common import exception
 from solum.common import solum_keystoneclient
 from solum.tests import base
 from solum.tests import utils
+
+cfg.CONF.import_group('keystone_authtoken',
+                      'keystonemiddleware.auth_token')
 
 
 @mock.patch('keystoneclient.v3.client.Client')
