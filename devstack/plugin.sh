@@ -34,7 +34,19 @@ else
 fi
 
 # Toggle for deploying Solum-API under HTTPD + mod_wsgi
-SOLUM_USE_MOD_WSGI=${SOLUM_USE_MOD_WSGI:-True}
+SOLUM_USE_MOD_WSGI=${SOLUM_USE_MOD_WSGI:-False}
+
+# Toggle for deploying Solum-API under uwsgi
+SOLUM_USE_UWSGI=${SOLUM_USE_UWSGI:-True}
+
+SOLUM_UWSGI=$SOLUM_BIN_DIR/solum-wsgi-api
+SOLUM_UWSGI_CONF=$SOLUM_CONF_DIR/solum-api-uwsgi.ini
+
+if [[ "$SOLUM_USE_UWSGI" == "True" ]]; then
+    SOLUM_API_URL="$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST/application_deployment"
+else
+    SOLUM_API_URL="$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_SERVICE_PORT"
+fi
 
 # Functions
 # ---------
@@ -52,9 +64,9 @@ function create_solum_service_and_endpoint() {
     SOLUM_SERVICE=$(get_or_create_service "solum" "application_deployment" "Solum Service")
     get_or_create_endpoint "application_deployment" \
         "$REGION_NAME" \
-        "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_SERVICE_PORT" \
-        "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_SERVICE_PORT" \
-        "$SOLUM_SERVICE_PROTOCOL://$SOLUM_SERVICE_HOST:$SOLUM_SERVICE_PORT"
+        "$SOLUM_API_URL" \
+        "$SOLUM_API_URL" \
+        "$SOLUM_API_URL"
 
     SOLUM_BUILDER_SERVICE=$(get_or_create_service "solum" "image_builder" "Solum Image Builder")
     get_or_create_endpoint "image_builder" \
@@ -195,6 +207,10 @@ function configure_solum() {
         _config_solum_apache_wsgi
     fi
 
+    if [ "$SOLUM_USE_UWSGI" == "True" ]; then
+        write_uwsgi_config "$SOLUM_UWSGI_CONF" "$SOLUM_UWSGI" "/application_deployment"
+    fi
+
 }
 
 #register solum user in Keystone
@@ -332,6 +348,8 @@ function start_solum() {
         enable_apache_site solum-api
         restart_apache_server
         tail_log solum-api /var/log/$APACHE_NAME/solum-api.log
+    elif [ "$SOLUM_USE_UWSGI" == "True" ]; then
+        run_process solum-api "$SOLUM_BIN_DIR/uwsgi --ini $SOLUM_UWSGI_CONF"
     else
         run_process solum-api "$SOLUM_BIN_DIR/solum-api --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE"
     fi
@@ -343,7 +361,12 @@ function start_solum() {
 # stop_solum() - Stop running processes
 function stop_solum() {
     # Kill the solum screen windows
-    stop_process solum-api
+    if [ "$SOLUM_USE_UWSGI" == "True" ]; then
+        disable_apache_site solum-api
+        restart_apache_server
+    else
+        stop_process solum-api
+    fi
     stop_process solum-conductor
     stop_process solum-deployer
     stop_process solum-worker
@@ -425,6 +448,9 @@ if is_service_enabled solum-api solum-conductor solum-deployer solum-worker; the
         stop_solum
         if [ "$SOLUM_USE_MOD_WSGI" == "True" ]; then
             cleanup_solum_apache_wsgi
+        fi
+        if [[ "$SOLUM_USE_UWSGI" == "True" ]]; then
+            remove_uwsgi_config "$SOLUM_UWSGI_CONF" "$SOLUM_UWSGI"
         fi
         if is_service_enabled horizon; then
             echo_summary "Cleaning Solum Dashboard up"
