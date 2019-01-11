@@ -17,7 +17,6 @@ import re
 from keystonemiddleware import auth_token
 from oslo_config import cfg
 from oslo_log import log as logging
-from oslo_utils import importutils
 from pecan import hooks
 
 from solum.common import context
@@ -91,7 +90,7 @@ class AuthProtocolWrapper(auth_token.AuthProtocol):
         return super(AuthProtocolWrapper, self).__call__(env, start_response)
 
 
-class AuthInformationHook(hooks.PecanHook):
+class ContextHook(hooks.PecanHook):
 
     def before(self, state):
         if not CONF.get('enable_authentication'):
@@ -102,12 +101,7 @@ class AuthInformationHook(hooks.PecanHook):
 
         headers = state.request.headers
         user_id = headers.get('X-User-Id')
-        if user_id is None:
-            LOG.debug("X-User-Id header was not found in the request")
-            raise Exception('Not authorized')
-
         roles = self._get_roles(state.request)
-
         project_id = headers.get('X-Project-Id')
         user_name = headers.get('X-User-Name', '')
         tenant_name = headers.get('X-Project')
@@ -117,39 +111,23 @@ class AuthInformationHook(hooks.PecanHook):
         user_domain_id = headers.get('X-User-Domain-Id', '')
         password = headers.get('X-Password', '')
 
-        # Get the auth token
-        try:
-            recv_auth_token = headers.get('X-Auth-Token',
-                                          headers.get(
-                                              'X-Storage-Token'))
-        except ValueError:
-            LOG.debug("No auth token found in the request.")
-            raise Exception('Not authorized')
-        auth_url = headers.get('X-Auth-Url')
-        if auth_url is None:
-            importutils.import_module('keystonemiddleware.auth_token')
-            auth_url = cfg.CONF.keystone_authtoken.www_authenticate_uri
+        recv_auth_token = headers.get('X-Auth-Token',
+                                      headers.get(
+                                          'X-Storage-Token'))
 
         auth_token_info = state.request.environ.get('keystone.token_info')
-        identity_status = headers.get('X-Identity-Status')
-        if identity_status == 'Confirmed':
-            ctx = context.RequestContext(auth_token=recv_auth_token,
-                                         auth_token_info=auth_token_info,
-                                         user=user_id,
-                                         tenant=project_id,
-                                         domain=domain,
-                                         user_domain=user_domain_id,
-                                         project_domain=project_domain_id,
-                                         user_name=user_name,
-                                         roles=roles,
-                                         auth_url=auth_url,
-                                         password=password,
-                                         tenant_name=tenant_name)
-            state.request.security_context = ctx
-        else:
-            LOG.debug("The provided identity is not confirmed.")
-            raise Exception('Not authorized. Identity not confirmed.')
-        return
+        ctx = context.RequestContext(auth_token=recv_auth_token,
+                                     auth_token_info=auth_token_info,
+                                     user=user_id,
+                                     tenant=project_id,
+                                     domain=domain,
+                                     user_domain=user_domain_id,
+                                     project_domain=project_domain_id,
+                                     user_name=user_name,
+                                     roles=roles,
+                                     password=password,
+                                     tenant_name=tenant_name)
+        state.request.security_context = ctx
 
     def _get_roles(self, req):
         """Get the list of roles."""

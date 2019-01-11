@@ -21,7 +21,7 @@ app = {
     'root': 'solum.api.controllers.root.RootController',
     'modules': ['solum.api'],
     'debug': False,
-    'hooks': [auth.AuthInformationHook(),
+    'hooks': [auth.ContextHook(),
               release.ReleaseReporter(),
               ]
 }

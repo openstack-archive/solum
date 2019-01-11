@@ -51,7 +51,7 @@ class TestAuth(base.BaseTestCase):
 
     def test_auth_hook_before_method(self, mock_cls):
         state = mock.Mock(request=fakes.FakePecanRequest())
-        hook = auth.AuthInformationHook()
+        hook = auth.ContextHook()
         hook.before(state)
         ctx = state.request.security_context
         self.assertIsInstance(ctx, context.RequestContext)
@@ -63,8 +63,6 @@ class TestAuth(base.BaseTestCase):
                          fakes.fakeAuthTokenHeaders['X-User-Id'])
         self.assertEqual(ctx.roles,
                          [u'admin', u'ResellerAdmin', u'_member_'])
-        self.assertEqual(ctx.auth_url,
-                         fakes.fakeAuthTokenHeaders['X-Auth-Url'])
         self.assertEqual(ctx.user_name,
                          fakes.fakeAuthTokenHeaders['X-User-Name'])
         self.assertEqual(ctx.domain,
@@ -78,7 +76,7 @@ class TestAuth(base.BaseTestCase):
     def test_auth_hook_before_method_auth_info(self, mock_cls):
         state = mock.Mock(request=fakes.FakePecanRequest())
         state.request.environ['keystone.token_info'] = 'assert_this'
-        hook = auth.AuthInformationHook()
+        hook = auth.ContextHook()
         hook.before(state)
         ctx = state.request.security_context
         self.assertIsInstance(ctx, context.RequestContext)

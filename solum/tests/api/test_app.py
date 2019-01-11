@@ -29,4 +29,4 @@ class TestAppConfig(base.BaseTestCase):
 
         self.assertEqual(config_d['modules'], api_config.app['modules'])
         self.assertEqual(config_d['root'], api_config.app['root'])
-        self.assertIsInstance(config_d['hooks'][0], auth.AuthInformationHook)
+        self.assertIsInstance(config_d['hooks'][0], auth.ContextHook)
