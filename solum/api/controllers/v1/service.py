@@ -36,8 +36,8 @@ class ServiceController(rest.RestController):
                      pecan.request.security_context)
         handler = service_handler.ServiceHandler(
             pecan.request.security_context)
-        return service.Service.from_db_model(handler.get(self._id),
-                                             pecan.request.host_url)
+        host_url = pecan.request.application_url.rstrip('/')
+        return service.Service.from_db_model(handler.get(self._id), host_url)
 
     @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(service.Service, body=service.Service)
@@ -49,7 +49,8 @@ class ServiceController(rest.RestController):
             pecan.request.security_context)
         res = handler.update(self._id,
                              data.as_dict(objects.registry.Service))
-        return service.Service.from_db_model(res, pecan.request.host_url)
+        host_url = pecan.request.application_url.rstrip('/')
+        return service.Service.from_db_model(res, host_url)
 
     @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(status_code=204)
@@ -80,9 +81,9 @@ class ServicesController(rest.RestController):
                      pecan.request.security_context)
         handler = service_handler.ServiceHandler(
             pecan.request.security_context)
+        host_url = pecan.request.application_url.rstrip('/')
         return service.Service.from_db_model(
-            handler.create(data.as_dict(objects.registry.Service)),
-            pecan.request.host_url)
+            handler.create(data.as_dict(objects.registry.Service)), host_url)
 
     @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose([service.Service])
@@ -92,5 +93,6 @@ class ServicesController(rest.RestController):
                      pecan.request.security_context)
         handler = service_handler.ServiceHandler(
             pecan.request.security_context)
-        return [service.Service.from_db_model(ser, pecan.request.host_url)
+        host_url = pecan.request.application_url.rstrip('/')
+        return [service.Service.from_db_model(ser, host_url)
                 for ser in handler.get_all()]

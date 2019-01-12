@@ -32,7 +32,8 @@ class ExtensionsController(rest.RestController):
     @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(model.Extensions)
     def get(self):
-        euri = uris.EXTNS_URI_STR % pecan.request.host_url
+        host_url = pecan.request.application_url.rstrip('/')
+        euri = uris.EXTNS_URI_STR % host_url
         desc = "Solum CAMP API extensions collection resource."
 
         handlr = (extension_handler.
@@ -41,7 +42,7 @@ class ExtensionsController(rest.RestController):
         e_links = []
         for m in ext_objs:
             e_links.append(common_types.Link(href=uris.EXTN_URI_STR %
-                                             (pecan.request.host_url, m.uuid),
+                                             (host_url, m.uuid),
                                              target_name=m.name))
 
         # if there aren't any extensions, avoid returning a resource with an

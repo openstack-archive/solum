@@ -31,12 +31,13 @@ class CAMPv11EndpointController(rest.RestController):
     @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(model.PlatformEndpoint)
     def get(self):
-        return model.PlatformEndpoint(uri=URI_STRING % pecan.request.host_url,
+        host_url = pecan.request.application_url.rstrip('/')
+        return model.PlatformEndpoint(uri=URI_STRING % host_url,
                                       name=NAME_STRING,
                                       type='platform_endpoint',
                                       description=DESCRIPTION_STRING,
                                       platform_uri=uris.PLATFORM_URI_STR %
-                                      pecan.request.host_url,
+                                      host_url,
                                       specification_version='CAMP 1.1',
                                       implementation_version='Solum CAMP 1.1',
                                       auth_scheme='KEYSTONE-2.0')

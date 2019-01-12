@@ -36,4 +36,5 @@ class AttributeDefinitionsController(rest.RestController):
             core.abort(404,
                        '%s is not a attribute_definition' %
                        attr_def_name)
-        return raw_def.fix_uris(pecan.request.host_url)
+        host_url = pecan.request.application_url.rstrip('/')
+        return raw_def.fix_uris(host_url)

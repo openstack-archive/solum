@@ -31,13 +31,13 @@ class PlatformEndpointsController(rest.RestController):
     @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(model.PlatformEndpoints)
     def get(self):
+        host_url = pecan.request.application_url.rstrip('/')
         links = [
-            common_types.Link(href=endpoint.URI_STRING %
-                              pecan.request.host_url,
+            common_types.Link(href=endpoint.URI_STRING % host_url,
                               target_name=endpoint.NAME_STRING)
         ]
 
-        return model.PlatformEndpoints(uri=URI_STRING % pecan.request.host_url,
+        return model.PlatformEndpoints(uri=URI_STRING % host_url,
                                        name='Solum_CAMP_endpoints',
                                        type='platform_endpoints',
                                        description=DESCRIPTION_STRING,

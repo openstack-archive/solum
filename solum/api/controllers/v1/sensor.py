@@ -36,8 +36,8 @@ class SensorController(rest.RestController):
         policy.check('show_sensor',
                      pecan.request.security_context)
         handler = sensor_handler.SensorHandler(pecan.request.security_context)
-        return sensor.Sensor.from_db_model(handler.get(self._id),
-                                           pecan.request.host_url)
+        host_url = pecan.request.application_url.rstrip('/')
+        return sensor.Sensor.from_db_model(handler.get(self._id), host_url)
 
     @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(sensor.Sensor, wtypes.text, body=sensor.Sensor)
@@ -48,7 +48,8 @@ class SensorController(rest.RestController):
         handler = sensor_handler.SensorHandler(pecan.request.security_context)
         obj = handler.update(self._id,
                              data.as_dict(objects.registry.Sensor))
-        return sensor.Sensor.from_db_model(obj, pecan.request.host_url)
+        host_url = pecan.request.application_url.rstrip('/')
+        return sensor.Sensor.from_db_model(obj, host_url)
 
     @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(None, wtypes.text, status_code=204)
@@ -78,7 +79,8 @@ class SensorsController(rest.RestController):
                      pecan.request.security_context)
         handler = sensor_handler.SensorHandler(pecan.request.security_context)
         obj = handler.create(data.as_dict(objects.registry.Sensor))
-        return sensor.Sensor.from_db_model(obj, pecan.request.host_url)
+        host_url = pecan.request.application_url.rstrip('/')
+        return sensor.Sensor.from_db_model(obj, host_url)
 
     @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose([sensor.Sensor])
@@ -87,5 +89,6 @@ class SensorsController(rest.RestController):
         policy.check('get_sensors',
                      pecan.request.security_context)
         handler = sensor_handler.SensorHandler(pecan.request.security_context)
-        return [sensor.Sensor.from_db_model(obj, pecan.request.host_url)
+        host_url = pecan.request.application_url.rstrip('/')
+        return [sensor.Sensor.from_db_model(obj, host_url)
                 for obj in handler.get_all()]

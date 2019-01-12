@@ -54,8 +54,8 @@ class AppController(rest.RestController):
         request.check_request_for_https()
         handler = app_handler.AppHandler(pecan.request.security_context)
         app_model = handler.get(self._id)
-        app_model = app.App.from_db_model(app_model,
-                                          pecan.request.host_url)
+        host_url = pecan.request.application_url.rstrip('/')
+        app_model = app.App.from_db_model(app_model, host_url)
         return app_model
 
     @exception.wrap_wsme_pecan_controller_exception
@@ -70,8 +70,8 @@ class AppController(rest.RestController):
             raise exception.BadRequest(reason="No body detected")
 
         updated_app = handler.patch(self._id, data)
-        updated_app = app.App.from_db_model(updated_app,
-                                            pecan.request.host_url)
+        host_url = pecan.request.application_url.rstrip('/')
+        updated_app = app.App.from_db_model(updated_app, host_url)
 
         return updated_app
 
@@ -157,7 +157,8 @@ class AppsController(rest.RestController):
         app_data['raw_content'] = json.dumps(raw_content)
 
         new_app = handler.create(app_data)
-        created_app = app.App.from_db_model(new_app, pecan.request.host_url)
+        host_url = pecan.request.application_url.rstrip('/')
+        created_app = app.App.from_db_model(new_app, host_url)
         return created_app
 
     @exception.wrap_wsme_pecan_controller_exception
@@ -166,6 +167,7 @@ class AppsController(rest.RestController):
         """Return all apps, based on the query provided."""
         request.check_request_for_https()
         handler = app_handler.AppHandler(pecan.request.security_context)
-        all_apps = [app.App.from_db_model(obj, pecan.request.host_url)
+        host_url = pecan.request.application_url.rstrip('/')
+        all_apps = [app.App.from_db_model(obj, host_url)
                     for obj in handler.get_all()]
         return all_apps

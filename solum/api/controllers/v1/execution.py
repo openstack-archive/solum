@@ -34,6 +34,6 @@ class ExecutionsController(rest.RestController):
                      pecan.request.security_context)
         handler = pipeline_handler.PipelineHandler(
             pecan.request.security_context)
-        return [execution.Execution.from_db_model(obj,
-                                                  pecan.request.host_url)
+        host_url = pecan.request.application_url.rstrip('/')
+        return [execution.Execution.from_db_model(obj, host_url)
                 for obj in handler.get(pipeline_id).executions]

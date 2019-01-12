@@ -43,8 +43,8 @@ def clean_plan(plan_dict):
 def fluff_plan(plan_dict, pid):
     """Fluff the plan with a camp_version and uri."""
     plan_dict['camp_version'] = "CAMP 1.1"
-    plan_dict['uri'] = uris.PLAN_URI_STR % (pecan.request.host_url,
-                                            pid)
+    host_url = pecan.request.application_url.rstrip('/')
+    plan_dict['uri'] = uris.PLAN_URI_STR % (host_url, pid)
     return plan_dict
 
 
@@ -84,8 +84,9 @@ class PlansController(rest.RestController):
     @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(model.Plans)
     def get(self):
-        puri = uris.PLANS_URI_STR % pecan.request.host_url
-        pdef_uri = uris.DEPLOY_PARAMS_URI % pecan.request.host_url
+        host_url = pecan.request.application_url.rstrip('/')
+        puri = uris.PLANS_URI_STR % host_url
+        pdef_uri = uris.DEPLOY_PARAMS_URI % host_url
         desc = "Solum CAMP API plans collection resource."
 
         handler = plan_handler.PlanHandler(pecan.request.security_context)
@@ -93,7 +94,7 @@ class PlansController(rest.RestController):
         p_links = []
         for m in plan_objs:
             p_links.append(common_types.Link(href=uris.PLAN_URI_STR %
-                                             (pecan.request.host_url, m.uuid),
+                                             (host_url, m.uuid),
                                              target_name=m.name))
 
         # if there aren't any plans, avoid returning a resource with an

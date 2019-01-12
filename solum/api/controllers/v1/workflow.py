@@ -51,8 +51,8 @@ class WorkflowController(rest.RestController):
         request.check_request_for_https()
         handler = wf_handler.WorkflowHandler(pecan.request.security_context)
         wf_model = handler.get(self.wf_id)
-        wf_model = workflow.Workflow.from_db_model(wf_model,
-                                                   pecan.request.host_url)
+        host_url = pecan.request.application_url.rstrip('/')
+        wf_model = workflow.Workflow.from_db_model(wf_model, host_url)
         return wf_model
 
 
@@ -94,11 +94,12 @@ class WorkflowsController(rest.RestController):
             du_id = data.du_id
             self._verify_du_exists(pecan.request.security_context, du_id)
 
+        host_url = pecan.request.application_url.rstrip('/')
         return workflow.Workflow.from_db_model(handler.create(wf_data,
                                                               commit_sha='',
                                                               status_url='',
                                                               du_id=du_id),
-                                               pecan.request.host_url)
+                                               host_url)
 
     @exception.wrap_pecan_controller_exception
     @wsme_pecan.wsexpose([workflow.Workflow])
@@ -106,8 +107,8 @@ class WorkflowsController(rest.RestController):
         """Return all of one app's workflows, based on the query provided."""
         request.check_request_for_https()
         handler = wf_handler.WorkflowHandler(pecan.request.security_context)
-        all_wfs = [workflow.Workflow.from_db_model(obj,
-                                                   pecan.request.host_url)
+        host_url = pecan.request.application_url.rstrip('/')
+        all_wfs = [workflow.Workflow.from_db_model(obj, host_url)
                    for obj in handler.get_all(app_id=self.app_id)]
         return all_wfs
 

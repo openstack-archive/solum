@@ -36,8 +36,9 @@ class ComponentController(rest.RestController):
                      pecan.request.security_context)
         handler = component_handler.ComponentHandler(
             pecan.request.security_context)
+        host_url = pecan.request.application_url.rstrip('/')
         return component.Component.from_db_model(handler.get(self._id),
-                                                 pecan.request.host_url)
+                                                 host_url)
 
     @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(component.Component, body=component.Component)
@@ -49,7 +50,8 @@ class ComponentController(rest.RestController):
             pecan.request.security_context)
         res = handler.update(self._id,
                              data.as_dict(objects.registry.Component))
-        return component.Component.from_db_model(res, pecan.request.host_url)
+        host_url = pecan.request.application_url.rstrip('/')
+        return component.Component.from_db_model(res, host_url)
 
     @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(None, status_code=204)
@@ -80,9 +82,9 @@ class ComponentsController(rest.RestController):
                      pecan.request.security_context)
         handler = component_handler.ComponentHandler(
             pecan.request.security_context)
+        host_url = pecan.request.application_url.rstrip('/')
         return component.Component.from_db_model(
-            handler.create(data.as_dict(objects.registry.Component)),
-            pecan.request.host_url)
+            handler.create(data.as_dict(objects.registry.Component)), host_url)
 
     @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose([component.Component])
@@ -92,5 +94,6 @@ class ComponentsController(rest.RestController):
                      pecan.request.security_context)
         handler = component_handler.ComponentHandler(
             pecan.request.security_context)
-        return [component.Component.from_db_model(ser, pecan.request.host_url)
+        host_url = pecan.request.application_url.rstrip('/')
+        return [component.Component.from_db_model(ser, host_url)
                 for ser in handler.get_all()]

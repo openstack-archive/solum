@@ -50,7 +50,7 @@ class LanguagePackController(rest.RestController):
         handler = language_pack_handler.LanguagePackHandler(
             pecan.request.security_context)
 
-        host_url = pecan.request.host_url
+        host_url = pecan.request.application_url.rstrip('/')
         return language_pack.LanguagePack.from_db_model(handler.get(self._id),
                                                         host_url)
 
@@ -84,7 +84,7 @@ class LanguagePacksController(rest.RestController):
                      pecan.request.security_context)
         handler = language_pack_handler.LanguagePackHandler(
             pecan.request.security_context)
-        host_url = pecan.request.host_url
+        host_url = pecan.request.application_url.rstrip('/')
 
         msg = ("Languagepack name must be 1-100 characters long, only contain "
                "a-z,0-9,-,_ and start with an alphabet character.")
@@ -108,6 +108,6 @@ class LanguagePacksController(rest.RestController):
                      pecan.request.security_context)
         handler = language_pack_handler.LanguagePackHandler(
             pecan.request.security_context)
-        host_url = pecan.request.host_url
+        host_url = pecan.request.application_url.rstrip('/')
         return [language_pack.LanguagePack.from_db_model(img, host_url)
                 for img in handler.get_all()]

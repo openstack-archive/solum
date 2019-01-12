@@ -41,7 +41,8 @@ class ParamsDefController(rest.RestController):
             core.abort(404,
                        '%s is not a parameter_definitions collection' %
                        self._id)
-        return raw_defs.fix_uris(pecan.request.host_url)
+        host_url = pecan.request.application_url.rstrip('/')
+        return raw_defs.fix_uris(host_url)
 
 
 class ParameterDefinitionsController(rest.RestController):
@@ -64,4 +65,5 @@ class ParameterDefinitionsController(rest.RestController):
             core.abort(404,
                        '%s is not a parameter_definitions collection' %
                        param_defs_name)
-        return raw_defs.fix_uris(pecan.request.host_url)
+        host_url = pecan.request.application_url.rstrip('/')
+        return raw_defs.fix_uris(host_url)

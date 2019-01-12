@@ -37,6 +37,7 @@ class FakePecanRequest(mock.Mock):
     def __init__(self, **kwargs):
         super(FakePecanRequest, self).__init__(**kwargs)
         self.host_url = 'http://test_url:8080/test'
+        self.application_url = 'http://test_url:8080/test/'
         self.context = {}
         self.body = ''
         self.content_type = 'text/unicode'

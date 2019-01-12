@@ -29,23 +29,24 @@ class PlatformController(rest.RestController):
     @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(model.Platform)
     def get(self):
-        return model.Platform(uri=uri_string % pecan.request.host_url,
+        host_url = pecan.request.application_url.rstrip('/')
+        return model.Platform(uri=uri_string % host_url,
                               name='Solum_CAMP_v1_1_platform',
                               type='platform',
                               description=description_string,
                               supported_formats_uri=uris.FORMATS_URI_STR %
-                              pecan.request.host_url,
+                              host_url,
                               extensions_uri=uris.EXTNS_URI_STR %
-                              pecan.request.host_url,
+                              host_url,
                               type_definitions_uri=uris.TYPE_DEFS_URI_STR %
-                              pecan.request.host_url,
+                              host_url,
                               platform_endpoints_uri=pe.URI_STRING %
-                              pecan.request.host_url,
+                              host_url,
                               specification_version='CAMP 1.1',
                               implementation_version='Solum CAMP 1.1',
                               assemblies_uri=uris.ASSEMS_URI_STR %
-                              pecan.request.host_url,
+                              host_url,
                               services_uri=uris.SERVS_URI_STR %
-                              pecan.request.host_url,
+                              host_url,
                               plans_uri=uris.PLANS_URI_STR %
-                              pecan.request.host_url)
+                              host_url)

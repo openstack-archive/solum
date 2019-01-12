@@ -31,8 +31,9 @@ class TestPlanModuleFunctions(base.BaseTestCase):
     def test_yaml_content(self, mock_req):
         m = fakes.FakePlan()
         ref_content = plan.yaml_content(m)
+        host_url = pecan.request.application_url.rstrip('/')
         self.assertEqual(ref_content['uri'], '%s/v1/plans/%s' %
-                                             (pecan.request.host_url, m.uuid))
+                                             (host_url, m.uuid))
 
     @mock.patch('solum.api.controllers.v1.plan.init_plan_v1')
     def test_init_plan_by_version(self, init_plan_v1):

@@ -83,7 +83,7 @@ def init_json_plan_by_version():
 
 def yaml_content(m):
     ref_content = m.refined_content()
-    host_url = pecan.request.host_url
+    host_url = pecan.request.application_url.rstrip('/')
     ref_content['uri'] = '%s/v1/plans/%s' % (host_url, m.uuid)
     ref_content['trigger_uri'] = ('%s/v1/triggers/%s' %
                                   (host_url, m.trigger_id))
@@ -105,12 +105,13 @@ class PlanController(rest.RestController):
                      pecan.request.security_context)
         handler = plan_handler.PlanHandler(pecan.request.security_context)
 
+        host_url = pecan.request.application_url.rstrip('/')
         if pecan.request.accept is not None and 'yaml' in pecan.request.accept:
             plan_serialized = yamlutils.dump(
                 yaml_content(handler.get(self._id)))
         else:
             plan_model = plan.Plan.from_db_model(
-                handler.get(self._id), pecan.request.host_url)
+                handler.get(self._id), host_url)
             plan_serialized = wsme_json.encode_result(plan_model, plan.Plan)
         pecan.response.status = 200
         return plan_serialized
@@ -125,6 +126,7 @@ class PlanController(rest.RestController):
         handler = plan_handler.PlanHandler(pecan.request.security_context)
         handler.get(self._id)
 
+        host_url = pecan.request.application_url.rstrip('/')
         if not pecan.request.body or len(pecan.request.body) < 1:
             raise exception.BadRequest(reason="No data.")
 
@@ -138,7 +140,7 @@ class PlanController(rest.RestController):
             plan_obj = handler.update(self._id,
                                       data.as_dict(objects.registry.Plan))
             updated_plan_yml = wsme_json.encode_result(plan.Plan.from_db_model(
-                plan_obj, pecan.request.host_url), plan.Plan)
+                plan_obj, host_url), plan.Plan)
 
         pecan.response.status = 200
         return updated_plan_yml
@@ -176,6 +178,7 @@ class PlansController(rest.RestController):
 
         handler = plan_handler.PlanHandler(pecan.request.security_context)
 
+        host_url = pecan.request.application_url.rstrip('/')
         if (pecan.request.content_type is not None and
                 'yaml' in pecan.request.content_type):
             data = init_yml_plan_by_version()
@@ -184,7 +187,7 @@ class PlansController(rest.RestController):
         else:
             data = init_json_plan_by_version()
             plan_wsme = plan.Plan.from_db_model(handler.create(
-                data.as_dict(objects.registry.Plan)), pecan.request.host_url)
+                data.as_dict(objects.registry.Plan)), host_url)
             created_plan = wsme_json.encode_result(plan_wsme, plan.Plan)
 
         pecan.response.status = 201
@@ -198,13 +201,14 @@ class PlansController(rest.RestController):
                      pecan.request.security_context)
         handler = plan_handler.PlanHandler(pecan.request.security_context)
 
+        host_url = pecan.request.application_url.rstrip('/')
         if pecan.request.accept is not None and 'yaml' in pecan.request.accept:
             plan_serialized = yamlutils.dump([yaml_content(obj)
                                               for obj in handler.get_all()
                                               if obj and obj.raw_content])
         else:
             plan_serialized = wsme_json.encode_result(
-                [plan.Plan.from_db_model(obj, pecan.request.host_url)
+                [plan.Plan.from_db_model(obj, host_url)
                  for obj in handler.get_all()],
                 wsme_types.ArrayType(plan.Plan))
         pecan.response.status = 200
