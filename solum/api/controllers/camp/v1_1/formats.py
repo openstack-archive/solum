@@ -42,17 +42,17 @@ class FormatsController(rest.RestController):
             core.abort(404,
                        '%s is not a format resource' %
                        format_name)
-        return raw_format.fix_uris(pecan.request.host_url)
+        host_url = pecan.request.application_url.rstrip('/')
+        return raw_format.fix_uris(host_url)
 
     @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(formats.Formats)
     def get(self):
         """Return the formats resource."""
-        links = [common_types.Link(href=uris.JSON_FORMAT_URI_STR %
-                                   pecan.request.host_url,
+        host_url = pecan.request.application_url.rstrip('/')
+        links = [common_types.Link(href=uris.JSON_FORMAT_URI_STR % host_url,
                                    target_name=uris.JSON_FORMAT_NAME_STR)]
-        return formats.Formats(uri=uris.FORMATS_URI_STR %
-                               pecan.request.host_url,
+        return formats.Formats(uri=uris.FORMATS_URI_STR % host_url,
                                name='Solum_CAMP_formats',
                                type='formats',
                                description=DESCRIPTION_STRING,

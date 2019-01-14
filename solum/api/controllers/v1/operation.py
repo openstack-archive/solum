@@ -37,8 +37,9 @@ class OperationController(rest.RestController):
                      pecan.request.security_context)
         handler = operation_handler.OperationHandler(
             pecan.request.security_context)
+        host_url = pecan.request.application_url.rstrip('/')
         return operation.Operation.from_db_model(handler.get(self._id),
-                                                 pecan.request.host_url)
+                                                 host_url)
 
     @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(operation.Operation, wtypes.text,
@@ -51,7 +52,8 @@ class OperationController(rest.RestController):
             pecan.request.security_context)
         res = handler.update(self._id,
                              data.as_dict(objects.registry.Operation))
-        return operation.Operation.from_db_model(res, pecan.request.host_url)
+        host_url = pecan.request.application_url.rstrip('/')
+        return operation.Operation.from_db_model(res, host_url)
 
     @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(status_code=204)
@@ -82,8 +84,9 @@ class OperationsController(rest.RestController):
                      pecan.request.security_context)
         handler = operation_handler.OperationHandler(
             pecan.request.security_context)
+        host_url = pecan.request.application_url.rstrip('/')
         return operation.Operation.from_db_model(handler.create(
-            data.as_dict(objects.registry.Operation)), pecan.request.host_url)
+            data.as_dict(objects.registry.Operation)), host_url)
 
     @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose([operation.Operation])
@@ -93,5 +96,6 @@ class OperationsController(rest.RestController):
                      pecan.request.security_context)
         handler = operation_handler.OperationHandler(
             pecan.request.security_context)
-        return [operation.Operation.from_db_model(obj, pecan.request.host_url)
+        host_url = pecan.request.application_url.rstrip('/')
+        return [operation.Operation.from_db_model(obj, host_url)
                 for obj in handler.get_all()]

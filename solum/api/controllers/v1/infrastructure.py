@@ -35,8 +35,9 @@ class InfrastructureStackController(rest.RestController):
         """Return this stack."""
         handler = infrastructure_handler.InfrastructureStackHandler(
             pecan.request.security_context)
+        host_url = pecan.request.application_url.rstrip('/')
         return infrastructure.InfrastructureStack.from_db_model(
-            handler.get(self._id), pecan.request.host_url)
+            handler.get(self._id), host_url)
 
     @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(infrastructure.InfrastructureStack,
@@ -48,8 +49,9 @@ class InfrastructureStackController(rest.RestController):
         res = handler.update(self._id,
                              data.as_dict(
                                  objects.registry.InfrastructureStack))
+        host_url = pecan.request.application_url.rstrip('/')
         return infrastructure.InfrastructureStack.from_db_model(
-            res, pecan.request.host_url)
+            res, host_url)
 
     @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(status_code=204)
@@ -77,9 +79,10 @@ class InfrastructureStacksController(rest.RestController):
         """Create a new stack."""
         handler = infrastructure_handler.InfrastructureStackHandler(
             pecan.request.security_context)
+        host_url = pecan.request.application_url.rstrip('/')
         return infrastructure.InfrastructureStack.from_db_model(
             handler.create(data.as_dict(objects.registry.InfrastructureStack)),
-            pecan.request.host_url)
+            host_url)
 
     @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose([infrastructure.InfrastructureStack])
@@ -87,8 +90,9 @@ class InfrastructureStacksController(rest.RestController):
         """Return all stacks, based on the query provided."""
         handler = infrastructure_handler.InfrastructureStackHandler(
             pecan.request.security_context)
+        host_url = pecan.request.application_url.rstrip('/')
         return [infrastructure.InfrastructureStack.from_db_model(
-            assm, pecan.request.host_url) for assm in handler.get_all()]
+            assm, host_url) for assm in handler.get_all()]
 
 
 class InfrastructureController(rest.RestController):
@@ -99,7 +103,8 @@ class InfrastructureController(rest.RestController):
     @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(infrastructure.Infrastructure)
     def index(self):
-        host_url = '%s/%s' % (pecan.request.host_url, 'v1')
+        base_url = pecan.request.application_url.rstrip('/')
+        host_url = '%s/%s' % (base_url, 'v1')
         return infrastructure.Infrastructure(
             uri=host_url,
             name='solum',

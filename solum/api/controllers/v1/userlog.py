@@ -35,5 +35,6 @@ class UserlogsController(rest.RestController):
         handler = userlog_handler.UserlogHandler(
             pecan.request.security_context)
         ulogs = handler.get_all_by_id(self._resource_id)
-        return [userlog.Userlog.from_db_model(ulog, pecan.request.host_url)
+        host_url = pecan.request.application_url.rstrip('/')
+        return [userlog.Userlog.from_db_model(ulog, host_url)
                 for ulog in ulogs]

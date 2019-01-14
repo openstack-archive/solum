@@ -121,7 +121,8 @@ class Controller(object):
     @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(Platform)
     def index(self):
-        host_url = '%s/%s' % (pecan.request.host_url, 'v1')
+        base_url = pecan.request.application_url.rstrip('/')
+        host_url = '%s/%s' % (base_url, 'v1')
         return Platform(uri=host_url,
                         name='solum',
                         type='platform',

@@ -39,7 +39,8 @@ class TypeDefinitionsController(rest.RestController):
             core.abort(404,
                        '%s is not a type_definition' %
                        type_def_name)
-        return raw_def.fix_uris(pecan.request.host_url)
+        host_url = pecan.request.application_url.rstrip('/')
+        return raw_def.fix_uris(host_url)
 
     @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(model.TypeDefinitions)
@@ -49,13 +50,13 @@ class TypeDefinitionsController(rest.RestController):
                    TypeDefinitionHandler(pecan.request.security_context))
         def_list = handler.get_all()
 
+        host_url = pecan.request.application_url.rstrip('/')
         for tdef in def_list:
             links.append(common_types.Link(href=uris.TYPE_DEF_URI_STR %
-                                           (pecan.request.host_url, tdef.uri),
+                                           (host_url, tdef.uri),
                                            target_name=tdef.name))
 
-        return model.TypeDefinitions(uri=uris.TYPE_DEFS_URI_STR %
-                                     pecan.request.host_url,
+        return model.TypeDefinitions(uri=uris.TYPE_DEFS_URI_STR % host_url,
                                      name='Solum_CAMP_type_definitions',
                                      type='type_definitions',
                                      description=DESCRIPTION_STRING,

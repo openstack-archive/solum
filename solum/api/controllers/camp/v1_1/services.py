@@ -27,7 +27,8 @@ class ServicesController(rest.RestController):
     @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(model.Services)
     def get(self):
-        suri = uris.SERVS_URI_STR % pecan.request.host_url
+        host_url = pecan.request.application_url.rstrip('/')
+        suri = uris.SERVS_URI_STR % host_url
         desc = "Solum CAMP API services collection resource."
 
         handlr = service_handler.ServiceHandler(pecan.request.security_context)
@@ -35,7 +36,7 @@ class ServicesController(rest.RestController):
         s_links = []
         for m in service_objs:
             s_links.append(common_types.Link(href=uris.SERV_URI_STR %
-                                             (pecan.request.host_url, m.uuid),
+                                             (host_url, m.uuid),
                                              target_name=m.name))
 
         # if there aren't any services, avoid returning a resource with an

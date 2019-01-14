@@ -43,8 +43,9 @@ class AssembliesController(rest.RestController):
     @exception.wrap_wsme_controller_exception
     @wsme_pecan.wsexpose(model.Assemblies)
     def get(self):
-        auri = uris.ASSEMS_URI_STR % pecan.request.host_url
-        pdef_uri = uris.DEPLOY_PARAMS_URI % pecan.request.host_url
+        host_url = pecan.request.application_url.rstrip('/')
+        auri = uris.ASSEMS_URI_STR % host_url
+        pdef_uri = uris.DEPLOY_PARAMS_URI % host_url
         desc = "Solum CAMP API assemblies collection resource"
 
         handler = (assembly_handler.
@@ -53,7 +54,7 @@ class AssembliesController(rest.RestController):
         a_links = []
         for m in asem_objs:
             a_links.append(common_types.Link(href=uris.ASSEM_URI_STR %
-                                             (pecan.request.host_url, m.uuid),
+                                             (host_url, m.uuid),
                                              target_name=m.name))
 
         # if there aren't any assemblies, avoid returning a resource with an
@@ -78,10 +79,11 @@ class AssembliesController(rest.RestController):
     @wsme_pecan.wsexpose(model.Assembly, wsme_types.text)
     def get_one(self, uuid):
         """Return the appropriate CAMP-style assembly resource."""
+        host_url = pecan.request.application_url.rstrip('/')
         handler = assembly_handler.AssemblyHandler(
             pecan.request.security_context)
         return model.Assembly.from_db_model(handler.get(uuid),
-                                            pecan.request.host_url)
+                                            host_url)
 
     @exception.wrap_pecan_controller_exception
     @pecan.expose('json', content_type='application/json')
@@ -99,6 +101,7 @@ class AssembliesController(rest.RestController):
                 method='POST')
 
         req_content_type = pecan.request.content_type
+        host_url = pecan.request.application_url.rstrip('/')
 
         # deploying by reference uses a JSON payload
         if req_content_type == 'application/json':
@@ -140,7 +143,7 @@ class AssembliesController(rest.RestController):
                     # will experience a false negative. This code will treat
                     # that plan as if it existed on another CAMP-compliant
                     # server.
-                    if plan_uri_str.startswith(pecan.request.host_url):
+                    if plan_uri_str.startswith(host_url):
                         if (not uri_path.startswith('/camp/v1_1/plans/') and
                                 not uri_path.startswith('/v1/plans/')):
                             msg = 'plan_uri does not reference a plan resource'
@@ -177,8 +180,7 @@ class AssembliesController(rest.RestController):
         ahandler = assembly_handler.AssemblyHandler(
             pecan.request.security_context)
         assem_db_obj = ahandler.create_from_plan(plan_obj)
-        assem_model = model.Assembly.from_db_model(assem_db_obj,
-                                                   pecan.request.host_url)
+        assem_model = model.Assembly.from_db_model(assem_db_obj, host_url)
 
         pecan.response.status = 201
         pecan.response.location = assem_model.uri

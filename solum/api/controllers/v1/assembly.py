@@ -51,8 +51,8 @@ class AssemblyController(rest.RestController):
         request.check_request_for_https()
         handler = assembly_handler.AssemblyHandler(
             pecan.request.security_context)
-        return assembly.Assembly.from_db_model(handler.get(self._id),
-                                               pecan.request.host_url)
+        host_url = pecan.request.application_url.rstrip('/')
+        return assembly.Assembly.from_db_model(handler.get(self._id), host_url)
 
     @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(assembly.Assembly, body=assembly.Assembly)
@@ -64,7 +64,8 @@ class AssemblyController(rest.RestController):
             pecan.request.security_context)
         res = handler.update(self._id,
                              data.as_dict(objects.registry.Assembly))
-        return assembly.Assembly.from_db_model(res, pecan.request.host_url)
+        host_url = pecan.request.application_url.rstrip('/')
+        return assembly.Assembly.from_db_model(res, host_url)
 
     @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(status_code=204)
@@ -92,10 +93,11 @@ class AssembliesController(rest.RestController):
     def post(self, data):
         """Create a new assembly."""
         policy.check('create_assembly', pecan.request.security_context)
+        host_url = pecan.request.application_url.rstrip('/')
         js_data = data.as_dict(objects.registry.Assembly)
         if data.plan_uri is not wsme.Unset:
             plan_uri = data.plan_uri
-            if plan_uri.startswith(pecan.request.host_url):
+            if plan_uri.startswith(host_url):
                 pl_uuid = plan_uri.split('/')[-1]
                 pl = objects.registry.Plan.get_by_uuid(
                     pecan.request.security_context, pl_uuid)
@@ -113,7 +115,7 @@ class AssembliesController(rest.RestController):
         handler = assembly_handler.AssemblyHandler(
             pecan.request.security_context)
         return assembly.Assembly.from_db_model(
-            handler.create(js_data), pecan.request.host_url)
+            handler.create(js_data), host_url)
 
     @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose([assembly.Assembly])
@@ -124,5 +126,6 @@ class AssembliesController(rest.RestController):
         request.check_request_for_https()
         handler = assembly_handler.AssemblyHandler(
             pecan.request.security_context)
-        return [assembly.Assembly.from_db_model(assm, pecan.request.host_url)
+        host_url = pecan.request.application_url.rstrip('/')
+        return [assembly.Assembly.from_db_model(assm, host_url)
                 for assm in handler.get_all()]

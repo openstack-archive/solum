@@ -36,8 +36,9 @@ class ExtensionController(rest.RestController):
                      pecan.request.security_context)
         handler = extension_handler.ExtensionHandler(
             pecan.request.security_context)
+        host_url = pecan.request.application_url.rstrip('/')
         return extension.Extension.from_db_model(handler.get(self._id),
-                                                 pecan.request.host_url)
+                                                 host_url)
 
     @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(extension.Extension, wtypes.text,
@@ -50,7 +51,8 @@ class ExtensionController(rest.RestController):
             pecan.request.security_context)
         obj = handler.update(self._id,
                              data.as_dict(objects.registry.Extension))
-        return extension.Extension.from_db_model(obj, pecan.request.host_url)
+        host_url = pecan.request.application_url.rstrip('/')
+        return extension.Extension.from_db_model(obj, host_url)
 
     @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(None, wtypes.text, status_code=204)
@@ -83,7 +85,8 @@ class ExtensionsController(rest.RestController):
         handler = extension_handler.ExtensionHandler(
             pecan.request.security_context)
         obj = handler.create(data.as_dict(objects.registry.Extension))
-        return extension.Extension.from_db_model(obj, pecan.request.host_url)
+        host_url = pecan.request.application_url.rstrip('/')
+        return extension.Extension.from_db_model(obj, host_url)
 
     @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose([extension.Extension])
@@ -93,5 +96,6 @@ class ExtensionsController(rest.RestController):
                      pecan.request.security_context)
         handler = extension_handler.ExtensionHandler(
             pecan.request.security_context)
-        return [extension.Extension.from_db_model(obj, pecan.request.host_url)
+        host_url = pecan.request.application_url.rstrip('/')
+        return [extension.Extension.from_db_model(obj, host_url)
                 for obj in handler.get_all()]

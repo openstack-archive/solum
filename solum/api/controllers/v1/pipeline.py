@@ -43,8 +43,8 @@ class PipelineController(rest.RestController):
                      pecan.request.security_context)
         handler = pipeline_handler.PipelineHandler(
             pecan.request.security_context)
-        return pipeline.Pipeline.from_db_model(handler.get(self._id),
-                                               pecan.request.host_url)
+        host_url = pecan.request.application_url.rstrip('/')
+        return pipeline.Pipeline.from_db_model(handler.get(self._id), host_url)
 
     @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(pipeline.Pipeline, body=pipeline.Pipeline)
@@ -56,7 +56,8 @@ class PipelineController(rest.RestController):
             pecan.request.security_context)
         res = handler.update(self._id,
                              data.as_dict(objects.registry.Pipeline))
-        return pipeline.Pipeline.from_db_model(res, pecan.request.host_url)
+        host_url = pecan.request.application_url.rstrip('/')
+        return pipeline.Pipeline.from_db_model(res, host_url)
 
     @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose(status_code=204)
@@ -86,9 +87,10 @@ class PipelinesController(rest.RestController):
         """Create a new pipeline."""
         policy.check('create_pipeline', pecan.request)
         js_data = data.as_dict(objects.registry.Pipeline)
+        host_url = pecan.request.application_url.rstrip('/')
         if data.plan_uri is not wsme.Unset:
             plan_uri = data.plan_uri
-            if plan_uri.startswith(pecan.request.host_url):
+            if plan_uri.startswith(host_url):
                 pl_uuid = plan_uri.split('/')[-1]
                 pl = objects.registry.Plan.get_by_uuid(
                     pecan.request.security_context, pl_uuid)
@@ -106,7 +108,7 @@ class PipelinesController(rest.RestController):
         handler = pipeline_handler.PipelineHandler(
             pecan.request.security_context)
         return pipeline.Pipeline.from_db_model(
-            handler.create(js_data), pecan.request.host_url)
+            handler.create(js_data), host_url)
 
     @exception.wrap_wsme_pecan_controller_exception
     @wsme_pecan.wsexpose([pipeline.Pipeline])
@@ -116,5 +118,6 @@ class PipelinesController(rest.RestController):
                      pecan.request.security_context)
         handler = pipeline_handler.PipelineHandler(
             pecan.request.security_context)
-        return [pipeline.Pipeline.from_db_model(obj, pecan.request.host_url)
+        host_url = pecan.request.application_url.rstrip('/')
+        return [pipeline.Pipeline.from_db_model(obj, host_url)
                 for obj in handler.get_all()]
