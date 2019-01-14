@@ -80,10 +80,8 @@
       - openstack/solum-tempest-plugin
 
 - job:
-    name: solum-devstack
-    parent: legacy-dsvm-base
-    run: playbooks/legacy/solum-devstack/run.yaml
-    post-run: playbooks/legacy/solum-devstack/post.yaml
+    name: solum-tempest-base
+    parent: devstack-tempest
     irrelevant-files:
       - ^(test-|)requirements.txt$
       - ^setup.cfg$
@@ -91,13 +89,11 @@
       - ^.*\.rst$
       - ^releasenotes/.*$
       - ^solum/tests/.*$
-    timeout: 4200
+    timeout: 7800
     required-projects:
       - openstack-dev/devstack
       - openstack-infra/devstack-gate
-      - openstack/barbican
       - openstack/devstack-plugin-container
-      - openstack/mistral
       - openstack/python-solumclient
       - openstack/python-zunclient
       - openstack/solum
@@ -105,6 +101,26 @@
       - openstack/solum-tempest-plugin
       - openstack/zun
       - openstack/zun-tempest-plugin
+    vars:
+      devstack_plugins:
+        solum: https://git.openstack.org/openstack/solum
+        zun: https://git.openstack.org/openstack/zun
+        devstack-plugin-container: https://git.openstack.org/openstack/devstack-plugin-container
+      devstack_services:
+        tempest: true
+        s-account: true
+        s-container: true
+        s-object: true
+        s-proxy: true
+        tls-proxy: false
+      devstack_localrc:
+        TEMPEST_PLUGINS: "'{{ ansible_user_dir }}/src/git.openstack.org/openstack/solum-tempest-plugin'"
+      tempest_test_regex: application_deployment
+      tox_envlist: all
+
+- job:
+    name: solum-devstack
+    parent: solum-tempest-base
 
 - job:
     # Security testing for known issues
