@@ -29,31 +29,12 @@
 
 - job:
     name: solum-devstack-py35
-    parent: legacy-dsvm-base
-    run: playbooks/legacy/solum-devstack-py35/run.yaml
-    post-run: playbooks/legacy/solum-devstack-py35/post.yaml
-    irrelevant-files:
-      - ^(test-|)requirements.txt$
-      - ^setup.cfg$
-      - ^doc/.*$
-      - ^.*\.rst$
-      - ^releasenotes/.*$
-      - ^solum/tests/.*$
+    parent: solum-tempest-base
     voting: false
-    timeout: 4200
-    required-projects:
-      - openstack-dev/devstack
-      - openstack-infra/devstack-gate
-      - openstack/barbican
-      - openstack/devstack-plugin-container
-      - openstack/mistral
-      - openstack/python-solumclient
-      - openstack/python-zunclient
-      - openstack/solum
-      - openstack/solum-dashboard
-      - openstack/zun
-      - openstack/zun-tempest-plugin
-      - openstack/solum-tempest-plugin
+    vars:
+      devstack_localrc:
+        DEVSTACK_GATE_USE_PYTHON3: True
+
 
 - job:
     name: solum-tempest-base
