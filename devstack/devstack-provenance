@@ -104,7 +104,7 @@ pip|castellan|0.4.0
 pip|cffi|1.7.0
 pip|chardet|2.0.1
 pip|Cheetah|2.4.4
-pip|git://git.openstack.org/openstack/cinder.git|19f7ef75a8a5027ab986dd75f3329df90c48e5eb
+pip|https://git.openstack.org/openstack/cinder.git|19f7ef75a8a5027ab986dd75f3329df90c48e5eb
 pip|cliff|2.1.0
 pip|cloud-init|0.7.5
 pip|cmd2|0.6.8
@@ -143,13 +143,13 @@ pip|futurist|0.16.0
 pip|git-review|1.25.0
 pip|gitdb|0.6.4
 pip|GitPython|2.0.7
-pip|git://git.openstack.org/openstack/glance.git|70b930136a256413a282aeaf205deb2264f54c1d
+pip|https://git.openstack.org/openstack/glance.git|70b930136a256413a282aeaf205deb2264f54c1d
 pip|glance-store|0.15.0
 pip|google-api-python-client|1.5.1
 pip|greenlet|0.4.10
 pip|hacking|0.10.2
-pip|git://git.openstack.org/openstack/heat.git|54bd5eb1bc279d90b2dcfed7b69c222235d4a5a6
-pip|git://git.openstack.org/openstack/horizon.git|2e84d5591963fdba18faa509484a0646ed79b6a9
+pip|https://git.openstack.org/openstack/heat.git|54bd5eb1bc279d90b2dcfed7b69c222235d4a5a6
+pip|https://git.openstack.org/openstack/horizon.git|2e84d5591963fdba18faa509484a0646ed79b6a9
 pip|html5lib|0.999
 pip|httplib2|0.9.2
 pip|idna|2.1
@@ -159,7 +159,7 @@ pip|Jinja2|2.8
 pip|jsonpatch|1.14
 pip|jsonpointer|1.10
 pip|jsonschema|2.5.1
-pip|git://git.openstack.org/openstack/keystone.git|bfa13b7a64011f3f7a6a5b97cd7bd3b69bca9a02
+pip|https://git.openstack.org/openstack/keystone.git|bfa13b7a64011f3f7a6a5b97cd7bd3b69bca9a02
 pip|keystoneauth1|2.10.0
 pip|keystonemiddleware|4.7.0
 pip|kombu|3.0.35
@@ -181,14 +181,14 @@ pip|MySQL-python|1.2.3
 pip|netaddr|0.7.18
 pip|netifaces|0.10.4
 pip|networkx|1.11
-pip|git://git.openstack.org/openstack/neutron.git|775893bb7f61c4641acbcb4ae16edf16e0989c39
+pip|https://git.openstack.org/openstack/neutron.git|775893bb7f61c4641acbcb4ae16edf16e0989c39
 pip|neutron-lib|0.3.0
 pip|nodeenv|0.13.6
 pip|nose|1.3.7
 pip|nose-exclude|0.4.1
 pip|nosehtmloutput|0.0.5
 pip|nosexcover|1.0.10
-pip|git://git.openstack.org/openstack/nova.git|859ff4893f699b680fec4db7dedd3bec8c8d0a1c
+pip|https://git.openstack.org/openstack/nova.git|859ff4893f699b680fec4db7dedd3bec8c8d0a1c
 pip|nova-docker|0.0.1.dev268
 pip|numpy|1.11.1
 pip|oauth|1.0.1
@@ -287,7 +287,7 @@ pip|python-novaclient|5.0.0
 pip|python-openstackclient|2.6.0
 pip|python-saharaclient|0.16.0
 pip|python-senlinclient|0.5.0
-pip|git://git.openstack.org/openstack/python-solumclient.git|07ad06c8cc6b3512da69588e5a4a9543dee4d534
+pip|https://git.openstack.org/openstack/python-solumclient.git|07ad06c8cc6b3512da69588e5a4a9543dee4d534
 pip|python-subunit|1.2.0
 pip|python-swiftclient|3.0.0
 pip|python-troveclient|2.3.0
@@ -326,9 +326,9 @@ pip|sqlparse|0.2.0
 pip|ssh-import-id|3.21
 pip|stevedore|1.16.0
 pip|suds-jurko|0.6
-pip|git://git.openstack.org/openstack/swift.git|d819ae00a5f589fc7cd11ddf95cfce7323d926e8
+pip|https://git.openstack.org/openstack/swift.git|d819ae00a5f589fc7cd11ddf95cfce7323d926e8
 pip|taskflow|2.3.0
-pip|git://git.openstack.org/openstack/tempest.git|05640decce8055e6844bdcc5a2c9bb18c1e3b2cb
+pip|https://git.openstack.org/openstack/tempest.git|05640decce8055e6844bdcc5a2c9bb18c1e3b2cb
 pip|Tempita|0.5.2
 pip|termcolor|1.1.0
 pip|testrepository|0.0.20
@@ -399,7 +399,7 @@ localrc|VIRT_DRIVER=docker
 localrc|SOLUM_IMAGE_FORMAT=docker
 localrc|DEFAULT_IMAGE_NAME=cirros
 localrc|IMAGE_URLS=" "
-localrc|enable_plugin solum git://git.openstack.org/openstack/solum
+localrc|enable_plugin solum https://git.openstack.org/openstack/solum
 localrc|IP_VERSION=4
 localrc|SERVICE_IP_VERSION=4
 localrc|enable_service solum-api

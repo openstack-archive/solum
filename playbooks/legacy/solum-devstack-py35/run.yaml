@@ -17,7 +17,7 @@
               dest: devstack-gate
           EOF
           /usr/zuul-env/bin/zuul-cloner -m clonemap.yaml --cache-dir /opt/git \
-              git://git.openstack.org \
+              https://git.openstack.org \
               openstack-infra/devstack-gate
         executable: /bin/bash
         chdir: '{{ ansible_user_dir }}/workspace'
@@ -29,10 +29,10 @@
           set -x
           cat << 'EOF' >>"/tmp/dg-local.conf"
           [[local|localrc]]
-          enable_plugin solum git://git.openstack.org/openstack/solum
+          enable_plugin solum https://git.openstack.org/openstack/solum
           SOLUM_PROJ_DIR=/opt/stack/new/solum
-          enable_plugin zun git://git.openstack.org/openstack/zun
-          enable_plugin devstack-plugin-container git://git.openstack.org/openstack/devstack-plugin-container
+          enable_plugin zun https://git.openstack.org/openstack/zun
+          enable_plugin devstack-plugin-container https://git.openstack.org/openstack/devstack-plugin-container
 
           EOF
         executable: /bin/bash
