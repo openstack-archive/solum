@@ -18,7 +18,7 @@ Enabling Solum in DevStack
 
     cat > local.conf <<END
     [[local|localrc]]
-    enable_plugin solum git://git.openstack.org/openstack/solum
+    enable_plugin solum https://git.openstack.org/openstack/solum
     END
 
 4. Run ``stack.sh``.
