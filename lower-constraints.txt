@@ -24,7 +24,7 @@ docutils==0.14
 dogpile.cache==0.6.5
 dulwich==0.19.0
 enum-compat==0.0.2
-eventlet==0.18.2
+eventlet==0.22.0
 extras==1.0.0
 fasteners==0.14.1
 fixtures==3.0.0
@@ -66,7 +66,7 @@ osc-lib==1.10.0
 oslo.cache==1.29.0
 oslo.concurrency==3.26.0
 oslo.config==5.2.0
-oslo.context==2.20.0
+oslo.context==2.21.0
 oslo.db==4.35.0
 oslo.i18n==3.20.0
 oslo.log==3.37.0
@@ -95,7 +95,7 @@ pyflakes==0.8.1
 Pygments==2.2.0
 pyinotify==0.9.6
 PyMySQL==0.8.0
-pyOpenSSL==17.5.0
+pyOpenSSL==19.0.0
 pyparsing==2.2.0
 pyperclip==1.6.0
 python-barbicanclient==4.6.0
@@ -130,6 +130,7 @@ SQLAlchemy==1.2.5
 sqlalchemy-migrate==0.11.0
 sqlparse==0.2.4
 statsd==3.2.2
+stestr==1.0.0
 stevedore==1.28.0
 Tempita==0.5.2
 tenacity==4.9.0

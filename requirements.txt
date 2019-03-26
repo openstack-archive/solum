@@ -1,7 +1,7 @@
 # The order of packages is significant, because pip processes them in the order
 # of appearance. Changing the order has an impact on the overall integration
 # process, which may cause wedges in the gate later.
-eventlet!=0.18.3,!=0.20.1,>=0.18.2 # MIT
+eventlet>=0.22.0 # MIT
 alembic>=0.9.8 # MIT
 Babel>=2.5.3 # BSD
 docker>=3.1.1 # Apache-2.0
@@ -10,7 +10,7 @@ iso8601>=0.1.12 # MIT
 kombu>=4.1.0 # BSD
 netaddr>=0.7.19 # BSD
 oslo.config>=5.2.0 # Apache-2.0
-oslo.context>=2.20.0 # Apache-2.0
+oslo.context>=2.21.0 # Apache-2.0
 oslo.db>=4.35.0 # Apache-2.0
 oslo.messaging>=5.36.0 # Apache-2.0
 oslo.middleware>=3.35.0 # Apache-2.0
