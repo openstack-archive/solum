@@ -3,7 +3,6 @@
       - openstack-cover-jobs
       - openstack-lower-constraints-jobs
       - openstack-python-jobs
-      - openstack-python35-jobs
       - openstack-python36-jobs
       - publish-openstack-docs-pti
       - release-notes-jobs-python3
@@ -12,7 +11,7 @@
       jobs:
         - solum-devstack
         - solum-devstack-centos-7
-        - solum-devstack-py35
+        - solum-devstack-py3
         - solum-tox-bandit-baseline:
             voting: false
         - openstack-tox-py36:
@@ -28,7 +27,7 @@
     nodeset: devstack-single-node-centos-7
 
 - job:
-    name: solum-devstack-py35
+    name: solum-devstack-py3
     parent: solum-tempest-base
     voting: false
     vars:
