@@ -48,8 +48,8 @@
       - ^solum/tests/.*$
     timeout: 7800
     required-projects:
-      - openstack-dev/devstack
-      - openstack-infra/devstack-gate
+      - openstack/devstack
+      - openstack/devstack-gate
       - openstack/devstack-plugin-container
       - openstack/python-solumclient
       - openstack/python-zunclient
@@ -60,9 +60,9 @@
       - openstack/zun-tempest-plugin
     vars:
       devstack_plugins:
-        solum: https://git.openstack.org/openstack/solum
-        zun: https://git.openstack.org/openstack/zun
-        devstack-plugin-container: https://git.openstack.org/openstack/devstack-plugin-container
+        solum: https://opendev.org/openstack/solum
+        zun: https://opendev.org/openstack/zun
+        devstack-plugin-container: https://opendev.org/openstack/devstack-plugin-container
       devstack_services:
         tempest: true
         s-account: true
