@@ -38,8 +38,8 @@
     timeout: 4200
     nodeset: legacy-centos-7
     required-projects:
-      - openstack-dev/devstack
-      - openstack-infra/devstack-gate
+      - openstack/devstack
+      - openstack/devstack-gate
       - openstack/barbican
       - openstack/devstack-plugin-container
       - openstack/mistral
@@ -66,8 +66,8 @@
     voting: false
     timeout: 4200
     required-projects:
-      - openstack-dev/devstack
-      - openstack-infra/devstack-gate
+      - openstack/devstack
+      - openstack/devstack-gate
       - openstack/barbican
       - openstack/devstack-plugin-container
       - openstack/mistral
@@ -93,8 +93,8 @@
       - ^solum/tests/.*$
     timeout: 4200
     required-projects:
-      - openstack-dev/devstack
-      - openstack-infra/devstack-gate
+      - openstack/devstack
+      - openstack/devstack-gate
       - openstack/barbican
       - openstack/devstack-plugin-container
       - openstack/mistral
