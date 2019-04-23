@@ -46,7 +46,7 @@ DEVSTACK_DIR=${HOME}/devstack
 #-----------------------------
 
 LOGFILE=/opt/stack/logs/stack.sh.log
-GIT_BASE=https://git.openstack.org
+GIT_BASE=https://opendev.org
 
 VIRT_DRIVER=docker
 SOLUM_IMAGE_FORMAT=docker

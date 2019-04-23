@@ -11,20 +11,20 @@ Enabling Solum in DevStack
 
 2. Download DevStack::
 
-    git clone https://git.openstack.org/openstack-dev/devstack.git
+    git clone https://opendev.org/openstack/devstack.git
     cd devstack
 
 3. Add this repo as an external repository::
 
     cat > local.conf <<END
     [[local|localrc]]
-    enable_plugin solum https://git.openstack.org/openstack/solum
+    enable_plugin solum https://opendev.org/openstack/solum
     END
 
    To use stable branches, make sure devstack is on that branch, and specify
    the branch name to enable_plugin, for example::
 
-    enable_plugin solum https://git.openstack.org/openstack/solum stable/mitaka
+    enable_plugin solum https://opendev.org/openstack/solum stable/mitaka
 
 4. Run ``./stack.sh``.
 

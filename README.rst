@@ -46,12 +46,12 @@ See the getting_started_ guide.
 Project Info
 -------------
 
- * Source Code: https://git.openstack.org/cgit/openstack/solum/
+ * Source Code: https://opendev.org/openstack/solum/
  * Wiki: https://wiki.openstack.org/wiki/Solum
  * Launchpad: https://launchpad.net/solum
  * Blueprints: https://blueprints.launchpad.net/solum
  * Bugs: https://bugs.launchpad.net/solum
- * Code Reviews: https://review.openstack.org/#/q/project:openstack/solum
-                 https://review.openstack.org/#/q/project:openstack/python-solumclient
+ * Code Reviews: https://review.opendev.org/#/q/project:openstack/solum
+                 https://review.opendev.org/#/q/project:openstack/python-solumclient
  * IRC: #solum at chat.freenode.net
  * Release notes: https://docs.openstack.org/releasenotes/solum/
