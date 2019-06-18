@@ -14,6 +14,7 @@
 
 import sqlalchemy as sa
 from sqlalchemy.orm import exc
+from sqlalchemy.sql.expression import desc
 
 from solum import objects
 from solum.objects import assembly as abstract
@@ -96,7 +97,7 @@ class AssemblyList(abstract.AssemblyList):
     @classmethod
     def get_all(cls, context):
         mq = sql.model_query(context, Assembly).order_by(
-            'updated_at desc', 'created_at desc')
+            desc("updated_at"), desc("created_at"))
         return AssemblyList(mq)
 
     @classmethod
