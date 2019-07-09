@@ -13,6 +13,7 @@
 # under the License.
 
 import json
+import requests
 import socket
 
 import httplib2
@@ -74,18 +75,12 @@ def send_status(test_result, status_url, repo_token, pending=False):
                     'description': 'Solum says: Tests failed',
                     'target_url': log_url}
 
-        try:
-            conn = get_http_connection()
-            resp, _ = conn.request(status_url, 'POST', headers=headers,
-                                   body=json.dumps(data))
-            if resp['status'] != '201':
-                LOG.debug("Failed to send back status. Error code %s,"
-                          "status_url %s, repo_token %s" %
-                          (resp['status'], status_url, repo_token))
-        except (httplib2.HttpLib2Error, socket.error) as ex:
-            LOG.warning(
-                "Error in sending status, status url: %s, repo token: %s,"
-                " error: %s" % (status_url, repo_token, ex))
+        resp = requests.post(status_url, headers=headers,
+                             data=json.dumps(data))
+        if resp.status_code != '201':
+            LOG.debug("Failed to send back status. Error code %s,"
+                      "status_url %s, repo_token %s" %
+                      (resp.status_code, status_url, repo_token))
     else:
         LOG.debug("No url or token available to send back status")
 
