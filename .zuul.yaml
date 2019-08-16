@@ -12,6 +12,7 @@
         - solum-devstack
         - solum-devstack-centos-7
         - solum-devstack-py3
+        - solum-tempest-ipv6-only
         - solum-tox-bandit-baseline:
             voting: false
         - openstack-tox-py36:
@@ -20,6 +21,7 @@
       queue: solum
       jobs:
         - solum-devstack
+        - solum-tempest-ipv6-only
 
 - job:
     name: solum-devstack-centos-7
@@ -38,7 +40,7 @@
 - job:
     name: solum-tempest-base
     parent: devstack-tempest
-    irrelevant-files:
+    irrelevant-files: &base_irrelevant_files
       - ^(test-|)requirements.txt$
       - ^setup.cfg$
       - ^doc/.*$
@@ -46,7 +48,7 @@
       - ^releasenotes/.*$
       - ^solum/tests/.*$
     timeout: 7800
-    required-projects:
+    required-projects: &base_required_projects
       - openstack/devstack
       - openstack/devstack-gate
       - openstack/devstack-plugin-container
@@ -57,7 +59,7 @@
       - openstack/solum-tempest-plugin
       - openstack/zun
       - openstack/zun-tempest-plugin
-    vars:
+    vars: &base_vars
       devstack_plugins:
         solum: https://opendev.org/openstack/solum
         zun: https://opendev.org/openstack/zun
@@ -73,6 +75,16 @@
         TEMPEST_PLUGINS: '/opt/stack/solum-tempest-plugin'
       tempest_test_regex: application_deployment
       tox_envlist: all
+
+- job:
+    name: solum-tempest-ipv6-only
+    parent: devstack-tempest-ipv6
+    description: |
+      Solum devstack tempest tests job for IPv6-only deployment
+    irrelevant-files: *base_irrelevant_files
+    required-projects: *base_required_projects
+    timeout: 7800
+    vars: *base_vars
 
 - job:
     name: solum-devstack
