@@ -11,7 +11,8 @@
     check:
       jobs:
         - solum-devstack
-        - solum-devstack-centos-7
+        - solum-devstack-centos-7:
+            voting: false
         - solum-devstack-py35
         - solum-tox-bandit-baseline:
             voting: false
@@ -72,6 +73,7 @@
         tls-proxy: false
       devstack_localrc:
         TEMPEST_PLUGINS: '/opt/stack/solum-tempest-plugin'
+        USE_PYTHON3: True
       tempest_test_regex: application_deployment
       tox_envlist: all
 
