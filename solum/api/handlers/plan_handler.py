@@ -150,7 +150,8 @@ class PlanHandler(handler.Handler):
             deploy_keys.append({'source_url': artifact['content']['href'],
                                 'private_key': private_key})
         if deploy_keys:
-            encoded_payload = base64.b64encode(bytes(str(deploy_keys)))
+            encoded_payload = base64.b64encode(
+                bytes(str(deploy_keys).encode('utf-8')))
             repo_deploy_keys = ''
             if sys_param_store == 'database':
                 repo_deploy_keys = encoded_payload
