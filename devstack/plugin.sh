@@ -163,9 +163,9 @@ function configure_solum() {
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE worker lp_operator_tenant_name service
 
     # configure the api servers to listen on
-    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE api host $SOLUM_SERVICE_HOST
+    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE api host $(ipv6_unquote $SOLUM_SERVICE_HOST)
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE api port $SOLUM_SERVICE_PORT
-    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE builder host $SOLUM_SERVICE_HOST
+    iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE builder host $(ipv6_unquote $SOLUM_SERVICE_HOST)
     iniset $SOLUM_CONF_DIR/$SOLUM_CONF_FILE builder port $SOLUM_BUILDER_SERVICE_PORT
 
     # configure assembly handler to create appropriate image format
