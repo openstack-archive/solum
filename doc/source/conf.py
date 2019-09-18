@@ -87,3 +87,27 @@ man_pages = [
 
 # If true, show URL addresses after external links.
 man_show_urls = True
+
+# -- Options for LaTeX output -------------------------------------------------
+
+# Grouping the document tree into LaTeX files. List of tuples
+# (source start file, target name, title, author, documentclass
+# [howto/manual]).
+latex_documents = [
+    ('index', 'doc-solum.tex', u'Solum Documentation',
+     u'OpenStack Foundation', 'manual'),
+]
+latex_domain_indices = False
+
+latex_elements = {
+    'makeindex': '',
+    'printindex': '',
+    'preamble': r'\setcounter{tocdepth}{3}',
+    'maxlistdepth': '10',
+}
+
+# Disable usage of xindy https://bugzilla.redhat.com/show_bug.cgi?id=1643664
+latex_use_xindy = False
+
+# Disable smartquotes, they don't work in latex
+smartquotes_excludes = {'builders': ['latex']}
