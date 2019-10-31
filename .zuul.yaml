@@ -2,16 +2,15 @@
     templates:
       - openstack-cover-jobs
       - openstack-lower-constraints-jobs
-      - openstack-python-jobs
-      - openstack-python3-train-jobs
+      - openstack-python3-ussuri-jobs
       - publish-openstack-docs-pti
       - release-notes-jobs-python3
       - check-requirements
     check:
       jobs:
+        - solum-devstack-centos:
+            voting: false
         - solum-devstack
-        - solum-devstack-centos-7
-        - solum-devstack-py3
         - solum-tempest-ipv6-only
         - solum-tox-bandit-baseline:
             voting: false
@@ -24,17 +23,13 @@
         - solum-tempest-ipv6-only
 
 - job:
-    name: solum-devstack-centos-7
+    name: solum-devstack-centos
     parent: solum-tempest-base
     nodeset: devstack-single-node-centos-7
 
 - job:
-    name: solum-devstack-py3
+    name: solum-devstack
     parent: solum-tempest-base
-    voting: false
-    vars:
-      devstack_localrc:
-        DEVSTACK_GATE_USE_PYTHON3: True
 
 
 - job:
@@ -73,6 +68,7 @@
         tls-proxy: false
       devstack_localrc:
         TEMPEST_PLUGINS: '/opt/stack/solum-tempest-plugin'
+        USE_PYTHON3: True
       tempest_test_regex: application_deployment
       tox_envlist: all
 
@@ -85,10 +81,6 @@
     required-projects: *base_required_projects
     timeout: 7800
     vars: *base_vars
-
-- job:
-    name: solum-devstack
-    parent: solum-tempest-base
 
 - job:
     # Security testing for known issues
