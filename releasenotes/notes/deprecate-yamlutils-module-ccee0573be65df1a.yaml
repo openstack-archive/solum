@@ -1,0 +1,5 @@
+---
+deprecations:
+  - |
+    The ``yamlutils`` module is deprecated in Ussuri and support will
+    be removed in a future release.
