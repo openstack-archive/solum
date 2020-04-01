@@ -66,8 +66,7 @@ class TestWorkflowHandler(base.BaseTestCase):
         run_cmd = app_obj.workflow_config['run_cmd']
         mock_registry.App.get_by_id.return_value = app_obj
 
-        workflow_data = {"actions": ["unittest", "build", "deploy"],
-                         "app_id": app_id,
+        workflow_data = {"app_id": app_id,
                          "source": app_obj.source,
                          "config": app_obj.workflow_config,
                          "actions": app_obj.trigger_actions}

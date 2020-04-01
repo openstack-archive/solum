@@ -42,7 +42,7 @@ def get(url, max_size, chunk_size=None, allowed_schemes=('http', 'https')):
         raise IOError(_('Invalid URL scheme %s') % components.scheme)
 
     if chunk_size is None:
-            chunk_size = max_size
+        chunk_size = max_size
     if max_size < 1:
         raise IOError("max_size should be greater than 0")
     if chunk_size < 1:
