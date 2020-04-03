@@ -48,19 +48,8 @@ DEVSTACK_DIR=${HOME}/devstack
 LOGFILE=/opt/stack/logs/stack.sh.log
 GIT_BASE=https://opendev.org
 
-VIRT_DRIVER=docker
 SOLUM_IMAGE_FORMAT=docker
 ZUN_DRIVER=docker
-
-#enable_service mistral
-# Enable neutron services
-enable_service q-svc
-enable_service q-agt
-enable_service q-dhcp
-enable_service q-l3
-enable_service q-meta
-enable_service neutron
-disable_service n-net
 
 # Enable solum services
 enable_service solum-api

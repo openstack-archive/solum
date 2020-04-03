@@ -116,7 +116,7 @@ function configure_nova_docker {
 # configure_solum() - Set config files, create data dirs, etc
 function configure_solum() {
 
-    configure_nova_docker
+    # configure_nova_docker
 
     if [[ ! -d $SOLUM_CONF_DIR ]]; then
         sudo mkdir -p $SOLUM_CONF_DIR
