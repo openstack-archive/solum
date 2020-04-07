@@ -114,4 +114,5 @@ class MultiType(wtypes.UserType):
                 _("Wrong type. Expected '%(type)s', got '%(value)s'")
                 % {'type': self.types, 'value': type(value)})
 
+
 PortType = wtypes.IntegerType(minimum=1, maximum=65535)

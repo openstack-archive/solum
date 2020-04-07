@@ -65,4 +65,5 @@ def load():
     registry.clear()
     IMPL.load()
 
+
 registry = registry_mod.Registry()
