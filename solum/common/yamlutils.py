@@ -10,7 +10,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from debtcollector import removals
 import yaml
+
+
+removals.removed_module(
+    'solum.common.yamlutils', version='7.0.0', removal_version='8.0.0',
+    message='The solum.common.yamlutils will be removed')
 
 
 if hasattr(yaml, 'CSafeLoader'):
