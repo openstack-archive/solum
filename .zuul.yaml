@@ -42,6 +42,8 @@
       - ^.*\.rst$
       - ^releasenotes/.*$
       - ^solum/tests/.*$
+      - ^contrib/.*$
+      - ^examples/.*$
     timeout: 7800
     required-projects: &base_required_projects
       - openstack/devstack
