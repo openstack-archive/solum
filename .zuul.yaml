@@ -14,8 +14,6 @@
         - solum-tempest-ipv6-only
         - solum-tox-bandit-baseline:
             voting: false
-        - openstack-tox-py36:
-            voting: false
     gate:
       queue: solum
       jobs:
