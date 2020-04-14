@@ -26,7 +26,6 @@ import subprocess
 from oslo_config import cfg
 from oslo_log import log as logging
 from oslo_utils import uuidutils
-import six
 from sqlalchemy import exc as sqla_exc
 
 import solum
@@ -334,7 +333,7 @@ class Handler(object):
         def _sanitize_param(s):
             if s is None:
                 return ''
-            elif isinstance(s, six.string_types):
+            elif isinstance(s, str):
                 # Handles the case of exporting a var with a multi-line string
                 return ''.join(['"', s.strip('\n').replace('"', '\\"'), '"'])
             else:
@@ -740,9 +739,8 @@ class Handler(object):
                 LOG.exception(e)
                 out = ''
 
-            if isinstance(out, six.binary_type):
+            if isinstance(out, bytes):
                 out = out.decode('utf-8')
-            LOG.debug("#######out is %s" % out)
             # we expect two lines in the output that looks like:
             # image_external_ref=<external storage ref>
             # docker_image_name=<DU name>
