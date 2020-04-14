@@ -15,8 +15,7 @@ import json
 
 import pecan
 from pecan import rest
-import six
-from six.moves import urllib
+from urllib import parse
 from wsme.rest import json as wsme_json
 from wsme import types as wsme_types
 import wsmeext.pecan as wsme_pecan
@@ -113,13 +112,13 @@ class AssembliesController(rest.RestController):
                 json_ref_doc = json.loads(payload)
             except ValueError as excp:
                 raise exception.BadRequest(reason='JSON object is invalid. '
-                                           + six.text_type(excp))
+                                           + str(excp))
 
             if 'plan_uri' in json_ref_doc:
                 plan_uri_str = json_ref_doc['plan_uri']
 
                 # figure out if the plan uri is relative or absolute
-                plan_uri = urllib.parse.urlparse(plan_uri_str)
+                plan_uri = parse.urlparse(plan_uri_str)
                 uri_path = plan_uri.path
                 if not plan_uri.netloc:
                     # should be something like "../plans/<uuid>" or
