@@ -13,7 +13,7 @@
 from oslo_log import log as logging
 import requests
 from requests import exceptions
-from six import moves
+import urllib
 
 from solum.i18n import _
 
@@ -36,7 +36,7 @@ def get(url, max_size, chunk_size=None, allowed_schemes=('http', 'https')):
 
     LOG.info(_('Fetching data from %s') % url)
 
-    components = moves.urllib.parse.urlparse(url)
+    components = urllib.parse.urlparse(url)
 
     if components.scheme not in allowed_schemes:
         raise IOError(_('Invalid URL scheme %s') % components.scheme)
@@ -50,8 +50,8 @@ def get(url, max_size, chunk_size=None, allowed_schemes=('http', 'https')):
 
     if components.scheme == 'file':
         try:
-            return moves.urllib.request.urlopen(url).read()
-        except moves.urllib.error.URLError as uex:
+            return urllib.request.urlopen(url).read()
+        except urllib.error.URLError as uex:
             raise IOError(_('Failed to read file: %s') % str(uex))
 
     try:

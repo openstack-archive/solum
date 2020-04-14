@@ -12,7 +12,6 @@
 
 import mock
 import pecan
-import six
 import wsme
 import wsmeext.pecan as wsme_pecan
 
@@ -81,7 +80,7 @@ class TestWsmeExceptionWrapper(base.BaseTestCase):
             exc = self.assertRaises(wsme.exc.ClientSideError, controller.post,
                                     'foo')
             self.assertIn('Your request could not be handled because of a '
-                          'problem in the server.', six.text_type(exc))
+                          'problem in the server.', str(exc))
             self.assertEqual(expect.code if hasattr(expect, 'code') else 500,
                              exc.code)
 
@@ -94,7 +93,7 @@ class TestWsmeExceptionWrapper(base.BaseTestCase):
         for expect in thrown:
             exc = self.assertRaises(wsme.exc.ClientSideError, controller.post,
                                     'foo')
-            self.assertIn(six.text_type(expect), six.text_type(exc))
+            self.assertIn(str(expect), str(exc))
             self.assertEqual(expect.code, exc.code)
 
 
@@ -130,7 +129,7 @@ class TestPecanExceptionWrapper(base.BaseTestCase):
         controller = TestPecanController()
         for exp in thrown:
             controller.post()
-            self.assertIn(six.text_type(exp), mockresp.text)
+            self.assertIn(str(exp), mockresp.text)
             self.assertEqual(exp.code, mockresp.status)
 
 
