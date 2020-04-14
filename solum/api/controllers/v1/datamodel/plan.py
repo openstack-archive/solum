@@ -13,7 +13,6 @@
 # under the License.
 
 from oslo_utils import uuidutils
-import six
 import wsme
 from wsme.rest import json as wjson
 from wsme import types as wtypes
@@ -102,7 +101,7 @@ class Plan(api_types.Base):
     """The trigger uri used to trigger the build of the plan"""
 
     parameters = {wtypes.text: api_types.MultiType(wtypes.text,
-                                                   six.integer_types,
+                                                   int,
                                                    bool,
                                                    float)}
     """User defined parameters"""

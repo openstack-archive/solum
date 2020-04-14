@@ -15,7 +15,6 @@
 
 import datetime
 
-import six
 import wsme
 from wsme import types as wtypes
 
@@ -52,7 +51,7 @@ class Workflow(wtypes.Base):
     wf_id = int
     source = wtypes.DictType(wtypes.text, api_types.MultiType(
         wtypes.text,
-        six.integer_types,
+        int,
         bool,
         float))
     config = {wtypes.text: wtypes.text}

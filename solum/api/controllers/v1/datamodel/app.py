@@ -15,7 +15,6 @@
 
 import datetime
 
-import six
 import wsme
 from wsme import types as wtypes
 
@@ -48,7 +47,7 @@ class App(api_types.Base):
                                 {wtypes.text: api_types.PortType})
     source = wtypes.DictType(wtypes.text, api_types.MultiType(
         wtypes.text,
-        six.integer_types,
+        int,
         bool,
         float))
     workflow_config = {wtypes.text: wtypes.text}
@@ -73,7 +72,7 @@ class App(api_types.Base):
         wtypes.DictType(wtypes.text,
                         api_types.MultiType(
                             wtypes.text,
-                            six.integer_types,
+                            int,
                             bool,
                             float)))
 

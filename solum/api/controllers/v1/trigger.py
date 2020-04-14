@@ -12,12 +12,12 @@
 
 
 import json
+from urllib import parse
 
 from oslo_config import cfg
 from oslo_log import log as logging
 import pecan
 from pecan import rest
-from six.moves import urllib
 
 from solum.api.handlers import app_handler
 from solum.common import exception
@@ -30,7 +30,7 @@ CONF = cfg.CONF
 def query_dict(querystring):
     if not querystring:
         return {}
-    query = urllib.parse.unquote(querystring).rstrip()
+    query = parse.unquote(querystring).rstrip()
     query = query.split('&')
     query = [q.split('=') for q in query]
     return dict([(q[0], ' '.join(q[1:])) for q in query])

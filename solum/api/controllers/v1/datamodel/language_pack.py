@@ -14,7 +14,6 @@
 
 import string
 
-import six
 import wsme
 from wsme import types as wtypes
 
@@ -148,7 +147,7 @@ class LanguagePack(api_types.Base):
         wtypes.DictType(wtypes.text,
                         api_types.MultiType(
                             wtypes.text,
-                            six.integer_types,
+                            int,
                             bool,
                             float)))
 
