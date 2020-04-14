@@ -28,7 +28,6 @@ from oslo_log import log as logging
 from oslo_utils import excutils
 from oslo_utils import uuidutils
 import pecan
-import six
 import wsme
 
 from solum.common import safe_utils
@@ -136,10 +135,10 @@ def wrap_wsme_controller_exception(func):
     """This decorator wraps wsme controllers to handle exceptions."""
     def _func_server_error(log_correlation_id, status_code):
         raise wsme.exc.ClientSideError(
-            six.text_type(OBFUSCATED_MSG % log_correlation_id), status_code)
+            str(OBFUSCATED_MSG % log_correlation_id), status_code)
 
     def _func_client_error(excp, status_code):
-        raise wsme.exc.ClientSideError(six.text_type(excp), status_code)
+        raise wsme.exc.ClientSideError(str(excp), status_code)
 
     return wrap_controller_exception(func,
                                      _func_server_error,
@@ -150,8 +149,7 @@ def wrap_pecan_controller_exception(func):
     """This decorator wraps pecan controllers to handle exceptions."""
     def _func_server_error(log_correlation_id, status_code):
         pecan.response.status = status_code
-        pecan.response.text = six.text_type(OBFUSCATED_MSG %
-                                            log_correlation_id)
+        pecan.response.text = str(OBFUSCATED_MSG % log_correlation_id)
         # message body for errors is just a plain text message
         # The following code is functionally equivalent to calling:
         #
@@ -165,7 +163,7 @@ def wrap_pecan_controller_exception(func):
 
     def _func_client_error(excp, status_code):
         pecan.response.status = status_code
-        pecan.response.text = six.text_type(excp)
+        pecan.response.text = str(excp)
 
         # The following code is functionally equivalent to calling:
         #
@@ -199,8 +197,7 @@ def wrap_wsme_pecan_controller_exception(func):
             log_correlation_id = uuidutils.generate_uuid()
             LOG.error("%s:%s", log_correlation_id, ret.get("faultstring",
                                                            "Unknown Error"))
-            ret['faultstring'] = six.text_type(OBFUSCATED_MSG %
-                                               log_correlation_id)
+            ret['faultstring'] = str(OBFUSCATED_MSG % log_correlation_id)
         return ret
 
     return wrapped
@@ -223,7 +220,6 @@ def wrap_keystone_exception(func):
     return wrapped
 
 
-@six.python_2_unicode_compatible
 class SolumException(Exception):
     """Base Solum Exception
 
@@ -239,7 +235,7 @@ class SolumException(Exception):
         self.kwargs = kwargs
 
         if CONF.fatal_exception_format_errors:
-            assert isinstance(self.msg_fmt, six.text_type)
+            assert isinstance(self.msg_fmt, str)
 
         try:
             self.message = self.msg_fmt % kwargs
