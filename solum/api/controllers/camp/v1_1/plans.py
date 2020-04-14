@@ -16,7 +16,6 @@ from oslo_db import exception as db_exc
 from oslo_utils import uuidutils
 import pecan
 from pecan import rest
-import six
 import wsme
 from wsme.rest import json as wjson
 from wsme import types as wtypes
@@ -148,7 +147,7 @@ class PlansController(rest.RestController):
         except jsonpatch.JsonPatchConflict:
             raise exception.Unprocessable
         except jsonpatch.JsonPatchException as jpe:
-            raise JsonPatchProcessingException(reason=six.text_type(jpe))
+            raise JsonPatchProcessingException(reason=str(jpe))
 
         return fluff_plan(db_obj.refined_content(), db_obj.uuid)
 
@@ -170,7 +169,7 @@ class PlansController(rest.RestController):
             yaml_input_plan = yamlutils.load(pecan.request.body)
         except ValueError as excp:
             raise exception.BadRequest(reason='Plan is invalid. '
-                                       + six.text_type(excp))
+                                       + str(excp))
 
         camp_version = yaml_input_plan.get('camp_version')
         if camp_version is None:
