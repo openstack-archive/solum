@@ -17,7 +17,6 @@ import uuid
 
 import mock
 from oslo_config import cfg
-import six
 import wsme
 
 from solum.common import exception
@@ -29,15 +28,13 @@ class ExceptionTestCase(base.BaseTestCase):
 
     def test_with_kwargs(self):
         exc = exception.ResourceNotFound(name='application', id='green_paint')
-        self.assertIn('green_paint could not be found.',
-                      six.text_type(exc))
+        self.assertIn('green_paint could not be found.', str(exc))
         self.assertEqual(404, exc.code)
 
     def test_with_kwargs_ru(self):
         exc = exception.ResourceNotFound(name='application',
                                          id=u'зеленой_краской')
-        self.assertIn(u'зеленой_краской could not be found',
-                      six.text_type(exc))
+        self.assertIn(u'зеленой_краской could not be found', str(exc))
         self.assertEqual(404, exc.code)
 
     def test_bad_kwargs_exception(self):
@@ -48,25 +45,22 @@ class ExceptionTestCase(base.BaseTestCase):
     def test_bad_kwargs(self):
         cfg.CONF.set_override('fatal_exception_format_errors', False)
         exc = exception.ResourceNotFound(a_field='green')
-        self.assertIn('An unknown exception occurred', six.text_type(exc))
+        self.assertIn('An unknown exception occurred', str(exc))
         self.assertEqual(404, exc.code)
 
     def test_resource_exists(self):
         exc = exception.ResourceExists(name='test')
-        self.assertIn("The test resource already exists.",
-                      six.text_type(exc))
+        self.assertIn("The test resource already exists.", str(exc))
         self.assertEqual(409, exc.code)
 
     def test_application_exists(self):
         exc = exception.ResourceExists(name='test')
-        self.assertIn("The test resource already exists.",
-                      six.text_type(exc))
+        self.assertIn("The test resource already exists.", str(exc))
         self.assertEqual(409, exc.code)
 
     def test_not_implemented(self):
         exc = exception.NotImplemented()
-        self.assertIn("The requested operation is not implemented.",
-                      six.text_type(exc))
+        self.assertIn("The requested operation is not implemented.", str(exc))
         self.assertEqual(501, exc.code)
 
     def test_wrap_controller_exception_with_server_error(self):
@@ -79,7 +73,7 @@ class ExceptionTestCase(base.BaseTestCase):
         try:
             exception.wrap_wsme_controller_exception(error_func)()
         except wsme.exc.ClientSideError as e:
-            correlation_id = six.text_type(e).split(":")[1].strip()
+            correlation_id = str(e).split(":")[1].strip()
 
         self.assertIsNotNone(correlation_id)
         self.assertIsInstance(uuid.UUID(correlation_id), uuid.UUID)
@@ -92,8 +86,7 @@ class ExceptionTestCase(base.BaseTestCase):
 
     def test_wrap_controller_exception_with_client_error(self):
         error_args = dict(reason="foo")
-        expected_error_msg = six.text_type(
-            exception.BadRequest.msg_fmt % error_args)
+        expected_error_msg = str(exception.BadRequest.msg_fmt % error_args)
 
         def error_func():
             raise exception.BadRequest(**error_args)
@@ -116,7 +109,7 @@ class ExceptionTestCase(base.BaseTestCase):
         try:
             exception.wrap_wsme_controller_exception(error_func)()
         except wsme.exc.ClientSideError as e:
-            correlation_id = six.text_type(e).split(":")[1].strip()
+            correlation_id = str(e).split(":")[1].strip()
 
         self.assertIsNotNone(correlation_id)
         self.assertIsInstance(uuid.UUID(correlation_id), uuid.UUID)

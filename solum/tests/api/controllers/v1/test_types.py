@@ -10,7 +10,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import six
 from wsme import types as wtypes
 
 from solum.api.controllers.v1.datamodel import component as component_api
@@ -97,7 +96,7 @@ class TestMultiType(base.BaseTestCase):
         vts = str(vt)
         self.assertIn(str(wtypes.text), vts)
         self.assertIn(str(bool), vts)
-        self.assertNotIn(str(six.integer_types[0]), vts)
+        self.assertNotIn(str(int), vts)
 
 
 class TestTypeNames(base.BaseTestCase):

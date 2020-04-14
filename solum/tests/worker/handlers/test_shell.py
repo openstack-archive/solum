@@ -710,7 +710,7 @@ class HandlerUtilityTest(base.BaseTestCase):
         fake_LOG.debug.assert_called_once_with(_('%s') % 'foo')
 
     @mock.patch('solum.worker.handlers.shell.get_parameter_by_assem_id')
-    @mock.patch('six.moves.builtins.open')
+    @mock.patch('builtins.open')
     @mock.patch('os.makedirs')
     def test_get_parameter_files(self, mock_mkdirs, mock_open, mock_param):
         mock_param.return_value = {"user_params": {'key': 'ab"cd'}}

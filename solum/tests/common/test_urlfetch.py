@@ -10,9 +10,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from io import StringIO
 import mock
 from requests import exceptions
-from six import moves
+import urllib
 
 from solum.common import urlfetch
 from solum.tests import base
@@ -100,17 +101,17 @@ class TestUrlFetch(base.BaseTestCase):
         self.assertRaises(IOError, urlfetch.get, 'file:///etc/profile',
                           FETCH_SIZE_OK)
 
-    @mock.patch('six.moves.urllib.request.urlopen')
+    @mock.patch('urllib.request.urlopen')
     def test_file_scheme_supported(self, mock_urlopen):
         data = '{ "foo": "bar" }'
         url = 'file:///etc/profile'
-        mock_urlopen.return_value = moves.cStringIO(data)
+        mock_urlopen.return_value = StringIO(data)
         self.assertEqual(data, urlfetch.get(url, FETCH_SIZE_OK,
                                             allowed_schemes=['file']))
 
-    @mock.patch('six.moves.urllib.request.urlopen')
+    @mock.patch('urllib.request.urlopen')
     def test_file_scheme_failure(self, mock_urlopen):
         url = 'file:///etc/profile'
-        mock_urlopen.side_effect = moves.urllib.error.URLError('oops')
+        mock_urlopen.side_effect = urllib.error.URLError('oops')
         self.assertRaises(IOError, urlfetch.get, url, FETCH_SIZE_OK,
                           allowed_schemes=['file'])
