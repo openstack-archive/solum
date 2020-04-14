@@ -116,7 +116,6 @@ rfc3986==1.1.0
 Routes==2.4.1
 simplegeneric==0.8.1
 simplejson==3.13.2
-six==1.11.0
 snowballstemmer==1.2.1
 Sphinx==1.6.5
 sphinxcontrib-httpdomain==1.6.1
