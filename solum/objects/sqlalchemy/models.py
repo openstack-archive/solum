@@ -25,11 +25,11 @@ from oslo_db import exception as db_exc
 from oslo_db.sqlalchemy import models
 from oslo_log import log as logging
 from oslo_utils import uuidutils
-from six import moves
 from sqlalchemy import exc as sqla_exc
 from sqlalchemy.ext import declarative
 from sqlalchemy.orm import exc as orm_exc
 from sqlalchemy import types
+from urllib import parse
 
 from solum.common import exception
 from solum.common import yamlutils
@@ -65,7 +65,7 @@ def table_args():
         # this is only within some object tests where
         # the object classes are directly imported.
         return None
-    engine_name = moves.urllib.parse.urlparse(
+    engine_name = parse.urlparse(
         cfg.CONF.database.connection).scheme
     if engine_name == 'mysql':
         return {'mysql_engine': 'InnoDB',
