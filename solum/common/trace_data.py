@@ -12,15 +12,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import six
-
 # The list below holds the keys corresponding to Oslo RequestContext keys
 # which are acceptable for an authenticated user to view.  Everything else
 # will be considered support-only data.  This list may be too restrictive and
 # can be relaxed more as needed.  This is only used if import_context() is
 # called.
-_TRACE_USER_KEYS = [six.u("user"), six.u("tenant")]
-_TRACE_CONTEXT_IGNORE = [six.u("auth_token"), six.u("trust_id")]
+_TRACE_USER_KEYS = ["user", "tenant"]
+_TRACE_CONTEXT_IGNORE = ["auth_token", "trust_id"]
 
 
 class TraceData(object):
@@ -34,7 +32,7 @@ class TraceData(object):
     """
     def __init__(self):
         """Initialize class storage."""
-        self.request_id = six.u("<not set>")
+        self.request_id = "<not set>"
         self._auto_clear = False
         self._user_data = {}
         self._support_data = {}
@@ -68,7 +66,7 @@ class TraceData(object):
         want in the end.  It is just an initial/simple/portable way to do this
         for now.  It is only somewhat useful before garbage collection.
         """
-        self.request_id = six.u("<not set>")
+        self.request_id = "<not set>"
         self._user_data = {}
         self._support_data = {}
 

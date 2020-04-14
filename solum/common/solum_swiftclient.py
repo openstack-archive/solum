@@ -15,9 +15,8 @@
 import errno
 import os
 
+from http import client as http_client
 from oslo_log import log as logging
-import six
-from six.moves import http_client
 from swiftclient import exceptions as swiftexp
 
 from solum.common import clients
@@ -50,7 +49,7 @@ class SwiftClient(object):
         # Analyze file-like object and attempt to determine its size.
 
         if (hasattr(file_obj, 'seek') and hasattr(file_obj, 'tell') and
-                (six.PY2 or six.PY3 and file_obj.seekable())):
+                file_obj.seekable()):
             try:
                 curr = file_obj.tell()
                 file_obj.seek(0, os.SEEK_END)
