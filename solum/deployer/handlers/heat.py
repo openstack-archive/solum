@@ -24,7 +24,6 @@ import httplib2
 # from keystoneclient.v2_0 import client as ksclient
 from oslo_config import cfg
 from oslo_log import log as os_logging
-import six
 from sqlalchemy import exc as sqla_exc
 from swiftclient import exceptions as swiftexp
 import yaml
@@ -253,8 +252,8 @@ class Handler(object):
             log_handler = userlog_handler.UserlogHandler(ctxt)
             log_handler.delete(logs_resource_id)
         except exception.AuthorizationFailure as authexcp:
-            t_logger.log(logging.ERROR, six.text_type(authexcp))
-            LOG.debug(six.text_type(authexcp))
+            t_logger.log(logging.ERROR, str(authexcp))
+            LOG.debug(str(authexcp))
             t_logger.upload()
 
     def _delete_app_artifacts_from_glance(self, ctxt, t_logger, assem):
