@@ -10,8 +10,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import six
-
 from oslo_concurrency import processutils as putils
 from oslo_utils import strutils
 
@@ -33,7 +31,7 @@ def execute(*cmd, **kwargs):
     except OSError as e:
         sanitized_cmd = strutils.mask_password(' '.join(cmd))
         raise putils.ProcessExecutionError(
-            cmd=sanitized_cmd, description=six.text_type(e))
+            cmd=sanitized_cmd, description=str(e))
 
 
 @privileged.default.entrypoint
