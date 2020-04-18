@@ -13,11 +13,12 @@
 from barbicanclient import client as barbicanclient
 from glanceclient import client as glanceclient
 from heatclient import client as heatclient
+from unittest import mock
+
 from keystoneclient.auth.identity import v2 as identity_v2
 from keystoneclient import exceptions
 from keystoneclient import session
 from mistralclient.api import client as mistralclient
-import mock
 from neutronclient.neutron import client as neutronclient
 from oslo_config import cfg
 from swiftclient import client as swiftclient

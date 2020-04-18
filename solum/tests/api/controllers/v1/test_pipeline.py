@@ -11,8 +11,8 @@
 # under the License.
 
 import json
+from unittest import mock
 
-import mock
 
 from solum.api.controllers.v1.datamodel import pipeline as pipelinemodel
 from solum.api.controllers.v1 import pipeline

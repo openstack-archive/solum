@@ -10,7 +10,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import mock
+from unittest import mock
 
 from solum.api.controllers.camp import platform_endpoints
 from solum import objects

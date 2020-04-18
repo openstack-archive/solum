@@ -13,8 +13,8 @@
 # under the License.
 
 import json
+from unittest import mock
 
-import mock
 
 from solum.api.handlers import userlog_handler
 from solum.tests import base

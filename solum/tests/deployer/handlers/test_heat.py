@@ -13,9 +13,9 @@
 # under the License.
 
 import json
+from unittest import mock
 
 from heatclient import exc
-import mock
 from oslo_config import cfg
 import yaml
 

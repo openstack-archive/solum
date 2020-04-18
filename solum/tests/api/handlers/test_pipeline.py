@@ -12,8 +12,8 @@
 # under the License.
 
 import json
+from unittest import mock
 
-import mock
 
 from solum.api.handlers import pipeline_handler
 from solum.common import catalog

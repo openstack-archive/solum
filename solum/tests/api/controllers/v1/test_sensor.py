@@ -13,8 +13,8 @@
 # under the License.
 
 import json
+from unittest import mock
 
-import mock
 
 from solum.api.controllers.v1.datamodel import sensor as model
 from solum.api.controllers.v1 import sensor as controller

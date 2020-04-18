@@ -11,8 +11,8 @@
 # under the License.
 
 import json
+from unittest import mock
 
-import mock
 
 from solum.api.controllers.camp.v1_1 import assemblies
 from solum import objects

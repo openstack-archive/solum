@@ -12,8 +12,8 @@
 #    under the License.
 
 import sys
+from unittest import mock
 
-import mock
 
 from solum.cmd import db_manage as cli
 from solum.tests import base

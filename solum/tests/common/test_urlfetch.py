@@ -11,8 +11,8 @@
 #    under the License.
 
 from io import StringIO
-import mock
 from requests import exceptions
+from unittest import mock
 import urllib
 
 from solum.common import urlfetch

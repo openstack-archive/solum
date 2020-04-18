@@ -13,8 +13,8 @@
 # under the License.
 
 import json
+from unittest import mock
 
-import mock
 
 from solum.api.handlers import infrastructure_handler as infra
 from solum.tests import base

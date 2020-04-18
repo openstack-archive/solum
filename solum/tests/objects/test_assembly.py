@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import mock
 from sqlalchemy.orm import exc as sqla_ex
+from unittest import mock
 
 from solum.common import exception
 from solum.objects import registry

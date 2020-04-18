@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import mock
+from unittest import mock
 
 from solum.common import exception as exc
 from solum.common import solum_swiftclient as swiftclient

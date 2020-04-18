@@ -11,8 +11,8 @@
 # under the License.
 
 import json
+from unittest import mock
 
-import mock
 from oslo_db import exception as db_exc
 import pecan
 import yaml

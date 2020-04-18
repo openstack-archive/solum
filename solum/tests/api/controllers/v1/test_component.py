@@ -13,8 +13,8 @@
 # under the License.
 
 import json
+from unittest import mock
 
-import mock
 
 from solum.api.controllers.v1 import component
 from solum.api.controllers.v1.datamodel import component as componentmodel

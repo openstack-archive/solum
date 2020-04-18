@@ -10,7 +10,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import mock
+from unittest import mock
 
 from solum.api.handlers import operation_handler as operation
 from solum.tests import base

@@ -10,8 +10,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import mock
 import pecan
+from unittest import mock
 import wsme
 import wsmeext.pecan as wsme_pecan
 

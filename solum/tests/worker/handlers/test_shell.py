@@ -15,8 +15,8 @@
 import base64
 import json
 import os.path
+from unittest import mock
 
-import mock
 from oslo_config import cfg
 from oslo_utils import uuidutils
 

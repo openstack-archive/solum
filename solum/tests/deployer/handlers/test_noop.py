@@ -12,7 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import mock
+from unittest import mock
 
 from solum.deployer.handlers import noop as noop_handler
 from solum.i18n import _

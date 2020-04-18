@@ -13,8 +13,8 @@
 # under the License.
 
 import os.path
+from unittest import mock
 
-import mock
 
 from solum.common import catalog
 from solum.common import exception

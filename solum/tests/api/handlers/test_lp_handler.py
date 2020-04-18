@@ -12,7 +12,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import mock
+from unittest import mock
+
 from oslo_config import cfg
 
 from solum.api.handlers import language_pack_handler
