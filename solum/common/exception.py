@@ -20,6 +20,7 @@ Includes decorator for re-raising Solum-type exceptions.
 
 import collections
 import functools
+import inspect
 import sys
 
 from keystoneclient import exceptions as keystone_exceptions
@@ -30,7 +31,6 @@ from oslo_utils import uuidutils
 import pecan
 import wsme
 
-from solum.common import safe_utils
 from solum.i18n import _
 
 
@@ -67,7 +67,7 @@ def wrap_exception(notifier=None, publisher_id=None, event_type=None,
             except Exception as e:
                 with excutils.save_and_reraise_exception():
                     if notifier:
-                        call_dict = safe_utils.getcallargs(f, *args, **kw)
+                        call_dict = inspect.getcallargs(f, *args, **kw)
                         payload = dict(exception=e,
                                        private=dict(args=call_dict)
                                        )
