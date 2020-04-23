@@ -18,7 +18,8 @@ class Registry(object):
 
     """Allow domain objects to be loaded by name."""
     def __getattr__(self, name):
-        return self.impls[name]
+        if name in self.impls:
+            return self.impls[name]
 
     def add(self, interface, cls):
         """Register an implementation for a class."""

@@ -17,8 +17,6 @@ test_service
 Tests for `solum.common.service` module.
 """
 
-import testtools
-
 from solum.common import service
 from solum import objects
 from solum.objects import component as abstract
@@ -29,8 +27,8 @@ class TestService(base.BaseTestCase):
 
     def test_prepare_invokes_object_load(self):
         objects.registry.clear()
-        with testtools.ExpectedException(KeyError):
-            objects.registry.Component()
+        objects.registry.Component
+        objects.load()
         service.prepare_service([])
         self.assertTrue(issubclass(objects.registry.Component,
                                    abstract.Component))

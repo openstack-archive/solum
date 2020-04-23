@@ -43,8 +43,7 @@ class TestObjectsSqlalchemy(tests.BaseTestCase):
 
         objects.registry.clear()
 
-        with testtools.ExpectedException(KeyError):
-            objects.registry.Component
+        objects.registry.Component
 
         objects.load()
 
