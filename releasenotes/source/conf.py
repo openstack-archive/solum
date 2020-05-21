@@ -98,7 +98,7 @@ exclude_patterns = []
 # show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = 'native'
 
 # A list of ignored prefixes for module index sorting.
 # modindex_common_prefix = []
@@ -192,9 +192,10 @@ html_static_path = ['_static']
 htmlhelp_basename = 'SolumReleaseNotesdoc'
 
 # openstackdocstheme options
-repository_name = 'openstack/solum'
-bug_project = 'solum'
-bug_tag = ''
+openstackdocs_repo_name = 'openstack/solum'
+openstackdocs_auto_name = False
+openstackdocs_bug_project = 'solum'
+openstackdocs_bug_tag = ''
 
 # -- Options for LaTeX output ---------------------------------------------
 
