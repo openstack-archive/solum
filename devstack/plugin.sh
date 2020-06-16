@@ -349,7 +349,7 @@ function start_solum() {
         restart_apache_server
         tail_log solum-api /var/log/$APACHE_NAME/solum-api.log
     elif [ "$SOLUM_USE_UWSGI" == "True" ]; then
-        run_process solum-api "$SOLUM_BIN_DIR/uwsgi --ini $SOLUM_UWSGI_CONF"
+        run_process solum-api "$(which uwsgi) --ini $SOLUM_UWSGI_CONF"
     else
         run_process solum-api "$SOLUM_BIN_DIR/solum-api --config-file $SOLUM_CONF_DIR/$SOLUM_CONF_FILE"
     fi
