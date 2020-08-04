@@ -8,13 +8,13 @@ bandit==1.1.0
 beautifulsoup4==4.6.0
 cachetools==2.0.1
 certifi==2018.1.18
-cffi==1.11.5
+cffi==1.14.0
 chardet==3.0.4
 cliff==2.11.0
 cmd2==0.8.1
 contextlib2==0.5.5
 coverage==4.5.1
-cryptography==2.1.4
+cryptography==2.7
 debtcollector==1.2.0
 decorator==4.2.1
 deprecation==2.0
@@ -46,7 +46,7 @@ linecache2==1.0.0
 logutils==0.3.5
 lxml==4.1.1
 Mako==1.0.7
-MarkupSafe==1.0
+MarkupSafe==1.1.1
 mccabe==0.2.1
 monotonic==1.4
 mox3==0.25.0
@@ -105,7 +105,7 @@ python-subunit==1.2.0
 python-swiftclient==3.5.0
 python-zaqarclient==1.9.0
 pytz==2018.3
-PyYAML==3.12
+PyYAML==3.13
 repoze.lru==0.7
 requests==2.18.4
 requestsexceptions==1.4.0
