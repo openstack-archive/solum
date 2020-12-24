@@ -15,6 +15,7 @@
 from oslo_upgradecheck.upgradecheck import Code
 
 from solum.cmd import status
+from solum import config
 from solum.tests import base
 
 
@@ -22,9 +23,14 @@ class TestUpgradeChecks(base.BaseTestCase):
 
     def setUp(self):
         super(TestUpgradeChecks, self).setUp()
+        config.parse_args(argv=[])
         self.cmd = status.Checks()
 
-    def test__check_placeholder(self):
-        check_result = self.cmd._check_placeholder()
-        self.assertEqual(
-            Code.SUCCESS, check_result.code)
+    def test_checks(self):
+        for name, func in self.cmd._upgrade_checks:
+            if isinstance(func, tuple):
+                func_name, kwargs = func
+                result = func_name(self, **kwargs)
+            else:
+                result = func(self)
+            self.assertEqual(Code.SUCCESS, result.code)
