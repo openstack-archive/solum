@@ -20,10 +20,10 @@ from solum.common.rpc import service
 
 
 class API(service.API):
-    def __init__(self, transport=None, context=None):
+    def __init__(self, context=None):
         cfg.CONF.import_opt('topic', 'solum.worker.config',
                             group='worker')
-        super(API, self).__init__(transport, context,
+        super(API, self).__init__(context,
                                   topic=cfg.CONF.worker.topic)
 
     def build_app(self, verb, build_id, git_info, ports, name, base_image_id,

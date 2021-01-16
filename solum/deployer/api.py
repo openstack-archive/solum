@@ -20,10 +20,10 @@ from solum.common.rpc import service
 
 
 class API(service.API):
-    def __init__(self, transport=None, context=None):
+    def __init__(self, context=None):
         cfg.CONF.import_opt('topic', 'solum.deployer.config',
                             group='deployer')
-        super(API, self).__init__(transport, context,
+        super(API, self).__init__(context,
                                   topic=cfg.CONF.deployer.topic)
 
     def deploy(self, assembly_id, image_loc, image_name, ports):

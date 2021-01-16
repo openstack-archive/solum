@@ -15,13 +15,12 @@
 """Common RPC service and API tools for Solum."""
 
 import eventlet
-from oslo_config import cfg
 import oslo_messaging as messaging
-from oslo_messaging.rpc import dispatcher
 from oslo_serialization import jsonutils
 
 import solum.common.context
 from solum import objects
+from solum import rpc
 
 
 # NOTE(paulczar):
@@ -65,14 +64,9 @@ class Service(object):
 
     def __init__(self, topic, server, handlers):
         serializer = RequestContextSerializer(JsonPayloadSerializer())
-        transport = messaging.get_rpc_transport(cfg.CONF)
         # TODO(asalkeld) add support for version='x.y'
         target = messaging.Target(topic=topic, server=server)
-        access_policy = dispatcher.DefaultRPCAccessPolicy
-        self._server = messaging.get_rpc_server(transport, target, handlers,
-                                                executor='threading',
-                                                serializer=serializer,
-                                                access_policy=access_policy)
+        self._server = rpc.get_server(target, handlers, serializer)
 
     def serve(self):
         objects.load()
@@ -81,16 +75,14 @@ class Service(object):
 
 
 class API(object):
-    def __init__(self, transport=None, context=None, topic=None):
+    def __init__(self, context=None, topic=None):
         serializer = RequestContextSerializer(JsonPayloadSerializer())
-        if transport is None:
-            transport = messaging.get_rpc_transport(cfg.CONF)
         self._context = context
         if topic is None:
             topic = ''
         target = messaging.Target(topic=topic)
-        self._client = messaging.RPCClient(transport, target,
-                                           serializer=serializer)
+        self._client = rpc.get_client(target,
+                                      serializer=serializer)
 
     def _call(self, method, *args, **kwargs):
         return self._client.call(self._context, method, *args, **kwargs)
