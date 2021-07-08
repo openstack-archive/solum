@@ -53,5 +53,5 @@ Project Info
  * Bugs: https://bugs.launchpad.net/solum
  * Code Reviews: https://review.opendev.org/#/q/project:openstack/solum
                  https://review.opendev.org/#/q/project:openstack/python-solumclient
- * IRC: #solum at chat.freenode.net
+ * IRC: #solum at chat.oftc.net
  * Release notes: https://docs.openstack.org/releasenotes/solum/
