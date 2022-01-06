@@ -69,6 +69,7 @@
       devstack_localrc:
         TEMPEST_PLUGINS: '/opt/stack/solum-tempest-plugin'
         USE_PYTHON3: True
+        KEYSTONE_ADMIN_ENDPOINT: true
       tempest_test_regex: application_deployment
       tox_envlist: all
 
