@@ -340,7 +340,7 @@ Solum repository is available on the OpenStack Git server.
 
   $ mkdir ~/Solum
   $ cd Solum
-  $ git clone https://github.com/openstack/solum.git
+  $ git clone https://opendev.org/openstack/solum.git
 
 In addition to Solum, your environment will also need Devstack to configure and run the requisite OpenStack components, including Keystone, Glance, Nova, Neutron, and Heat.
 
