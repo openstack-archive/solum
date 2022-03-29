@@ -78,7 +78,7 @@ def filter_by_project(context, query):
         if context.is_admin:
             return query
         try:
-            query = query.filter_by(project_id=context.tenant)
+            query = query.filter_by(project_id=context.project_id)
         except sqla_exc.InvalidRequestError:
             # No project_id column.
             pass

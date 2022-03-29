@@ -28,7 +28,7 @@ class TestImage(base.BaseTestCase):
         super(TestImage, self).setUp()
         self.db = self.useFixture(utils.Database())
         self.ctx = utils.dummy_context()
-        self.data = [{'project_id': self.ctx.tenant,
+        self.data = [{'project_id': self.ctx.project_id,
                       'user_id': 'fred',
                       'uuid': '25f7fa50-b980-4452-a550-dea5fd98ffc2',
                       'name': 'image1',

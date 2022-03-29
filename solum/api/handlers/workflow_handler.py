@@ -112,7 +112,7 @@ class WorkflowHandler(handler.Handler):
         db_obj = objects.registry.Workflow()
         db_obj.id = uuidutils.generate_uuid()
         db_obj.user_id = self.context.user
-        db_obj.project_id = self.context.tenant
+        db_obj.project_id = self.context.project_id
         db_obj.deleted = False
 
         db_obj.app_id = data['app_id']
@@ -176,7 +176,7 @@ class WorkflowHandler(handler.Handler):
         image.image_format = CONF.api.image_format
         image.uuid = uuidutils.generate_uuid()
         image.user_id = self.context.user
-        image.project_id = self.context.tenant
+        image.project_id = self.context.project_id
         image.status = IMAGE_STATES.QUEUED
         image.create(self.context)
         test_cmd = wf_obj.config['test_cmd']
@@ -260,14 +260,14 @@ class PlanAssemblyAdapter(object):
             plan = objects.registry.Plan()
             plan.uuid = self.app_obj.id
             plan.user_id = self.context.user
-            plan.project_id = self.context.tenant
+            plan.project_id = self.context.project_id
             plan.name = self.app_obj.name
             plan.create(self.context)
 
         assembly = objects.registry.Assembly()
         assembly.plan_id = plan.id
         assembly.user_id = self.context.user
-        assembly.project_id = self.context.tenant
+        assembly.project_id = self.context.project_id
         assembly.name = self.app_obj.name
         assembly.uuid = uuidutils.generate_uuid()
 

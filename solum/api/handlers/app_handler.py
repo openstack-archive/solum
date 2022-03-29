@@ -77,7 +77,7 @@ class AppHandler(handler.Handler):
         db_obj = objects.registry.App()
         db_obj.id = uuidutils.generate_uuid()
         db_obj.user_id = self.context.user
-        db_obj.project_id = self.context.tenant
+        db_obj.project_id = self.context.project_id
         db_obj.deleted = False
 
         # create a delegation trust_id\token, if required
@@ -108,8 +108,8 @@ class AppHandler(handler.Handler):
         raw_content_json['password'] = decoded_password
 
         raw_content_json['auth_url'] = self.context.auth_url
-        raw_content_json['tenant'] = self.context.tenant
-        raw_content_json['tenant_name'] = self.context.tenant_name
+        raw_content_json['tenant'] = self.context.project_id
+        raw_content_json['tenant_name'] = self.context.project_name
 
         db_obj.raw_content = json.dumps(raw_content_json)
 
@@ -128,7 +128,7 @@ class AppHandler(handler.Handler):
         try:
             self.context = keystone_utils.create_delegation_context(
                 app_obj, self.context)
-            self.context.tenant = app_obj.project_id
+            self.context.project_id = app_obj.project_id
             self.context.user = app_obj.user_id
             self.context.user_name = app_obj.trust_user
         except exception.AuthorizationFailure as auth_ex:

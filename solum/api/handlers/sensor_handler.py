@@ -40,7 +40,7 @@ class SensorHandler(handler.Handler):
         db_obj.update(data)
         db_obj.uuid = uuidutils.generate_uuid()
         db_obj.user_id = self.context.user
-        db_obj.project_id = self.context.tenant
+        db_obj.project_id = self.context.project_id
         db_obj.create(self.context)
         return db_obj
 

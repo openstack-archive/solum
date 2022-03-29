@@ -47,7 +47,7 @@ class KeystoneClientTest(base.BaseTestCase):
         """Test creating the client, token auth."""
         # TODO(zhurong): should unskip the test
         self.skipTest('Skipping this test for bug #1686560')
-        self.ctx.tenant = None
+        self.ctx.project_id = None
         self.ctx.trust_id = None
         solum_ks_client = solum_keystoneclient.KeystoneClientV3(self.ctx)
         solum_ks_client.client
@@ -70,7 +70,7 @@ class KeystoneClientTest(base.BaseTestCase):
         """Test creating the client, token auth."""
         # TODO(zhurong): should unskip the test
         self.skipTest('Skipping this test for bug #1686560')
-        self.ctx.tenant = 'abcd1234'
+        self.ctx.project_id = 'abcd1234'
         self.ctx.trust_id = None
         self.ctx.auth_token_info = {'access': {'token': {'id': 'placeholder'}}}
 
@@ -86,7 +86,7 @@ class KeystoneClientTest(base.BaseTestCase):
     def test_init_trust_token_token(self, mock_ks):
         # TODO(zhurong): should unskip the test
         self.skipTest('Skipping this test for bug #1686560')
-        self.ctx.tenant = None
+        self.ctx.project_id = None
         self.ctx.trust_id = None
         self.ctx.auth_token_info = {'token': {}}
 
@@ -101,7 +101,7 @@ class KeystoneClientTest(base.BaseTestCase):
     def test_init_trust_token_none(self, mock_ks):
         # TODO(zhurong): should unskip the test
         self.skipTest('Skipping this test for bug #1686560')
-        self.ctx.tenant = None
+        self.ctx.project_id = None
         self.ctx.trust_id = None
         self.ctx.auth_token_info = {'not_this': 'urg'}
 

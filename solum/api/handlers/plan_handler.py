@@ -101,7 +101,7 @@ class PlanHandler(handler.Handler):
             db_obj.name = data['name']
         db_obj.uuid = uuidutils.generate_uuid()
         db_obj.user_id = self.context.user
-        db_obj.project_id = self.context.tenant
+        db_obj.project_id = self.context.project_id
         db_obj.trigger_id = uuidutils.generate_uuid()
 
         # create a delegation trust_id\token, if required
@@ -206,7 +206,7 @@ class PlanHandler(handler.Handler):
         try:
             self.context = keystone_utils.create_delegation_context(
                 plan_obj, self.context)
-            self.context.tenant = plan_obj.project_id
+            self.context.project_id = plan_obj.project_id
             self.context.user = plan_obj.user_id
             self.context.user_name = plan_obj.username
 

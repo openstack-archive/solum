@@ -259,7 +259,7 @@ class Handler(object):
         if run_cmd is not None:
             user_env['RUN_CMD'] = run_cmd
 
-        user_env['PROJECT_ID'] = ctxt.tenant
+        user_env['PROJECT_ID'] = ctxt.project_id
 
         user_env['BUILD_ID'] = uuidutils.generate_uuid()
         user_env['SOLUM_TASK_DIR'] = cfg.CONF.worker.task_log_dir
@@ -300,15 +300,15 @@ class Handler(object):
 
         if artifact_type == 'language_pack':
             build_lp = os.path.join(build_app_path, 'build-lp')
-            return [build_lp, source_uri, name, ctxt.tenant]
+            return [build_lp, source_uri, name, ctxt.project_id]
 
         if stage == 'unittest':
             build_app = os.path.join(build_app_path, 'unittest-app')
-            return [build_app, source_uri, commit_sha, ctxt.tenant,
+            return [build_app, source_uri, commit_sha, ctxt.project_id,
                     base_image_id, lp_image_tag]
         elif stage == 'build':
             build_app = os.path.join(build_app_path, 'build-app')
-            return [build_app, source_uri, commit_sha, name, ctxt.tenant,
+            return [build_app, source_uri, commit_sha, name, ctxt.project_id,
                     base_image_id, lp_image_tag]
 
     def _get_parameter_env(self, ctxt, source_uri, assembly_id, build_id):
@@ -697,7 +697,7 @@ class Handler(object):
                                             source_format, 'docker', '',
                                             artifact_type)
 
-        lp_access = get_lp_access_method(ctxt.tenant)
+        lp_access = get_lp_access_method(ctxt.project_id)
 
         user_env = {}
         try:

@@ -58,7 +58,7 @@ class TestAuth(base.BaseTestCase):
         self.assertIsInstance(ctx, context.RequestContext)
         self.assertEqual(ctx.auth_token,
                          fakes.fakeAuthTokenHeaders['X-Auth-Token'])
-        self.assertEqual(ctx.tenant,
+        self.assertEqual(ctx.project_id,
                          fakes.fakeAuthTokenHeaders['X-Project-Id'])
         self.assertEqual(ctx.user,
                          fakes.fakeAuthTokenHeaders['X-User-Id'])

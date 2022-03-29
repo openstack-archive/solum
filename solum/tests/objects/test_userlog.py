@@ -32,7 +32,7 @@ class TestUserlog(base.BaseTestCase):
                       'resource_type': 'app',
                       'strategy': 'local',
                       'location': '/dev/null',
-                      'project_id': self.ctx.tenant,
+                      'project_id': self.ctx.project_id,
                       'strategy_info': '{}',
                       }]
         utils.create_models_from_data(userlog.Userlog, self.data, self.ctx)

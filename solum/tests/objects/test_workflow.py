@@ -23,10 +23,10 @@ class TestWorkflow(base.BaseTestCase):
         super(TestWorkflow, self).setUp()
         self.db = self.useFixture(utils.Database())
         self.ctx = utils.dummy_context()
-        self.data = [self._get_data(self.ctx.tenant)]
+        self.data = [self._get_data(self.ctx.project_id)]
         utils.create_models_from_data(workflow.Workflow, self.data, self.ctx)
 
-    def _get_data(self, tenant_id):
+    def _get_data(self, project_id):
 
         source = dict()
         source['repository'] = "https://github.com"
@@ -40,7 +40,7 @@ class TestWorkflow(base.BaseTestCase):
         jsondata['source'] = source
         jsondata['config'] = workflow
         jsondata['actions'] = ["test", "build", "deploy"]
-        jsondata['project_id'] = tenant_id
+        jsondata['project_id'] = project_id
         jsondata['user_id'] = 'fred'
         jsondata['id'] = '123'
         return jsondata
