@@ -26,7 +26,7 @@ class TestComponent(base.BaseTestCase):
         self.db = self.useFixture(utils.Database())
         self.ctx = utils.dummy_context()
         self.data_assembly = [
-            {'project_id': self.ctx.tenant,
+            {'project_id': self.ctx.project_id,
              'uuid': 'ce43e347f0b0422825245b3e5f140a81cef6e65b',
              'user_id': 'fred',
              'name': 'assembly1',
@@ -39,7 +39,7 @@ class TestComponent(base.BaseTestCase):
         utils.create_models_from_data(assembly.Assembly, self.data_assembly,
                                       self.ctx)
 
-        self.data = [{'project_id': self.ctx.tenant,
+        self.data = [{'project_id': self.ctx.project_id,
                       'user_id': 'fred',
                       'uuid': 'ce43e347f0b0422825245b3e5f140a81cef6e65b',
                       'name': 'component_no_assembly',
@@ -48,7 +48,7 @@ class TestComponent(base.BaseTestCase):
                       'parent_component_id': '87d98s',
                       'tags': 'component tags',
                       'heat_stack_id': '4c712026-dcd5-4664-90b8-0915494c1332'},
-                     {'project_id': self.ctx.tenant,
+                     {'project_id': self.ctx.project_id,
                       'user_id': 'fred',
                       'uuid': '70763488-72e0-44ac-a612-e94bf5488555',
                       'name': 'component_assembly',

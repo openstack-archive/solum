@@ -26,7 +26,7 @@ class TestContext(base.BaseTestCase):
     def test_context_to_dict(self):
         ctx = context.RequestContext(auth_token='_token_',
                                      user='_user_',
-                                     tenant='_tenant_',
+                                     project_id='_project_id_',
                                      domain='_domain_',
                                      user_domain='_user_domain_',
                                      project_domain='_project_domain_',
@@ -41,7 +41,7 @@ class TestContext(base.BaseTestCase):
         ctx_dict = ctx.to_dict()
         self.assertEqual(ctx_dict['auth_token'], '_token_')
         self.assertEqual(ctx_dict['user'], '_user_')
-        self.assertEqual(ctx_dict['tenant'], '_tenant_')
+        self.assertEqual(ctx_dict['project_id'], '_project_id_')
         self.assertEqual(ctx_dict['domain'], '_domain_')
         self.assertEqual(ctx_dict['user_domain'], '_user_domain_')
         self.assertEqual(ctx_dict['project_domain'], '_project_domain_')
@@ -60,7 +60,7 @@ class TestContext(base.BaseTestCase):
         self.CONF.config(solum_admin_tenant_id='fake_tenant_id')
         ctx = context.RequestContext(auth_token='_token_',
                                      user='_user_',
-                                     tenant='fake_tenant_id',
+                                     project_id='fake_tenant_id',
                                      domain='_domain_',
                                      user_domain='_user_domain_',
                                      project_domain='_project_domain_',
@@ -75,7 +75,7 @@ class TestContext(base.BaseTestCase):
         ctx_dict = ctx.to_dict()
         self.assertEqual(ctx_dict['auth_token'], '_token_')
         self.assertEqual(ctx_dict['user'], '_user_')
-        self.assertEqual(ctx_dict['tenant'], 'fake_tenant_id')
+        self.assertEqual(ctx_dict['project_id'], 'fake_tenant_id')
         self.assertEqual(ctx_dict['domain'], '_domain_')
         self.assertEqual(ctx_dict['user_domain'], '_user_domain_')
         self.assertEqual(ctx_dict['project_domain'], '_project_domain_')
@@ -93,7 +93,7 @@ class TestContext(base.BaseTestCase):
         self.CONF.config(solum_admin_tenant_id='fake_tenant_id')
         ctx = context.RequestContext(auth_token='_token_',
                                      user='_user_',
-                                     tenant='_tenant_id_',
+                                     project_id='_tenant_id_',
                                      domain='_domain_',
                                      user_domain='_user_domain_',
                                      project_domain='_project_domain_',
@@ -108,7 +108,7 @@ class TestContext(base.BaseTestCase):
         ctx_dict = ctx.to_dict()
         self.assertEqual(ctx_dict['auth_token'], '_token_')
         self.assertEqual(ctx_dict['user'], '_user_')
-        self.assertEqual(ctx_dict['tenant'], '_tenant_id_')
+        self.assertEqual(ctx_dict['project_id'], '_tenant_id_')
         self.assertEqual(ctx_dict['domain'], '_domain_')
         self.assertEqual(ctx_dict['user_domain'], '_user_domain_')
         self.assertEqual(ctx_dict['project_domain'], '_project_domain_')

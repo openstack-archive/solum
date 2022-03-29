@@ -179,7 +179,7 @@ class HandlerTest(base.BaseTestCase):
         script = os.path.join(proj_dir, 'contrib/lp-cedarish/docker/build-app')
         mock_popen.assert_called_once_with([script, 'git://example.com/foo',
                                             git_info['commit_sha'],
-                                            'new_app', self.ctx.tenant,
+                                            'new_app', self.ctx.project_id,
                                             self.expected_img_id,
                                             self.img_name],
                                            env=test_env,
@@ -246,7 +246,7 @@ class HandlerTest(base.BaseTestCase):
         expected_tag = fake_image.docker_image_name
         mock_popen.assert_called_once_with([script, 'git://example.com/foo',
                                             git_info['commit_sha'],
-                                            'new_app', self.ctx.tenant,
+                                            'new_app', self.ctx.project_id,
                                             expected_loc, expected_tag],
                                            env=test_env,
                                            stdout=-1)
@@ -308,7 +308,7 @@ class HandlerTest(base.BaseTestCase):
         script = os.path.join(proj_dir, 'contrib/lp-cedarish/docker/build-app')
         mock_popen.assert_called_once_with([script, 'git://example.com/foo',
                                             git_info['commit_sha'],
-                                            'new_app', self.ctx.tenant,
+                                            'new_app', self.ctx.project_id,
                                             self.expected_img_id,
                                             self.img_name],
                                            env=test_env, stdout=-1)
@@ -383,7 +383,7 @@ class HandlerTest(base.BaseTestCase):
         # self.assertTrue(mock_shelve.call().__setitem__.called)
         mock_popen.assert_called_once_with([script, 'git://example.com/foo',
                                             git_info['commit_sha'],
-                                            'new_app', self.ctx.tenant,
+                                            'new_app', self.ctx.project_id,
                                             self.expected_img_id,
                                             self.img_name],
                                            env=test_env, stdout=-1)
@@ -437,7 +437,7 @@ class HandlerTest(base.BaseTestCase):
         script = os.path.join(proj_dir, 'contrib/lp-cedarish/docker/build-app')
         mock_popen.assert_called_once_with([script, 'git://example.com/foo',
                                             git_info['commit_sha'],
-                                            'new_app', self.ctx.tenant,
+                                            'new_app', self.ctx.project_id,
                                             'auto',
                                             ''],
                                            env=test_env, stdout=-1)
@@ -483,7 +483,7 @@ class HandlerTest(base.BaseTestCase):
         script = os.path.join(proj_dir, 'contrib/lp-cedarish/docker/build-app')
         mock_popen.assert_called_once_with([script, 'git://example.com/foo',
                                             git_info['commit_sha'],
-                                            'new_app', self.ctx.tenant,
+                                            'new_app', self.ctx.project_id,
                                             self.expected_img_id,
                                             self.img_name],
                                            env=test_env, stdout=-1)
@@ -531,7 +531,7 @@ class HandlerTest(base.BaseTestCase):
                               'contrib/lp-chef/docker/unittest-app')
         mock_popen.assert_called_once_with([script, 'git://example.com/foo',
                                             git_info['commit_sha'],
-                                            self.ctx.tenant,
+                                            self.ctx.project_id,
                                             self.expected_img_id,
                                             self.img_name],
                                            env=test_env, stdout=-1)
@@ -571,7 +571,7 @@ class HandlerTest(base.BaseTestCase):
                               'contrib/lp-chef/docker/unittest-app')
         mock_popen.assert_called_once_with([script, 'git://example.com/foo',
                                             git_info['commit_sha'],
-                                            self.ctx.tenant,
+                                            self.ctx.project_id,
                                             self.expected_img_id,
                                             self.img_name],
                                            env=test_env, stdout=-1)
@@ -622,12 +622,12 @@ class HandlerTest(base.BaseTestCase):
         expected = [
             mock.call([u_script, 'git://example.com/foo',
                        git_info['commit_sha'],
-                       self.ctx.tenant, self.expected_img_id,
+                       self.ctx.project_id, self.expected_img_id,
                        self.img_name], env=test_env,
                       stdout=-1),
             mock.call([b_script, 'git://example.com/foo',
                        git_info['commit_sha'], 'new_app',
-                       self.ctx.tenant, self.expected_img_id,
+                       self.ctx.project_id, self.expected_img_id,
                        self.img_name], env=test_env,
                       stdout=-1)]
         self.assertEqual(expected, mock_popen.call_args_list)
@@ -687,7 +687,7 @@ class HandlerTest(base.BaseTestCase):
         expected = [
             mock.call([u_script, 'git://example.com/foo',
                        git_info['commit_sha'],
-                       self.ctx.tenant, self.expected_img_id,
+                       self.ctx.project_id, self.expected_img_id,
                        self.img_name], env=test_env,
                       stdout=-1)]
         self.assertEqual(expected, mock_popen.call_args_list)
@@ -791,7 +791,7 @@ class TestBuildCommand(base.BaseTestCase):
         self.assertIn(self.expect_b, cmd[0])
         self.assertEqual('http://example.com/a.git', cmd[1])
         self.assertEqual('testa', cmd[3])
-        self.assertEqual(ctx.tenant, cmd[4])
+        self.assertEqual(ctx.project_id, cmd[4])
         if self.base_image_id == 'auto' and self.image_format == 'qcow2':
             self.assertEqual('cedarish', cmd[5])
         else:
@@ -811,7 +811,7 @@ class TestBuildCommand(base.BaseTestCase):
         self.assertIn(self.expect_u, cmd[0])
         self.assertEqual('http://example.com/a.git', cmd[1])
         self.assertEqual('asdf', cmd[2])
-        self.assertEqual(ctx.tenant, cmd[3])
+        self.assertEqual(ctx.project_id, cmd[3])
 
 
 class TestLanguagePackBuildCommand(base.BaseTestCase):
@@ -833,7 +833,7 @@ class TestLanguagePackBuildCommand(base.BaseTestCase):
         self.assertIn('lp-cedarish/docker/build-lp', cmd[0])
         self.assertEqual('http://example.com/a.git', cmd[1])
         self.assertEqual('testa', cmd[2])
-        self.assertEqual(ctx.tenant, cmd[3])
+        self.assertEqual(ctx.project_id, cmd[3])
 
     @mock.patch('solum.worker.handlers.shell.Handler._get_environment')
     @mock.patch('solum.objects.registry')
@@ -864,7 +864,7 @@ class TestLanguagePackBuildCommand(base.BaseTestCase):
         script = os.path.join(proj_dir, 'contrib/lp-cedarish/docker/build-lp')
         mock_execute.assert_called_once_with(
             script, 'git://example.com/foo',
-            'lp_name', self.ctx.tenant,
+            'lp_name', self.ctx.project_id,
             env_variables=test_env,
             run_as_root=True,
         )

@@ -83,7 +83,7 @@ class DockerHandler(base.BaseHandler):
     def _prepare(self, git_info, lp_obj_name, lp_img_tag, logger):
         """Create working dir and download LP only once for an app workflow."""
         if self.work_dir is None or self.source_sha is None:
-            tenant = self.context.tenant
+            tenant = self.context.project_id
             self.work_dir = '/tmp/apps/{tenant}/{id}'.format(
                 tenant=tenant, id=self.assembly.uuid)
             try:
@@ -117,7 +117,7 @@ class DockerHandler(base.BaseHandler):
 
     def build_lp(self, lp_name, git_info):
         logger = self._get_tenant_logger('language_pack')
-        tenant = self.context.tenant
+        tenant = self.context.project_id
         ts = utils.timestamp()
         ranid = (''.join(random.choice(string.ascii_uppercase)
                  for _ in range(20)))
@@ -286,7 +286,7 @@ class DockerHandler(base.BaseHandler):
             logger.upload()
             return
 
-        tenant = self.context.tenant
+        tenant = self.context.project_id
         ts = utils.timestamp()
         storage_obj_name = '{name}-{ts}-{sha}'.format(name=app_name, ts=ts,
                                                       sha=self.source_sha)

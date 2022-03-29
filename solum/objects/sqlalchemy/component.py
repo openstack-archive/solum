@@ -67,7 +67,7 @@ class Component(sql.Base, abstract.Component):
         comp.description = description
         comp.assembly_id = assem.id
         comp.user_id = ctxt.user
-        comp.project_id = ctxt.tenant
+        comp.project_id = ctxt.project_id
         comp.resource_uri = resource_uri
         comp.heat_stack_id = stack_id
         comp.create(ctxt)

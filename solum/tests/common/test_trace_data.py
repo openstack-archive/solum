@@ -22,7 +22,7 @@ solum.TLS.trace = trace_data.TraceData()
 # Just putting highly recognizable values in context
 CONTEXT = context.RequestContext(auth_token='_auth_token_',
                                  user='_user_',
-                                 tenant='_tenant_',
+                                 project_id='_project_id_',
                                  domain='_domain_',
                                  user_domain='_user_domain_',
                                  project_domain='_project_domain_',
@@ -54,7 +54,7 @@ class TestTraceData(base.BaseTestCase):
         solum.TLS.trace.import_context(CONTEXT)
         self.assertEqual(
             solum.TLS.trace._user_data,
-            {'user': '_user_', 'tenant': '_tenant_'})
+            {'user': '_user_', 'project_id': '_project_id_'})
         self.assertEqual(({
             'auth_token_info': '_auth_token_info_',
             'auth_url': '_auth_url_',
@@ -62,7 +62,7 @@ class TestTraceData(base.BaseTestCase):
             'global_request_id': None,
             'is_admin': False,
             'is_admin_project': True,
-            'project': '_tenant_',
+            'project': '_project_id_',
             'project_domain': '_project_domain_',
             'read_only': False,
             'resource_uuid': None,
@@ -70,7 +70,7 @@ class TestTraceData(base.BaseTestCase):
             'show_deleted': False,
             'system_scope': None,
             'user_domain': '_user_domain_',
-            'user_identity': u'_user_ _tenant_ _domain_ '
+            'user_identity': u'_user_ _project_id_ _domain_ '
             '_user_domain_ _project_domain_',
             'user_name': '_user_name_'}), solum.TLS.trace._support_data)
 

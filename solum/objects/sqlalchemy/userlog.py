@@ -45,6 +45,6 @@ class UserlogList(abstract.UserlogList):
     @classmethod
     def get_all_by_id(cls, context, resource_uuid):
         session = sql.Base.get_session()
-        logs = session.query(Userlog).filter_by(project_id=context.tenant)
+        logs = session.query(Userlog).filter_by(project_id=context.project_id)
         logs = logs.filter_by(resource_uuid=resource_uuid)
         return logs.order_by(Userlog.created_at).all()

@@ -59,7 +59,7 @@ class Image(sql.Base, abstract.Image):
         try:
             session = Image.get_session()
             oper_result = session.query(cls).filter_by(
-                project_id=context.tenant, status='READY')
+                project_id=context.project_id, status='READY')
             cnt = oper_result.count()
             return cnt
         except exc.NoResultFound:
@@ -75,8 +75,9 @@ class Image(sql.Base, abstract.Image):
                 result = session.query(cls).filter_by(
                     artifact_type='language_pack', uuid=name_or_uuid)
                 if include_operators_lp is True:
+                    project_id = context.project_id
                     result = result.filter(
-                        Image.project_id.in_([operator_id, context.tenant]))
+                        Image.project_id.in_([operator_id, project_id]))
                     return result.one()
                 else:
                     return sql.filter_by_project(context, result).one()
@@ -94,7 +95,7 @@ class Image(sql.Base, abstract.Image):
                 artifact_type='language_pack', name=name)
             if include_operators_lp is True:
                 result = result.filter(
-                    Image.project_id.in_([operator_id, context.tenant]))
+                    Image.project_id.in_([operator_id, context.project_id]))
                 return result.one()
             else:
                 return sql.filter_by_project(context, result).one()

@@ -78,7 +78,7 @@ class TenantLogger(object):
         t = time.time()
         print_tm = dt.datetime.fromtimestamp(t).strftime('%Y-%m-%d %H:%M:%S')
         log_line['@timestamp'] = print_tm
-        log_line['project_id'] = self.ctxt.tenant
+        log_line['project_id'] = self.ctxt.project_id
         log_line['stage_id'] = self.assem.uuid
         log_line['task'] = self.stage
         log_line['message'] = message

@@ -17,7 +17,7 @@
 # will be considered support-only data.  This list may be too restrictive and
 # can be relaxed more as needed.  This is only used if import_context() is
 # called.
-_TRACE_USER_KEYS = ["user", "tenant"]
+_TRACE_USER_KEYS = ["user", "project_id"]
 _TRACE_CONTEXT_IGNORE = ["auth_token", "trust_id"]
 
 

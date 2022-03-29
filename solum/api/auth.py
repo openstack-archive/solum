@@ -119,14 +119,14 @@ class ContextHook(hooks.PecanHook):
         ctx = context.RequestContext(auth_token=recv_auth_token,
                                      auth_token_info=auth_token_info,
                                      user=user_id,
-                                     tenant=project_id,
+                                     project_id=project_id,
                                      domain=domain,
                                      user_domain=user_domain_id,
                                      project_domain=project_domain_id,
                                      user_name=user_name,
                                      roles=roles,
                                      password=password,
-                                     tenant_name=tenant_name)
+                                     project_name=tenant_name)
         state.request.security_context = ctx
 
     def _get_roles(self, req):

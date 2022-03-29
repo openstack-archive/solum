@@ -154,7 +154,7 @@ class KeystoneClientV3(object):
                 cfg.CONF, 'keystone_authtoken', **kwargs)
         elif self.context.auth_token is not None:
             kwargs['token'] = self.context.auth_token
-            kwargs['project_id'] = self.context.tenant
+            kwargs['project_id'] = self.context.project_id
             auth = identity.Token(
                 auth_url=kwargs['auth_url'],
                 token=kwargs['token'],
@@ -177,7 +177,7 @@ class KeystoneClientV3(object):
             self.context.auth_token = client.auth_ref.auth_token
             self.context.auth_url = self.endpoint
             self.context.user = client.auth_ref.user_id
-            self.context.tenant = client.auth_ref.project_id
+            self.context.project_id = client.auth_ref.project_id
             self.context.user_name = client.auth_ref.username
 
         return client

@@ -24,7 +24,7 @@ class TestApp(base.BaseTestCase):
         self.db = self.useFixture(utils.Database())
         self.ctx = utils.dummy_context()
         self.data = [{'id': 'test-uuid-555',
-                      'project_id': self.ctx.tenant,
+                      'project_id': self.ctx.project_id,
                       'user_id': 'fred',
                       'name': 'testapp',
                       'description': 'fake app for testing',

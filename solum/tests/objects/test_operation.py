@@ -22,7 +22,7 @@ class TestOperation(base.BaseTestCase):
         self.db = self.useFixture(utils.Database())
         self.ctx = utils.dummy_context()
 
-        self.data = [{'project_id': self.ctx.tenant,
+        self.data = [{'project_id': self.ctx.project_id,
                       'user_id': 'fred',
                       'uuid': 'ce43e347f0b0422825245b3e5f140a81cef6e65b',
                       'name': 'o1',
