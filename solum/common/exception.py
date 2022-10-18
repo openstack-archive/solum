@@ -18,7 +18,7 @@ Includes decorator for re-raising Solum-type exceptions.
 
 """
 
-import collections
+from collections import abc
 import functools
 import inspect
 import sys
@@ -191,7 +191,7 @@ def wrap_wsme_pecan_controller_exception(func):
     @functools.wraps(func)
     def wrapped(*args, **kw):
         ret = func(*args, **kw)
-        ismapping = isinstance(ret, collections.Mapping)
+        ismapping = isinstance(ret, abc.Mapping)
         if (pecan.response.status_code >= 500 and ismapping):
 
             log_correlation_id = uuidutils.generate_uuid()

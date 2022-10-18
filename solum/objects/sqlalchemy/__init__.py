@@ -13,19 +13,22 @@
 # limitations under the License.
 
 import sys
+import threading
 
 from oslo_config import cfg
 from oslo_db.sqlalchemy import session
 
 
 _FACADE = None
+_LOCK = threading.Lock()
 
 
 def get_facade():
-    global _FACADE
-
-    if not _FACADE:
-        _FACADE = session.EngineFacade.from_config(cfg.CONF)
+    global _LOCK, _FACADE
+    if _FACADE is None:
+        with _LOCK:
+            if _FACADE is None:
+                _FACADE = session.EngineFacade.from_config(cfg.CONF)
     return _FACADE
 
 
@@ -33,8 +36,10 @@ def get_engine():
     return get_facade().get_engine()
 
 
-def get_session():
-    return get_facade().get_session()
+def get_session(autocommit=True, expire_on_commit=False):
+    facade = get_facade()
+    return facade.get_session(autocommit=autocommit,
+                              expire_on_commit=expire_on_commit)
 
 
 def get_backend():
