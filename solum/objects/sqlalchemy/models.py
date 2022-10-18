@@ -186,6 +186,7 @@ class SolumBase(models.TimestampMixin, models.ModelBase):
         with session.begin():
             session.merge(self)
 
+    @retry
     def create(self, context):
         session = SolumBase.get_session()
         try:
