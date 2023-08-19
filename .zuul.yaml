@@ -1,4 +1,5 @@
 - project:
+    queue: solum
     templates:
       - openstack-cover-jobs
       - openstack-lower-constraints-jobs
@@ -15,7 +16,6 @@
         - solum-tox-bandit-baseline:
             voting: false
     gate:
-      queue: solum
       jobs:
         - solum-devstack
         - solum-tempest-ipv6-only
