@@ -8,8 +8,6 @@
       - check-requirements
     check:
       jobs:
-        - solum-devstack-centos:
-            voting: false
         - solum-devstack
         - solum-tempest-ipv6-only
         - solum-tox-bandit-baseline:
@@ -18,11 +16,6 @@
       jobs:
         - solum-devstack
         - solum-tempest-ipv6-only
-
-- job:
-    name: solum-devstack-centos
-    parent: solum-tempest-base
-    nodeset: devstack-single-node-centos-7
 
 - job:
     name: solum-devstack
