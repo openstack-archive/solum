@@ -1,5 +1,0 @@
-#!/bin/bash
-
-apt-get update
-apt-get install -y python-pip git
-pip install git+https://github.com/openstack/solum-infra-guestagent.git

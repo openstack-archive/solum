@@ -1,7 +1,0 @@
-[run]
-branch = True
-source = solum
-omit = solum/tests/*
-
-[report]
-ignore_errors = True
